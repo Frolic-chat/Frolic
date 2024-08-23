@@ -2,8 +2,9 @@
   @include text-outline(#306);
 }
 
-.blackText {
+.blackText, .blackText .purpleText{
   @include text-outline($gray-600);
 }
+
 
 $blue-color: #06f;
