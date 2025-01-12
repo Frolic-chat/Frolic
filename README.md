@@ -16,7 +16,7 @@ FChat-Rising uses NodeJS `16.x` and may not work on newer versions. Use [`nvm`](
 
 ```bash
 # Windows only:
-npm install --global --production --vs2015 --add-python-to-path windows-build-tools node-gyp
+npm install --global --production --vs2015 --add-python-to-path yarn node-gyp
 
 # Ubuntu only:
 sudo apt install libsecret-1-dev
