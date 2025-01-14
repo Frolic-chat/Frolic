@@ -1,8 +1,8 @@
 {
-  "name": "f-list-rising",
+  "name": "f-chat-risinger",
   "version": "1.27.3",
-  "author": "The F-List Team and and Mister Stallion (Esq.)",
-  "description": "A heavily modded F-Chat 3.0 client for F-List",
+  "author": "The F-List Team and all other contributors",
+  "description": "A continuation of the heavily modded F-Chat 3.0 client",
   "license": "MIT",
   "main": "main.js",
   "devDependencies": {
