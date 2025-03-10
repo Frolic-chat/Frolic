@@ -203,10 +203,6 @@
 
 
         shouldShowMatch(): boolean {
-            if (this.character?.character.name === 'YiffBot 4000') {
-              return false;
-            }
-
             return core.state.settings.risingAdScore;
         }
 

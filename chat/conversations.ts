@@ -685,7 +685,6 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
 
     if (
         cachedProfile &&
-        cachedProfile.character.character.name !== 'YiffBot 4000' &&
         cachedProfile.match.isFiltered &&
         core.state.settings.risingFilter.autoReply &&
         !cachedProfile.match.autoResponded
@@ -729,7 +728,6 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
 
     if (
         cachedProfile &&
-        cachedProfile.character.character.name !== 'YiffBot 4000' &&
         cachedProfile.match.isFiltered &&
         core.state.settings.risingFilter.hidePrivateMessages &&
         firstTime // subsequent messages bypass this filter on purpose
