@@ -450,41 +450,61 @@ export const speciesNames: SpeciesStrMap = {
     [Species.Suidae]: 'swine'
 };
 
+const kemomimi_generic  = [ 'kemomimi', 'kemonomimi', 'kemono' ];
+const kemomimi_canine   = [
+    'inumimi', 'oo?kamimi(mi)?', 'jakkarumimi', 'chinchiramimi',
+];
+const kemomimi_equine   = [ 'umamimi', 'shimaumamimi' ];
+const kemomimi_feline   = [
+    'neko', 'nekomata', 'neko[ -]?mimi', 'toramimi', 'shishimimi', 'pansamimi', 'hyoumimi', 
+    'mi[gq]o(\'?te)?', '.*catte', 'catgirl',
+];
+const kemomimi_vulpine  = [ 'kitsunemimi', 'vulpo' ];
+const kemomimi_dragon   = [ 'do?ragon?mimi' ];
+const kemomimi_bat      = [ 'komorimimi' ];
+const kemomimi_avian    = [ 'torimimi' ];
+const kemomimi_bovine   = [ 'ushimimi' ];
+const kemomimi_caprine  = [ 'yagimimi', 'hitsujimimi' ];
+const kemomimi_cervine  = [ 'shikamimi' ];
+const kemomimi_giraffe  = [ 'kirinmimi' ];
+const kemomimi_bug      = [ 'hachimimi' ];
+const kemomimi_lapine   = [
+    'usagimimi',
+    'viera', 'bnuuy',
+];
+const kemomimi_musteli  = [ 'kawausomimi', 'itachimimi', 'ferettomimi' ];
+const kemomimi_primate  = [
+  'sarumimi',
+  // saiyans?
+];
+const kemomimi_procyon  = [ 'tanukimimi', 'rakunmimi' ];
+const kemomimi_rodent   = [ 'risumimi', 'nezumimi' ];
+const kemomimi_suidae   = [ 'butamimi' ];
+const kemomimi_ursine   = [ 'pandamimi', 'kumamimi' ];
+
 const humanLikeNekoSpecies = [
-  'kemomimi', 'kemonomimi', 'kemono', // generic
-  'inumimi', 'oo?kamimimi', 'jakkarumimi', 'chinchiramimi', // canine
-  'umamimi', 'shimaumamimi', // equine
-  'neko[ -]?mimi', 'nekomimi', 'toramimi', 'shishimimi', 'pansamimi', 'hyoumimi', 'neko', // feline
-  'kitsunemimi', // vulpine
-  'doragonmimi', // dragon
-  'komorimimi', // bat
-  'torimimi', // avian
-  'ushimimi', // bovine
-  'yagimimi', 'hitsujimimi', // caprinae
-  'shikamimi', // cervine
-  'kirinmimi', // giraffe
-  'hachimimi', // insect
-  'usagimimi', // lapine
-  'kawausomimi', 'itachimimi', 'ferettomimi', // musteline
-  'sarumimi', // primate
-  'tanukimimi', 'rakunmimi', // procyon
-  'risumimi', 'nezumimi', // rodent
-  'butamimi', // suidae
-  'pandamimi', 'kumamimi' // ursine
+  ...kemomimi_avian,    ...kemomimi_bat,        ...kemomimi_bovine,
+  ...kemomimi_bug,      ...kemomimi_canine,     ...kemomimi_caprine,
+  ...kemomimi_cervine,  ...kemomimi_dragon,     ...kemomimi_equine,
+  ...kemomimi_feline,   ...kemomimi_generic,    ...kemomimi_giraffe,
+  ...kemomimi_lapine,   ...kemomimi_musteli,    ...kemomimi_primate,
+  ...kemomimi_procyon,  ...kemomimi_rodent,     ...kemomimi_suidae,
+  ...kemomimi_ursine,   ...kemomimi_vulpine
 ];
 
 export const likelyHuman: SpeciesMap = {
-    [Species.Human]: ['bimbo', 'witch', 'wizard', 'gyaru', 'milf', '.*slut', 'black', 'azarathian', 'kryptonian', 'mensch', 'thot',
-        'sister', 'brother', 'mother', 'father', 'fuckpig', 'hero', 'she-stud', 'college', 'cutie',
-        'bimboi', 'homo', 'streamer', '.*human', 'femboy', 'nord', 'norse', 'norseman', 'man', 'whitebo[yi]', '.*bo[yi].*', '.*girl.*',
-        'french', 'whore', 'slutty', 'adult', 'otaku', 'cumdump', 'thug', 'magus', 'goth', 'servant', '.*caucasian', 'cosplayer',
-        'sapien[s]?', 'american', 'korean', 'chinese', 'english', 'british', 'irish', 'brat', 'guy', 'blonde?', 'redhead', 'brunet(te)?',
-        'paladin', 'knight', 'psychic',
-        'male', 'female', 'shemale',
-        'dothraki', 'amazon', 'african[ -]?american', 'amazonian', 'latina', 'latino',
-
-        'astartes', 'saiyan', 'echani', 'cathar', 'shikaisen', 'hyur', 'mid[ -]?lander', 'high[ -]?lander', 'arkanian',
-        'exalted', 'leftherian',
+    [Species.Human]: [
+        '.*human', 'sapiens?',
+                    // Gender:
+        '.*bo[yi].*', 'brother', 'father', 'female', 'femboy', '.*girl.*', 'guy', 'male', 'man', 'milf', 'mother', 'shemale', 'sister', 'woman',
+                    // Origin:
+        'african[ -]?american', 'american', 'azar[oa]thian', 'black', 'british', '.*caucasian', 'chinese', 'english', 'high[ -]?lander', 'hyur', 'irish', 'korean', 'kryptonian', 'latina', 'latino', 'mensch', 'mid[ -]?lander', 'nord', 'norse(man)?', 'saiyan',
+                    // Predilection:
+        'bimbo', 'bimboi', 'brat', 'cumdump', 'cutie', 'french', 'fuckpig', 'goth', 'gyaru', 'homo', 'meat[ -]?popsicle', 'she-stud', '.*slut', 'slutty', 'thot', 'whore',
+                    // Obligation:
+        'amazon', 'amazonian', 'college', 'cosplayer', 'hero', 'knight', 'magus', 'otaku', 'paladin', 'psychic', 'servant', 'streamer', 'witch', 'wizard',
+                    // ??? ? ?? ?????????????????
+        'adult', 'thug', 'blonde?', 'redhead', 'brunet(te)?', 'dothraki', 'astartes', 'echani', 'cathar', 'shikaisen', 'arkanian', 'exalted', 'leftherian',
 
         ...humanLikeNekoSpecies
     ]
@@ -496,213 +516,578 @@ export const likelyHuman: SpeciesMap = {
 
 
 function gen(s: string): string {
-    return `${s}[ -]?(kin|folk|woman|man|g[iu]rl|bo[yi][e]?)?`;
+    return `${s}[ -]?(kin|folk|(wo)?man|g[iu]rl|bo[yi][e]?)?`;
 }
 
 export const speciesMapping: SpeciesMap = {
-    [Species.Anthro]: ['anthro', 'anthropomorphic', 'furry', 'erune', 'vastayan?', 'rakshasa',
-        gen('(beast|anthro|furry)')
-        ],
-
-    [Species.Human]: ['human', 'homo sapiens', 'human.*', 'homo[ -]?sapi[ea]ns?', 'woman', 'hy?[uo]+m[aie]n', 'humaine?',
-        'meat[ -]?popsicle'
-        ],
-
-    [Species.Elf]: ['drow', 'draenei', 'dunmer', 'draenai', 'blutelf[e]?', 'elf.*', 'drow.*', 'e[ -]l[ -]f', 'sin\'?dorei',
-        'kal\'?dorei', 'elves', 'elven', '.*elfe?', 'elvish', 'ren\'?dorei', 'quel\'?dorei', 'hal[bf][ -]elf',
-        'shal\'?dorei', 'san\'?layn', 's[yi]lvan', gen('(elf|drow)')
-        ],
-
-    [Species.Canine]: ['dog', 'dingo', 'coyote', 'jackal', 'husky', 'canine', 'wolf.*', 'doberman[n]?', 'hound', 'akita', 'pit ?bull',
-        'terrier', 'bull[ -]?terrier', 'australian[ -]?shepherd', 'australian[ -]?shep[h]?ard', 'german[ -]?shep[h]?([ea]rd)?',
-        'malinois', 'woof', 'labrador', 'collie', 'canis', 'lupus', 'canid', 'chihuahua', 'poodle', 'chinchilla',
-        'chow[ -]?chow', 'corgi', 'anubis', 'beagle', '.*wolf', 'direwolf', 'pointer', 'dhole', 'worg(en)?',
-        'anubian', 'dalmatian', 'dalmation', 'lupine', 'malamute', 'mastiff', 'mutt', 'rott?w[ea]ill?er', 'shih[ -]?tzu',
-        'vallhund', 'puppy', 'oo?kami', 'great[ -]?dane', 'golden[ -]?(retriever|lab|labrador)', 'cocker[ -]?spaniel', 'samm?oyed', 'awoo+',
-        'borzoi', 'spaniel', 'woffo', 'wuff', 'wolfdog', 'setter', 'papillon',
-        '🐶', '🐺', '🐕', '🐩', 'aussie[ -]?doodle', 'shiba', 'inu', 'veil[ -]?hound', 'timber[ -]?wolf', 'hell[ -]?hound', 'hound',
-        'kangal', 'behemoth', 'mongrel', 'fenrir', 'v[aá]na[r]?gand[r]?', 'crux', 'st.?[ -]?bernard',
-        'wolfess', 'latrans', gen('(dog|wolf)'), 'chien', 'loup', 'sch[aä]ferhund',
-        'doggie', 'doggy', 'canis', 'doggo', 'barghest', 'barguest', 'dire[ -]?hound'],
-
-    [Species.Equine]: ['horse', 'zebra', 'donkey', 'stallion', 'mare', 'filly', 'equine',
-        'unicorn.*', 'clydesdale', 'shire', 'appaloosa', 'friesian', 'draft', 'draught', 'alicorn', 'hoss', 'peg[au]sus', 'colt',
-        'filly', 'neigh', 'dullahan', 'tikbalang', 'gypsy[ -]?vanner', 'ardenne[r]?', 'ardennais[e]?', 'mule', 'zeeb', 'shire',
-        'cream[ -]?draft', 'belgian[ -]?draft', 'saddle[ -]?bred', 'warm[ -]?blood', 'marsh tacky', 'fox[ -]?trotter', 'morab',
-        'saddle[ -]?horse', 'walkaloosa', 'welara', 'tiger[ -]?horse', 'tinker[ -]?hengste?', 'jackass',
-        gen('(horsi?ey?|hoss|zeeb(ra)?|donkey|pon[yie])'), 'thestral', 'foal', 'palomino',
-        'mustang', 'horse.*', '.*horse', '.*pony', 'equus', 'kelpie', 'kuranta', 'zonkey', 'whorse',
-        '🐴', '🦓', '🐎'],
-
-    [Species.Feline]: ['cat', 'jaguar', 'cheetah', 'lynx', 'tiger.*', 'puma', 'lion.*', 'kitten',
-        'lioness', 'panther', 'panthe?ress', 'tige?ress', 'feline', 'leopard(ess)?', 'cougar', 'kitty', 'migo\'?te',
-        'miqo\'?te', 'ocelot', 'saber[ -]?tooth', 'tabby', 'serval', 'russian[ -]?blue', 'thunderian', 'meow', 'lombax',
-        '(exotic|domestic|british|oriental|american|shaded|chinchilla)[ -]?shorthair', 'burmese', 'maine[ -]?coon', 'korat', 'ragdoll',
-        'ocicat', 'chartreux', 'german[ -]?rex', 'turkish[ -]?van', 'ragamuffin', 'norwegian[ -]?forest[ -]?(cat)?', 'burmilla',
-        'khajiit', 'catamount', 'cat[ -]?person', 'tetton', 'tigre', 'calico', 'caracal', 'tabaxi', 'housecat',
-        'kodkod', 'karotanta', 'siamese', 'felis', 'catus', 'nekomata', 'trianii', 'caitian', 'catt[o|e]', '.*cat',
-        'mytharii', 'felinid', 'kitteh', 'chat(te)?',
-        gen('(cat|lion|tiger)'),
-        'nyah', 'charr', 'kater', 'kat', 'jinko', '.*katze?', 'liger', 'tigon', 'sab(re|er)[ -]?tooth',
-        '🐅', '🐆', '🐯', '🦁', '🐈'],
-
-    [Species.Vulpine]: ['fox', 'fennec', 'vixen', 'vulpine', 'fox.*', 'fennec', 'kitsune.*', 'kistune', 'gumiho', 'kumiho',
-        'nogitsune', 'yako', '🦊', gen('fox'), 'vulpes', 'silver[ -]?fox', 'arctic[ -]?fox', 'fennec[ -]?fox', 'red[ -]?fox',
-        'cape[ -]?fox', 'ninetails', 'ninetales', 'vulpo', 'vulpera', 'fire[ -]?fox', 'faw(x|ks)'],
-
-    [Species.Dragon]: ['dragon', '🐉', 'wyvern', 'felkin', 'dragon.*', '.*dra(k|ch)e', '.*wyvern', '.*felkin',
-        'night[ -]?fury', 'draconian', 'dragonn?ess', 'draconic', 'draconis', 'dragovian',
-        'sea[ -]?dragon', 'doragon', 'half[ -]dragon', 'wyverian', 'glavenus',
-        'anjanath', 'ragon', 'zinogre', 'drgn',
-        gen('dragon')
-        ],
-
-    [Species.Reptile]: ['lizard', 'snake', 'crocodile', 'alligator', 'chameleon', 'anole', '(all?i)?gator', 'snake.*', 'gator',
-        'gecko', 'reptile', 'reptilian', 'scaly', 'scale[ -]?born', 'argonian', 'saxhleel', 'skink', 'cobra', 'turtle', 'tortoise',
-        'nope[ -]rope', 'anaconda', 'python', gen('(lizard|snake|croc)'), 'yuan[ -]?ti', 'crocodilian',
-        'serp[ea]a?nt(ine)?', 'viper', 'titanoboa', 'boa', 'taipan', 'croc',
-        'ludroth', 'zvarr', '🐍'],
-
-    [Species.Pokemon]: ['charizard', 'charmander', 'pikachu', 'digimon', 'renamon', 'eevee', 'gardev(oi|io)r', 'absol', 'aggron',
-        'jolteon', 'lopunny', 'raichu', 'scyther', 'blaziken', 'lucario', 'gengar', 'mudsdale', 'mewtwo', 'glaceon', 'pokemon',
-        'croconaw', 'rattata', 'toxtricity', 'audino', 'sandslash', 'luxray', 'samurott', 'pokémon', 'riolu', 'greninja',
-        'meowstick', 'alolan', 'sylveon', 'arcanine', 'zebstrika', 'rapidash', 'umbreon', 'litten', 'vulpix', 'groudon',
-        'gothitelle', 'kecleon', 'quagsire', 'garchomp', 'mismagius', 'zigzagoon', 'sceptile', 'joltik', 'cinderace',
-        'hypnomade', 'furfrou', 'flareon', 'zeraora', 'mudkip', 'nidoking', 'zorua', 'salamence', 'lycanrock?',
-        'dewott', 'delcatty', 'braixen', 'zacian', 'fennekin', 'kirlia', 'cinccino', 'growlithe', 'shaymin', 'salazzle',
-        'vaporeon', 'reshiram', 'quilava', 'decidueye', 'marshadow', 'weavile', 'zubat', 'buizel', 'latias', 'nidorina',
-        'chandelur(e|ia)', 'sneasel', 'rockruff', 'lugia', 'komala', 'meowstic', 'leafeon', 'purrloin', 'pokemorph',
-        'houndour', 'zoroark', 'mightyena', 'mew', 'nidoqueen', 'zangoose', 'goodra', 'flygon', 'dialga', 'pansear',
-        'bibarel', 'charmeleon', 'lapras', 'hatteren[ea]',
-
-        // digimon
-        'gatomon', 'impmon', 'guilmon'
-        ],
-
-    [Species.Amphibian]: ['salamander', 'frog', 'toad', 'newt', 'amphibian', 'axolotl'],
-
-    [Species.Avian]: ['bird', 'gryphon', 'raven', 'cardinal', 'cockatiel', 'ph(oe|eo)nix', 'roc', 'chimera', 'avian', 'albatross',
-        'dove', 'eagle', 'owl', 'penguin', 'cockatoo', 'shoebill', 'rito', 'crow', 'meadow[ -]?lark',
-        'peacock', 'chocobo', 'emu', 'ostrich', 'flamingo', 'duck', 'swallow', 'nightingale', 'toucan', 'secretary[ -?]bird',
-        '(pink|blue)[ -]?jay', 'jaybird', 'chicken', 'rooster', 'blauhäher', 'gryphon', 'gr[iy]ff[io]n',
-        'parrot', 'avarr?ian', gen('(bird|raven)'),
-        'maran',
-        '🦚', '🦃', '🦢', '🦆', '🦅', '🦉', '🦜', '🦩'],
-
-    [Species.Bat]: ['bat', 'nimbat', 'foxbat', 'pteropus', '🦇'],
-
-    [Species.Bovine]: ['cow', 'bison', 'bovine', 'antelope', 'gazelle', 'oryx', 'buffalo', 'bison', 'black[ -]?angus', 'bull', 'ox',
-        'holstaur', 'moo', 'cattle', 'hucow', 'caprin[a]?e', 'goat[ -]?antelope', 'muskox', 'urial', 'mouflon',
-        'taurine', 'aurochs', 'bos', 'bos taurus', 'taur[u|o]s',
-        '🐃', '🐂', '🐄', '🐐'],
-
-    [Species.Caprinae]: ['sheep', 'goat', 'ibex', 'takin', 'bharal', 'goral', 'serow', 'lamb', 'faun', 'ram', 'faunus', 'goat.*',
-        'sheepie', gen('(sheep|goat|ram)')],
-
-    [Species.Camielidae]: ['camel', 'llama', 'alpaca', 'guanaco', 'dromedary', 'dromedar', '🦙', '🐪', '🐫'],
-
-    [Species.Cervine]: ['deer', 'elk', 'moose', 'caribou', 'reindeer', 'doe[ -]?(girl)?', 'fawn', 'cervid', 'cervine', 'stag',
-        gen('deer')],
-
-    [Species.Dinosaur]: ['raptor', 't-rex', 'pterodactyl', 'deinonychus', 'death[ -]?claw', '[\\w-]*saurus', 'dinosaur',
-        'trex', 'tyrannosaurus', 'saurian', '[\\w-]*raptor', 'dino',
-        '🦖', '🦕'],
-
-    [Species.Erinaceidae]: ['hedgehog', 'gymnure', 'moonrat'],
-    [Species.Elephantidae]: ['elephant', 'mammoth', 'mastodon', 'pachyderm', 'tusker'],
-
-    [Species.Fish]: ['shark', 'great white', 'sergal', 'fish', 'salmon', 'eel', 'aquatic', 'melanopterus', 'carcharhinus', '.*fish', '.*shark',
-        gen('(shark|fish)'), '(angel|tiger|bull|whale|white|leopard|crocodile|goblin|zebra) ?shark', 'mako'
+    [Species.Anthro]: [
+                    // Generic:
+        'anthro', 'anthropomorphic', 'furry',
+                    // ?
+        'erune', 'vastayan?', 'rakshasa',
+                    // Catch all:
+        gen('(beast|anthro|furry)'),
+        ...kemomimi_generic,
     ],
 
-    [Species.Giraffe]: ['giraffe', '🦒', 'okapi', '[gk]ira(ff|hv)[ei]?'],
-    [Species.Herpestidae]: ['mongoose', 'meerkat', 'kusimanse', 'suricate'],
-    [Species.Hippopotamidae]: ['hippo', 'hippopotamus', '🦛'],
-    [Species.Hyaenidae]: ['hyena', 'aardwolf', 'hyaena', 'yeen', gen('hyena')],
+    [Species.Human]: [
+        'human', 'human.*',
+        'hy?[uo]+m[aie]+ne?',
+        'homo[ -]?sapi[ea]ns?',
+    ],
 
-    [Species.Hybrid]: ['hybrid', 'cabbit', 'fabbit', 'laquine', 'folf', 'tolf', 'myox', 'wolger', 'silkie', 'yumar',
-        'foxcoon', 'drazelle', 'vulpkanin', 'poochyena', 'batpon', 'delphox', 'unifox', 'rooram', 'catbat', 'bunfox'],
+    [Species.Elf]: [
+                    // "Elf":
+        'elf', 'elves', 'elven', 'elvish', 'elf.*', '.*elfe?', 'e[ -]l[ -]f',
+                    // Classic:
+        '.*drow', 'drow.*', 'dunmer', 's[yi]lvan', 'hal[bf][ -]?elf', 'blutelf[e]?',
+                    // Modern:
+        'kal\'?dorei', 'quel\'?dorei','ren\'?dorei', 'sin\'?dorei', 'shal\'?dorei', 'san\'?layn',
+                    // Catch all:
+        gen('(elf|drow)'),
+    ],
 
-    [Species.Insect]: ['bug', 'bee', 'wasp', 'ant', 'insect', 'buggo', 'hornet', 'vespidae',
-        'mantis', gen('bee'), 'ladybug', 'moth', 'bumblebee', 'tolype',
+    [Species.Canine]: [
+                    // Generic:
+        'dog', 'canine', 'hound', '.*wolf', 'wolf.*', 'wolfess', 'cani[ds]', 'lupus', 'lupine', 'dire[ -]?wolf', 'dire[ -]?hound', 'wolfdog', 'mongrel', 'mutt', 'puppy', 'hell[ -]?hound', 'loup',
+                    // Nicknames:
+        'dogg(y|ie)', 'doggo', 'woof', 'chow[ -]?chow', 'awoo+', 'woffo', 'wuff',
+                    // Species:
+        'dingo', 'coyote', 'jackal', 'husky', 'doberman[n]?', 'akita', 'pit ?bull', 'terrier', 'bull[ -]?terrier', 'australian[ -]?sheph?([ae]rd)?', 'german[ -]?sheph?([ea]rd)?', 'malinois', 'labrador', 'collie', 'chihuahua', 'poodle', 'corgi', 'beagle', 'dhole', 'pointer',  'dalmati[ao]n', 'malamute', 'mastiff', 'rott?w[ea]ill?er', 'shih[ -]?tzu', 'vallhund', 'great[ -]?dane', 'golden[ -]?(retriever|lab|labrador)', 'cocker[ -]?spaniel', 'samm?oyed', 'borzoi', 'spaniel', 'setter', 'shiba', 'inu', 'shiba[ -]?inu', 'veil[ -]?hound', 'timber[ -]?wolf', 's(ain)?t.?[ -]?bernard', 'latrans', 'chien', 'kang[ao]l', 'papillon', 'sch[aä]ferhund',
+                    // Fantasy:
+        'fenrir', 'bargh?[aeu]st', 'barguest', 'oo?kami', 'worg(en)?',
+                    // Questionable:
+        'aussie[ -]?doodle',
+                    // Anthro:
+        'anubian', 'anubis', 'crux', 'v[aá]na[r]?gand[r]?',
+                    // Catch all:
+        gen('(dog|wolf)'),
+        ...kemomimi_canine,
+        '🐶', '🐺', '🐕', '🐩',
+    ],
 
-        // technically belong to their own group
-        'tarantula', 'arachnida', 'spider', gen('spider'), 'arachnid', 'scorpion'
-        ],
+    [Species.Equine]: [
+                    // Generic:
+        '.*horse', 'horse.*', 'stallion', 'foal', 'mare', 'filly', 'equine', 'hoss', 'colt', 'filly', 'neigh', '.*pony', 'equus',
+                    // Species:
+        'zebra', 'zeeb', 'donkey', 'appaloosa', 'friesian', 'unicorn.*', 'clydesdale', 'shire',  'draft', 'draught', 'alicorn', 'peg[au]sus', 'gypsy[ -]?vanner', 'ardenne[r]?', 'ardennais[e]?', 'mule', 'cream[ -]?draft', 'belgian[ -]?draft', 'saddle[ -]?bred', 'warm[ -]?blood', 'marsh tacky', 'fox[ -]?trotter', 'morab', 'saddle[ -]?horse', 'walkaloosa', 'welara', 'tiger[ -]?horse', 'tinker[ -]?hengste?', 'thestral', 'palomino', 'mustang', 'kelpie', 'kuranta',
+                    // Predilection:
+        'zonkey', 'whorse',
+                    // Catch all:
+        gen('(horsi?ey?|hoss|zeeb(ra)?|donkey|pon[yie])'),
+        ...kemomimi_equine,
+        '🐴', '🦓', '🐎',
+    ],
 
-    [Species.Lapine]: ['bunny', 'rabbit', 'hare', 'lapine', 'viera', 'wabbit', 'lagomo(rp|pr)h', gen('(bunny|rabbit)'),
-        'bun', '.*bunny', 'cabbit', 'fabbit', 'häschen', 'bunbun', 'cottontail', 'rabbet', 'jack[ -]?rabbit', 'lapine?', 'jackalope',
-        'leporids?', 'leporidae', 'broodal', 'kanin(chen)?', '🐇'],
+    [Species.Feline]: [
+                    // Generic:
+        '.*cat', 'feline', '.*kitt(y|en)', '.*katze?', 'tabby', 'felinid', 'felis', 'catto', 'meow', 'kitteh', 'kat', 'chat(te)?', 'nyah', 'catus',
+                    // Cats:
+        'calico', 'maine[ -]?coon', 'burmese', 'siamese', 'chartreux', 'german[ -]?rex', 'turkish[ -]?van', 'russian[ -]?blue', 'norwegian[ -]?forest[ -]?(cat)?', '(exotic|domestic|british|oriental|american|shaded)[ -]?shorthair',
+                    // BIG:
+        'lion.*', 'tiger.*', 'tige?ress', 'tigre', 'panther.*', 'panthe?ress', 'leopard(ess)?', 'jaguar', 'cheetah', 'lynx', 'puma', 'cougar', 'ocelot', 'serval', 'lombax', 'liger', 'tigon', 'catamount', 'sab(re?|er)[ -]?tooth',
+                    // Unsorted:
+        'korat', 'ragdoll', 'ocicat', 'ragamuffin', 'burmilla', 'tetton', 'caracal', 'tabaxi', 'kodkod', 'karotanta', 'nekomata', 'trianii', 'caitian', 'mytharii', 'charr', 'kater', 'jinko',
+                    /// Anthro:
+        'thunderian', 'khajiit',
+        'cat[ -]?person',       // 'Catgirl/catboy' goes in the 'humanLikeNekoSpecies'
+        'catkin', 'catfolk',    // group due to its common use as 'nekomimi' synonym.
+                    // Catch all:
+        gen('(lion|tiger)'),
+        ...kemomimi_feline,
+        '🐅', '🐆', '🐯', '🦁', '🐈',
+    ],
 
-    [Species.MarineMammal]: ['whale', 'dolphin', 'orca', '🐬', 'killer[ -]?whale'],
+    [Species.Vulpine]: [
+                    // Generic:
+        'fox', 'vixen', 'vulpine', 'fox.*', 'vulpes',
+                    // Species:
+        'fennec', 'kitsune.*', 'kistune', 'nogitsune', 'yako', 'silver[ -]?fox', 'arctic[ -]?fox', 'fennec[ -]?fox', 'red[ -]?fox', 'cape[ -]?fox', 'fire[ -]?fox', 'faw(x|ks)',
+                    // Anthro:
+        'vulpera', 'vulpkanin', '[gk]umiho',
+                    // Catch all:
+        gen('fox'),
+        ...kemomimi_vulpine,
+        '🦊',
+    ],
 
-    [Species.Marsupial]: ['kangaroo', 'opossum', 'koala', 'wombat', 'possum', 'roo([ -]kin)?', 'bandicoot', 'bilby', 'numbat', 'wallaby',
-        'thylacine', 'marsupial[ -]?wolf', 'tasmanian[ -]?tiger', 'quokka', 'glider', 'cuscus', 'marsupial', 'tasmanian[ -]?devil', 'musky[ -]?rat',
-        'bettong', 'k[äa]nguru', '🦘', '🐨'],
+    [Species.Dragon]: [
+                    // Dragons
+        'drgn', 'do?ragon.*', 'sea[ -]?dragon', 'night[ -]?fury',
+                    // Dragon-like:
+        '.*wyvern', 'half[ -]dragon', '.*felkin', 'longma', 'glavenus', 'zinogre', 'anjanath',
+                    // Anthro:
+        '.*dra(k|ch)e', 'draconic', 'draconis', 'dragovian', 'draconian', 'wyverian',
+                    // Catch all:
+        gen('dragon'),
+        ...kemomimi_dragon,
+        '🐉',
+    ],
 
-    [Species.Mephitidae]: ['skunk', '🦨', 'stink[ -]?badger'],
+    [Species.Reptile]: [
+                    // Generic:
+        'reptile', 'lizard', 'snake', 'croc(odile)?', 'all?igator', 'gator', 'chameleon', 'anole', 'snake.*', '.*turtle', '.*tortoise', 'serp[ea]a?nt(ine)?',
+                    // Nicknames:
+        'nope[ -]?rope',
+                    // Species:
+        'gecko', 'skink', 'cobra', 'anaconda', 'python', 'viper', 'boa', 'taipan', 'titanoboa',
+                    // Fantasy:
+        'ludroth',
+                    // Anthro:  // Aren't a lot of these naga/lamia?
+        'scale[ -]?born', 'scaly', 'argonian', 'reptilian', 'crocodilian', 'saxhleel', 'yuan[ -]?ti',
+                    // ???:
+        'zvarr',
+                    // Catch all:
+        gen('(lizard|snake|croc)'),
+        '🐍',
+    ],
 
-    [Species.Musteline]: ['otter', 'ferret', 'mink', 'weasel', 'stoat', 'wolverine', 'marten', 'musteline', 'badger',
-        'ottsel', gen('(otter|ferret|weasel)'), '🦡', '🦦'],
+    /**
+     * Almost all pokémon fit into another category - ie, Vulpix, Ninetails into vulpes, etc...
+     * But we put them here because many people explicitly desire or lack desire.
+     * 
+     * Let's try not to add every pokémon, only the ones people actually use.
+     * Additionally, it may be nice to add common misspellings: [sz], [ck], [ea], [oa], etc.
+     */
+    [Species.Pokemon]: [
+                    // Generic:
+        'pok[ée]mon', 'pok[ée]morph', 'alolan.*',
+                    // Species:
+        'eevee', 'jolteon', 'glaceon', 'vaporeon', 'flareon', 'umbreon', 'sylveon', 'leafeon',
+        'pikachu', 'raichu',
+        'poochyena', 'mightyena',
+        'vulpix', 'ninetales', 'ninetails',
+        'nidoran', 'nidorin[ao]', 'nido(que[ea]n|king)',
+        'growlithe?', 'arcanine', 'furfrou', 'houndour',
+        'sneasel', 'weavile',
+        'mudsdale', 'rapidash', 'zebstrika',
+        'salamence', 'goodra', 'garchomp',
+        'gengar', 'chandelur(e|ia)', 'gothitelle', 'mismagius',
+        'delcatty', 'meowstick?', 'purrloin',
+                    // Unsorted:
+        'buizel', 'absol', 'aggron', 'scyther', 'rattata', 'toxtricity', 'audino', 'sandslash', 'luxray', 'kecleon', 'quagsire', 'zigzagoon', 'joltik', 'hypnomade', 'zeraora', 'cinccino', 'salazzle', 'zubat', 'komala', 'zangoose', 'flygon', 'pansear', 'bibarel', 'lapras', 'hatteren[ea]',
+                    // Starters:
+        'charmander', 'charmeleon', 'charizard',
+        '(osha|de)wott', 'samurott?',
+        'cinderace', 'litten', 'blaziken', 'quilava',
+        'croconaw', 'mudkip', 'greninja',
+        'decidueye', 'sceptile',
+                    // Legendary & Mythic:
+        'mew', 'mewtwo',
+        'zacian', 'dialga', 'lugia', 'groudon', 'shaymin', 'lati[ao]s', 'reshiram', 'marshadow',
+                    // "Furry":
+        'lopunny',
+        'riolu', 'lucario',
+        'rockruff', 'lycanro[ck]k?',
+        'zorua', 'zoroark',
+        'fennekin', 'braixen', 'delphox',
+        'kirlia', 'gardev(oi|io)r',
+                    // digimon
+        'digimon', 'renamon', 'gatomon', 'impmon', 'guilmon',
+    ],
 
-    [Species.Pinniped]: ['seal', 'walrus', 'fur seal', 'sea[ -]?lion'],
+    [Species.Amphibian]: [
+                    // Generic:
+        'amphibian', 'frog', 'toad',
+                    // Species:
+        'salamander', 'newt', 'axolotl',
+    ],
 
-    [Species.Primate]: ['gorilla', 'monkey', 'ape', 'chimp', 'lemur', 'bonobo', 'chimpanzee', 'silverback', 'primate',
-        '🐒', '🦍', '🦧'],
+    [Species.Avian]: [
+                    // Generic:
+        'bird',
+                    // Species:
+        'albatross', 'raven', 'cardinal', 'cockatiel', 'crow', 'meadow[ -]?lark', 'peacock', 'dove', 'eagle', 'owl', 'penguin', 'cockatoo', 'shoebill', 'parrot', 'duck', 'swallow', 'nightingale', 'toucan', 'emu', 'ostrich', 'flamingo', '(pink|blue|brown|green|canada)[ -]?jay', 'blauh[äa]her', 'jaybird', 'chicken', 'rooster', 'maran', 'pidgeon', 'secretary[ -?]bird',
+                    // Fantasy:
+        'gr[iy](ff|ph)[io]n', 'ph(oe|eo)nix', 'roc', 'chimera', 'chocobo',
+                    // Anthro:
+        'avian', 'avarr?ian', 'rito',
+                    // Catch all:
+        gen('(bird|raven)'),
+        ...kemomimi_avian,
+        '🦚', '🦃', '🦢', '🦆', '🦅', '🦉', '🦜', '🦩',
+    ],
 
-    [Species.Procyon]: ['raccoon', 'coatimund', 'longtail', 'procyon', 'tanuki', '🦝', 'racoon',
-        'ring[ -]?tail(ed)?'],
+    [Species.Bat]: [
+        'bat', 'foxbat', 'flying[ -]?fox', 'pteropus',
+                    // Anthro:
+        'nimbat',
+                    // Catch all:
+        ...kemomimi_bat,
+        '🦇',
+    ],
 
-    [Species.Rhinoceros]: ['rhino', 'rhinoceros', '🦏', '.*rhino'],
+    [Species.Bovine]: [
+                    // Generic:
+        'bovine', 'bull', 'cow', 'cattle', 'moo', 'caprin[a]?e',
+                    // Species:
+        'bison', 'antelope', 'gazelle', 'oryx', 'buffalo', 'black[ -]?angus', 'ox', 'holstaur', 'goat[ -]?antelope', 'muskox', 'urial', 'mouflon', 'taurine', 'aurochs', 'bos', 'bos taurus', 'taur[u|o]s',
+                    // Anthro:
+        'hucow',
+                    // Catch all:
+        ...kemomimi_bovine,
+        '🐃', '🐂', '🐄',
+    ],
 
-    [Species.Rodent]: ['rat', 'mouse', 'chipmunk', 'squirrel', 'hamster', 'rodent', 'maus', 'gerbil', 'mousie', 'muskrat', 'ratsin',
-        'skaven', 'roedor', 'jerboa', 'burmecian', 'porcupine', 'squirril',
+    [Species.Caprinae]: [
+                    // Generic:
+        'sheep(y|ie)?', 'goat', 'lamb', 'ram', 'goat.*',
+                    // Species:
+        'ibex', 'takin', 'bharal', 'goral', 'serow',
+                    // Anthro:
+        'faun',  'faunus',
+                    // Catch all:
+        gen('(sheep|goat|ram|lamb)'),
+        ...kemomimi_caprine,
+        '🐏', '🐑', '🐐',
+    ],
+
+    [Species.Camielidae]: [
+                    // Species:
+        'camel', 'llama', 'alpaca', 'guanaco', 'dromedary', 'dromedar',
+                    // Catch all:
+        '🦙', '🐪', '🐫',
+    ],
+
+    [Species.Cervine]: [
+                    // Generic:
+        'cervid', 'cervine',
+        'deer', 'doe', 'fawn', 'stag',
+                    // Species:
+        'elk', 'moose', 'caribou', 'reindeer',
+                    // Catch all:
+        ...kemomimi_cervine,
+        gen('(deer|doe)'),
+    ],
+
+    [Species.Dinosaur]: [
+                    // Generic:
+        'dinosaur', 'raptor', 'dino',
+                    // Species:
+        't[ -]?rex', 'pterodactyl', 'deinonychus', 'tyrannosaur(us)?',
+                    // Anthro:
+        'death[ -]?claw', 'saurian',
+                    // Catch all:
+        '\\w*[ -]?saur(us)?', '\\w*[ -]?raptor',
+        '🦖', '🦕',
+    ],
+
+    [Species.Erinaceidae]: [
+                    // Species:
+        'hedgehog', 'gymnure', 'moonrat',
+                    // Catch all:
+        '🦔',
+    ],
+
+    [Species.Elephantidae]: [
+                    // Species:
+        'elephant', 'mammoth', 'mastodon', 'pachyderm',
+                    // Anthro:
+        'tusker',
+                    // Catch all:
+        '🐘',
+    ],
+
+    [Species.Fish]: [
+                    // General:
+        'aquatic',
+                    // Fish:
+        '.*fish', 'salmon', 'eel',
+                    // Sharks:
+        'shark', 'great white', 'melanopterus', 'carcharhinus', '\\w+[ -]?shark', 'mako',
+                    // Anthro:
+        'sergal',
+                    // Catch all:
+        gen('(shark|fish)'),
+        '🦈', '🐟', '🐠', '🐡',
+    ],
+
+    [Species.Giraffe]: [
+        'giraffe', 'okapi', '[gk]ira(ff|hv)[ei]?',
+                    // Catch all:
+        ...kemomimi_giraffe,
+        '🦒',
+    ],
+    [Species.Herpestidae]: [
+        'mongoose', 'meerkat', 'kusimanse', 'suricate',
+    ],
+    [Species.Hippopotamidae]: [
+        'hippo', 'hippopotamus',
+                    // Catch all:
+        '🦛',
+    ],
+    [Species.Hyaenidae]: [
+        'hyena', 'aardwolf', 'hyaena', 'yeen',
+                    // Catch all:
+        gen('hyena'),
+    ],
+
+    [Species.Hybrid]: [
+                    // Generic:
+        '.*hybrid.*',
+                    // Specific:
+        'cabbit', 'fabbit', 'catmonkey', 'laquine', 'folf', 'tolf', 'foxcoon', 'drazelle', 'batpon', 'unifox', 'rooram', 'catbat', 'bunfox',
+                    // Other:
+        'myox', 'wolger', 'silkie', 'yumar',
+    ],
+
+    [Species.Insect]: [
+                    // Bugs:
+        'bug', 'bee', 'wasp', 'ant', 'insect', 'buggo', 'hornet', 'vespidae', 'mantis', 'ladybug', 'moth', 'bumblebee', 'tolype',
+                    // Catch all:
+        gen('(bee|bug|ant)'),
+                    // Sexy Bugs:
+        'tarantula', 'arachnida?', 'spider', 'scorpion',
+                    // Catch all:
+        gen('spider'),
+        ...kemomimi_bug,
+        '🕷', '🐛', '🐜', '🐝', '🪲', '🐞', '🪳', '🦟',
+    ],
+
+    [Species.Lapine]: [
+                    // Rabbits:
+        'lagomorph', 'lapine', 'leporid(ae|s)?',
+        'bunny', 'rabbit', 'hare', '.*bunny',
+                    // Species:
+        'cottontail', 'jack[ -]?rabbit', 'jackalope',
+                    // Nicknames:
+        'bun(bun)?', 'lop', 'wabbit', 'rabbet',
+        'häschen', 'broodal', 'kanin(chen)?',
+                    // Catch all:
+        gen('(bun(ny)?|rabbit|lop)'),
+        ...kemomimi_lapine,
+        '🐇',
+    ],
+
+    [Species.MarineMammal]: [
+        'whale', 'dolphin', 'orca', 'killer[ -]?whale',
+                    // Catch all:
+        '🐬',
+    ],
+
+    [Species.Marsupial]: [
+                    // Generic:
+        'marsupial',
+                    // Species:
+        'kangaroo', 'opossum', 'koala', 'wombat', 'possum', 'bandicoot', 'bilby', 'numbat', 'wallaby', 'thylacine', 'marsupial[ -]?(tiger|wolf|devil)', 'tasmanian[ -]?(tiger|wolf|devil)', 'quokka', 'glider', 'cuscus',  'musky[ -]?rat([ -]?kangaroo)?', 'rat[ -]?kangaroo', 'bettong', 'k[äa]nguru',
+                    // Anthro:
+        'roo([ -]kin)?', 'poss',
+                    // Catch all:
+        '🦘', '🐨',
+    ],
+
+    [Species.Mephitidae]: [
+                    // General:
+        'skunk',
+                    // Nicknames:
+        'stunk', 'stink[ -]?badger',
+                    // Catch all:
+        '🦨',
+    ],
+
+    [Species.Musteline]: [
+                    // Species:
+        'otter', 'ferret', 'mink', 'weasel', 'stoat', 'wolverine', 'marten', 'musteline', 'badger',
+                    // Anthro:
+        'ottsel',
+                    // Catch all:
+        gen('(otter|ferret|weasel)'),
+        ...kemomimi_musteli,
+        '🦡', '🦦',
+    ],
+
+    [Species.Pinniped]: [
+                    // Species:
+        'seal', 'walrus', 'sea[ -]?lion', 'fur seal',
+                    // Anthro:
+        'tuskar',
+                    // Catch all:
+        '🦭',
+    ],
+
+    [Species.Primate]: [
+                    // Species:
+        'gorilla', 'monkey', 'ape', 'chimp', 'lemur', 'bonobo', 'chimpanzee', 'silverback', 'primate',
+                    // Anthro:
+        // saiyan?
+                    // Catch all:
+        ...kemomimi_primate,
+        '🐒', '🦍', '🦧',
+    ],
+
+    [Species.Procyon]: [
+                    // Generic:
+        'procyon',
+                    // Species:
+        'racc?oon', 'coatimund', 'longtail', 'tanuki', 'ring[ -]?tail(ed)?',
+                    // Catch all:
+        ...kemomimi_procyon,
+        '🦝',
+    ],
+
+    [Species.Rhinoceros]: [
+                    // Generic:
+        'rhino', '.*[ -]rhino', 'rhinocer[ou]s',
+                    // Catch all:
+        '🦏',
+    ],
+
+    [Species.Rodent]: [
+                    // Generic:
+        'rodent', 'roedor',
+                    // Species:
+        'muskrat', 'chipmunk', 'squirr(e|i)l', 'hamster', 'gerbil', 'jerboa', 'burmecian', 'porcupine', 'chinchilla',
+                    // mowz
+        'mau[sz]', 'mow[sz]', 'mou[sz]i?ey?',
+                    // rat
+        'rat', 'ratsin', 'skaven',
+                    // Catch all:
         gen('(rat|mousi?ey?|maus|squirrel)'),
-        '🐀', '🐁', '🐿'],
+        ...kemomimi_rodent,
+        '🐀', '🐁', '🐿',
+    ],
 
-    [Species.Suidae]: ['pig', 'boar', 'warthog', 'bushpig', 'babirusa', 'sow', 'swine', 'suid', 'suine', 'piglet', 'hog',
-        'piggie', 'piggy', 'quilboar', 'porcine', 'porcid', '🐗', '🐖'],
+    [Species.Suidae]: [
+                    // Generic:
+        'pig', 'sow', 'swine', 'porci(d|ne)', 'sui(d|ne)',
+                    // Species:
+        'warthog', 'bushpig', 'babirusa', 'boar', 'hog',
+                    // Nicnkames:
+        'pigg(y|ie)', 'piglet',
+                    // Anthro:
+        'quilboar', 'piglin', '(h|z)oglin',
+                    // Catch all:
+        gen('(boar|hog|pig)'),
+        ...kemomimi_suidae,
+        '🐗', '🐖',
+    ],
 
-    [Species.Ursine]: ['bear', 'panda', 'grizzly', 'black[ -]?bear', 'brown[ -]?bear', 'polar[ -]?bear', 'ursine', 'pandaren', 'ursus',
-        ],
+    [Species.Ursine]: [
+                    // Generic:
+        'bear', 'ursine', 'ursus',
+                    // Species:
+        'grizzly', 'black[ -]?bear', 'brown[ -]?bear', 'polar[ -]?bear',
+                    // Pandas:
+        'pandaren', 'panda',
+                    // Catch all:
+        ...kemomimi_ursine,
+        '🐼',
+    ],
 
-    // pangolin doesn't fit here
-    [Species.Xenarthra]: ['armadillo', 'anteater', 'sloth', 'glyptodont', 'a(rm|mr)ad[iy]ll?o', 'sloth', 'ant[ -]?eater', 'pangoo?lin'],
+    [Species.Xenarthra]: [
+                    // Species:
+        'armadillo', 'ant[ -]?eater', 'sloth', 'glyptodont', 'a(rm|mr)ad[iy]ll?o',
+                    // Other:
+        'pangoo?lin', // Not Xenarthra but close enough
+                    // Catch all:
+        '🦥',
+    ],
 
-    [Species.Demon]: ['demon', 'devil', 'succubus', 'incubus', 'daemon', 'deamon', 'demoness', 'baphomet', 'eredar',
-        'tengu', gen('(devil|demon)'), 'd[a]?emonette', 'cambion', 'amanojaku', 'tanar[\']?ri', 'balor', 'marilith', 'lilith', '.*demon',
-        'd[äa]mon([ie]n)?.*', 'ifrit', 'efree?t', 'afa?rit', 'demonic'],
+    [Species.Demon]: [
+                    // Generic:
+        'd[äa]?emon(ette?|ess|ic)?', 'deamon', 'devil', '.*da?emon', 'd[äa]mon([ie]n)?.*', 'oni', 'y[oō]u?kai', 'shinigami',
+                    // Sexy demons:
+        'incubus', 'succubus', 'lilith', 'eredar', 'cambion',
+                    // Monsters:
+        'tengu', 'amanojaku', 'tanar[\']?ri', 'balor', 'maril(e|i)th', 'baphomet', '(a|e|i)fr(i|ee)t', 'tikbalang', 'gremlin',
+                    // Catch all:
+        gen('(devil|demon)'),
+    ],
 
-    [Species.Divinity]: ['god', 'goddess', 'divinity', 'demi[ -]?god', 'demi[ -]?goddess', 'angel', 'neph[ai]l[ei]m', 'arch[ -]?angel', 'seraph([ie]m)?', 'ophan([ie]m)?', 'cherub(im)?'],
+    [Species.Divinity]: [
+        'god', 'god .*', 'goddess', 'goddess .*', '.*diety', 'diety.*',
+        'divinity', 'demi[ -]?god(dess)?',
+        'ainur?', 'valar?', 'neph[ai]l[ei]m',
+        'angel', 'arch[ -]?angel', 'seraph([ie]m)?', 'ophan([ie]m)?', 'cherub(im)?',
+    ],
 
-    [Species.Fae]: ['fairy', 'fae', 'imp', 'elemental', 'fey', 'pixie', 'nymph', 'faerie'],
+    [Species.Fae]: [
+        'fairy', 'fae', 'fey', 'pixie', 'nymph', 'faerie',
+        'imp', 'elemental',
+    ],
 
-    [Species.Humanoid]: ['satyr', 'gnome', 'dwarf', 'halfling', 'havlin', 't[h]?(ie|ei)fling', 'dwarves', 'humanoid', 'yordle', 'hylian', 'lalafell',
-        'zwerg', 'draph', 'dryad', 'homunculus', 'githyanki', 'tiefling', 'aasimar'],
+    [Species.Humanoid]: [
+        'humanoid', 'hylian',
+                    // Gnomes!!!
+        'dwarf', 'dwarves', 'gnome', 'halfling', 'havlin', 'hobb?it', 'homunculus', 'lalafell', 'yordle',
+        'draph', 'dryad', 'gith(yanki)?', 'satyr', 't[h]?(ie|ei)fling',
+                    // ???
+        'zwerg', 'aasimar', 'maiar?', 'dullahan', 'dr[ae][ae]n[ae]i'
+    ],
 
-    [Species.Minotaur]: ['minotaur', 'tauren', 'minotaurus', 'm[iy]n[ao]t(uo|ou|o|u)ru?s?', 'minotaure'],
+    [Species.Minotaur]: [
+        'tauren', 'm[iy]n[ao]t(au|uo|ou|o|u)r.*',
+    ],
 
-    [Species.Monster]: ['gnoll', 'goblin', 'kobold', 'monster', 'troll', 'illithid', 'golem', 'basilisk', 'oni', 'kaiju', 'mimic',
-        'hippogriff', 'hippogryph', 'manticore', 'harpy', 'gargoyle', 'ghost', 'eldritch', 'tentacle', 'youkai', 'ogre', 'skeleton',
-        'ghoul', 'vrykolakas', 'godzilla', 'bugbear', 'gnobold', 'undead', 'lich', 'siren', 'mermaid', 'slime', 'goo',
-        'y[oō]kai', 'shinigami', 'bunyip', 'giant', 'giantess', 'bokoblin', 'kirin', 'qilin', 'olog[ -]?hai', 'owlbear'],
+    [Species.Monster]: [
+                    // Humanoid:
+        'gnoll', 'goblin', '(gn|k)obold', 'troll', 'giant(ess)?', 'golem', 'gargoyle', 'harpy', 'ogre', 'siren', 'mermaid', 'bokoblin',
+                    // Animalistic:
+        'basilisk', 'hippogr[iy](ff|ph)', 'manticore', 'behemoth', 'owlbear', 'kirin', 'bunyip', 'qilin',
+                    // Monstrous:
+        'monster', 'kaiju', 'godzilla', 'bugbear', 'olog[ -]?hai',
+                    // Strange:
+        'mimic', 'eldritch', 'tentacle', 'slime', 'goo', 'illithid',
+                    // Death:
+        'undead', 'lich', 'ghost', 'skeleton', 'ghoul',
+    ],
 
-    [Species.Naga]: ['naga', 'lamia'],
-    [Species.Taur]: ['centaur', 'chakat', 'equitaur', 'felitaur', 'weretaur', 'humantaur', 'cowtaur', '.*taur', 'cervitaur'],
-    [Species.Orc]: ['orc', 'uruk-hai', 'snaga', 'uruk[ -]?hai', 'ork', 'orcess', gen('orc')],
-    [Species.Vampire]: ['vampire', 'nosferatu', 'daywalker', 'd[h]?amp[h]?ir', 'vampyre', 'vampiric', 'vampir'],
+    [Species.Naga]: [
+        'naga', 'lamia',
+    ],
 
-    [Species.Were]: ['werewolf', 'lycan', 'werelion', 'weretiger', 'werebear', 'werecoyote', 'werehog', 'were[ -]?wolf', 'were[ -]?lion',
-        'were[ -]?bear', 'were[ -]?coyote', 'were[ -]?hog', 'lycant[h]?rop[h]?[ey]?', 'loup[ -]?garou[sx]?',
-        'were[ -]?squirrel', 'were[ -]?donkey', 'were[ -]?rat', 'were[ -]?beast'],
+    [Species.Taur]: [
+        'centaur', 'equitaur', 'felitaur', 'weretaur', 'humantaur', 'cowtaur', 'cervitaur',
+        'chakat', '.*taur',
+    ],
 
-    [Species.Alien]: ['krogan', 'xenomorph', 'quarian', 'turian', 'asari', 'togruta', 'otolla', 'gungan', 'chiss', 'alien', 'puazi',
-        'hutt', 'klyntar', 'twi\'?lek', 'sangheili', 'salarian', 't[\']?vaoan', 'yautja', 'zabrak'],
+    [Species.Orc]: [
+        'orc', 'orcess', 'ork', 'snaga', 'uruk[ -]?hai',
+                    // Catch all:
+        gen('orc'),
+    ],
 
-    [Species.Robot]: ['android', 'cyborg', 'gynoid', 'automaton', 'robot', 'transformer', 'cybertronian', 'reploid', 'synth', 'ai',
-        'realian', 'replicant', 'synthetic'],
+    [Species.Vampire]: [
+        'vampir', 'vampire','vampiric', 'vampyre',
+        'daywalker',
+        'd[h]?amp[h]?ir', 'nosferatu', 'vrykolakas',
+    ],
 
-    [Species.Hub]: ['hub', 'varies', 'various', 'variable', 'many', 'flexible', 'any', 'partner preference']
+    [Species.Were]: [
+        'lycan', 'lycant[h]?rop[h]?[ey]?', 'were[ -]?.+',
+        'were[ -]?wolf', 'were[ -]?coyote',
+        'were[ -]?lion', 'were[ -]?tiger',
+        'were[ -]?bear', 'were[ -]?hog', 'were[ -]?squirrel', 'were[ -]?donkey', 'were[ -]?rat',
+        'were[ -]?beast',
+        'loup[ -]?garou[sx]?',
+    ],
+
+    [Species.Alien]: [
+                    // Generic:
+        'alien', 'xenomorph', 'changeling',
+                    // Species:
+        'krogan', 'quarian', 'turian', 'asari', 'togruta', 'otolla', 'gungan', 'chiss', 'puazi', 'hutt', 'klyntar', 'twi\'?lek', 'sangheili', 'salarian', 't\'?vaoan', 'yautja', 'zabrak',
+    ],
+
+    [Species.Robot]: [
+                    // Hard robots:
+        'android', 'cyborg', 'gynoid', 'automaton', 'robot',
+                    // Fake humans:
+        'realian', 'replicant', 'reploid', 'synthetic', 'synth',
+                    // Cool people:
+        'transformer', 'cybertronian',
+                    // Jobthieves:
+        'ai',
+    ],
+
+    [Species.Hub]: [
+                    // Multiple:
+        'hub', 'many',
+                    // Any:
+        'any', 'partner preference',
+                    // Malleable:
+        'flexible', 'varies', 'various', 'variable',
+    ]
 };
 
 
@@ -839,4 +1224,3 @@ export interface KinkBucketScore {
 export interface MatchResultKinkScores {
     [key: string]: KinkBucketScore;
 }
-
