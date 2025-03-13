@@ -16,3 +16,4 @@ node_modules/
 test.ts
 /electron/test.js
 
+.vscode/settings.json
