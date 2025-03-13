@@ -160,6 +160,7 @@ export class CharacterAnalysis {
     readonly isAnthro: boolean | null;
     readonly isHuman: boolean | null;
     readonly isMammal: boolean | null;
+    readonly tiltHuman: boolean;
 
     constructor(c: Character) {
         this.character = c;
@@ -178,6 +179,7 @@ export class CharacterAnalysis {
         this.isAnthro = Matcher.isAnthro(c);
         this.isHuman = Matcher.isHuman(c);
         this.isMammal = Matcher.isMammal(c);
+        this.tiltHuman = Matcher.tiltHuman(c);
     }
 }
 
@@ -546,6 +548,15 @@ export class Matcher {
         }
 
         if (theirAnalysis.isAnthro) {
+            const theyreKemomimiWhoPreferToBeHuman = theirAnalysis.isHuman && theirAnalysis.tiltHuman;
+
+            if (theyreKemomimiWhoPreferToBeHuman) {
+                const humanScore = Matcher.getKinkSpeciesPreference(you, Species.Human);
+
+                if (humanScore !== null)
+                    return Matcher.formatKinkScore(humanScore, 'kemomimi');
+            }
+
             const anthroScore = Matcher.getKinkPreference(you, Kink.AnthroCharacters);
 
             if (anthroScore !== null)
@@ -561,7 +572,6 @@ export class Matcher {
 
         return new Score(Scoring.NEUTRAL);
     }
-
 
     formatScoring(score: Scoring, description: string): Score {
         let type = '';
@@ -587,10 +597,56 @@ export class Matcher {
         return new Score(score, `${type} <span>${description}</span>`);
     }
 
+    // A weapon to surpass Metal Gear......
+    // Don't use this to do anything important, only to format messages.
+    static furryHaterRating(c: Character): Scoring {
+        let furryHaterRating: number = 0;
+
+        const youAreHuman = Matcher.isHuman(c)  ?  1 : 0;
+        const youAreFurry = Matcher.isAnthro(c) ? -1 : 0;
+
+        furryHaterRating += youAreHuman;
+        furryHaterRating += youAreFurry;
+
+        const humanEnjoyment    = Matcher.getKinkSpeciesPreference(c, Species.Human)    || 0;
+        const humanoidEnjoyment = Matcher.getKinkSpeciesPreference(c, Species.Humanoid) || 0;
+        const furryEnjoyment    = Matcher.getKinkSpeciesPreference(c, Species.Anthro)   || 0;
+
+        furryHaterRating += humanEnjoyment;
+        furryHaterRating -= humanoidEnjoyment;
+        furryHaterRating -= furryEnjoyment;
+
+        // Max: 4, Min: -4.
+        // Normalize to the -1 to 1 scale kink scoring uses.
+
+        if (Matcher.isAnthro(c))
+            furryHaterRating *= -1;
+
+        if (furryHaterRating > 2) // 2.5, 3, 3.5, 4
+            return Scoring.MATCH;
+
+        if (furryHaterRating > 0) // 0.5, 1, 1.5, 2
+            return Scoring.WEAK_MATCH;
+
+        return Scoring.NEUTRAL;
+    }
+
     private resolveFurryPairingsScore(): Score {
         const you = this.you;
+        const theyAreHuman  = this.theirAnalysis.isHuman;
         const theyAreAnthro = this.theirAnalysis.isAnthro;
-        const theyAreHuman = this.theirAnalysis.isHuman;
+
+        if (theyAreHuman && theyAreAnthro) {
+            const antiFurriness  = Matcher.furryHaterRating(you);
+            const callThemAHuman = this.theirAnalysis.tiltHuman;
+
+            log.debug('matcher.resolve.furrypairing.score', { FurryHaterRating: antiFurriness, CallThemHuman: callThemAHuman })
+
+            if (callThemAHuman)
+                return this.formatScoring(antiFurriness, 'human-like pairings')
+
+            return this.formatScoring(antiFurriness, 'kemomimi pairings');
+        }
 
         const score = theyAreAnthro
             ? Matcher.furryLikeabilityScore(you)
@@ -1149,6 +1205,29 @@ export class Matcher {
         return (speciesId === Species.Human);
     }
 
+    // You are what you eat.
+    static tiltHuman(c: Character): boolean {
+        const preference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
+
+        // log.debug('matcher.tilthuman', { character: c.name, pref: preference });
+
+        if (preference === FurryPreference.HumansOnly
+         || preference === FurryPreference.HumansPreferredFurriesOk)
+            return true;
+
+        const h = Matcher.getKinkSpeciesPreference(c, Species.Human);
+        const f = Matcher.getKinkSpeciesPreference(c, Species.Anthro);
+        const lovesHumans  = h === KinkPreference.Favorite;
+        const hatesHumans  = h === KinkPreference.No;
+        const loveFurries  = f === KinkPreference.Favorite;
+        const hatesFurries = f === KinkPreference.No;
+
+        if ((hatesFurries && !hatesHumans) || (lovesHumans && !loveFurries))
+            return true;
+
+        return false;
+    }
+
     static species(c: Character): Species | null {
         const mySpecies = Matcher.getTagValue(TagId.Species, c);
 
@@ -1156,11 +1235,12 @@ export class Matcher {
             return Species.Human; // best guess
         }
 
-        const s = Matcher.getMappedSpecies(mySpecies.string);
+        const identifyAsHuman = Matcher.tiltHuman(c);
 
-        if (!s) {
+        const s = Matcher.getMappedSpecies(mySpecies.string, identifyAsHuman);
+
+        if (!s)
             log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });
-        }
 
         return s;
     }
@@ -1210,19 +1290,25 @@ export class Matcher {
         return foundSpeciesId;
     }
 
-    static getMappedSpecies(species: string): Species | null {
-        if (!Matcher.speciesMappingCache) {
+    static getMappedSpecies(species: string, tiltHuman: boolean = false): Species | null {
+        if (!Matcher.speciesMappingCache)
             Matcher.speciesMappingCache = Matcher.generateSpeciesMappingCache(speciesMapping);
-        }
 
-        if (!Matcher.likelyHumanCache) {
+        if (!Matcher.likelyHumanCache)
             Matcher.likelyHumanCache = Matcher.generateSpeciesMappingCache(likelyHuman);
-        }
 
-        return Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache)
-            || Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache, true)
-            || Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache)
-            || Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache, true);
+        const mappedSpecies = Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache)
+                           || Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache, true);
+
+        const maybeHuman    = Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache)
+                           || Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache, true);
+
+        // log.debug('matcher.getMappedSpecies', { mappedspecies: mappedSpecies, maybehuman: maybeHuman });
+
+        if (maybeHuman && tiltHuman)
+            return maybeHuman;
+
+        return mappedSpecies || maybeHuman;
     }
 
     static getAllSpecies(c: Character): Species[] {
