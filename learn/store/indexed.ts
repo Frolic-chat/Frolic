@@ -103,7 +103,7 @@ export class IndexedStore implements PermanentIndexedStore {
 
         // fix to clean out extra customs that somehow sometimes appear:
         if (_.isArray(c.character.customs) || !_.isPlainObject(c.character.customs)) {
-            log.debug('character.customs.strange.indexed.prepareProfileData', {name: c.character.name, c, customs: c.character.customs});
+            // log.debug('character.customs.strange.indexed.prepareProfileData', {name: c.character.name, c, customs: c.character.customs});
             c.character.customs = {};
         }
 
@@ -264,4 +264,3 @@ export class IndexedStore implements PermanentIndexedStore {
         );
     }
 }
-
