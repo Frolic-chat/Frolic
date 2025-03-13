@@ -159,7 +159,13 @@ export class CharacterAnalysis {
 
     readonly isAnthro: boolean;
     readonly isHuman: boolean;
+    readonly isKemonomimi: boolean;
     readonly isMammal: boolean;
+
+    /**
+     * Used by anthro characters to coerce "likely human" into "human" for catgirls and other kemomimi. This way, they're labeled as both human and furry.
+     * @type {boolean}
+     */
     readonly tiltHuman: boolean;
 
     constructor(c: Character) {
@@ -177,7 +183,8 @@ export class CharacterAnalysis {
         this.age = Matcher.age(c);
 
         this.isAnthro = Matcher.isAnthro(c);
-        this.isHuman = Matcher.isHuman(c);
+        this.isHuman = Matcher.isHuman(c, this.isAnthro);
+        this.isKemonomimi = Matcher.isKemonomimi(c);
         this.isMammal = Matcher.isMammal(c);
         this.tiltHuman = Matcher.tiltHuman(c);
     }
@@ -546,16 +553,23 @@ export class Matcher {
             return Matcher.formatKinkScore(speciesScore, speciesName);
         }
 
+        // This block bakes into speciesScore once the mapping is fleshed out.
+        if (theirAnalysis.isKemonomimi) {
+            const nekoScore = Matcher.getKinkPreference(you, Kink.Kemonomimi);
+
+            if (nekoScore !== null)
+                return Matcher.formatKinkScore(nekoScore, 'kemonomimi');
+
+            const humanScore = Matcher.getKinkPreference(you, Kink.Humans);
+
+            // They want to be perceived as human.
+            if (humanScore !== null && theirAnalysis.tiltHuman)
+                return Matcher.formatKinkScore(humanScore, 'kemonomimi');
+
+            // Fall through to test isAnthro, et al.
+        }
+
         if (theirAnalysis.isAnthro) {
-            const theyreKemomimiWhoPreferToBeHuman = theirAnalysis.isHuman && theirAnalysis.tiltHuman;
-
-            if (theyreKemomimiWhoPreferToBeHuman) {
-                const humanScore = Matcher.getKinkSpeciesPreference(you, Species.Human);
-
-                if (humanScore !== null)
-                    return Matcher.formatKinkScore(humanScore, 'kemomimi');
-            }
-
             const anthroScore = Matcher.getKinkPreference(you, Kink.AnthroCharacters);
 
             if (anthroScore !== null)
@@ -596,56 +610,68 @@ export class Matcher {
         return new Score(score, `${type} <span>${description}</span>`);
     }
 
-    // A weapon to surpass Metal Gear......
-    // Don't use this to do anything important, only to format messages.
-    static furryHaterRating(c: Character): Scoring {
-        let furryHaterRating: number = 0;
-
-        const youAreHuman = Matcher.isHuman(c)  ?  1 : 0;
-        const youAreFurry = Matcher.isAnthro(c) ? -1 : 0;
-
-        furryHaterRating += youAreHuman;
-        furryHaterRating += youAreFurry;
-
-        const humanEnjoyment    = Matcher.getKinkSpeciesPreference(c, Species.Human)    || 0;
-        const humanoidEnjoyment = Matcher.getKinkSpeciesPreference(c, Species.Humanoid) || 0;
-        const furryEnjoyment    = Matcher.getKinkSpeciesPreference(c, Species.Anthro)   || 0;
-
-        furryHaterRating += humanEnjoyment;
-        furryHaterRating -= humanoidEnjoyment;
-        furryHaterRating -= furryEnjoyment;
-
-        // Max: 4, Min: -4.
-        // Normalize to the -1 to 1 scale kink scoring uses.
-
-        if (Matcher.isAnthro(c))
-            furryHaterRating *= -1;
-
-        if (furryHaterRating > 2) // 2.5, 3, 3.5, 4
-            return Scoring.MATCH;
-
-        if (furryHaterRating > 0) // 0.5, 1, 1.5, 2
-            return Scoring.WEAK_MATCH;
-
-        return Scoring.NEUTRAL;
-    }
-
     private resolveFurryPairingsScore(): Score {
         const you = this.you;
-        const theyAreHuman  = this.theirAnalysis.isHuman;
-        const theyAreAnthro = this.theirAnalysis.isAnthro;
 
-        if (theyAreHuman && theyAreAnthro) {
-            const antiFurriness  = Matcher.furryHaterRating(you);
-            const callThemAHuman = this.theirAnalysis.tiltHuman;
+        const theyAreKemonomimi = this.theirAnalysis.isKemonomimi;
 
-            log.debug('matcher.resolve.furrypairing.score', { FurryHaterRating: antiFurriness, CallThemHuman: callThemAHuman })
+        if (theyAreKemonomimi) {
+            const nekoPreference = Matcher.getKinkSpeciesPreference(you, Species.Kemonomimi);
 
-            if (callThemAHuman)
-                return this.formatScoring(antiFurriness, 'human-like pairings')
+            if (nekoPreference)
+                return Matcher.formatKinkScore(nekoPreference, 'kemonomimi pairings');
 
-            return this.formatScoring(antiFurriness, 'kemomimi pairings');
+            const amountOfCaring = Matcher.getTagValueList(TagId.FurryPreference, you);
+
+            if (amountOfCaring !== null || amountOfCaring === FurryPreference.FursAndHumans)
+                return new Score(Scoring.MATCH, 'Likes <span>kemonomimi</span> pairings');
+
+            const interpretAsHuman = this.theirAnalysis.tiltHuman;
+
+            // You have no neko preference, average your neutrality and their desire to be seen as human/furry
+            if (interpretAsHuman) {
+                const humanPref  = Matcher.humanLikeabilityScore(you);
+
+                if (humanPref === Scoring.MATCH)
+                    return new Score(Scoring.WEAK_MATCH, 'Prefers <span>human</span> pairings, may like <span>kemonomimi</span>');
+
+                if (humanPref === Scoring.WEAK_MATCH)
+                    return new Score(Scoring.NEUTRAL);
+
+                if (humanPref === Scoring.NEUTRAL)
+                    return new Score(Scoring.NEUTRAL);
+
+                if (humanPref === Scoring.WEAK_MISMATCH)
+                    return new Score(Scoring.NEUTRAL);
+
+                if (humanPref === Scoring.MISMATCH)
+                    return new Score(Scoring.WEAK_MISMATCH, 'Prefers <span>anthro</span> pairings, may like <span>kemonomimi</span>');
+            }
+            else {
+                const anthroPref = Matcher.furryLikeabilityScore(you);
+
+                if (anthroPref === Scoring.MATCH)
+                    return new Score(Scoring.WEAK_MATCH, 'Prefers <span>anthro</span> pairings, may like <span>kemonomimi</span>');
+
+                if (anthroPref === Scoring.WEAK_MATCH)
+                    return new Score(Scoring.NEUTRAL);
+
+                if (anthroPref === Scoring.NEUTRAL)
+                    return new Score(Scoring.NEUTRAL);
+
+                if (anthroPref === Scoring.WEAK_MISMATCH)
+                    return new Score(Scoring.NEUTRAL);
+
+                if (anthroPref === Scoring.MISMATCH)
+                    return new Score(Scoring.WEAK_MISMATCH, 'Prefers <span>human</span> pairings, may like <span>kemonomimi</span>');
+            }
+
+
+            return new Score(Scoring.NEUTRAL);
         }
+
+        const theyAreHuman      = this.theirAnalysis.isHuman;
+        const theyAreAnthro     = this.theirAnalysis.isAnthro;
 
         const score = theyAreAnthro
                         ? Matcher.furryLikeabilityScore(you)
@@ -1197,13 +1223,13 @@ export class Matcher {
         return (nonAnthroSpecies.indexOf(speciesId) < 0);
     }
 
-    static isHuman(c: Character): boolean {
+    static isHuman(c: Character, tiltHuman: boolean = false): boolean {
         const bodyTypeId = Matcher.getTagValueList(TagId.BodyType, c);
 
         if (bodyTypeId === BodyType.Human)
             return true;
 
-        const speciesId = Matcher.species(c);
+        const speciesId = Matcher.species(c, tiltHuman);
 
         if (!speciesId)
             return false;
@@ -1211,30 +1237,44 @@ export class Matcher {
         return (speciesId === Species.Human);
     }
 
-    // You are what you eat.
+    static isKemonomimi(c: Character): boolean {
+        // Kemonomimi need their own map. .isWhatever probably shouldn't even call .species
+        // Currently, all kemonomimi exist as both human and furry, so check isHuman and isFurry instead.
+        return Matcher.isAnthro(c) && Matcher.isHuman(c, true);
+    }
+
+    /**
+     * Checks for deliberate signs that a character prefers humans over furries.
+     * This can change how your catgirl gets matched against humans or furries.
+     */
     static tiltHuman(c: Character): boolean {
         const preference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
 
         // log.debug('matcher.tilthuman', { character: c.name, pref: preference });
 
+        // You are what you eat.
         if (preference === FurryPreference.HumansOnly
          || preference === FurryPreference.HumansPreferredFurriesOk)
             return true;
 
         const h = Matcher.getKinkSpeciesPreference(c, Species.Human);
         const f = Matcher.getKinkSpeciesPreference(c, Species.Anthro);
-        const lovesHumans  = h === KinkPreference.Favorite;
-        const hatesHumans  = h === KinkPreference.No;
-        const loveFurries  = f === KinkPreference.Favorite;
-        const hatesFurries = f === KinkPreference.No;
+        const likesHumans     = h === KinkPreference.Favorite
+                             || h === KinkPreference.Yes;
+        const dislikesHumans  = h === KinkPreference.Maybe
+                             || h === KinkPreference.No;
+        const likesFurries    = f === KinkPreference.Favorite
+                             || f === KinkPreference.Yes;
+        const dislikesFurries = f === KinkPreference.Maybe
+                             || f === KinkPreference.No;
 
-        if ((hatesFurries && !hatesHumans) || (lovesHumans && !loveFurries))
+        if ((likesHumans && !likesFurries) || (dislikesFurries && !dislikesHumans))
             return true;
 
         return false;
     }
 
-    static species(c: Character): Species | null {
+    static species(c: Character, tiltHuman: boolean = false): Species | null {
         const mySpecies = Matcher.getTagValue(TagId.Species, c);
 
         if (!mySpecies || !mySpecies.string) {
@@ -1247,9 +1287,7 @@ export class Matcher {
             return null;
         }
 
-        const identifyAsHuman = Matcher.tiltHuman(c);
-
-        const s = Matcher.getMappedSpecies(mySpecies.string, identifyAsHuman);
+        const s = Matcher.getMappedSpecies(mySpecies.string, tiltHuman);
 
         if (!s)
             log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });

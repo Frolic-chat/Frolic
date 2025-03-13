@@ -131,6 +131,7 @@ export enum Kink {
 
     AnthroCharacters = 587,
     Humans = 609,
+    Kemonomimi = 516,
 
     Mammals = 224,
 
@@ -361,6 +362,7 @@ export const bodyTypeKinkMapping: BodyTypeKinkIdMap = {
 export enum Species {
     Human = 609,
     Humanoid = 131,
+    Kemonomimi = 516,
     Bovine = 318,
     Equine = 236,
     Feline = 212,
@@ -535,6 +537,8 @@ export const speciesMapping: SpeciesMap = {
         'hy?[uo]+m[aie]+ne?',
         'homo[ -]?sapi[ea]ns?',
     ],
+
+    [Species.Kemonomimi]: [ ...humanLikeNekoSpecies ],
 
     [Species.Elf]: [
                     // "Elf":
