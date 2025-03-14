@@ -3,7 +3,9 @@ Downloads are found [on the Releases page](https://github.com/FireUnderTheMounta
 
 
 # F-Chat Risinger
-This repository contains a heavily customized version of the mainline F-Chat 3.0 client, based on the now-defunct F-Chat Rising. We're still in need of a new name. Sunrise? Picnic? Frisbee?
+**F-Chat Risinger** is an unnamed, extended version of the now-defunct F-Chat Rising which itself was an extended version of the [original F-Chat 3.0 client](https://wiki.f-list.net/F-Chat_3.0). The goal is to maintain the existing feature set of F-Chat Rising with mild touch-ups and bug fixes.
+
+We're still in need of a new name. Sunrise? Picnic? Frisbee?
 
 We also need a wiki, don't we. Did anyone save the old Rising wiki by any chance?
 

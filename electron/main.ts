@@ -412,7 +412,7 @@ function onReady(): void {
     // );
 
     //tslint:disable-next-line: no-unsafe-any
-    const updaterUrl = `https://update.electronjs.org/hearmeneigh/fchat-rising/${process.platform}-${process.arch}/${pck.version}`;
+    const updaterUrl = `https://update.electronjs.org/FireUnderTheMountain/fchat-risinger/${process.platform}-${process.arch}/${pck.version}`;
     if((process.env.NODE_ENV === 'production') && (process.platform !== 'darwin')) {
         electron.autoUpdater.setFeedURL({url: updaterUrl + (settings.beta ? '?channel=beta' : ''), serverType: 'json'});
         setTimeout(() => electron.autoUpdater.checkForUpdates(), 10000);
@@ -676,7 +676,7 @@ function onReady(): void {
             submenu: [
                 {
                     label: l('help.fchat'),
-                    click: () => openURLExternally('https://github.com/hearmeneigh/fchat-rising/blob/master/README.md')
+                    click: () => openURLExternally('https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/README.md')
                 },
                 // {
                 //     label: l('help.feedback'),

@@ -17,9 +17,9 @@ title: F-Chat Rising
 email: nope@nope.com
 description: >- # this means to ignore newlines until "baseurl:"
   A heavily customized F-Chat 3.0 client
-baseurl: "/fchat-rising" # the subpath of your site, e.g. /blog
+baseurl: "/fchat-risinger" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  hearmeneigh
+github_username:  FireUnderTheMountain
 show_downloads: true
 
 # Build settings
@@ -47,13 +47,13 @@ exclude:
 
 theme: jekyll-theme-slate
 
-changelog: https://github.com/hearmeneigh/fchat-rising/blob/master/CHANGELOG.md
-installurl: https://github.com/hearmeneigh/fchat-rising/wiki
+changelog: https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/CHANGELOG.md
+installurl: https://github.com/FireUnderTheMountain/fchat-risinger/wiki
 
 download:
-  version: 1.27.3
+  version: 1.28.0
 
-  url: https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-%PLATFORM_TAIL%
+  url: https://github.com/FireUnderTheMountain/fchat-risinger/releases/latest/download/F-Chat-Rising-%PLATFORM_TAIL%
 
   downloads:
     - type: win
