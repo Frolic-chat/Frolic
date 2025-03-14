@@ -338,7 +338,7 @@ function createWindow(): electron.BrowserWindow | undefined {
 
 function showPatchNotes(): void {
     //tslint:disable-next-line: no-floating-promises
-    openURLExternally('https://github.com/hearmeneigh/fchat-rising/blob/master/CHANGELOG.md');
+    //openURLExternally('https://github.com/hearmeneigh/fchat-rising/blob/master/CHANGELOG.md');
 }
 
 function openBrowserSettings(): electron.BrowserWindow | undefined {
@@ -416,7 +416,7 @@ function onReady(): void {
     if((process.env.NODE_ENV === 'production') && (process.platform !== 'darwin')) {
         electron.autoUpdater.setFeedURL({url: updaterUrl + (settings.beta ? '?channel=beta' : ''), serverType: 'json'});
         setTimeout(() => electron.autoUpdater.checkForUpdates(), 10000);
-        const updateTimer = setInterval(() => electron.autoUpdater.checkForUpdates(), 3600000);
+        const updateTimer = setInterval(() => electron.autoUpdater.checkForUpdates(), 24 * 60 * 60 * 1000);
         electron.autoUpdater.on('update-downloaded', () => {
             clearInterval(updateTimer);
             const menu = electron.Menu.getApplicationMenu()!;

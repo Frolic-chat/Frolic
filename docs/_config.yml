@@ -66,17 +66,6 @@ download:
       tail: win-arm64.exe
       size: 84 MB
 
-    - type: mac
-      name: MacOS (Intel)
-      tail: macos-intel.dmg
-      size: 80 MB
-      # instructions: ./macos-install
-
-    - type: mac
-      name: MacOS (M1)
-      tail: macos-m1.dmg
-      size: 83 MB
-
     - type: linux
       name: Linux (x64)
       tail: linux-x64.AppImage
@@ -86,4 +75,3 @@ download:
       name: Linux (arm64)
       tail: linux-arm64.AppImage
       size: 82 MB
-

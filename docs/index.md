@@ -46,4 +46,3 @@ Dozens of useful improvements all around!
 See how characters match up with you.
 
 ![Character Previews](assets/images/character-preview.png)
-

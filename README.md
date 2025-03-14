@@ -1,61 +1,11 @@
 # Download
-[Windows x64](https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-win-x64.exe) |
-[Windows arm64](https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-win-arm64.exe) |
-[MacOS M1](https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-macos-m1.dmg) |
-[MacOS Intel](https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-macos-intel.dmg) |
-[Linux x64](https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-linux-x64.AppImage) |
-[Linux arm64](https://github.com/hearmeneigh/fchat-rising/releases/latest/download/F-Chat-Rising-linux-arm64.AppImage) 
+Downloads are found [on the Releases page](https://github.com/FireUnderTheMountain/fchat-risinger/releases). In general, bigger number better. Each release has it's new features listed, or [view the full Changelog](https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/CHANGELOG.md) to see what's all updates.
 
-# F-Chat Rising
-This repository contains a heavily customized version of the mainline F-Chat 3.0 client.
 
-## TL;DR
+# F-Chat Risinger
+This repository contains a heavily customized version of the mainline F-Chat 3.0 client, based on the now-defunct F-Chat Rising. We're still in need of a new name. Sunrise? Picnic? Frisbee?
 
-### Setting Up
-FChat-Rising uses NodeJS `16.x` and may not work on newer versions. Use [`nvm`](https://github.com/nvm-sh/nvm) or [`nvm-windows`](https://github.com/coreybutler/nvm-windows) to simplify your life.
-
-```bash
-# Windows only:
-npm install --global --production --vs2015 --add-python-to-path yarn node-gyp
-
-# Ubuntu only:
-sudo apt install libsecret-1-dev
-
-# MacOS only:
-brew install python-setuptools
-
-# All operating systems:
-git clone https://github.com/hearmeneigh/fchat-rising.git
-cd fchat-rising
-yarn
-
-# Optional; make sure your commits are anonymous
-git config --local user.name "SOME NAME"
-git config --local user.email "some@email.com"
-```
-
-### Dev Mode
-Run two processes simultaneously:
-
-```bash
-# Process 1 -- watch
-cd electron
-yarn watch
-```
-
-```bash
-# Process 2 -- app
-cd electron
-yarn start
-# Use `Ctrl+Shift+I` to open the Chromium debugger.
-```
-
-### Build
-```bash
-cd electron
-yarn build:dist
-node pack.js
-```
+We also need a wiki, don't we. Did anyone save the old Rising wiki by any chance?
 
 
 ## Key Differences
@@ -171,72 +121,57 @@ node pack.js
 
 
 ## Todo / Ideas
-*   Collect data on ads / responses to determine which ads work best
 *   Preview mode should allow detaching from the main window
 *   Improve log browsing
-*   Conversation bot API
 *   'Filter unmatching ads' is not channel specific -- it's either on everywhere or nowhere
 *   What are the things that would make your profile more compatible with others?
 
 
-# F-List Exported
-This repository contains the open source parts of F-list and F-Chat 3.0.
-All necessary files to build F-Chat 3.0 as an Electron, mobile or web application are included.
+### Development
+FChat-Rising uses NodeJS `16.x` and may not work on newer versions. Use [`nvm`](https://github.com/nvm-sh/nvm) or [`nvm-windows`](https://github.com/coreybutler/nvm-windows) to simplify your life.
 
-## Setting up a Dev Environment
- - Clone the repo
- - Install [Yarn](https://yarnpkg.com/en/docs/install)
- - Change into the cloned directory and run `yarn install`. If you only want to make a custom theme, you do not need to do this!
- - IntelliJ IDEA is recommended for development.
- 
-## Building for Electron
- - **Windows only:** To build native Node assets, you will need to install Python and the Visual C++ 2015 Build tools. [More information can be found in the node-gyp docs.](https://github.com/nodejs/node-gyp#installation)
-    - `npm install --global --production --vs2015 --add-python-to-path windows-build-tools node-gyp`
- - Change into the `electron` directory.
- - Run `yarn build`/`yarn watch` to build assets. They are placed into the `app` directory.
- - Run `yarn start` to start the app in debug mode. Use `Ctrl+Shift+I` to open the Chromium debugger.
+```bash
+# Windows only:
+npm install --global --production --vs2015 --add-python-to-path yarn node-gyp
 
-### Building a Release Package (Electron)
- 1. `cd electron`
- 1. `yarn build:dist`
- 1. `node pack.js`
+# Ubuntu only:
+sudo apt install libsecret-1-dev
 
+# MacOS only:
+brew install python-setuptools
 
-### Packaging
-> This section is outdated and left here for reference purposes only.
+# All operating systems:
+git clone https://github.com/FireUnderTheMountain/fchat-risinger.git
+cd fchat-risinger
+yarn
 
-~~See https://electron.atom.io/docs/tutorial/application-distribution/~~
-~~Run `cd electron && yarn build:dist` to create a minified production build.~~
-~~Run `yarn run pack`. The generated installer is placed into the `dist` directory.~~
-~~On Windows you can add the path to and password for a code signing certificate as arguments.~~
-~~On Mac you can add your code signing identity as an argument. `zip` is required to be installed.~~
-~~On Linux you can add a GPG key for signing and its password as arguments. `mksquashfs` and `zsyncmake` are required to be installed.~~
+# Optional; make sure your commits are anonymous
+git config --local user.name "SOME NAME"
+git config --local user.email "some@email.com"
+```
 
-## Building for Mobile
-> Mobile builds are not supported. This section is outdated and left here for reference purposes only. 
->
-> Are you a kickass mobile developer? Maybe you can help us fix the build.
+### Dev Mode
+Run two processes simultaneously:
 
-~~Change into the `mobile` directory.~~
-~~Run `yarn build`/`yarn watch` to build assets. They are placed into the `www` directory.~~
-~~For Android, change into the `android` directory and run `./gradlew assembleDebug`. The generated APK is placed into `app/build/outputs/apk`.~~
-~~For iOS, change into the `ios` directory and open `F-Chat.xcodeproj` using XCode. From there, simply run the app using the play button.~~
+```bash
+# Process 1 -- watch
+cd electron
+yarn watch
+```
 
-## Building for Web
-> Web builds are not supported. This section is outdated and left here for reference purposes only. 
->
-> Are you a kickass web developer? Maybe you can help us fix the build.
+```bash
+# Process 2 -- app
+cd electron
+yarn start
+# Use `Ctrl+Shift+I` to open the Chromium debugger.
+```
 
-~~Change into the `webchat` directory.~~
-~~Run `yarn build`/`yarn watch` to build assets. They are placed into the `dist` directory.~~
-~~The compiled main.js file can be included by an HTML file that is expected to provide a global `const chatSettings: {account: string, theme: string, characters: ReadonlyArray<string>, defaultCharacter: string | null};`. It should also normalize the page to 100% height.~~
-
-## Building a custom theme
-See [the wiki](https://wiki.f-list.net/F-Chat_3.0/Themes) for instructions on how to create a custom theme.
- - Change into the `scss` directory.
- - Run `yarn install`.
- - Run `yarn build themes/chat/{name}.scss`.
- - Your theme file will be placed into the `scss/css` directory.
+### Build
+```bash
+cd electron
+yarn build:dist
+node pack.js
+```
 
 ## Dependencies
 Note: Adding *and upgrading* dependencies should only be done with prior consideration and subsequent testing.

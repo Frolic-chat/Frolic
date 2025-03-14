@@ -2,7 +2,6 @@
 
 ## Next?
 * Merge Ad Editor and Post Ads?
-* Fix Yiffbot portrait updates
 * Remove broadcasts from logs; maybe into a dialog? where do we store them tho? At least shouldn't orange-highlight all convos
 * Notify when bookmark/friend says something on a channel?
 * Clicking a log entry opens the conversation at that point
@@ -45,7 +44,6 @@
     * [redgifs.com](https://redgifs.com)
   * High-quality portraits are only visible to other F-Chat Rising users; users on other clients will see your regular portrait.
   * If your image is not a square, [you're gonna have a bad time](https://www.youtube.com/watch?v=6Ls5j5iz2eA).
-* [YiffBot 4000](https://www.f-list.net/c/YiffBot%204000) integration
 * Fixed "select/unselect all" behavior in Post Ads (credit: [@FatCatClient](https://github.com/FatCatClient))
 * Extended emoji support (credit: [@FatCatClient](https://github.com/FatCatClient))
 
@@ -375,4 +373,3 @@
     *    Upgraded to Electron 9.x
     *    Replaced `node-spellchecker` with the built-in spellchecker that ships with Electron 8+
     *    Multi-language support for spell checking (Windows only – language is autodetected on MacOS) 
-

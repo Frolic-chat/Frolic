@@ -68,7 +68,7 @@ export class ProfileRecommendationAnalyzer {
     const profileUrl = ProfileCache.detectRisingPortraitURL(this.profile.character.description);
 
     if (!profileUrl) {
-      this.add(`ADD_HQ_AVATAR`, ProfileRecommendationLevel.CRITICAL, 'Add a high-quality portrait', 'Profiles with a high-quality portraits stand out in chats with other F-Chat Rising players.', 'https://github.com/hearmeneigh/fchat-rising/wiki/High%E2%80%90Quality-Portraits');
+      //this.add(`ADD_HQ_AVATAR`, ProfileRecommendationLevel.CRITICAL, 'Add a high-quality portrait', 'Profiles with a high-quality portraits stand out in chats with other F-Chat Rising players.', 'https://github.com/hearmeneigh/fchat-rising/wiki/High%E2%80%90Quality-Portraits');
     } else if (!ProfileCache.isSafeRisingPortraitURL(profileUrl)) {
       this.add(`ADD_HQ_AVATAR_SAFE_DOMAIN`, ProfileRecommendationLevel.CRITICAL, 'Unsupported high-quality portrait URL', 'High-quality portraits can only point to f-list.net, freeimages.host, e621.net, iili.io, imgur.com, or redgifs.com domains.', 'https://github.com/hearmeneigh/fchat-rising/wiki/High%E2%80%90Quality-Portraits');
     }
