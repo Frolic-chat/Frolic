@@ -621,9 +621,11 @@ export class Matcher {
             if (nekoPreference)
                 return Matcher.formatKinkScore(nekoPreference, 'kemonomimi pairings');
 
-            const amountOfCaring = Matcher.getTagValueList(TagId.FurryPreference, you);
+            const doICare: FurryPreference | null = Matcher.getTagValueList(TagId.FurryPreference, you);
 
-            if (amountOfCaring !== null || amountOfCaring === FurryPreference.FursAndHumans)
+            //console.log('match.furryscore %d for %s', doICare, you.name);
+
+            if (doICare === null || doICare === FurryPreference.FursAndHumans)
                 return new Score(Scoring.MATCH, 'Likes <span>kemonomimi</span> pairings');
 
             const interpretAsHuman = this.theirAnalysis.tiltHuman;
@@ -633,7 +635,7 @@ export class Matcher {
                 const humanPref  = Matcher.humanLikeabilityScore(you);
 
                 if (humanPref === Scoring.MATCH)
-                    return new Score(Scoring.WEAK_MATCH, 'Prefers <span>human</span> pairings, may like <span>kemonomimi</span>');
+                    return new Score(Scoring.WEAK_MATCH, 'Prefers <span>humans</span>, may like <span>kemonomimi</span>');
 
                 if (humanPref === Scoring.WEAK_MATCH)
                     return new Score(Scoring.NEUTRAL);
@@ -645,13 +647,13 @@ export class Matcher {
                     return new Score(Scoring.NEUTRAL);
 
                 if (humanPref === Scoring.MISMATCH)
-                    return new Score(Scoring.WEAK_MISMATCH, 'Prefers <span>anthro</span> pairings, may like <span>kemonomimi</span>');
+                    return new Score(Scoring.WEAK_MISMATCH, 'Prefers <span>anthros</span>, may like <span>kemonomimi</span>');
             }
             else {
                 const anthroPref = Matcher.furryLikeabilityScore(you);
 
                 if (anthroPref === Scoring.MATCH)
-                    return new Score(Scoring.WEAK_MATCH, 'Prefers <span>anthro</span> pairings, may like <span>kemonomimi</span>');
+                    return new Score(Scoring.WEAK_MATCH, 'Prefers <span>anthros</span>, may like <span>kemonomimi</span>');
 
                 if (anthroPref === Scoring.WEAK_MATCH)
                     return new Score(Scoring.NEUTRAL);
@@ -663,9 +665,8 @@ export class Matcher {
                     return new Score(Scoring.NEUTRAL);
 
                 if (anthroPref === Scoring.MISMATCH)
-                    return new Score(Scoring.WEAK_MISMATCH, 'Prefers <span>human</span> pairings, may like <span>kemonomimi</span>');
+                    return new Score(Scoring.WEAK_MISMATCH, 'Prefers <span>humans</span>, may like <span>kemonomimi</span>');
             }
-
 
             return new Score(Scoring.NEUTRAL);
         }
