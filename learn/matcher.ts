@@ -613,9 +613,7 @@ export class Matcher {
     private resolveFurryPairingsScore(): Score {
         const you = this.you;
 
-        const theyAreKemonomimi = this.theirAnalysis.isKemonomimi;
-
-        if (theyAreKemonomimi) {
+        if (this.theirAnalysis.isKemonomimi) {
             const nekoPreference = Matcher.getKinkSpeciesPreference(you, Species.Kemonomimi);
 
             if (nekoPreference)
@@ -624,14 +622,14 @@ export class Matcher {
             const doICare: FurryPreference | null = Matcher.getTagValueList(TagId.FurryPreference, you);
 
             //console.log('match.furryscore %d for %s', doICare, you.name);
+            if (doICare === null)
+                return new Score(Scoring.NEUTRAL);
 
-            if (doICare === null || doICare === FurryPreference.FursAndHumans)
-                return new Score(Scoring.MATCH, 'Likes <span>kemonomimi</span> pairings');
-
-            const interpretAsHuman = this.theirAnalysis.tiltHuman;
+            if (doICare === FurryPreference.FursAndHumans)
+                return new Score(Scoring.MATCH, 'Likes <span>kemonomimi pairings</span>');
 
             // You have no neko preference, average your neutrality and their desire to be seen as human/furry
-            if (interpretAsHuman) {
+            if (this.theirAnalysis.tiltHuman) {
                 const humanPref  = Matcher.humanLikeabilityScore(you);
 
                 if (humanPref === Scoring.MATCH)
