@@ -19,7 +19,7 @@ Your IP address will be exposed to all of these services.
 ## Link Previews
 When the 'Link Preview' feature is used, F-Chat Risinger will connect to the URL being previewed and any other hosts that are linked from the page being previewed.
 
-* F-Chat Rising uses [@cliqz/adblocker](https://github.com/ghostery/adblocker) to block as many ads and trackers as possible.
+* F-Chat Rising uses [@ghostery/adblocker](https://github.com/ghostery/adblocker) to block as many ads and trackers as possible.
 * Using the Link Preview feature will expose you to similar risks that opening a link in your web browser does.
 * If you are concerned about your security or privacy, consider disabling the link preview feature in F-Chat Rising settings.
 * In some cases F-Chat Rising uses 'proxy services' that help formatting Link Previews. For example:

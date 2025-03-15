@@ -50,13 +50,15 @@ export class ImageUrlMutator {
           }
         );
 
-        this.add(
-            /^http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?[\w\?=]*)?/,
-            async(_url: string, match: RegExpMatchArray): Promise<string> => {
-                const videoId = match[1]
-                return `https://yewtu.be/embed/${videoId}?autoplay=1`
-            }
-        );
+        // This invidius proxy hasn't worked for a long time. Unfortunately, the default youtube
+        // implementation doesn't have working controls and is automuted, so this needs a glow-up.
+        // this.add(
+        //     /^http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?[\w\?=]*)?/,
+        //     async(_url: string, match: RegExpMatchArray): Promise<string> => {
+        //         const videoId = match[1]
+        //         return `https://yewtu.be/embed/${videoId}?autoplay=1`
+        //     }
+        // );
 
         this.add(
            /^https?:\/\/.*twitter.com\/(.*)/,
@@ -353,4 +355,3 @@ export class ImageUrlMutator {
       return u.toString();
     }
 }
-

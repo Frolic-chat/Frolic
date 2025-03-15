@@ -1,10 +1,11 @@
 import log from 'electron-log';
-import { ElectronBlocker } from '@cliqz/adblocker-electron';
+import { ElectronBlocker, Request } from '@ghostery/adblocker-electron';
+// @ts-ignore no-unused-variable
+import fetch from 'node-fetch';
 import path from 'path';
 import fs from 'fs';
 import * as _ from 'lodash';
 import * as electron from 'electron';
-import { NetworkFilter } from '@cliqz/adblocker';
 
 export class BlockerIntegration {
   protected static readonly adBlockerLists = [
@@ -53,12 +54,6 @@ export class BlockerIntegration {
 
       log.debug('adblock.session.created');
 
-      blocker.update({
-        newNetworkFilters: [
-          NetworkFilter.parse('@@||redgifs.com')!,
-        ]
-      });
-
       blocker.enableBlockingInSession(session);
 
       log.debug('adblock.enabled');
@@ -77,26 +72,6 @@ export class BlockerIntegration {
   }
 
   protected static configureBlocker(blocker: ElectronBlocker, session: electron.Session): void {
-    // Temp fix -- manually override adblocker's preload script
-    // to point to CJS  that has been copied over with config in webpack.config.js
-    // require.resolve('@cliqz/adblocker-electron-preload');
-    const preloadScript =  path.join(electron.app.getAppPath(), './preview/assets/adblocker/preload.cjs.js');
-
-    // const originPath = require.resolve('@cliqz/adblocker-electron-preload');
-    // const preloadScript = path.resolve(path.dirname(originPath), 'preload.cjs');
-    log.debug('adblock.preload.path', { finalPath: preloadScript /*, originPath */ });
-
-    log.debug('adblock.preloaders.original', { loaders: session.getPreloads() });
-
-    session.setPreloads(
-        _.concat(
-            _.filter(
-                session.getPreloads(),
-                (p) => (p.indexOf('adblocker-electron-preload') < 0)
-            ),
-            [preloadScript]
-        )
-    );
 
     blocker.blockFonts();
 
