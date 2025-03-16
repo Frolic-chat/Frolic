@@ -121,11 +121,11 @@ We also need a wiki, don't we. Did anyone save the old Rising wiki by any chance
     * Elf (optionally vampire or dwarf)
     * Feline (optionally horse, tiger, or elf)
 
+For questions regarding the project and not the application, see our [Project FAQ](https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/ABOUT.md)
 
 ## Todo / Ideas
 *   Preview mode should allow detaching from the main window
 *   Improve log browsing
-*   'Filter unmatching ads' is not channel specific -- it's either on everywhere or nowhere
 *   What are the things that would make your profile more compatible with others?
 
 
