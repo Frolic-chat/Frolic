@@ -54,16 +54,13 @@ require('electron-packager')({
     icon: path.join(__dirname, 'build', 'icon'),
     ignore: ['\.map$'],
     osxSign: process.argv.length > 2 ? {identity: process.argv[2]} : false,
-    prune: false,
+    prune: true,
     platform: ['win32', 'darwin', 'linux'],
     arch: ['x64', 'arm64'],
 }).then(async (appPaths) => {
     if (process.env.SKIP_INSTALLER) {
         return;
     }
-
-    // Tz debug
-    //for (const appPath of appPaths) console.log('Tz appPaths', appPath);
 
     /**
      **** Windows ****
@@ -77,7 +74,7 @@ require('electron-packager')({
         if (!pathMatch) continue;
         const appArch = pathMatch[1];
         const appArchLong = appArch === 'x64' ? 'x86_64' : 'aarch64';
-        const setupName = `F-Chat-Rising-Setup-win-${appArch}.exe`;
+        const setupName = `F-Chat-Risinger-${pkg.version}-win32-${appArch}.exe`;
         const distFinal = path.join(distDir, appArch);
 
         console.log('DistFinal', distFinal);
@@ -163,7 +160,7 @@ require('electron-packager')({
             //     console.log('Run failed', 'APPRUN', appArch, {status: appRunResult.status, call: appRunResult.error?.syscall, args: appRunResult.error?.spawnargs, path: appRunResult.error?.path, code: appRunResult.error?.code, stdout: String(appRunResult.stdout), stderr: String(appRunResult.stderr) });
             // }
 
-            const zipName = `F-Chat_Rising_${arch.name}_${pkg.version}.zip`;
+            const zipName = `F-Chat_Risinger_${pkg.version}_${arch.name}.zip`;
             const zipPath = path.join(distDir, zipName);
             if(fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
             const child = child_process.spawn('zip', ['-r', '-y', '-9', zipPath, 'F-Chat.app'], {cwd: arch.path});
@@ -231,7 +228,7 @@ require('electron-packager')({
         fs.symlinkSync(path.join(appPath, 'icon.png'), path.join(appPath, '.DirIcon'));
         fs.writeFileSync(path.join(appPath, 'fchat.desktop'), '[Desktop Entry]\nName=F-Chat\nExec=AppRun\nIcon=icon\nType=Application\nCategories=GTK;GNOME;Utility;');
 
-        const args = [appPath, path.join(distFinal, `F-Chat-Rising-linux-${appArch}.AppImage`), '-u', `gh-releases-zsync|fireunderthemountain|fchat-risinger|latest|F-Chat-Rising-linux-${appArch}.AppImage.zsync`];
+        const args = [appPath, path.join(distFinal, `F-Chat-Risinger-${pkg.version}-linux-${appArch}.AppImage`), '-u', `gh-releases-zsync|fireunderthemountain|fchat-risinger|latest|F-Chat-Risinger-${pkg.version}-linux-${appArch}.AppImage.zsync`];
 
         if(process.argv.length > 2) {
             args.push('-s', '--sign-key', process.argv[2]);
