@@ -110,9 +110,13 @@ export namespace Conversation {
         True, False, Default
     }
 
+    export enum RelationChooser {
+        NoOne, Bookmarks, Friends, Both, Default
+    }
+
     export interface Settings {
         readonly notify: Setting;
-        readonly notifyOnFriendMessage: Setting;
+        readonly notifyOnFriendMessage: RelationChooser;
         readonly highlight: Setting;
         readonly highlightWords: ReadonlyArray<string>;
         readonly joinMessages: Setting;
@@ -210,7 +214,7 @@ export namespace Settings {
         readonly clickOpensMessage: boolean;
         readonly disallowedTags: ReadonlyArray<string>;
         readonly notifications: boolean;
-        readonly notifyOnFriendMessage: boolean;
+        readonly notifyOnFriendMessage: Conversation.RelationChooser;
         readonly highlight: boolean;
         readonly highlightWords: ReadonlyArray<string>;
         readonly showAvatars: boolean;

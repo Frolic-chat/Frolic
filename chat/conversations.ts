@@ -855,6 +855,29 @@ export default function(this: any): Interfaces.State {
         await conversation.addMessage(message);
         EventBus.$emit('channel-message', { message, channel: conversation });
 
+        function shouldNotifyOnFriendMessage(): boolean {
+            if (!conversation)
+                return false;
+
+            return ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Friends   ||
+                     conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both      )
+                || ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
+                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Friends   ||
+                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both      )
+        }
+
+        function shouldNotifyOnBookmarkMessage(): boolean {
+            if (!conversation)
+                return false;
+
+            return ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Bookmarks ||
+                     conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both    )
+                || ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
+                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Bookmarks ||
+                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both    )
+        }
+        // This conversation's settings
+
         const words = conversation.settings.highlightWords.slice();
         if(conversation.settings.defaultHighlights) words.push(...core.state.settings.highlightWords);
         if(conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight ||
@@ -870,13 +893,11 @@ export default function(this: any): Interfaces.State {
             message.isHighlight = true;
             await state.consoleTab.addMessage(new EventMessage(l('events.highlight', `[user]${data.character}[/user]`, results[0],
                 `[session=${conversation.name}]${data.channel}[/session]`), time));
-        } else if(conversation.settings.notify === Interfaces.Setting.True || 
-            ( 
-                (conversation.settings.notifyOnFriendMessage === Interfaces.Setting.Default && core.state.settings.notifyOnFriendMessage ||
-                    conversation.settings.notifyOnFriendMessage === Interfaces.Setting.True)
-                &&
-                (core.characters.friendList.includes(data.character) || core.characters.bookmarkList.includes(data.character)) 
-            )
+        }
+        else if (
+                conversation.settings.notify === Interfaces.Setting.True
+            || (shouldNotifyOnFriendMessage()   && core.characters.friendList.includes(data.character))
+            || (shouldNotifyOnBookmarkMessage() && core.characters.bookmarkList.includes(data.character))
         ){
             await core.notifications.notify(conversation, conversation.name, messageToString(message),
                 characterImage(data.character), 'attention');

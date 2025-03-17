@@ -84,10 +84,15 @@
                 </label>
             </div>
             <div class="form-group">
-                <label class="control-label" for="notifyOnFriendMessage">
-                    <input type="checkbox" id ="notifyOnFriendMessage" v-model="notifyOnFriendMessage"/>
+                <label class="control-label" :for="notifyOnFriendMessage">
                     {{l('settings.friendMessageNotification')}}
                 </label>
+                <select class="form-control" :id="notifyOnFriendMessage" v-model="notifyOnFriendMessage">
+                    <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
+                    <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
+                    <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
+                    <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
+                </select>
             </div>
             <div class="form-group">
                 <label class="control-label" for="notifications">
@@ -366,6 +371,7 @@
     import Tabs from '../components/tabs';
     import core from './core';
     import {Settings as SettingsInterface} from './interfaces';
+    import {Conversation} from './interfaces';
     import l from './localize';
     import { SmartFilterSettings, SmartFilterSelection } from '../learn/filter/types';
     import { smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
@@ -385,7 +391,8 @@
         clickOpensMessage!: boolean;
         disallowedTags!: string;
         notifications!: boolean;
-        notifyOnFriendMessage!: boolean;
+        friendchooser = Conversation.RelationChooser;
+        notifyOnFriendMessage!: Conversation.RelationChooser;
         highlight!: boolean;
         highlightWords!: string;
         showAvatars!: boolean;

@@ -28,13 +28,16 @@
             <input :id="'highlightWords' + conversation.key" class="form-control" v-model="highlightWords"/>
         </div>
         <div class="form-group">
-            <label class="control-label" :for="'friendsNotify' + conversation.key">{{l('settings.friendMessageNotification')}}</label>
+            <label class="control-label" :for="'friendsNotify' + conversation.key">
+                {{l('settings.friendMessageInThisChannel')}}
+            </label>
             <select class="form-control" :id="'friendsNotify' + conversation.key" v-model="notifyOnFriendMessage">
-                <option :value="setting.Default">{{l('conversationSettings.default')}}</option>
-                <option :value="setting.True">{{l('conversationSettings.true')}}</option>
-                <option :value="setting.False">{{l('conversationSettings.false')}}</option>
+                <option :value="friendchooser.Default">{{l('conversationSettings.default')}}</option>
+                <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
+                <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
+                <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
+                <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
             </select>
-
         </div>
         <div class="form-group">
             <label class="control-label" :for="'joinMessages' + conversation.key">{{l('settings.joinMessages')}}</label>
@@ -61,12 +64,13 @@
         readonly conversation!: Conversation;
         l = l;
         setting = Conversation.Setting;
+        friendchooser = Conversation.RelationChooser;
         notify!: Conversation.Setting;
         highlight!: Conversation.Setting;
         highlightWords!: string;
         joinMessages!: Conversation.Setting;
         defaultHighlights!: boolean;
-        notifyOnFriendMessage!: Conversation.Setting;
+        notifyOnFriendMessage!: Conversation.RelationChooser;
 
         load(): void {
             const settings = this.conversation.settings;
@@ -91,4 +95,3 @@
         }
     }
 </script>
-

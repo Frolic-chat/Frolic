@@ -33,7 +33,7 @@ export class Settings implements ISettings {
     clickOpensMessage = false;
     disallowedTags: string[] = [];
     notifications = true;
-    notifyOnFriendMessage = false;
+    notifyOnFriendMessage = Conversation.RelationChooser.NoOne;
     highlight = true;
     highlightWords: string[] = [];
     showAvatars = true;
@@ -120,7 +120,7 @@ export class AdSettings implements Conversation.AdSettings {
 
 export class ConversationSettings implements Conversation.Settings {
     notify = Conversation.Setting.Default;
-    notifyOnFriendMessage = Conversation.Setting.Default;
+    notifyOnFriendMessage = Conversation.RelationChooser.Default;
     highlight = Conversation.Setting.Default;
     highlightWords: string[] = [];
     joinMessages = Conversation.Setting.Default;
