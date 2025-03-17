@@ -1,7 +1,7 @@
 <template>
     <modal :action="l('settings.action')" @submit="submit" @open="load()" id="settings" dialogClass="w-100">
         <tabs style="flex-shrink:0;margin-bottom:10px" v-model="selectedTab"
-            :tabs="[l('settings.tabs.general'), l('settings.tabs.notifications'), 'Bonus 🌅', 'Smart Filters 🌅', l('settings.tabs.hideAds'), l('settings.tabs.import')]"></tabs>
+            :tabs="[l('settings.tabs.general'), l('settings.tabs.notifications'), 'Bonus 🌺', 'Smart Filters 🌺', l('settings.tabs.hideAds'), l('settings.tabs.import')]"></tabs>
         <div v-show="selectedTab === '0'">
             <div class="form-group">
                 <label class="control-label" for="disallowedTags">{{l('settings.disallowedTags')}}</label>

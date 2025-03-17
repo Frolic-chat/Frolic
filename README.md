@@ -1,16 +1,16 @@
-# Download
-Downloads are found [on the Releases page](https://github.com/FireUnderTheMountain/fchat-risinger/releases). In general, bigger number better. Each release has it's new features listed, or [view the full Changelog](https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/CHANGELOG.md) to see what's all updates.
+## Downloads
+Downloads are found [on the Releases page](https://github.com/Frolic-chat/Frolic/releases). See each releases' new features on its release page, or [view the full Changelog](https://github.com/Frolic-chat/Frolic/blob/master/CHANGELOG.md) to see all improvements.
+
+While Frolic doesn't mess with your logs, it's always wise to backup important files before installing or upgrading software. Your logs from the vanilla F-Chat desktop client and from F-Chat Rising are located at `%appdata%\fchat\data` on Windows and in `~/.config/fchat/data` on Linux. Frolic continues to use this location so you can continue your conversations right where you left off.
 
 
-# F-Chat Risinger
-**F-Chat Risinger** is an unnamed, extended version of the now-defunct F-Chat Rising which itself was an extended version of the [original F-Chat 3.0 client](https://wiki.f-list.net/F-Chat_3.0). The goal is to maintain the existing feature set of F-Chat Rising with mild touch-ups and bug fixes.
+# Come Frolic!
+**Frolic** is an extended version of the now-defunct F-Chat Rising which itself was an extended version of the [original F-Chat 3.0 client](https://wiki.f-list.net/F-Chat_3.0). Frolic's primary goal is to maintain the existing feature set of F-Chat Rising with touch-ups and bug fixes to keep it functional far into the future.
 
-We're still in need of a new name. Sunrise? Picnic? Frisbee?
-
-We also need a wiki, don't we. Did anyone save the old Rising wiki by any chance?
+We need a wiki, don't we. Did anyone save the old Rising wiki by any chance?
 
 
-## Key Differences
+## Key Differences from the original F-Chat client
 
 1. **Profile matching** automatically compares your profile with others to determine with whom you are compatible.
 1. **Automatic ad posting** repeatedly posts and rotates ads on selected channels.
@@ -113,7 +113,7 @@ We also need a wiki, don't we. Did anyone save the old Rising wiki by any chance
 3. 'Underage' kink is considered to apply to characters aged 16 or above; 'ageplay' kink is considered to apply to characters aged 16 or below.
 4. 'Older characters' and 'younger characters' kink preferences are interpreted as age difference of 8+ years.
 5. Comparison results will get faster over time, as more and more character data is cached.
-6. If you have a species-fluid character (e.g. you play both your character as both a human and an anthro), you can indicate this by setting your **species** in your character profile in the following ways. F-List Rising will then score you against the best fitting type. 
+6. If you have a species-fluid character (e.g. you play both your character as both a human and an anthro), you can indicate this by setting your **species** in your character profile in the following ways. Frolic will then score you against the best fitting type. 
     * Human or tiger
     * Human, tiger, or dragon 
     * Anthro (Horse or Tiger)
@@ -121,7 +121,7 @@ We also need a wiki, don't we. Did anyone save the old Rising wiki by any chance
     * Elf (optionally vampire or dwarf)
     * Feline (optionally horse, tiger, or elf)
 
-For questions regarding the project and not the application, see our [Project FAQ](https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/ABOUT.md)
+For questions regarding the project and not the application, see our [Project FAQ](https://github.com/Frolic-chat/Frolic/blob/master/ABOUT.md)
 
 ## Todo / Ideas
 *   Preview mode should allow detaching from the main window
@@ -130,7 +130,7 @@ For questions regarding the project and not the application, see our [Project FA
 
 
 ### Development
-FChat-Rising uses NodeJS `16.x` and may not work on newer versions. Use [`nvm`](https://github.com/nvm-sh/nvm) or [`nvm-windows`](https://github.com/coreybutler/nvm-windows) to simplify your life.
+Frolic uses NodeJS `16.x` and may not work on newer versions. Use [`nvm`](https://github.com/nvm-sh/nvm) or [`nvm-windows`](https://github.com/coreybutler/nvm-windows) to simplify your life.
 
 ```bash
 # Windows only:
@@ -143,8 +143,8 @@ sudo apt install libsecret-1-dev
 brew install python-setuptools
 
 # All operating systems:
-git clone https://github.com/FireUnderTheMountain/fchat-risinger.git
-cd fchat-risinger
+git clone https://github.com/Frolic-chat/Frolic.git
+cd Frolic
 yarn
 
 # Optional; make sure your commits are anonymous

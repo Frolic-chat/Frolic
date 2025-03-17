@@ -9,10 +9,10 @@ fi
 export NODE_OPTIONS=--openssl-legacy-provider
 
 RELEASE_VERSION="${1}"
-RELEASE_PATH="${HOME}/fchat-rising-dist/${RELEASE_VERSION}"
-DIST_PATH="${HOME}/fchat-rising/electron/dist"
+RELEASE_PATH="${HOME}/frolic-dist/${RELEASE_VERSION}"
+DIST_PATH="${HOME}/frolic/electron/dist"
 
-cd "${HOME}/fchat-rising"
+cd "${HOME}/frolic"
 git checkout master
 git pull
 yarn
@@ -25,5 +25,5 @@ rm -rf app
 yarn build:dist
 node pack.js
 
-cp "${DIST_PATH}/arm64/F-Chat-Rising-Setup-win-arm64.exe" "${RELEASE_PATH}/F-Chat-Rising-win-arm64.exe"
-cp "${DIST_PATH}/x64/F-Chat-Rising-Setup-win-x64.exe" "${RELEASE_PATH}/F-Chat-Rising-win-x64.exe"
+cp "${DIST_PATH}/arm64/Frolic-Setup-win-arm64.exe" "${RELEASE_PATH}/Frolic-win-arm64.exe"
+cp "${DIST_PATH}/x64/Frolic-Setup-win-x64.exe" "${RELEASE_PATH}/Frolic-win-x64.exe"

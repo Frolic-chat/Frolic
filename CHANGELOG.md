@@ -7,13 +7,13 @@
 * Clicking a log entry opens the conversation at that point
 
 ## 1.28.0
-* Kemonomimi now match much more favorably in many circumstances. See the [Pull Request](https://github.com/FireUnderTheMountain/fchat-risinger/pull/3) for details.
+* Kemonomimi now match much more favorably in many circumstances. See the [Pull Request](https://github.com/Frolic-chat/Frolic/pull/3) for details.
 * Adjustments to species categories in preparation for hybrid-species matching improvements
 * Fixed a rare log-deletion oversight from vanilla F-Chat.
 * Empty species are no longer considered human by default; they need some kind of decisive indicator such as "Humans Only" partner preference.
 * Build fixes in preparation for Electron update
 
-## Releases below this point are legacy F-Chat Rising releases and are not supported or were maintained by the current developers.
+## Releases below this point are legacy F-Chat Rising releases and are not supported or maintained by Frolic developers. These release notes have been preserved for posterity.
 
 ## 1.27.1 & 1.27.2 & 1.27.3
 * Build fixes

@@ -1,8 +1,8 @@
 {
-  "name": "fchat-risinger",
+  "name": "Frolic",
   "version": "1.28.0",
   "author": "The F-List Team and all other contributors",
-  "description": "Third-party F-List.net Chat Client",
+  "description": "A third-party F-List.net Chat Client",
   "license": "MIT",
   "main": "main.js",
   "devDependencies": {

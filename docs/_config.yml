@@ -13,13 +13,13 @@
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: F-Chat Rising
+title: Frolic
 email: nope@nope.com
 description: >- # this means to ignore newlines until "baseurl:"
   A heavily customized F-Chat 3.0 client
-baseurl: "/fchat-risinger" # the subpath of your site, e.g. /blog
+baseurl: "/frolic" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  FireUnderTheMountain
+github_username: Frolic-chat
 show_downloads: true
 
 # Build settings
@@ -47,13 +47,13 @@ exclude:
 
 theme: jekyll-theme-slate
 
-changelog: https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/CHANGELOG.md
-installurl: https://github.com/FireUnderTheMountain/fchat-risinger/wiki
+changelog: https://github.com/Frolic-chat/Frolic/blob/master/CHANGELOG.md
+installurl: https://github.com/Frolic-chat/Frolic/wiki
 
 download:
   version: 1.28.0
 
-  url: https://github.com/FireUnderTheMountain/fchat-risinger/releases/latest/download/F-Chat-Rising-%PLATFORM_TAIL%
+  url: https://github.com/Frolic-chat/Frolic/releases/latest/download//Frolic-%PLATFORM_TAIL%
 
   downloads:
     - type: win

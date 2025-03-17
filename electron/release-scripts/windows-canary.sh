@@ -1,10 +1,10 @@
 #!/bin/bash -ex
 
-DIST_PATH="${HOME}/fchat-rising/electron/dist"
+DIST_PATH="${HOME}/frolic/electron/dist"
 
 export NODE_OPTIONS=--openssl-legacy-provider
 
-cd "${HOME}/fchat-rising"
+cd "${HOME}/frolic"
 git checkout canary
 git pull
 yarn

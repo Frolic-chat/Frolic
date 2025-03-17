@@ -69,7 +69,7 @@ require('electron-packager')({
             console.log('WinAppPath', appPath);
             const appArch = appPath.match(/F-Chat-win32-([a-zA-Z0-9]+)$/)[1];
             const appArchLong = appArch === 'x64' ? 'x86_64' : 'aarch64';
-            const setupName = `F-Chat-Rising-Setup-win-${appArch}.exe`;
+            const setupName = `Frolic-Setup-win-${appArch}.exe`;
             const distFinal = path.join(distDir, appArch);
 
             console.log('DistFinal', distFinal);
@@ -95,8 +95,8 @@ require('electron-packager')({
                     iconUrl: 'file:///%localappdata%\\fchat\\app.ico',
                     setupIcon: icon,
                     noMsi: true,
-                    exe: 'F-Chat.exe',
-                    title: 'F-Chat Rising',
+                    exe: 'Frolic.exe',
+                    title: 'Frolic',
                     setupExe: setupName,
                     name: 'fchat'
                     // remoteReleases: 'https://client.f-list.net/win32/' + (isBeta ? '?channel=beta' : ''),
@@ -113,7 +113,7 @@ require('electron-packager')({
         _.each([{ name: 'Intel', path: appPaths[0] }, { name: 'M1', path: appPaths[1] }], (arch) => {
             console.log(arch.name, arch.path);
 
-            const target = path.join(distDir, `F-Chat Rising ${arch.name}.dmg`);
+            const target = path.join(distDir, `Frolic ${arch.name}.dmg`);
             if(fs.existsSync(target)) fs.unlinkSync(target);
             const appPath = path.join(arch.path, 'F-Chat.app');
             if(process.argv.length <= 2) console.warn('Warning: Creating unsigned DMG');
@@ -121,7 +121,7 @@ require('electron-packager')({
                 basepath: arch.path,
                 target,
                 specification: {
-                    title: 'F-Chat Rising',
+                    title: 'Frolic',
                     icon: path.join(__dirname, 'build', 'icon.png'),
                     background: path.join(__dirname, 'build', 'dmg.png'),
                     contents: [{x: 555, y: 345, type: 'link', path: '/Applications'}, {x: 555, y: 105, type: 'file', path: appPath}],
@@ -130,7 +130,7 @@ require('electron-packager')({
                     } : undefined
                 }
             }).on('error', console.error);
-            const zipName = `F-Chat_Rising_${arch.name}_${pkg.version}.zip`;
+            const zipName = `Frolic_${arch.name}_${pkg.version}.zip`;
             const zipPath = path.join(distDir, zipName);
             if(fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
             const child = child_process.spawn('zip', ['-r', '-y', '-9', zipPath, 'F-Chat.app'], {cwd: arch.path});
@@ -190,7 +190,7 @@ require('electron-packager')({
             fs.symlinkSync(path.join(appPath, 'icon.png'), path.join(appPath, '.DirIcon'));
             fs.writeFileSync(path.join(appPath, 'fchat.desktop'), '[Desktop Entry]\nName=F-Chat\nExec=AppRun\nIcon=icon\nType=Application\nCategories=GTK;GNOME;Utility;');
 
-            const args = [appPath, `fchat.${appArch}.AppImage`, '-u', `gh-releases-zsync|fireunderthemountain|fchat-risinger|latest|F-Chat-Rising-linux-${appArch}.AppImage.zsync`];
+            const args = [appPath, `fchat.${appArch}.AppImage`, '-u', `gh-releases-zsync|frolic-chat|frolic|latest|Frolic-linux-${appArch}.AppImage.zsync`];
 
             if(process.argv.length > 2) {
                 args.push('-s', '--sign-key', process.argv[2]);

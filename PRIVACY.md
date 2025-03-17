@@ -1,15 +1,15 @@
 # Security & Privacy
 
 ## General
-F-Chat Risinger does not collect any personal information about you, your computer, or anything else, other than what is necessary to connect you to F-Chat.
+Frolic does not collect any personal information about you, your computer, or anything else, other than what is necessary to connect you to F-Chat.
 
-No data about your sessions, chats, characters, passwords, et cetera, is shared with the F-Chat Risinger developers.
+No data about your sessions, chats, characters, passwords, et cetera, is shared with the Frolic developers.
 
 ## Connectivity
-F-Chat Risinger connects to the following hosts:
+Frolic connects to the following hosts:
 
   * `f-list.net` – FChat, FList, profiles, character search, authentication, character images, etc.
-  * `github.com` – F-Chat Risinger [update checks](./electron/main.ts)
+  * `github.com` – Frolic [update checks](./electron/main.ts)
   * `easylist.to`, `adblockplus.org`, `adtidy.org`, `githubusercontent.com` – [ad blocker updates](./electron/blocker/blocker.ts)
   * `xariah.net` – [eicon updates](./learn/eicon/updater.ts)
 
@@ -17,17 +17,16 @@ Your character name, password, messages, and any other private data is only sent
 Your IP address will be exposed to all of these services.
 
 ## Link Previews
-When the 'Link Preview' feature is used, F-Chat Risinger will connect to the URL being previewed and any other hosts that are linked from the page being previewed.
+When the 'Link Preview' feature is used, Frolic will connect to the URL being previewed and any other hosts that are linked from the page being previewed.
 
-* F-Chat Rising uses [@ghostery/adblocker](https://github.com/ghostery/adblocker) to block as many ads and trackers as possible.
+* Frolic uses [@ghostery/adblocker](https://github.com/ghostery/adblocker) to block as many ads and trackers as possible.
 * Using the Link Preview feature will expose you to similar risks that opening a link in your web browser does.
-* If you are concerned about your security or privacy, consider disabling the link preview feature in F-Chat Rising settings.
-* In some cases F-Chat Rising uses 'proxy services' that help formatting Link Previews. For example:
+* If you are concerned about your security or privacy, consider disabling the link preview feature in Frolic settings.
+* In some cases Frolic uses 'proxy services' that help formatting Link Previews. For example:
   * Twitter previews are proxied through `api.fxtwitter.com`
-  * YouTube previews are proxied through `yewtu.be`
 
 ## High-Quality Portraits
-When 'High-Quality Portraits' feature is used, F-Chat Rising may connect to the following additional domains:
+When 'High-Quality Portraits' feature is used, Frolic may connect to the following additional domains:
 
 * iili.io
 * e621.net
@@ -35,10 +34,10 @@ When 'High-Quality Portraits' feature is used, F-Chat Rising may connect to the 
 * freeimage.host
 * redgifs.com
 
-If you are concerned about your security or privacy, consider disabling the high quality portraits feature in F-Chat Rising settings.
+If you are concerned about your security or privacy, consider disabling the high quality portraits feature in Frolic settings.
 
 ## Locally Stored Data
-F-Chat Rising stores data on your computer. This data contains conversation logs, settings, cache, and other
+Frolic stores data on your computer. This data contains conversation logs, settings, cache, and other
 information such as custom dictionary words. By default, the data is stored in:
 
 | **Operating System** | **Data Path**                         |

@@ -338,7 +338,7 @@ function createWindow(): electron.BrowserWindow | undefined {
 
 function showPatchNotes(): void {
     //tslint:disable-next-line: no-floating-promises
-    //openURLExternally('https://github.com/hearmeneigh/fchat-rising/blob/master/CHANGELOG.md');
+    //openURLExternally('https://github.com/Frolic-chat/Frolic/blob/master/CHANGELOG.md');
 }
 
 function openBrowserSettings(): electron.BrowserWindow | undefined {
@@ -405,14 +405,14 @@ function onReady(): void {
 
     // require('update-electron-app')(
     //   {
-    //     repo: 'https://github.com/hearmeneigh/fchat-rising.git',
+    //     repo: 'https://github.com/Frolic-chat/Frolic.git',
     //     updateInterval: '3 hours',
     //     logger: require('electron-log')
     //   }
     // );
 
     //tslint:disable-next-line: no-unsafe-any
-    const updaterUrl = `https://update.electronjs.org/FireUnderTheMountain/fchat-risinger/${process.platform}-${process.arch}/${pck.version}`;
+    const updaterUrl = `https://update.electronjs.org/Frolic-chat/Frolic/${process.platform}-${process.arch}/${pck.version}`;
     if((process.env.NODE_ENV === 'production') && (process.platform !== 'darwin')) {
         electron.autoUpdater.setFeedURL({url: updaterUrl + (settings.beta ? '?channel=beta' : ''), serverType: 'json'});
         setTimeout(() => electron.autoUpdater.checkForUpdates(), 10000);
@@ -676,11 +676,11 @@ function onReady(): void {
             submenu: [
                 {
                     label: l('help.fchat'),
-                    click: () => openURLExternally('https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/README.md')
+                    click: () => openURLExternally('https://github.com/Frolic-chat/Frolic/blob/master/README.md')
                 },
                 // {
                 //     label: l('help.feedback'),
-                //     click: () => openURLExternally('https://goo.gl/forms/WnLt3Qm3TPt64jQt2')
+                //     click: () => openURLExternally('')
                 // },
                 {
                     label: l('help.rules'),

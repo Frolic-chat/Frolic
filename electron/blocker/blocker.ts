@@ -65,7 +65,8 @@ export class BlockerIntegration {
       return new BlockerIntegration(baseDir, blocker, session);
     } catch (err) {
         log.warn('adblock.init.error', 'Adblocker failed to initialize.'
-            + 'This does not break F-Chat Rising, but may produce slower image previews', err);
+            + 'This does not break Frolic, but may produce slower image previews.'
+            + 'Please report this as a bug', err);
 
         return new BlockerIntegration(baseDir);
     }

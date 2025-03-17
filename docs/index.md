@@ -3,14 +3,14 @@ layout: rising
 ---
 
 <h2 class="slogan-header">Modded for Your Pleasure</h2>
-<img src="./assets/images/slogan.png" id="slogan" />
+<img src="" id="slogan" />
 
-**F-Chat Risinger** is an unnamed, extended version of the now-defunct F-Chat Rising which itself was an extended version of the [original F-Chat 3.0 client](https://wiki.f-list.net/F-Chat_3.0). It adds new features, bug fixes, and usability improvements. The goal is to maintain the existing feature set with mild touch-ups and bug fixes.
+**Frolic** is an extended version of the now-defunct F-Chat Rising which itself was an extended version of the [original F-Chat 3.0 client](https://wiki.f-list.net/F-Chat_3.0). Frolic's primary goal is to maintain the existing feature set of F-Chat Rising with touch-ups and bug fixes to keep it functional far into the future.
 
 You'll connect with the same F-List, same players, and same channels you're already used to.
 You'll just do it with style!
 
-Scroll down to see a [feature summary](#link-previews), or take a look at a more [detailed list of features](https://github.com/FireUnderTheMountain/fchat-risinger/blob/master/README.md#key-differences).
+Scroll down to see a [feature summary](#link-previews), or take a look at a more [detailed list of features](https://github.com/Frolic-chat/Frolic/blob/master/README.md#key-differences).
 
 To install, download the application from the links above and then refer to the [original installation instructions](https://wiki.f-list.net/F-Chat_3.0/Installation).
  

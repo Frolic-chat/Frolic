@@ -173,7 +173,7 @@ export class ImageUrlMutator {
                   `https://e621.net/posts/${galleryId}.json`,
                   {
                       // headers: {
-                      //     'User-Agent': 'F-List-Rising-Client/1.0'
+                      //     'User-Agent': 'Frolic-Client/1.0'
                       // }
                   }
               );

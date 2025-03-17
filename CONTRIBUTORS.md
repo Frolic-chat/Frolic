@@ -1,6 +1,6 @@
 # Contributors
 
-> Want to contribute? Please [continue here](https://github.com/hearmeneigh/fchat-rising/wiki/Contributions).
+> Want to contribute? Please [continue here](https://github.com/Frolic-chat/Frolic/wiki/Contributions).
 
 This project contains contributions from:
 
