@@ -40,8 +40,8 @@ const strings: {[key: string]: string | undefined} = {
     'spellchecker.remove': 'Remove from Dictionary',
     'spellchecker.noCorrections': 'No corrections available',
     'window.newTab': 'New tab',
-    'title': 'F-Chat',
-    'title.connected': 'F-Chat ({0})',
+    'title': 'Frolic',
+    'title.connected': 'Frolic ({0})',
     'version': 'Version {0}',
     'filter': 'Type to filter...',
     'confirmYes': 'Yes',
@@ -179,10 +179,10 @@ Are you sure?`,
     'settings.logDir': 'Change log location',
     'settings.logDir.confirm': `Do you want to set your log location to {0}?
 
-No files will be moved. If you click Yes here, F-Chat will shut down. If you would like to keep your log files, please move them manually before restarting F-Chat.
+No files will be moved. If you click Yes here, Frolic will shut down. If you would like to keep your log files, please move them manually before restarting Frolic.
 
 Current log location: {1}`,
-    'settings.logDir.inAppDir': 'Please set your log directory to a location outside of the F-Chat installation directory, as it would otherwise be overwritten during an update.',
+    'settings.logDir.inAppDir': 'Please set your log directory to a location outside of the Frolic installation directory, as it would otherwise be overwritten during an update.',
     'settings.logMessages': 'Log messages',
     'settings.logAds': 'Log ads',
     'settings.fontSize': 'Font size (experimental)',

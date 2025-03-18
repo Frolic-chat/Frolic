@@ -50,7 +50,7 @@ require('electron-packager')({
     dir: path.join(__dirname, 'app'),
     out: distDir,
     overwrite: true,
-    name: 'F-Chat',
+    name: 'Frolic',
     icon: path.join(__dirname, 'build', 'icon'),
     ignore: ['\.map$'],
     osxSign: process.argv.length > 2 ? {identity: process.argv[2]} : false,
@@ -70,7 +70,7 @@ require('electron-packager')({
 
     for (const appPath of appPaths) {
         console.log('WinAppPath', appPath);
-        const pathMatch = appPath.match(/F-Chat-win32-([a-zA-Z0-9]+)$/);
+        const pathMatch = appPath.match(/Frolic-win32-([a-zA-Z0-9]+)$/);
         if (!pathMatch) continue;
         const appArch = pathMatch[1];
         const appArchLong = appArch === 'x64' ? 'x86_64' : 'aarch64';
@@ -85,8 +85,8 @@ require('electron-packager')({
             fs.unlinkSync(path.join(distFinal, setupName));
         }
 
-        const nupkgName = path.join(distFinal, `fchat-${pkg.version}-full.nupkg`);
-        const deltaName = path.join(distFinal, `fchat-${pkg.version}-delta.nupkg`);
+        const nupkgName = path.join(distFinal, `frolic-${pkg.version}-full.nupkg`);
+        const deltaName = path.join(distFinal, `frolic-${pkg.version}-delta.nupkg`);
 
         if(fs.existsSync(nupkgName)) fs.unlinkSync(nupkgName);
         if(fs.existsSync(deltaName)) fs.unlinkSync(deltaName);
@@ -103,7 +103,7 @@ require('electron-packager')({
                 exe: 'Frolic.exe',
                 title: 'Frolic',
                 setupExe: setupName,
-                name: 'fchat'
+                //name: 'fchat'
                 // remoteReleases: 'https://client.f-list.net/win32/' + (isBeta ? '?channel=beta' : ''),
                 // signWithParams: process.argv.length > 3 ? `/a /f ${process.argv[2]} /p ${process.argv[3]} /fd sha256 /tr http://timestamp.digicert.com /td sha256` : undefined
             });
@@ -137,7 +137,7 @@ require('electron-packager')({
 
             const target = path.join(distDir, appArch, `Frolic ${arch.name}.dmg`);
             if(fs.existsSync(target)) fs.unlinkSync(target);
-            const appPath = path.join(arch.path, 'F-Chat.app');
+            const appPath = path.join(arch.path, 'Frolic.app');
             if(process.argv.length <= 2) console.warn('Warning: Creating unsigned DMG');
             require('appdmg')({
                 basepath: arch.path,
@@ -163,7 +163,7 @@ require('electron-packager')({
             const zipName = `Frolic_${pkg.version}_${arch.name}.zip`;
             const zipPath = path.join(distDir, zipName);
             if(fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-            const child = child_process.spawn('zip', ['-r', '-y', '-9', zipPath, 'F-Chat.app'], {cwd: arch.path});
+            const child = child_process.spawn('zip', ['-r', '-y', '-9', zipPath, 'Frolic.app'], {cwd: arch.path});
             child.stdout.on('data', () => {});
             child.stderr.on('data', (data) => console.error(data.toString()));
             fs.writeFileSync(path.join(distDir, 'updates.json'), JSON.stringify({
@@ -207,14 +207,14 @@ require('electron-packager')({
 
     for (const appPath of appPaths) {
         console.log('LinuxAppPath', appPath);
-        const pathMatch = appPath.match(/F-Chat-linux-([a-zA-Z0-9]+)$/);
+        const pathMatch = appPath.match(/Frolic-linux-([a-zA-Z0-9]+)$/);
         if (!pathMatch) continue;
         const appArch = pathMatch[1];
         const appArchLong = appArch === 'x64' ? 'x86_64' : 'aarch64';
         const buildPath = path.join(__dirname, 'build');
         const distFinal = path.join(distDir, appArch);
 
-        fs.renameSync(path.join(appPath, 'F-Chat'), path.join(appPath, 'AppRun'));
+        fs.renameSync(path.join(appPath, 'Frolic'), path.join(appPath, 'AppRun'));
         fs.copyFileSync(path.join(buildPath, 'icon.png'), path.join(appPath, 'icon.png'));
 
         const libDir = path.join(appPath, 'usr', 'lib'), libSource = path.join(buildPath, 'linux-libs', appArchLong);

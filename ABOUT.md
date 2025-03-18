@@ -1,22 +1,29 @@
 # ABOUT
-Frolic aims to keep a stable, bug-free F-Chat client built upon the primary feature set of F-Chat Rising. Users who are familiar with Rising should feel right at home with Frolic. The purpose of Frolic is to be maintained and usable for far into the future.  
+Frolic aims to keep a stable, bug-free F-Chat client built upon the primary feature set of F-Chat Rising. Users who are familiar with Rising should feel right at home with Frolic. The primary, immediate goal of Frolic is to refine Rising's match-making to encourage community and roleplay between players where Rising might have discouraged it.  
 
 # FAQ
 
 ## What happened to F-Chat Rising?
-No one knows. What we do know is that the maintainer was absent from the Rising repository for over 6 months prior to the repository unexpectedly disappearing. Additionally, the f-list profile of the maintainer's bot was updated sometime around February 8, 2025, and was subsequently blocked from viewing due to a "shocking and harmful content violation". As of March 17, the owner has not edited the profile to lift the block. It's unprofessional and rude to speculate on what's going on with real people, so we won't go any further than the facts.
+No one knows. What we do know is that the maintainer was absent from the Rising repository for over 6 months prior to it unexpectedly going offline. Additionally, the f-list profile of the maintainer's bot was updated sometime around February 8, 2025, and was subsequently blocked from viewing due to a "shocking and harmful content violation". As of March 17, the owner has not edited the profile to lift the block. Speculating on what's going on with real people is rude and unprofessional, so we won't go any further than the facts.
 
 ## What features does Frolic offer over the old F-Chat Rising client?
 We have a full changelog [available here!](https://github.com/Frolic-chat/Frolic/blob/master/CHANGELOG.md)
 For a brief overview:
-* Kemonomimi species identification
-* Support for more anthro species
+* More options to be notified when your friends/bookmarks are active
 * The adblocker for the image viewer popup actually works now
 * The broken youtube proxy is removed, although the replacement doesn't currently play sound so you still have to open youtube videos like normal
 * Removal of the old maintainer's AI chatbot
+* Kemonomimi species identification
+* Support for more anthro species
 * Speciesless profiles are no longer considered human by default
 * Bugfixes & backend touch-ups
 * The developer is active :)
+
+## Are there any big features I can look forward to in Frolic's future?
+Sure, I have a lot of things I'd like to get done.
+* UI _adjustments_ (not an overhaul!) to put the focus back on your messages and channels.
+* Match-making display improvements to better portray how you overlap with other players.
+* Maybe some day... a way of relaying interest without the baggage of a "first message"
 
 ## Any relation to the Horizon client?
 Both Frolic and Horizon are derivatives of the same defunct F-Chat Rising client, which itself is developed from the official F-Chat desktop client. Horizon was forked from Frolic, as we were the only up-to-date F-Chat Rising fork anyone could find at the time. Both projects are available under the Expat License (commonly called the "MIT License").
