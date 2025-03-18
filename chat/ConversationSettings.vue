@@ -9,8 +9,23 @@
                 <option :value="setting.False">{{l('conversationSettings.false')}}</option>
             </select>
         </div>
-        <div class="form-group">
-            <label class="control-label" :for="'highlight' + conversation.key">{{l('settings.highlight')}}</label>
+        <div class="form-group"><hr></div>
+        <div v-show="isChannel(conversation)" class="form-group">
+            <label class="control-label" :for="'friendsNotify' + conversation.key">
+                {{l('settings.friendMessageInThisChannel')}}
+            </label>
+            <select class="form-control" :id="'friendsNotify' + conversation.key" v-model="notifyOnFriendMessage">
+                <option :value="friendchooser.Default">{{l('settings.useGlobalSetting')}}</option>
+                <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
+                <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
+                <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
+                <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
+            </select>
+        </div>
+        <div v-show="isChannel(conversation)" class="form-group">
+            <label class="control-label" :for="'highlight' + conversation.key">
+                {{l('settings.highlight')}}
+            </label>
             <select class="form-control" :id="'highlight' + conversation.key" v-model="highlight">
                 <option :value="setting.Default">{{l('settings.useGlobalSetting')}}</option>
                 <option :value="setting.True">{{l('conversationSettings.true')}}</option>
@@ -27,20 +42,11 @@
             <label class="control-label" :for="'highlightWords' + conversation.key">{{l('settings.highlightWords')}}</label>
             <input :id="'highlightWords' + conversation.key" class="form-control" v-model="highlightWords"/>
         </div>
+        <div class="form-group"><hr></div>
         <div class="form-group">
-            <label class="control-label" :for="'friendsNotify' + conversation.key">
-                {{l('settings.friendMessageInThisChannel')}}
+            <label class="control-label" :for="'joinMessages' + conversation.key">
+                {{l('settings.joinMessageInThisChannel')}}
             </label>
-            <select class="form-control" :id="'friendsNotify' + conversation.key" v-model="notifyOnFriendMessage">
-                <option :value="friendchooser.Default">{{l('settings.useGlobalSetting')}}</option>
-                <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
-                <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
-                <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
-                <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="control-label" :for="'joinMessages' + conversation.key">{{l('settings.joinMessages')}}</label>
             <select class="form-control" :id="'joinMessages' + conversation.key" v-model="joinMessages">
                 <option :value="setting.Default">{{l('settings.useGlobalSetting')}}</option>
                 <option :value="setting.True">{{l('conversationSettings.true')}}</option>
@@ -62,6 +68,7 @@
     export default class ConversationSettings extends CustomDialog {
         @Prop({required: true})
         readonly conversation!: Conversation;
+        readonly isChannel = Conversation.isChannel;
         l = l;
         setting = Conversation.Setting;
         friendchooser = Conversation.RelationChooser;

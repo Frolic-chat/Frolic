@@ -84,6 +84,13 @@
                 </label>
             </div>
             <div class="form-group">
+                <label class="control-label" for="notifications">
+                    <input type="checkbox" id="notifications" v-model="notifications"/>
+                    {{l('settings.notifications')}}
+                </label>
+            </div>
+            <div class="form-group"><hr></div>
+            <div class="form-group">
                 <label class="control-label" :for="notifyOnFriendMessage">
                     {{l('settings.friendMessageNotification')}}
                 </label>
@@ -95,12 +102,6 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="control-label" for="notifications">
-                    <input type="checkbox" id="notifications" v-model="notifications"/>
-                    {{l('settings.notifications')}}
-                </label>
-            </div>
-            <div class="form-group">
                 <label class="control-label" for="highlight">
                     <input type="checkbox" id="highlight" v-model="highlight"/>
                     {{l('settings.highlight')}}
@@ -110,10 +111,11 @@
                 <label class="control-label" for="highlightWords">{{l('settings.highlightWords')}}</label>
                 <input id="highlightWords" class="form-control" v-model="highlightWords"/>
             </div>
+            <div class="form-group"><hr></div>
             <div class="form-group">
-                <label class="control-label" for="eventMessages">
-                    <input type="checkbox" id="eventMessages" v-model="eventMessages"/>
-                    {{l('settings.eventMessages')}}
+                <label class="control-label" for="showNeedsReply">
+                    <input type="checkbox" id="showNeedsReply" v-model="showNeedsReply"/>
+                    {{l('settings.showNeedsReply')}}
                 </label>
             </div>
             <div class="form-group">
@@ -123,9 +125,9 @@
                 </label>
             </div>
             <div class="form-group">
-                <label class="control-label" for="showNeedsReply">
-                    <input type="checkbox" id="showNeedsReply" v-model="showNeedsReply"/>
-                    {{l('settings.showNeedsReply')}}
+                <label class="control-label" for="eventMessages">
+                    <input type="checkbox" id="eventMessages" v-model="eventMessages"/>
+                    {{l('settings.eventMessages')}}
                 </label>
             </div>
         </div>
@@ -626,6 +628,10 @@
     #settings .form-group {
         margin-left: 0;
         margin-right: 0;
+
+        hr {
+            opacity: 0.75;
+        }
     }
 
     #settings .form-group.filters label {
