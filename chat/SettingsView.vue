@@ -130,26 +130,26 @@
             </div>
         </div>
         <div v-show="selectedTab === '2'">
-            <h5>Matching</h5>
+            <h5>{{l('rising.header.matching')}}</h5>
 
             <div class="form-group">
                 <label class="control-label" for="risingAdScore">
                     <input type="checkbox" id="risingAdScore" v-model="risingAdScore"/>
-                    Colorize ads, profiles, and names of compatible and incompatible characters
+                    {{l('rising.match.colorizeCompat')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingComparisonInUserMenu">
                     <input type="checkbox" id="risingComparisonInUserMenu" v-model="risingComparisonInUserMenu"/>
-                    Show quick match results in the right click character menu
+                    {{l('rising.match.showOnRightClick')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingComparisonInSearch">
                     <input type="checkbox" id="risingComparisonInSearch" v-model="risingComparisonInSearch"/>
-                    Show quick match results in the search results
+                    {{l('rising.match.showInSearch')}}
                 </label>
             </div>
 
@@ -161,90 +161,92 @@
 <!--            </div>-->
 
 
-            <h5>Preview</h5>
+            <h5>{{l('rising.header.preview')}}</h5>
 
             <div class="form-group">
                 <label class="control-label" for="risingLinkPreview">
                     <input type="checkbox" id="risingLinkPreview" v-model="risingLinkPreview"/>
-                    Show a link/image preview when the mouse hovers over a link
+                    {{l('rising.preview.showLinkPopup')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingCharacterPreview">
                     <input type="checkbox" id="risingCharacterPreview" v-model="risingCharacterPreview"/>
-                    Show a character preview when the mouse hovers over a character name
+                    {{l('rising.preview.showCharacterPopup')}}
                 </label>
             </div>
 
 
-            <h5>Profile</h5>
+            <h5>{{l('rising.header.profile')}}</h5>
 
             <div class="form-group">
                 <label class="control-label" for="risingAutoCompareKinks">
                     <input type="checkbox" id="risingAutoCompareKinks" v-model="risingAutoCompareKinks"/>
-                    Automatically compare kinks when viewing a character profile
+                    {{l('rising.profile.compareKinks')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingAutoExpandCustomKinks">
                     <input type="checkbox" id="risingAutoExpandCustomKinks" v-model="risingAutoExpandCustomKinks"/>
-                    Automatically expand custom kinks
+                    {{l('rising.profile.expandCustoms')}}
                 </label>
             </div>
 
-            <h5>Misc</h5>
+            <h5>{{l('rising.header.misc')}}</h5>
 
             <div class="form-group">
                 <label class="control-label" for="risingShowUnreadOfflineCount">
                     <input type="checkbox" id="risingShowUnreadOfflineCount" v-model="risingShowUnreadOfflineCount"/>
-                    Show unread note and offline message counts at the bottom right corner
+                    {{l('rising.misc.showUnread')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingNotifyFriendSignIn">
                     <input type="checkbox" id="risingNotifyFriendSignIn" v-model="risingNotifyFriendSignIn"/>
-                   Notify when friends or bookmarks sign in.
+                    {{l('rising.misc.signIn')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingColorblindMode">
                     <input type="checkbox" id="risingColorblindMode" v-model="risingColorblindMode"/>
-                    Colorblind mode
+                    {{l('rising.misc.colorblind')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingShowPortraitNearInput">
                     <input type="checkbox" id="risingShowPortraitNearInput" v-model="risingShowPortraitNearInput"/>
-                    Show character portrait by text input
+                    {{l('rising.misc.yourPortrait')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingShowPortraitInMessage">
                     <input type="checkbox" id="risingShowPortraitInMessage" v-model="risingShowPortraitInMessage"/>
-                    Show character portrait with each message
+                    {{l('rising.misc.chatPortrait')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingShowHighQualityPortraits">
                     <input type="checkbox" id="risingShowHighQualityPortraits" v-model="risingShowHighQualityPortraits"/>
-                    Show high-quality portraits
+                    {{l('rising.misc.chatPortrait')}}
                 </label>
             </div>
 
             <div class="form-group">
                 <label class="control-label" for="risingCharacterTheme">
-                    Override UI theme (for this character only)
+                    {{l('rising.theme.select')}}
                     <select id="risingCharacterTheme" class="form-control" v-model="risingCharacterTheme" style="flex:1;margin-right:10px">
-                        <option value=undefined>(Use default theme)</option>
+                        <option value=undefined>{{l('rising.theme.default')}}</option>
                         <option disabled>---</option>
-                        <option v-for="theme in risingAvailableThemes" :value="theme">{{theme}}</option>
+                        <option v-for="theme in risingAvailableThemes" :value="theme">
+                            {{theme}}
+                        </option>
                     </select>
                 </label>
             </div>
@@ -252,81 +254,84 @@
 
         <div v-show="selectedTab === '3'">
             <div class="warning">
-              <h5>Danger Zone!</h5>
-              <div>By activating filtering, you may no longer be able to see or receive all messages from F-Chat.
-              Filters do not apply to friends or bookmarked characters.</div>
+              <h5>{{l('rising.header.dangerZone')}}</h5>
+              <div>{{l('rising.filter.warning')}}</div>
 
-              <div>Beta version. Some of these features and behaviors may be removed or significantly changed in the future.</div>
+              <div>{{l('rising.filter.beta')}}</div>
             </div>
 
-            <h5>Visibility</h5>
+            <h5>{{l('rising.header.visibility')}}</h5>
 
             <div class="form-group filters">
                 <label class="control-label" for="risingFilter.hideAds">
-                    <input type="checkbox" id="risingFilter.hideAds" v-model="risingFilter.hideAds"/>
-                    Hide <b>ads</b> from matching characters
+                    <input type="checkbox" id="risingFilter.hideAds" v-model="risingFilter.hideAds" />
+                    {{l('rising.filter.hideAds')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.hideSearchResults">
-                    <input type="checkbox" id="risingFilter.hideSearchResults" v-model="risingFilter.hideSearchResults"/>
-                    Hide matching characters from <b>search results</b>
+                    <input type="checkbox" id="risingFilter.hideSearchResults" v-model="risingFilter.hideSearchResults" />
+                    {{l('rising.filter.hideSearch')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.hideChannelMembers">
                     <input type="checkbox" id="risingFilter.hideChannelMembers" v-model="risingFilter.hideChannelMembers"/>
-                    Hide matching characters from <b>channel members lists</b>
+                    {{l('rising.filter.hideMembers')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePublicChannelMessages">
                     <input type="checkbox" id="risingFilter.hidePublicChannelMessages" v-model="risingFilter.hidePublicChannelMessages"/>
-                    Hide <b>public channel messages</b> from matching characters
+                    {{l('rising.filter.hidePubChat')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePrivateChannelMessages">
                     <input type="checkbox" id="risingFilter.hidePrivateChannelMessages" v-model="risingFilter.hidePrivateChannelMessages"/>
-                    Hide <b>private channel messages</b> from matching characters
+                     {{l('rising.filter.hidePrivChat')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePrivateMessages">
                     <input type="checkbox" id="risingFilter.hidePrivateMessages" v-model="risingFilter.hidePrivateMessages"/>
-                    Hide <b>private messages</b> (PMs) from matching characters
+                     {{l('rising.filter.hidePMs')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.showFilterIcon">
                     <input type="checkbox" id="risingFilter.showFilterIcon" v-model="risingFilter.showFilterIcon"/>
-                    Show <b>filter icon</b> on matching characters
+                     {{l('rising.filter.showIcon')}}
                 </label>
             </div>
 
             <div class="form-group filters">
                 <label class="control-label" for="risingFilter.autoReply">
                     <input type="checkbox" id="risingFilter.autoReply" v-model="risingFilter.autoReply"/>
-                    Send an automatic 'no thank you' response to matching characters if they message you
+                     {{l('rising.filter.automate')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.penalizeMatches">
                     <input type="checkbox" id="risingFilter.penalizeMatches" v-model="risingFilter.penalizeMatches"/>
-                    Penalize <b>match scores</b> for matching characters
+                     {{l('rising.filter.penalize')}}
                 </label>
 
                 <label class="control-label" for="risingFilter.rewardNonMatches">
                     <input type="checkbox" id="risingFilter.rewardNonMatches" v-model="risingFilter.rewardNonMatches"/>
-                    Increase <b>match scores</b> for non-matching characters
+                     {{l('rising.filter.reward')}}
                 </label>
             </div>
 
-            <h5>Character Age Match</h5>
-            <div class="form-group">Leave empty for no limit.</div>
+            <h5>{{l('rising.header.ageMatch')}}</h5>
+            <div class="form-group">{{l('rising.age.match')}}</div>
 
             <div class="form-group">
-                <label class="control-label" for="risingFilter.minAge">Characters younger than (years)</label>
-                <input id="risingFilter.minAge" type="number" class="form-control" v-model="risingFilter.minAge" placeholder="Enter age" />
+                <label class="control-label" for="risingFilter.minAge">
+                    {{l('rising.age.min')}}
+                </label>
+                <input id="risingFilter.minAge" type="number" class="form-control" v-model="risingFilter.minAge" :placeholder="l('rising.age.enter')" />
 
-                <label class="control-label" for="risingFilter.maxAge">Characters older than (years)</label>
-                <input id="risingFilter.maxAge" type="number" class="form-control" v-model="risingFilter.maxAge" placeholder="Enter age" />
+                <label class="control-label" for="risingFilter.maxAge">
+                    {{l('rising.age.max')}}
+                </label>
+                <input id="risingFilter.maxAge" type="number" class="form-control" v-model="risingFilter.maxAge" :placeholder="l('rising.age.enter')" />
             </div>
 
-            <h5>Type Match</h5>
+            <h5>{{l('rising.header.typeMatch')}}</h5>
             <div class="form-group filters" >
                 <label class="control-label" :for="'risingFilter.smartFilters.' + key" v-for="(value, key) in smartFilterTypes">
                     <input type="checkbox" :id="'risingFilter.smartFilters.' + key" v-bind:checked="getSmartFilter(key)" @change="(v) => setSmartFilter(key, v)"/>
@@ -334,11 +339,11 @@
                 </label>
             </div>
 
-            <h5>Exception List</h5>
-            <div class="form-group">Filters are not applied to these character names. Separate names with a linefeed. Friends and bookmarked characters bypass filtering automatically.</div>
+            <h5>{{l('rising.header.exceptionList')}}</h5>
+            <div class="form-group">{{l('rising.exceptions')}}</div>
 
             <div class="form-group">
-                <textarea class="form-control" :value="getExceptionList()" @change="(v) => setExceptionList(v)" placeholder="Enter names"></textarea>
+                <textarea class="form-control" :value="getExceptionList()" @change="(v) => setExceptionList(v)" :placeholder="l('rising.exceptions.ph')"></textarea>
             </div>
         </div>
 
@@ -357,7 +362,9 @@
                 <option value="">{{l('settings.import.selectCharacter')}}</option>
                 <option v-for="character in availableImports" :value="character">{{character}}</option>
             </select>
-            <button class="btn btn-secondary" @click="doImport" :disabled="!importCharacter">{{l('settings.import')}}</button>
+            <button class="btn btn-secondary" @click="doImport" :disabled="!importCharacter">
+                {{l('settings.import')}}
+            </button>
         </div>
     </modal>
 </template>
