@@ -773,12 +773,12 @@ export class Matcher {
     }
 
     private resolveAgeScore(): Score {
-        const you = this.you;
-        const yourAge = this.yourAnalysis.age;
-        const theirAge = this.theirAnalysis.age;
+        const you = this.you;                          // "age is possibly null" -
+        const yourAge  = this.yourAnalysis.age  ?? -1; // How can a linter be so
+        const theirAge = this.theirAnalysis.age ?? -1; // bad at its own language?
 
         // Matches: They have no age, so you can't match anything
-        if (theirAge === null)
+        if (theirAge < 0)
             return new Score(Scoring.NEUTRAL);
 
         const underageScore = Matcher.getKinkPreference(you, Kink.UnderageCharacters);
@@ -787,14 +787,10 @@ export class Matcher {
         if (theirAge < 18 && underageScore !== null)
             return Matcher.formatKinkScore(underageScore, 'underage characters');
 
-        const bothHaveAge = yourAge  !== null
-                         && theirAge !== null;
-
         // 80 is a magic number and I'll accept debate to change it
         // The older a character is, the more nebulous o/y kinks become, so exclude large ranges.
-        const bothInHumanAgeRange = bothHaveAge
-                                 && yourAge  >     0 && theirAge  >     0
-                                 && yourAge  <=   80 && theirAge  <=   80;
+        const bothInHumanAgeRange = yourAge  >    0 && theirAge  >    0
+                                 && yourAge  <=  80 && theirAge  <=  80;
 
         if (bothInHumanAgeRange) {
             const ageDifference    = Math.abs(yourAge - theirAge);
