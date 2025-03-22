@@ -9,7 +9,7 @@
             <h6>{{l('chat.report.reporting')}}</h6>
             <p>{{character ? character.name : l('chat.report.general')}}</p>
             <h6>{{l('chat.report.text')}}</h6>
-            <textarea class="form-control" v-model="text"></textarea>
+            <textarea class="form-control" :placeholder="l('chat.report.fillIn')" v-model="text"></textarea>
         </div>
     </modal>
 </template>
@@ -62,8 +62,8 @@
             /*tslint:disable-next-line:no-unnecessary-callback-wrapper*///https://github.com/palantir/tslint/issues/2430
             const log = conversation.reportMessages.map((x) => messageToString(x));
             const tab = (Conversation.isChannel(conversation) ? `${conversation.name} (${conversation.channel.id})`
-                : Conversation.isPrivate(conversation) ? `Conversation with ${conversation.name}` : 'Console');
-            const text = (this.character !== undefined ? `Reporting user: [user]${this.character.name}[/user] | ` : '') + this.text;
+                : Conversation.isPrivate(conversation) ? l('chat.report.convoWith', conversation.name) : l('general.console'));
+            const text = (this.character !== undefined ? l('chat.report.reportingWho', this.character.name) : '') + this.text;
             const data = {
                 character: core.connection.character,
                 reportText: this.text,

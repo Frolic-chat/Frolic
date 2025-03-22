@@ -20,18 +20,21 @@
             </div>
         </div>
         <div class="form-group row" style="flex-shrink:0" v-show="showFilters">
-            <label class="col-sm-2 col-form-label">{{l('logs.conversation')}}</label>
+            <label class="col-sm-2 col-form-label">
+                {{l('logs.conversation')}}
+            </label>
             <div :class="canZip ? 'col-sm-8 col-10 col-xl-9' : 'col-sm-10'">
                 <filterable-select v-model="selectedConversation" :options="conversations" :filterFunc="filterConversation"
-                                   :placeholder="l('filter')">
+                                   :placeholder="l('general.filter')">
                     <template slot-scope="s">
                         {{s.option && ((s.option.key[0] == '#' ? '#' : '') + s.option.name) || l('logs.selectConversation')}}
                     </template>
                 </filterable-select>
             </div>
             <div class="col-2 col-xl-1" v-if="canZip">
-                <button @click="downloadConversation" class="btn btn-secondary form-control" :disabled="!selectedConversation"><span
-                    class="fa fa-download"></span></button>
+                <button @click="downloadConversation" class="btn btn-secondary form-control" :disabled="!selectedConversation">
+                    <span class="fa fa-download"></span>
+                </button>
             </div>
         </div>
         <div class="form-group row" style="flex-shrink:0" v-show="showFilters">
@@ -43,8 +46,9 @@
                 </select>
             </div>
             <div class="col-2 col-xl-1">
-                <button @click="downloadDay" class="btn btn-secondary form-control" :disabled="!selectedDate"><span
-                    class="fa fa-download"></span></button>
+                <button @click="downloadDay" class="btn btn-secondary form-control" :disabled="!selectedDate">
+                    <span class="fa fa-download"></span>
+                </button>
             </div>
         </div>
         <div class="messages messages-both" style="overflow:auto;overscroll-behavior:none;" ref="messages" tabindex="-1"
@@ -55,7 +59,7 @@
             <div class="input-group-prepend">
                 <div class="input-group-text"><span class="fas fa-search"></span></div>
             </div>
-            <input class="form-control" v-model="filter" :placeholder="l('filter')" v-show="messages" type="text"/>
+            <input class="form-control" v-model="filter" :placeholder="l('general.filter')" v-show="messages" type="text"/>
         </div>
     </modal>
 </template>

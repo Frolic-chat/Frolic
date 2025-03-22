@@ -1,7 +1,7 @@
 <template>
    <modal :buttons="false" ref="dialog" style="width:98%" dialogClass="">
         <template slot="title">
-            Channels for <user :character="character">{{character.name}}</user>
+            {{ l('characterChannels.title') }}<user :character="character">{{character.name}}</user>
         </template>
 
        <div class="user-channel-list" ref="pageBody" v-if="channels.length > 0">
@@ -11,7 +11,7 @@
         </div>
 
         <div class="user-channel-list" ref="pageBody" v-else>
-            <i><user :character="character">{{character.name}}</user> is not on any of the channels you are on.</i>
+            <i><user :character="character">{{character.name}}</user>{{ l('characterChannels.none') }}</i>
         </div>
 
    </modal>
@@ -21,6 +21,7 @@
 <script lang="ts">
 
 import * as _ from 'lodash';
+import l from '../localize';
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
@@ -34,6 +35,8 @@ import ChannelConversation = Conversation.ChannelConversation;
     components: {modal: Modal, user: UserView}
 })
 export default class CharacterChannelList extends CustomDialog {
+    l = l;
+
     @Prop({required: true})
     readonly character!: Character;
 

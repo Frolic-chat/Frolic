@@ -1,26 +1,26 @@
 <template>
-    <modal :action="'Ad Editor'" @submit="submit" ref="dialog" @open="load" dialogClass="w-100"
-        :buttonText="'Save'">
+    <modal :action="l('adEditor.title')" @submit="submit" ref="dialog" @open="load" dialogClass="w-100"
+        :buttonText="l('adEditor.save')">
 
         <div class="form-group ad-list" v-for="(ad, index) in ads">
             <label :for="'adm-content-' + index" class="control-label">Ad #{{(index + 1)}}
-                <a v-if="(index > 0)" @click="moveAdUp(index)" title="Move Up"><i class="fa fa-arrow-up"></i></a>
-                <a v-if="(index < ads.length - 1)" @click="moveAdDown(index)" title="Move Down"><i class="fa fa-arrow-down"></i></a>
-                <a @click="removeAd(index)" title="Remove Ad"><i class="fas fa-times-circle"></i></a>
+                <a v-if="(index > 0)" @click="moveAdUp(index)" :title="l('adEditor.moveUp')"><i class="fa fa-arrow-up"></i></a>
+                <a v-if="(index < ads.length - 1)" @click="moveAdDown(index)" :title="l('adEditor.moveDown')"><i class="fa fa-arrow-down"></i></a>
+                <a @click="removeAd(index)" :title="l('adEditor.remove')"><i class="fas fa-times-circle"></i></a>
             </label>
 
             <editor :id="'adm-content-' + index" v-model="ad.content" :hasToolbar="true" class="form-control" :maxlength="core.connection.vars.lfrp_max" :disabled="ad.disabled">
             </editor>
 
-            <tagEditor :id="'adm-tags-' + index" v-model="ad.tags" placeholder="Enter one or more tags, e.g. 'romantic'" :add-tag-on-keys="[13, 188, 9, 32]" class="form-control" :disabled="ad.disabled" :add-tag-on-blur="true"></tagEditor>
+            <tagEditor :id="'adm-tags-' + index" v-model="ad.tags" :placeholder="l('adEditor.tags')" :add-tag-on-keys="[13, 188, 9, 32]" class="form-control" :disabled="ad.disabled" :add-tag-on-blur="true"></tagEditor>
 
             <label class="control-label disable" :for="'adm-disabled-' + index">
               <input type="checkbox" :id="'adm-disabled-' + index" v-model='ad.disabled' />
-              Disable
+              {{ l('adEditor.disable') }}
             </label>
         </div>
 
-        <button class="btn btn-outline-secondary" @click="addAd()">Add Another</button>
+        <button class="btn btn-outline-secondary" @click="addAd()">{{ l('adEditor.another') }}</button>
 
     </modal>
 </template>
@@ -69,7 +69,7 @@
 
         removeAd(index: number): void {
             // if (confirm('Are you sure you wish to remove this ad?')) {
-            if (Dialog.confirmDialog('Are you sure you wish to remove this ad?')) {
+            if (Dialog.confirmDialog(l('adEditor.removeConfirm'))) {
                 this.ads.splice(index, 1);
             }
         }
@@ -168,4 +168,3 @@
   }
 
 </style>
-

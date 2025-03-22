@@ -1,7 +1,7 @@
 <template>
     <modal :action="l('settings.action')" @submit="submit" @open="load()" id="settings" dialogClass="w-100">
         <tabs style="flex-shrink:0;margin-bottom:10px" v-model="selectedTab"
-            :tabs="[l('settings.tabs.general'), l('settings.tabs.notifications'), 'Bonus 🌺', 'Smart Filters 🌺', l('settings.tabs.hideAds'), l('settings.tabs.import')]"></tabs>
+            :tabs="[l('settings.tabs.general'), l('settings.tabs.notifications'), l('settings.tabs.bonus'), l('settings.tabs.filters'), l('settings.tabs.hideAds'), l('settings.tabs.import')]"></tabs>
         <div v-show="selectedTab === '0'">
             <div class="form-group">
                 <label class="control-label" for="disallowedTags">{{l('settings.disallowedTags')}}</label>
@@ -240,7 +240,7 @@
             <div class="form-group">
                 <label class="control-label" for="risingShowHighQualityPortraits">
                     <input type="checkbox" id="risingShowHighQualityPortraits" v-model="risingShowHighQualityPortraits"/>
-                    {{l('rising.misc.chatPortrait')}}
+                    {{l('rising.misc.risingPortraits')}}
                 </label>
             </div>
 
@@ -262,7 +262,8 @@
             <div class="warning">
               <h5>{{l('rising.header.dangerZone')}}</h5>
               <div>{{l('rising.filter.warning')}}</div>
-
+              <div>{{l('rising.filter.adminWarning')}}</div>
+              <div>{{l('rising.filter.naToFriends')}}</div>
               <div>{{l('rising.filter.beta')}}</div>
             </div>
 

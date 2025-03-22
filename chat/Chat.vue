@@ -5,7 +5,8 @@
             <h3 class="card-header" style="margin-top:0;display:flex">
                 {{l('title')}}
                 <a href="#" @click.prevent="showLogs()" class="btn" style="flex:1;text-align:right">
-                    <span class="fa fa-file-alt"></span> <span class="btn-text">{{l('logs.title')}}</span>
+                    <span class="fa fa-file-alt"></span>
+                    <span class="btn-text">{{l('logs.title')}}</span>
                 </a>
             </h3>
             <div class="card-body">

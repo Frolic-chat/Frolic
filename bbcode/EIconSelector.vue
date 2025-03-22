@@ -1,55 +1,55 @@
 <template>
-  <modal action="Select EIcon" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
+  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
     <div class="eicon-selector-ui">
       <div v-if="!store || refreshing" class="d-flex align-items-center loading">
-        <strong>Loading...</strong>
+        <strong>{{ l('eicon.loading') }}</strong>
         <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
       </div>
       <div v-else>
         <div>
           <div class="search-bar">
-            <input type="text" class="form-control search" id="search" v-model="search" ref="search" placeholder="Search eicons..." tabindex="0" @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop />
+            <input type="text" class="form-control search" id="search" v-model="search" ref="search" :placeholder="l('eicon.search')" tabindex="0" @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop />
             <div class="btn-group search-buttons">
-              <div class="btn expressions" @click.prevent.stop="runSearch('category:favorites')" title="Favorites" role="button" tabindex="0">
+              <div class="btn expressions" @click.prevent.stop="runSearch('category:favorites')" :title="l('eicon.favorites')" role="button" tabindex="0">
                 <i class="fas fa-thumbtack"></i>
               </div>
 
-              <div class="btn expressions" @click.prevent.stop="runSearch('category:expressions')" title="Expressions" role="button" tabindex="0">
+              <div class="btn expressions" @click.prevent.stop="runSearch('category:expressions')" :title="l('eicon.expressions')" role="button" tabindex="0">
                 <i class="fas fa-theater-masks"></i>
               </div>
 
-              <div class="btn sexual" @click.prevent.stop="runSearch('category:sexual')" title="Sexual" role="button" tabindex="0">
+              <div class="btn sexual" @click.prevent.stop="runSearch('category:sexual')" :title="l('eicon.sexual')" role="button" tabindex="0">
                 <i class="fas fa-heart"></i>
               </div>
 
-              <div class="btn bubbles" @click.prevent.stop="runSearch('category:bubbles')" title="Speech bubbles" role="button" tabindex="0">
+              <div class="btn bubbles" @click.prevent.stop="runSearch('category:bubbles')" :title="l('eicon.speech')" role="button" tabindex="0">
                 <i class="fas fa-comment"></i>
               </div>
 
-              <div class="btn actions" @click.prevent.stop="runSearch('category:symbols')" title="Symbols" role="button" tabindex="0">
+              <div class="btn actions" @click.prevent.stop="runSearch('category:symbols')" :title="l('eicon.symbols')" role="button" tabindex="0">
                 <i class="fas fa-icons"></i>
               </div>
 
-              <div class="btn memes" @click.prevent.stop="runSearch('category:memes')" title="Memes" role="button" tabindex="0">
+              <div class="btn memes" @click.prevent.stop="runSearch('category:memes')" :title="l('eicon.memes')" role="button" tabindex="0">
                 <i class="fas fa-poo"></i>
               </div>
 
-              <div class="btn random" @click.prevent.stop="runSearch('category:random')" title="Random" role="button" tabindex="0">
+              <div class="btn random" @click.prevent.stop="runSearch('category:random')" :title="l('eicon.random')" role="button" tabindex="0">
                 <i class="fas fa-random"></i>
               </div>
 
-              <div class="btn refresh" @click.prevent.stop="refreshIcons()" title="Refresh eicons data" role="button" tabindex="0">
+              <div class="btn refresh" @click.prevent.stop="refreshIcons()" :title="l('eicon.refresh')" role="button" tabindex="0">
                 <i class="fas fa-sync"></i>
               </div>
             </div>
           </div>
 
           <div class="courtesy">
-            Courtesy of <a href="https://xariah.net/eicons">xariah.net</a>
+            {{ l('eicon.thanks') }}<a href="https://xariah.net/eicons">xariah.net</a>
           </div>
 
           <div class="upload">
-            <a href="https://www.f-list.net/icons.php">Upload eicons</a>
+            <a href="https://www.f-list.net/icons.php">{{ l('eicon.upload') }}</a>
           </div>
         </div>
 
@@ -58,7 +58,7 @@
             <div class="carousel-item" v-for="eicon in results" role="img" :aria-label="eicon" tabindex="0">
               <img class="eicon" :alt="eicon" :src="'https://static.f-list.net/images/eicon/' + eicon + '.gif'" :title="eicon" role="button" :aria-label="eicon" @click.prevent.stop="selectIcon(eicon, $event)">
 
-              <div class="btn favorite-toggle" :class="{ favorited: isFavorite(eicon) }" @click.prevent.stop="toggleFavorite(eicon)" role="button" :aria-label="isFavorite(eicon) ? 'Remove from favorites' : 'Add to favorites'">
+              <div class="btn favorite-toggle" :class="{ favorited: isFavorite(eicon) }" @click.prevent.stop="toggleFavorite(eicon)" role="button" :aria-label="isFavorite(eicon) ? l('eicon.favRemove') : l('eicon.favAdd')">
                 <i class="fas fa-thumbtack"></i>
               </div>
             </div>
@@ -72,6 +72,7 @@
 
 <script lang="ts">
 import _ from 'lodash';
+import l from '../chat/localize';
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 // import Vue from 'vue';
 import log from 'electron-log'; //tslint:disable-line:match-default-export-name
@@ -91,6 +92,8 @@ export default class EIconSelector extends CustomDialog {
   results: string[] = [];
 
   search: string = '';
+
+  l = l;
 
   refreshing = false;
 

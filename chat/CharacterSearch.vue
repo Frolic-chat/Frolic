@@ -3,26 +3,26 @@
         :buttonText="state === 'results' ? l('characterSearch.again') : undefined" class="character-search">
         <div v-if="options && state === 'search'">
             <div v-show="error" class="alert alert-danger">{{error}}</div>
-            <filterable-select v-model="data.kinks" :multiple="true" :placeholder="l('filter')"
+            <filterable-select v-model="data.kinks" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.kinks')" :filterFunc="filterKink" :options="options.kinks">
                 <template slot-scope="s">{{s.option.name}}</template>
             </filterable-select>
             <filterable-select v-for="item in listItems" :multiple="true"
-                v-model="data[item]" :placeholder="l('filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
+                v-model="data[item]" :placeholder="l('general.filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
             </filterable-select>
 
-            <filterable-select class="species-filter" v-model="data.species" :filterFunc="filterSpecies" :multiple="true" :placeholder="l('filter')"
+            <filterable-select class="species-filter" v-model="data.species" :filterFunc="filterSpecies" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.species')" :options="options.species">
                 <template slot-scope="s">{{s.option.shortName}} <small>{{s.option.details}}</small></template>
             </filterable-select>
 
             <div v-if="searchString" class="search-string">
-                Searching for <span>{{searchString}}</span>
+                {{l('characterSearch.pending')}} <span>{{searchString}}</span>
             </div>
 
             <div class="btn-group">
-                <button class="btn btn-outline-secondary" @click.prevent="showHistory()">History</button>
-                <button class="btn btn-outline-secondary" @click.prevent="reset()">Reset</button>
+                <button class="btn btn-outline-secondary" @click.prevent="showHistory()">{{l('characterSearch.history')}}</button>
+                <button class="btn btn-outline-secondary" @click.prevent="reset()">{{l('characterSearch.reset')}}</button>
             </div>
 
             <search-history ref="searchHistory" :callback="updateSearch" :curSearch="data"></search-history>
@@ -30,15 +30,14 @@
         <div v-else-if="state === 'results'" class="results">
             <div class="debug" v-show="false">
               <textarea v-model="debugSearchJson"></textarea>
-              <button class="btn" @click.prevent="debugUpdateResults()">Update</button>
+              <button class="btn" @click.prevent="debugUpdateResults()">{{l('characterSearch.update')}}</button>
             </div>
 
             <h4 v-if="hasReceivedResults">
-                {{results.length}} {{l('characterSearch.results')}}
-
-                <span v-if="resultsPending > 0" class="pending">Scoring {{resultsPending}}... <i class="fas fa-circle-notch fa-spin search-spinner"></i></span>
+                {{ l('characterSearch.results', results.length) }}
+                <span v-if="resultsPending > 0" class="pending">{{ l('characterSearch.scoring', resultsPending) }} <i class="fas fa-circle-notch fa-spin search-spinner"></i></span>
             </h4>
-            <h4 v-else>Searching...</h4>
+            <h4 v-else>{{l('characterSearch.searching')}}</h4>
 
             <div v-for="record in results" :key="record.character.name" class="search-result" :class="'status-' + record.character.status">
                 <template v-if="record.character.status === 'looking'" v-once>

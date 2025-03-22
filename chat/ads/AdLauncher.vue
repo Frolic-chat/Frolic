@@ -1,9 +1,9 @@
 <template>
-  <modal action="Post Ads" @submit="submit" ref="dialog" @reopen="load" @open="load" dialogClass="w-100" class="adLauncher" :buttonText="'Start Posting Ads'">
+  <modal :action="l('ads.post.title')" @submit="submit" ref="dialog" @reopen="load" @open="load" dialogClass="w-100" class="adLauncher" :buttonText="l('ads.post.start')">
     <div v-if="hasAds()">
-        <h4>Ad Tags</h4>
+        <h4>{{ l('ads.post.tagTitle') }}</h4>
         <div class="form-group">
-            <p>Serve ads that match any one of these tags:</p>
+            <p>{{ l('ads.post.desc') }}</p>
 
             <label class="control-label" :for="`adr-tag-${index}`" v-for="(tag,index) in tags">
                 <input type="checkbox" v-model="tag.value" :id="`adr-tag-${index}`" />
@@ -11,15 +11,15 @@
             </label>
         </div>
 
-        <h4>Target Channels</h4>
+        <h4>{{ l('ads.post.target.title') }}</h4>
         <div class="form-group">
-            <p>Serve ads on these channels:</p>
+            <p>{{ l('ads.post.target') }}</p>
 
-            <p v-if="channels.length === 0">You have no channels open that support ad posting. Open some channels first.</p>
+            <p v-if="channels.length === 0">{{ l('ads.post.noChannels') }}</p>
 
             <label class="control-label">
                 <input type="checkbox" id="ard-all-channels" @change="selectAllChannels($event)" />
-                <i>Select/unselect all</i>
+                <i>{{ l('ads.post.selectAll') }}</i>
             </label>
 
             <label class="control-label" :for="`adr-channel-${index}`" v-for="(channel,index) in channels">
@@ -28,22 +28,22 @@
             </label>
         </div>
 
-        <h4>Post Order</h4>
+        <h4>{{ l('ads.post.order.title') }}</h4>
         <div class="form-group">
             <label class="control-label" for="adOrderRandom">
                 <input type="radio" v-model="adOrder" value="random" id="adOrderRandom" />
-                Random order
+                {{ l('ads.post.random') }}
             </label>
             <label class="control-label" for="adOrderAdCenter">
                 <input type="radio" v-model="adOrder" value="ad-center" id="adOrderAdCenter" />
-                Follow order in Ad Center
+                {{ l('ads.post.ordered') }}
             </label>
         </div>
 
-        <h4>Campaign</h4>
+        <h4>{{ l('ads.post.campaign') }}</h4>
         <div class="form-group">
             <label class="control-label" for="timeoutMinutes">
-              Timeout
+              {{ l('ads.post.timeout') }}
             </label>
 
             <select class="form-control" v-model="timeoutMinutes" id="timeoutMinutes">
@@ -52,13 +52,13 @@
         </div>
 
         <p class="matches">
-          <b>{{matchCount}}</b> ads will be used.
+          <b>{{matchCount}}</b>{{ l('ads.post.used') }}
         </p>
     </div>
     <div v-else>
-      <h4>No Ads to Post!</h4>
+      <h4>{{ l('ads.post.noAds') }}</h4>
 
-      <p>Use the <button class="btn btn-outline-secondary" @click="openAdEditor()">Ad Editor</button> to create some ads first, then return here to post them.</p>
+      <p>{{ l('ads.post.create1') }}<button class="btn btn-outline-secondary" @click="openAdEditor()">{{ l('ads.post.adEditor') }}</button>{{ l('ads.post.create2') }}</p>
     </div>
   </modal>
 </template>
@@ -69,12 +69,15 @@ import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import core from '../core';
 import _ from 'lodash';
+import l from '../localize';
 import AdCenterDialog from './AdCenter.vue';
 
 @Component({
     components: {modal: Modal}
 })
 export default class AdLauncherDialog extends CustomDialog {
+  l = l;
+
   adOrder: 'random' | 'ad-center' = 'random';
 
   matchCount = 0;
@@ -86,10 +89,10 @@ export default class AdLauncherDialog extends CustomDialog {
   channels: { value: boolean, title: string, id: string }[] = [];
 
   timeoutOptions = [
-    { value: 30, title: '30 minutes' },
-    { value: 60, title: '1 hour' },
-    { value: 120, title: '2 hours' },
-    { value: 180, title: '3 hours' }
+    { value: 30, title: '30 '+l('ads.post.minutes') },
+    { value: 60, title: '1 '+l('ads.post.hour') },
+    { value: 120, title: '2 '+l('ads.post.hours') },
+    { value: 180, title: '3 '+l('ads.post.hours') }
   ]
 
   load() {
@@ -153,13 +156,13 @@ export default class AdLauncherDialog extends CustomDialog {
 
     if (tags.length === 0) {
       e.preventDefault();
-      alert('Select at least one tag to post');
+      alert(l('ads.post.alert.tag'));
       return;
     }
 
     if (channelIds.length === 0) {
       e.preventDefault();
-      alert('Select at least one channel to post in');
+      alert(l('ads.post.alert.channel'));
       return;
     }
 
@@ -174,7 +177,7 @@ export default class AdLauncherDialog extends CustomDialog {
         return true;
       }
 
-      return confirm(`Warning: This action will overwrite ads on channel ${chan.name}. Ads that are not stored in the Ad Center will be lost. Are you sure you wish to continue?`);
+      return confirm(l('ads.post.warn', chan.name));
     })) {
       e.preventDefault();
       return;

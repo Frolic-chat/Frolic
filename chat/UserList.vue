@@ -13,26 +13,30 @@
         </div>
         <div v-if="channel" style="padding-left:5px;flex:1;display:flex;flex-direction:column" v-show="tab === '1'">
             <div class="users" style="flex:1;padding-left:5px">
-                <h4>{{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fa fa-sort"></i></a></h4>
+                <h4>
+                  {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fa fa-sort"></i></a>
+                </h4>
                 <div v-for="member in filteredMembers" :key="member.character.name">
                     <user :character="member.character" :channel="channel" :showStatus="true"></user>
                 </div>
             </div>
             <div class="input-group" style="margin-top:5px;flex-shrink:0">
                 <div class="input-group-prepend">
-                    <div class="input-group-text"><span class="fas fa-search"></span></div>
+                    <div class="input-group-text">
+                        <span class="fas fa-search"></span>
+                    </div>
                 </div>
-                <input class="form-control" v-model="filter" :placeholder="l('filter')" type="text"/>
+                <input class="form-control" v-model="filter" :placeholder="l('general.filter')" type="text"/>
             </div>
         </div>
         <div v-if="!channel && !isConsoleTab" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
 
-          <a :href="profileUrl" target="_blank" class="btn profile-button">
-              <span class="fa fa-fw fa-user"></span>
-              Full Profile
-          </a>
+            <a :href="profileUrl" target="_blank" class="btn profile-button">
+                <span class="fa fa-fw fa-user"></span>
+                {{l('userlist.profile')}}
+            </a>
 
-          <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
+            <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
         </div>
     </sidebar>
 </template>

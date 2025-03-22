@@ -20,13 +20,14 @@
             <div class="row">
               <div class="col-12">
                 <div class="warning">
-              <h5>Danger Zone!</h5>
-              <div>This is an advanced setting. By changing this setting to an unsupported program (i.e. not a browser), you might not be able to open links from F-Chat anymore.</div>
-
-              <div v-if="isMac"><hr/>
-                <p>Mac User: As of writing, MacOS has a bug in how it handles opening links.</p>
-                <p>When your default browser is something other than Safari and you select Safari in this settings window, links might be opened twice.</p>
-                <p>Once in Safari and a second time in your default browser. This tends to happen when Safari is not running when clicking a link.</p></div>
+              <h5>{{ l('settings.browserOptionWarning.title') }}</h5>
+              <div>{{ l('settings.browserOptionWarning.msg') }}</div>
+              <div v-if="isMac">
+                <hr/>
+                <p>{{ l('settings.browserOptionWarning.mac1') }}</p>
+                <p>{{ l('settings.browserOptionWarning.mac2') }}</p>
+                <p>{{ l('settings.browserOptionWarning.mac3') }}</p>
+              </div>
               </div>
             </div>
             </div>

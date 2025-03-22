@@ -1,7 +1,7 @@
 <template>
    <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="ads-dialog">
         <template slot="title">
-            Channel Ads for <user :character="character">{{character.name}}</user>
+            {{ l('characterAds.none') }}<user :character="character">{{character.name}}</user>
         </template>
 
        <div class="row ad-viewer" ref="pageBody" v-if="messages.length > 0">
@@ -14,7 +14,7 @@
         </div>
 
         <div class="row ad-viewer" ref="pageBody" v-else>
-            <i><user :character="character">{{character.name}}</user> has not posted any ads on the channels you are on.</i>
+            <i><user :character="character">{{character.name}}</user>{{ l('characterAds.none') }}</i>
         </div>
 
    </modal>
@@ -24,6 +24,7 @@
 <script lang="ts">
 
 import * as _ from 'lodash';
+import l from '../localize';
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
@@ -38,6 +39,8 @@ import { BBCodeView } from '../../bbcode/view';
     components: {modal: Modal, user: UserView, bbcode: BBCodeView(core.bbCodeParser)}
 })
 export default class CharacterAdView extends CustomDialog {
+    l = l;
+
     @Prop({required: true})
     readonly character!: Character;
 

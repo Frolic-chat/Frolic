@@ -2,7 +2,9 @@
     <modal :action="l('conversationSettings.action', conversation.name)" @submit="submit" ref="dialog" @open="load()" dialogClass="w-100"
         :buttonText="l('conversationSettings.save')">
         <div class="form-group">
-            <label class="control-label" :for="'notify' + conversation.key">{{l('conversationSettings.notify')}}</label>
+            <label class="control-label" :for="'notify' + conversation.key">
+                {{l('conversationSettings.notify')}}
+            </label>
             <select class="form-control" :id="'notify' + conversation.key" v-model="notify">
                 <option :value="setting.Default">{{l('settings.useGlobalSetting')}}</option>
                 <option :value="setting.True">{{l('conversationSettings.true')}}</option>
@@ -39,7 +41,9 @@
             </label>
         </div>
         <div class="form-group">
-            <label class="control-label" :for="'highlightWords' + conversation.key">{{l('settings.highlightWords')}}</label>
+            <label class="control-label" :for="'highlightWords' + conversation.key">
+                {{l('settings.highlightWords')}}
+            </label>
             <input :id="'highlightWords' + conversation.key" class="form-control" v-model="highlightWords"/>
         </div>
         <div class="form-group"><hr></div>

@@ -1,5 +1,5 @@
 <template>
-    <modal ref="dialog" action="Status message history" buttonText="Select" @open="onMounted()" @submit="selectStatus" dialogClass="w-100 modal-lg">
+    <modal ref="dialog" :action="l('chat.status.history')" :buttonText="l('general.select')" @open="onMounted()" @submit="selectStatus" dialogClass="w-100 modal-lg">
         <form class="status-picker" v-if="history.length > 0">
             <div class="form-row" v-for="(historicStatus, index) in history" :class="{ 'selected-row': (index === selectedStatus)}">
                 <div class="form-col radio-col">
@@ -15,7 +15,7 @@
             </div>
         </form>
         <div v-else>
-            <i>This character has no status message history.</i>
+            <i>{{ l('chat.status.history.none') }}</i>
         </div>
     </modal>
 </template>
@@ -28,6 +28,7 @@
     import { BBCodeView } from '../bbcode/view';
     import * as _ from 'lodash';
     import { Dialog } from '../helpers/dialog';
+    import l from './localize';
 
     @Component({
         components: {modal: Modal, bbcode: BBCodeView(core.bbCodeParser)}
@@ -40,6 +41,8 @@
         readonly curStatus!: string | undefined;
 
         history: string[] = [];
+
+        l = l;
 
         selectedStatus: number | null = null;
 

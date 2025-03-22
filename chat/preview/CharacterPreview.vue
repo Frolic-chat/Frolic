@@ -14,7 +14,7 @@
 
         <div class="summary">
           <span class="uc">
-            <span v-if="age" :class="byScore(TagId.Age)">{{age}}-years-old </span>
+            <span v-if="age" :class="byScore(TagId.Age)">{{ l('characterPreview.yearsOld', age) }}</span>
             <span v-if="sexualOrientation" :class="byScore(TagId.Orientation)">{{sexualOrientation}} </span>
             <span v-if="gender" :class="byScore(TagId.Gender)">{{gender}} </span>
             <span v-if="species" :class="byScore(TagId.Species)">{{species}} </span>
@@ -37,17 +37,17 @@
 <!--        </div>-->
 
         <div class="memo" v-if="memo">
-          <h4>Memo</h4>
+          <h4>{{ l('characterPreview.memo') }}</h4>
           <div>{{ memo }}</div>
         </div>
 
         <div class="status-message" v-if="statusMessage">
-          <h4>Status <span v-if="latestAd && (statusMessage === latestAd.message)">&amp; Latest Ad</span></h4>
+          <h4>{{ l('characterPreview.status') }} <span v-if="latestAd && (statusMessage === latestAd.message)">{{ l('characterPreview.status2') }}</span></h4>
           <bbcode :text="statusMessage"></bbcode>
         </div>
 
         <div class="conversation" v-if="conversation && conversation.length > 0">
-          <h4>Latest Messages</h4>
+          <h4>{{ l('characterPreview.messages') }}</h4>
 
           <template v-for="message in conversation">
               <message-view :message="message" :key="message.id">
@@ -56,13 +56,13 @@
         </div>
 
         <div class="latest-ad-message" v-if="latestAd && (latestAd.message !== statusMessage)">
-          <h4>Latest Ad <span class="message-time">{{formatTime(latestAd.datePosted)}}</span></h4>
+          <h4>{{ l('characterPreview.ad') }} <span class="message-time">{{formatTime(latestAd.datePosted)}}</span></h4>
           <bbcode :text="latestAd.message"></bbcode>
         </div>
       </div>
     </div>
     <div v-else>
-      Loading...
+      {{ l('general.loading') }}
     </div>
   </div>
 </template>
@@ -77,6 +77,7 @@ import { Matcher, MatchReport, Score } from '../../learn/matcher';
 import { Character as CharacterStatus } from '../../fchat';
 import { getStatusClasses, StatusClasses } from '../UserView.vue';
 import * as _ from 'lodash';
+import l from '../localize';
 import { AdCachedPosting } from '../../learn/ad-cache';
 import {formatTime} from '../common';
 import * as Utils from '../../site/utils';
@@ -122,6 +123,7 @@ export default class CharacterPreview extends Vue {
   latestAd?: AdCachedPosting;
   statusMessage?: string;
   memo?: string;
+  l = l;
 
   smartFilterIsFiltered?: boolean;
   smartFilterDetails?: string[];
@@ -368,6 +370,7 @@ export default class CharacterPreview extends Vue {
     this.sexualOrientation = a.orientation ? this.readable(Orientation[a.orientation]) : undefined;
   }
 
+  // Hard string replacements are english coded. Do these ever risk appearing in another language?
   readable(s: string): string {
     return s.replace(/([A-Z])/g, ' $1').trim().toLowerCase()
       .replace(/(always|usually) (submissive|dominant)/, '$2')

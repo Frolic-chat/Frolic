@@ -7,7 +7,7 @@
                     <div class="input-group-prepend">
                         <div class="input-group-text"><span class="fas fa-search"></span></div>
                     </div>
-                    <input class="form-control" style="flex:1; margin-right:10px;" v-model="filter" :placeholder="l('filter')"/>
+                    <input class="form-control" style="flex:1; margin-right:10px;" v-model="filter" :placeholder="l('general.filter')"/>
                     <a href="#" @click.prevent="sortCount = !sortCount" style="align-self:center">
                         <span class="fa fa-2x" :class="{'fa-sort-amount-down': sortCount, 'fa-sort-alpha-down': !sortCount}"></span>
                     </a>

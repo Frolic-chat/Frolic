@@ -19,7 +19,7 @@
             <div class="input-group-prepend">
                 <div class="input-group-text"><span class="fas fa-search"></span></div>
             </div>
-            <input class="form-control" v-model="filter" :placeholder="l('filter')"/>
+            <input class="form-control" v-model="filter" :placeholder="l('general.filter')"/>
         </div>
     </modal>
 </template>

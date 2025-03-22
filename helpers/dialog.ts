@@ -1,4 +1,5 @@
 import * as remote from '@electron/remote';
+import l from '../chat/localize';
 
 export class Dialog {
   static confirmDialog(message: string): boolean {
@@ -6,7 +7,7 @@ export class Dialog {
       message,
       title: 'Frolic',
       type: 'question',
-      buttons: ['Yes', 'No'],
+      buttons: [l('confirmYes'), l('confirmNo')],
       defaultId: 1,
       cancelId: 1
     });

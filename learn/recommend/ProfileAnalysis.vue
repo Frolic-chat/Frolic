@@ -1,28 +1,28 @@
 <template>
   <div class="profile-analysis-wrapper" ref="profileAnalysisWrapper">
     <div v-if="!analyzing && !recommendations.length">
-      <h3>Looking good!</h3>
-      <p>The profile analyzer could not find any improvement recommendations for your profile.</p>
+      <h3>{{l('phelper.good')}}</h3>
+      <p>{{l('phelper.noImprovements')}}</p>
     </div>
 
     <div v-else-if="analyzing && !recommendations.length">
-      <p>Having problems with finding good matches?</p>
+      <p>{{l('phelper.hook')}}</p>
       <p>&nbsp;</p>
-      <p>The profile analyzer will identify if your profile could benefit from adjustments.</p>
+      <p>{{l('phelper.goal')}}</p>
       <p>&nbsp;</p>
-      <h3>Analyzing...</h3>
+      <h3>{{l('phelper.working')}}</h3>
     </div>
 
     <div v-else>
-      <p>Having problems with finding good matches?</p>
+      <p>{{l('phelper.hook')}}</p>
       <p>&nbsp;</p>
-      <p>The profile analyzer recommends the following adjustments to your profile:</p>
+      <p>{{l('phelper.recommendations')}}</p>
 
       <ul>
         <li v-for="r in recommendations" class="recommendation" :class="r.level">
           <h3>{{r.title}}</h3>
           <p>{{r.desc}}</p>
-          <p class="more-info" v-if="r.helpUrl"><a :href="r.helpUrl">Here's how</a></p>
+          <p class="more-info" v-if="r.helpUrl"><a :href="r.helpUrl">{{l('phelper.heresHow')}}</a></p>
         </li>
       </ul>
     </div>
@@ -35,11 +35,13 @@ import core from '../../chat/core';
 import { ProfileRecommendation, ProfileRecommendationAnalyzer } from './profile-recommendation';
 import { CharacterAnalysis } from '../matcher';
 import { methods } from '../../site/character_page/data_store';
+import l from '../../chat/localize';
 
 @Component({})
 export default class ProfileAnalysis extends Vue {
   recommendations: ProfileRecommendation[] = [];
   analyzing = false;
+  l = l;
 
   async analyze() {
     this.analyzing = true;

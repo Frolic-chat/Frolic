@@ -2,11 +2,11 @@
     <!-- hiding elements instead of using 'v-if' is used here as an optimization -->
     <div class="image-preview-wrapper" :class="{interactive: sticky, visible: visible}">
         <div class="image-preview-toolbar" v-show="sticky || debug">
-            <a @click="toggleDevMode()" :class="{toggled: debug}" title="Debug Mode"><i class="fa fa-terminal"></i></a>
-            <a @click="toggleJsMode()" :class="{toggled: runJs}" title="Expand Images"><i class="fa fa-magic"></i></a>
-            <a @click="reloadUrl()" title="Reload Image"><i class="fa fa-redo-alt"></i></a>
-            <a @click="reset()" title="Reset Image Viewer"><i class="fa fa-recycle"></i></a>
-            <a @click="toggleStickyMode()" :class="{toggled: sticky}" title="Toggle Stickyness"><i class="fa fa-thumbtack"></i></a>
+            <a @click="toggleDevMode()" :class="{toggled: debug}" :title="l('preview.debug')"><i class="fa fa-terminal"></i></a>
+            <a @click="toggleJsMode()" :class="{toggled: runJs}" :title="l('preview.expand')"><i class="fa fa-magic"></i></a>
+            <a @click="reloadUrl()" :title="l('preview.reload')"><i class="fa fa-redo-alt"></i></a>
+            <a @click="reset()" :title="l('preview.reset')"><i class="fa fa-recycle"></i></a>
+            <a @click="toggleStickyMode()" :class="{toggled: sticky}" :title="l('preview.sticky')"><i class="fa fa-thumbtack"></i></a>
         </div>
 
         <!-- note: preload requires a webpack config CopyPlugin configuration -->
@@ -43,6 +43,7 @@
 
 <script lang="ts">
     import * as _ from 'lodash';
+    import l from '../localize';
     import {Component, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../core';
@@ -87,6 +88,8 @@
         private readonly MinTimePreviewVisible = 100;
 
         visible = false;
+
+        l = l;
 
         previewManager = new PreviewManager(
           this,
@@ -758,6 +761,7 @@
             height: 3.5rem;
             display: flex;
             -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
             flex-direction: row;
             width: 15rem;
             flex-wrap: nowrap;

@@ -13,30 +13,53 @@
             <match-tags v-if="match" :match="match" class="list-group-item"></match-tags>
 
             <a tabindex="-1" :href="profileLink" target="_blank" v-if="showProfileFirst" class="list-group-item list-group-item-action">
-                <span class="fa fa-fw fa-user"></span>{{l('user.profile')}}</a>
+                <span class="fa fa-fw fa-user"></span>
+                {{l('user.profile')}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="openConversation(true)" class="list-group-item list-group-item-action">
-                <span class="fa fa-fw fa-comment"></span>{{l('user.messageJump')}}</a>
+                <span class="fa fa-fw fa-comment"></span>
+                {{l('user.messageJump')}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="openConversation(false)" class="list-group-item list-group-item-action">
-                <span class="fa fa-fw fa-plus"></span>{{l('user.message')}}</a>
+                <span class="fa fa-fw fa-plus"></span>
+                {{l('user.message')}}
+            </a>
             <a tabindex="-1" :href="profileLink" target="_blank" v-if="!showProfileFirst" class="list-group-item list-group-item-action">
-                <span class="fa fa-fw fa-user"></span>{{l('user.profile')}}</a>
+                <span class="fa fa-fw fa-user"></span>
+                {{l('user.profile')}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="showMemo()" class="list-group-item list-group-item-action">
-                <span class="far fa-fw fa-sticky-note"></span>{{l('user.memo')}}</a>
+                <span class="far fa-fw fa-sticky-note"></span>
+                {{l('user.memo')}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="setBookmarked()" class="list-group-item list-group-item-action">
-                <span class="far fa-fw fa-bookmark"></span>{{l('user.' + (character.isBookmarked ? 'unbookmark' : 'bookmark'))}}</a>
+                <span class="far fa-fw fa-bookmark"></span>
+                {{l('user.' + (character.isBookmarked ? 'unbookmark' : 'bookmark'))}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
-                <span class="far fa-fw fa-ad"></span>Show ad log
+                <span class="far fa-fw fa-ad"></span>
+                {{l('user.adLog')}}
             </a>
             <a tabindex="-1" href="#" @click.prevent="setHidden()" class="list-group-item list-group-item-action" v-show="!isChatOp">
-                <span class="fa fa-fw fa-eye-slash"></span>{{l('user.' + (isHidden ? 'unhide' : 'hide'))}}</a>
+                <span class="fa fa-fw fa-eye-slash"></span>
+                {{l('user.' + (isHidden ? 'unhide' : 'hide'))}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="report()" class="list-group-item list-group-item-action" style="border-top-width:1px">
-                <span class="fa fa-fw fa-exclamation-triangle"></span>{{l('user.report')}}</a>
+                <span class="fa fa-fw fa-exclamation-triangle"></span>
+                {{l('user.report')}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="setIgnored()" class="list-group-item list-group-item-action">
-                <span class="fa fa-fw fa-minus-circle"></span>{{l('user.' + (character.isIgnored ? 'unignore' : 'ignore'))}}</a>
+                <span class="fa fa-fw fa-minus-circle"></span>
+                {{l('user.' + (character.isIgnored ? 'unignore' : 'ignore'))}}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="channelKick()" class="list-group-item list-group-item-action" v-show="isChannelMod">
-                <span class="fa fa-fw fa-ban"></span>{{l('user.channelKick')}}</a>
-            <a tabindex="-1" href="#" @click.prevent="chatKick()" style="color:#f00" class="list-group-item list-group-item-action"
-                v-show="isChatOp"><span class="fas fa-fw fa-trash"></span>{{l('user.chatKick')}}</a>
+                <span class="fa fa-fw fa-ban"></span>
+                {{l('user.channelKick')}}
+            </a>
+            <a tabindex="-1" href="#" @click.prevent="chatKick()" style="color:#f00" class="list-group-item list-group-item-action" v-show="isChatOp">
+                <span class="fas fa-fw fa-trash"></span>
+                {{l('user.chatKick')}}
+            </a>
         </div>
         <modal :action="l('user.memo.action')" ref="memo" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
             <div style="float:right;text-align:right;">{{getByteLength(memo)}} / 1000</div>
@@ -270,6 +293,3 @@ import { MemoManager } from './character/memo';
         z-index: -1;
     }
 </style>
-
-
-

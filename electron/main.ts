@@ -453,7 +453,7 @@ function onReady(): void {
         submenu: <electron.MenuItemConstructorOptions[]>[
             // {role: 'resetZoom'},
             {
-                label: 'Reset Zoom',
+                label: l('action.resetZoom'),
                 click: (_m: electron.MenuItem, _w: electron.BrowserWindow) => {
                     // log.info('MENU ZOOM0');
                     // w.webContents.setZoomLevel(0);
@@ -467,7 +467,7 @@ function onReady(): void {
             },
             {
                 // role: 'zoomIn',
-                label: 'Zoom In',
+                label: l('action.zoomIn'),
                 click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
 
                     // log.info('MENU ZOOM+');
@@ -481,7 +481,7 @@ function onReady(): void {
             },
             {
                 // role: 'zoomIn',
-                label: 'Zoom Out',
+                label: l('action.zoomOut'),
                 click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
                     // log.info('MENU ZOOM-');
                     zoomLevel = Math.max(0, zoomLevel - w.webContents.getZoomFactor()/2);
@@ -601,10 +601,10 @@ function onReady(): void {
 
                 {type: 'separator'},
                 {
-                    label: 'Rising',
+                    label: l('action.bonus'),
                     submenu: [
                         {
-                            label: 'System log level',
+                            label: l('action.logLevel'),
                             submenu: ['error', 'warn', 'info', 'verbose', 'debug', 'silly'].map((level: string) => (
                                 {
                                     checked: settings.risingSystemLogLevel === level,
@@ -616,7 +616,7 @@ function onReady(): void {
                         },
                         {
                             visible: process.platform === 'win32',
-                            label: 'Disable Windows high-contrast mode',
+                            label: l('action.toggleHighContrast'),
                             type: 'checkbox',
                             checked: settings.risingDisableWindowsHighContrast,
                             click: (item: electron.MenuItem) => {
@@ -633,7 +633,7 @@ function onReady(): void {
                     ]
                 },
                 {
-                    label: 'Show/hide current profile',
+                    label: l('action.profile'),
                     click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
                         w.webContents.send('reopen-profile');
                     },

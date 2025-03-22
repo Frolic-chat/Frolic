@@ -3,37 +3,55 @@
         @touchend="userMenuHandle">
         <sidebar id="sidebar" :label="l('chat.menu')" icon="fa-bars">
             <img :src="characterImage(ownCharacter.name)" v-if="showAvatars" style="float:left;margin-right:5px;margin-top:5px;width:70px; height: 70px;"/>
-            <a target="_blank" :href="ownCharacterLink" class="btn" style="display:block">{{ownCharacter.name}}</a>
-            <a href="#" @click.prevent="logOut()" class="btn"><i class="fas fa-sign-out-alt"></i>{{l('chat.logout')}}</a><br/>
+            <a target="_blank" :href="ownCharacterLink" class="btn" style="display:block">
+                {{ownCharacter.name}}
+            </a>
+            <a href="#" @click.prevent="logOut()" class="btn">
+                <i class="fas fa-sign-out-alt"></i>
+                {{l('chat.logout')}}
+            </a>
+            <br/>
             <div>
                 {{l('chat.status')}}
                 <a href="#" @click.prevent="showStatus()" class="btn">
-                    <span class="fas fa-fw" :class="getStatusIcon(ownCharacter.status)"></span>{{l('status.' + ownCharacter.status)}}
+                    <span class="fas fa-fw" :class="getStatusIcon(ownCharacter.status)"></span>
+                    {{l('status.' + ownCharacter.status)}}
                 </a>
             </div>
             <div style="clear:both">
-                <a href="#" @click.prevent="showSearch()" class="btn"><span class="fas fa-search"></span>
-                    {{l('characterSearch.open')}}</a>
+                <a href="#" @click.prevent="showSearch()" class="btn">
+                    <span class="fas fa-search"></span>
+                    {{l('characterSearch.open')}}
+                </a>
             </div>
-            <div><a href="#" @click.prevent="showSettings()" class="btn"><span class="fas fa-cog"></span>
-                {{l('settings.open')}}</a></div>
-            <div><a href="#" @click.prevent="showRecent()" class="btn"><span class="fas fa-history"></span>
-                {{l('chat.recentConversations')}}</a></div>
+            <div><a href="#" @click.prevent="showSettings()" class="btn">
+                <span class="fas fa-cog"></span>
+                {{l('settings.open')}}
+            </a></div>
+            <div><a href="#" @click.prevent="showRecent()" class="btn">
+                <span class="fas fa-history"></span>
+                {{l('chat.recentConversations')}}
+            </a></div>
 
-            <div><a href="#" @click.prevent="showAdCenter()" class="btn"><span class="fas fa-ad"></span>
-                Ad Editor</a></div>
+            <div><a href="#" @click.prevent="showAdCenter()" class="btn">
+                <span class="fas fa-ad"></span>
+                {{l('chat.adEditor')}}
+            </a></div>
 
-            <div><a href="#" @click.prevent="showAdLauncher()" class="btn"><span class="fas fa-play"></span>
-                Post Ads</a>
-
+            <div>
+                <a href="#" @click.prevent="showAdLauncher()" class="btn">
+                    <span class="fas fa-play"></span>
+                    {{l('chat.postAds')}}
+                </a>
                 <span v-show="adsAreRunning()" class="adControls">
-                  <span aria-label="Stop All Ads" class="fas fa-stop" @click.prevent="stopAllAds()"></span>
+                    <span :aria-label="l('chat.stopAds')" class="fas fa-stop" @click.prevent="stopAllAds()"></span>
                 </span>
             </div>
 
-            <div><a href="#" @click.prevent="showProfileAnalyzer()" class="btn"><span class="fas fa-user-md"></span>
-                Profile Helper</a>
-            </div>
+            <div><a href="#" @click.prevent="showProfileAnalyzer()" class="btn">
+                <span class="fas fa-user-md"></span>
+                {{l('chat.helper')}}
+            </a></div>
 
             <div class="list-group conversation-nav">
                 <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
@@ -43,8 +61,10 @@
             </div>
 
 
-            <a href="#" @click.prevent="showAddPmPartner()" class="btn"><span class="fas fa-comment"></span>
-                {{l('chat.pms')}}</a>
+            <a href="#" @click.prevent="showAddPmPartner()" class="btn">
+                <span class="fas fa-comment"></span>
+                {{l('chat.pms')}}
+            </a>
 
             <div class="list-group conversation-nav" ref="privateConversations">
                 <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
@@ -65,11 +85,15 @@
                     </div>
                 </a>
 
-                <a href="#" @click.prevent="showAddPmPartner()" class="new-conversation" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">Open Conversation</a>
+                <a href="#" @click.prevent="showAddPmPartner()" class="new-conversation" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">
+                    {{l('chat.newPM')}}
+                </a>
             </div>
 
-            <a href="#" @click.prevent="showChannels()" class="btn"><span class="fas fa-list"></span>
-                {{l('chat.channels')}}</a>
+            <a href="#" @click.prevent="showChannels()" class="btn">
+                <span class="fas fa-list"></span>
+                {{l('chat.channels')}}
+            </a>
 
             <div class="list-group conversation-nav" ref="channelConversations">
                 <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
@@ -77,16 +101,17 @@
                     @click.middle.prevent.stop="conversation.close()">
                     <span class="name">{{conversation.name}}</span>
                     <span>
-                        <span v-if="conversation.hasAutomatedAds()" class="fas fa-ad" :class="{'active': conversation.isSendingAutomatedAds()}" aria-label="Toggle ads"
-                          @click.stop="conversation.toggleAutomatedAds()"
-                          ></span>
+                        <span v-if="conversation.hasAutomatedAds()" class="fas fa-ad" :class="{'active': conversation.isSendingAutomatedAds()}" :aria-label="l('chat.toggleAds')"
+                          @click.stop="conversation.toggleAutomatedAds()"></span>
                         <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')"
                             @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
                         <span class="fas fa-times leave" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
                     </span>
                 </a>
 
-                <a href="#" @click.prevent="showChannels()" class="join-channel" :class="{ glowing: conversations.channelConversations.length === 0 && channelCanGlow }">Join Channel</a>
+                <a href="#" @click.prevent="showChannels()" class="join-channel" :class="{ glowing: conversations.channelConversations.length === 0 && channelCanGlow }">
+                    {{l('chat.joinChannel')}}
+                </a>
             </div>
         </sidebar>
         <div style="display:flex;flex-direction:column;flex:1;min-width:0">
@@ -133,7 +158,7 @@
         </modal>
 
     </div>
-</template>/me
+</template>
 
 <script lang="ts">
 import { Component, Hook, Watch } from '@f-list/vue-ts';
