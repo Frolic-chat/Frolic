@@ -91,6 +91,17 @@
             </div>
             <div class="form-group"><hr></div>
             <div class="form-group">
+                <label class="control-label" :for="notifyFriendSignIn">
+                    {{l('settings.friendSignIn')}}
+                </label>
+                <select class="form-control" :id="notifyFriendSignIn" v-model="notifyFriendSignIn">
+                    <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
+                    <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
+                    <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
+                    <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label class="control-label" :for="notifyOnFriendMessage">
                     {{l('settings.friendMessageNotification')}}
                 </label>
@@ -202,13 +213,6 @@
                 <label class="control-label" for="risingShowUnreadOfflineCount">
                     <input type="checkbox" id="risingShowUnreadOfflineCount" v-model="risingShowUnreadOfflineCount"/>
                     {{l('rising.misc.showUnread')}}
-                </label>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label" for="risingNotifyFriendSignIn">
-                    <input type="checkbox" id="risingNotifyFriendSignIn" v-model="risingNotifyFriendSignIn"/>
-                    {{l('rising.misc.signIn')}}
                 </label>
             </div>
 
@@ -401,6 +405,7 @@
         disallowedTags!: string;
         notifications!: boolean;
         friendchooser = Conversation.RelationChooser;
+        notifyFriendSignIn!: Conversation.RelationChooser;
         notifyOnFriendMessage!: Conversation.RelationChooser;
         highlight!: boolean;
         highlightWords!: string;
@@ -434,8 +439,6 @@
         risingShowPortraitNearInput!: boolean;
         risingShowPortraitInMessage!: boolean;
         risingShowHighQualityPortraits!: boolean;
-
-        risingNotifyFriendSignIn!: boolean;
 
         risingFilter!: SmartFilterSettings = {} as any;
 
@@ -487,7 +490,7 @@
             this.risingShowPortraitInMessage = settings.risingShowPortraitInMessage;
             this.risingShowHighQualityPortraits = settings.risingShowHighQualityPortraits;
 
-            this.risingNotifyFriendSignIn = settings.risingNotifyFriendSignIn;
+            this.notifyFriendSignIn = settings.notifyFriendSignIn;
 
             this.risingFilter = settings.risingFilter;
 
@@ -557,7 +560,7 @@
                 risingShowPortraitInMessage: this.risingShowPortraitInMessage,
                 risingShowHighQualityPortraits: this.risingShowHighQualityPortraits,
 
-                risingNotifyFriendSignIn: this.risingNotifyFriendSignIn,
+                notifyFriendSignIn: this.notifyFriendSignIn,
 
                 risingColorblindMode: this.risingColorblindMode,
                 risingFilter: {

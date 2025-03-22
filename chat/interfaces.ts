@@ -214,6 +214,7 @@ export namespace Settings {
         readonly clickOpensMessage: boolean;
         readonly disallowedTags: ReadonlyArray<string>;
         readonly notifications: boolean;
+        readonly notifyFriendSignIn: Conversation.RelationChooser;
         readonly notifyOnFriendMessage: Conversation.RelationChooser;
         readonly highlight: boolean;
         readonly highlightWords: ReadonlyArray<string>;
@@ -247,7 +248,6 @@ export namespace Settings {
         readonly risingShowPortraitInMessage: boolean;
         readonly risingShowHighQualityPortraits: boolean;
 
-        readonly risingNotifyFriendSignIn: boolean;
         readonly risingFilter: SmartFilterSettings;
 
         readonly risingCharacterTheme: string | undefined;

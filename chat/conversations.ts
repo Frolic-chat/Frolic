@@ -959,8 +959,26 @@ export default function(this: any): Interfaces.State {
         const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
         if(isOfInterest(core.characters.get(data.identity))) {
             await addEventMessage(message);
-            //I considered sending the login message too, but this I find this looks better.
-            if(core.state.settings.risingNotifyFriendSignIn) await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), characterImage(data.identity), 'silence');
+
+            function shouldNotifyOnFriendLogin(): boolean {
+                const settings = core.state.settings;
+                const chooser = Interfaces.RelationChooser;
+                return settings.notifyFriendSignIn === chooser.Friends
+                    || settings.notifyFriendSignIn === chooser.Both;
+            }
+
+            function shouldNotifyOnBookmarkLogin(): boolean {
+                const settings = core.state.settings;
+                const chooser = Interfaces.RelationChooser;
+                return settings.notifyFriendSignIn === chooser.Bookmarks
+                    || settings.notifyFriendSignIn === chooser.Both;
+            }
+
+            if (
+                   (shouldNotifyOnFriendLogin()   && core.characters.friendList.includes(data.identity))
+                || (shouldNotifyOnBookmarkLogin() && core.characters.bookmarkList.includes(data.identity))
+            )
+                await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), characterImage(data.identity), 'silence');
         }
         const conv = state.privateMap[data.identity.toLowerCase()];
         if(conv !== undefined && (!core.state.settings.eventMessages || conv !== state.selectedConversation))

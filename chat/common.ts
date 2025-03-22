@@ -33,6 +33,7 @@ export class Settings implements ISettings {
     clickOpensMessage = false;
     disallowedTags: string[] = [];
     notifications = true;
+    notifyFriendSignIn = Conversation.RelationChooser.NoOne;
     notifyOnFriendMessage = Conversation.RelationChooser.NoOne;
     highlight = true;
     highlightWords: string[] = [];
@@ -66,7 +67,6 @@ export class Settings implements ISettings {
     risingShowPortraitInMessage = true;
     risingShowHighQualityPortraits = true;
 
-    risingNotifyFriendSignIn = false;
     risingFilter = {
         hideAds: false,
         hideSearchResults: false,
