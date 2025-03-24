@@ -75,7 +75,7 @@
         if(node === end) flags.endFound = true;
         if(node.bbcodeTag !== undefined) str += `[${node.bbcodeTag}${node.bbcodeParam !== undefined ? `=${node.bbcodeParam}` : ''}]`;
         // if(component?.$el?.bbcodeTag !== undefined) str += `[${component?.$el?.bbcodeTag}${component?.$el?.bbcodeParam !== undefined ? `=${component?.$el?.bbcodeParam}` : ''}]`;
-        if(node instanceof Text) str += node === range.endContainer ? node.nodeValue!.substr(0, range.endOffset) : node.nodeValue;
+        if(node instanceof Text) str += node === range.endContainer ? node.nodeValue!.substring(0, range.endOffset) : node.nodeValue;
         else if(node instanceof HTMLImageElement) str += node.alt;
         // else if ((node as any)?.__vue__ && (node as any)?.__vue__ instanceof UrlTagView) {
         //   console.log('URLTAGVIEWNODE', node);

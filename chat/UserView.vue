@@ -64,7 +64,7 @@ export function getStatusClasses(
         rankIcon = (channel.owner === character.name)
             ? 'fa fa-key'
             : channel.opList.indexOf(character.name) !== -1
-                ? (channel.id.substr(0, 4) === 'adh-' ? 'fa fa-shield-alt' : 'fa fa-star')
+                ? (channel.id.substring(0, 4) === 'adh-' ? 'fa fa-shield-alt' : 'fa fa-star')
                 : null;
     }
 

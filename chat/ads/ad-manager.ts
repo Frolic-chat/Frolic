@@ -99,9 +99,9 @@ export class AdManager {
         const n = _.toNumber(match[1]);
         let mul = 1000; // seconds
 
-        if (match[2].substr(0, 1) === 'h') {
+        if (match[2].substring(0, 1) === 'h') {
             mul = 60 * 60 * 1000; // hours
-        } else if (match[2].substr(0, 1) === 'm') {
+        } else if (match[2].substring(0, 1) === 'm') {
             mul = 60 * 1000; // minutes
         }
 
@@ -313,4 +313,3 @@ export class AdManager {
         AdManager.recoverableAds = _.filter(AdManager.recoverableAds, (r) => (r.channel !== ra.channel));
     }
 }
-

@@ -112,7 +112,7 @@ export function fixLogs(character: string): void {
     const buffer = Buffer.allocUnsafe(50100);
     for(const file of files) {
         const full = path.join(dir, file);
-        if(file.substr(-4) === '.idx') {
+        if(file.slice(-4) === '.idx') {
             if(!fs.existsSync(full.slice(0, -4))) fs.unlinkSync(full);
             continue;
         }
@@ -161,7 +161,7 @@ function loadIndex(name: string): Index {
     const dir = getLogDir(name);
     const files = fs.readdirSync(dir);
     for(const file of files)
-        if(file.substr(-4) === '.idx')
+        if(file.slice(-4) === '.idx')
             try {
                 const content = fs.readFileSync(path.join(dir, file));
                 let offset = content.readUInt8(0) + 1;
@@ -231,7 +231,7 @@ export class Logs implements Logging {
     async getLogDates(character: string, key: string): Promise<ReadonlyArray<Date>> {
         const entry = this.getIndex(character)[key];
         if(entry === undefined) return [];
-        const dates = [];
+        const dates: Date[] = [];
         for(const item in entry.index) {
             const date = new Date(parseInt(item, 10) * dayMs);
             dates.push(new Date(date.getTime() + date.getTimezoneOffset() * 60000));

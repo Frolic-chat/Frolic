@@ -43,7 +43,7 @@
         <div v-else-if="isChannel(conversation)" class="header">
             <div style="display: flex; align-items: center;">
                 <div style="flex: 1;">
-                    <span v-show="conversation.channel.id.substr(0, 4) !== 'adh-'" class="fa fa-star" :title="l('channel.official')"
+                    <span v-show="conversation.channel.id.substring(0, 4) !== 'adh-'" class="fa fa-star" :title="l('channel.official')"
                         style="margin-right:5px;vertical-align:sub"></span>
                     <h5 style="margin:0;display:inline;vertical-align:middle">
                         {{conversation.name}}
@@ -139,10 +139,12 @@
 
             <div v-show="adAutoPostNextAd" class="next">
                 <h5>
-                    {{l('admgr.comingNext')}} <a @click="skipAd()"><i class='adAction fas fa-arrow-right' /></a>
+                    {{l('admgr.comingNext')}} <a @click="skipAd()">
+                        <i class='adAction fas fa-arrow-right'></i>
+                    </a>
                 </h5>
                 <div>
-                    {{(adAutoPostNextAd ? adAutoPostNextAd.substr(0, 100) : '')}}{{l('general.ellipses')}}
+                    {{(adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '')}}{{l('general.ellipses')}}
                 </div>
             </div>
 
@@ -523,8 +525,8 @@
                     const name = this.tabOptions[this.tabOptionsIndex];
                     const userName = (isCommand(this.conversation.enteredText) ? name : `[user]${name}[/user]`);
                     this.tabOptionSelection.end = this.tabOptionSelection.start + userName.length;
-                    this.conversation.enteredText = this.conversation.enteredText.substr(0, this.tabOptionSelection.start) + userName +
-                        this.conversation.enteredText.substr(selection.end);
+                    this.conversation.enteredText = this.conversation.enteredText.substring(0, this.tabOptionSelection.start) + userName +
+                        this.conversation.enteredText.substring(selection.end);
                     ++this.tabOptionsIndex;
                 }
             } else {
@@ -984,8 +986,8 @@
     }
 
 
-    .messages.hide-non-matching .message.message-score,
-     {
+    .messages.hide-non-matching .message.message-score
+    {
         &.mismatch {
             display: none;
         }

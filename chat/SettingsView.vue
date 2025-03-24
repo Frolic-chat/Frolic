@@ -495,7 +495,7 @@
 
             this.risingFilter = settings.risingFilter;
 
-            this.risingAvailableThemes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.substr(-4) === '.css').map((x) => x.slice(0, -4));
+            this.risingAvailableThemes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.slice(-4) === '.css').map((x) => x.slice(0, -4));
             this.risingCharacterTheme = settings.risingCharacterTheme;
         }
 

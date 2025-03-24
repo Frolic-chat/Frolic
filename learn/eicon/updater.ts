@@ -17,14 +17,14 @@ export class EIconUpdater {
 
   async fetchAll(): Promise<{ records: EIconRecord[], asOfTimestamp: number }> {
     const result = await Axios.get(EIconUpdater.FULL_DATA_URL);
-    const lines = _.split(result.data, '\n');
+    const lines: string[] = _.split(result.data, '\n');
 
-    const records = _.map(_.filter(lines, (line) => (line.trim().substr(0, 1) !== '#' && line.trim() !== '')), (line) => {
+    const records = _.map(_.filter(lines, (line) => (line.trim().substring(0, 1) !== '#' && line.trim() !== '')), (line) => {
       const [eicon, timestamp] = _.split(line, '\t', 2);
       return { eicon: eicon.toLowerCase(), timestamp: parseInt(timestamp, 10) };
     });
 
-    const asOfLine = _.first(_.filter(lines, (line: string) => line.substring(0, 9) === '# As Of: '));
+    const asOfLine = _.first(_.filter(lines, (line) => line.substring(0, 9) === '# As Of: '));
     const asOfTimestamp = asOfLine ? parseInt(asOfLine.substring(9), 10) : 0;
 
     return { records, asOfTimestamp };
@@ -32,9 +32,9 @@ export class EIconUpdater {
 
   async fetchUpdates(fromTimestampInSecs: number): Promise<{ recordUpdates: EIconRecordUpdate[], asOfTimestamp: number }> {
     const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`);
-    const lines = _.split(result.data, '\n');
+    const lines: string[] = _.split(result.data, '\n');
 
-    const recordUpdates = _.map(_.filter(lines, (line) => (line.trim().substr(0, 1) !== '#' && line.trim() !== '')), (line) => {
+    const recordUpdates = _.map(_.filter(lines, (line) => (line.trim().substring(0, 1) !== '#' && line.trim() !== '')), (line) => {
       const [action, eicon, timestamp] = _.split(line, '\t', 3);
       return { action: action as '+' | '-', eicon: eicon.toLowerCase(), timestamp: parseInt(timestamp, 10) };
     });

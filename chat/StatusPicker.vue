@@ -6,11 +6,15 @@
                     <input type="radio" :id="'history_status_' + index" :name="'history_status_' + index" v-model="selectedStatus" v-bind:value="index" />
                 </div>
                 <div class="form-col content-col" @click="select(index)" @dblclick="submit">
-                    <span class="before-content"><i class="fas" :class="{ 'fa-check-circle': (index === selectedStatus) }" /></span>
+                    <span class="before-content">
+                        <i class="fas" :class="{ 'fa-check-circle': (index === selectedStatus) }"></i>
+                    </span>
                     <label class="custom-control-label" :for="'history_status_' + index">
                         <bbcode :text="historicStatus"></bbcode>
                     </label>
-                    <span class="content-action" @click="removeStatusHistoryEntry(index)"><i class="fas fa-times-circle" /></span>
+                    <span class="content-action" @click="removeStatusHistoryEntry(index)">
+                        <i class="fas fa-times-circle"></i>
+                    </span>
                 </div>
             </div>
         </form>

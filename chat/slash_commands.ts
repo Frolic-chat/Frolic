@@ -27,7 +27,7 @@ export function parse(this: void | never, input: string, context: CommandContext
     const name = input.substring(1, commandEnd !== -1 ? commandEnd : undefined).toLowerCase();
     const command = commands[name];
     if(command === undefined) return l('commands.unknown');
-    const args = `${commandEnd !== -1 ? input.substr(commandEnd + 1) : ''}`;
+    const args = `${commandEnd !== -1 ? input.substring(commandEnd + 1) : ''}`;
     if(command.context !== undefined && (command.context & context) === 0) return l('commands.badContext');
 
     let index = 0;
@@ -52,7 +52,7 @@ export function parse(this: void | never, input: string, context: CommandContext
             values[i] = value;
             switch(param.type) {
                 case ParamType.String:
-                    if(i === command.params.length - 1) values[i] = args.substr(index);
+                    if(i === command.params.length - 1) values[i] = args.substring(index);
                     break;
                 case ParamType.Enum:
                     if((param.options !== undefined ? param.options : []).indexOf(value) === -1)

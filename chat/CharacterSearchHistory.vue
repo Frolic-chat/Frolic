@@ -6,11 +6,15 @@
                     <input type="radio" :id="'search_history_' + index" :name="'search_history_' + index" v-model="selectedSearch" v-bind:value="index" />
                 </div>
                 <div class="form-col content-col" @click="select(index)" @dblclick="submit">
-                    <span class="before-content"><i class="fas" :class="{ 'fa-check-circle': (index === selectedSearch) }" /></span>
+                    <span class="before-content">
+                        <i class="fas" :class="{ 'fa-check-circle': (index === selectedSearch) }"></i>
+                    </span>
                     <label class="custom-control-label" :for="'search_history_' + index">
                         {{describeSearch(search)}}
                     </label>
-                    <span class="content-action" @click="removeSearchHistoryEntry(index)"><i class="fas fa-times-circle" /></span>
+                    <span class="content-action" @click="removeSearchHistoryEntry(index)">
+                        <i class="fas fa-times-circle"></i>
+                    </span>
                 </div>
             </div>
         </form>

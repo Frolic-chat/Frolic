@@ -156,7 +156,7 @@ export class Logs implements Logging {
         const trans = this.loadedDb.transaction(['logs']);
         const bound = IDBKeyRange.bound(getComposite(id, 0), getComposite(id, 1000000));
         return iterate(trans.objectStore('logs').index('conversation-day').openCursor(bound, 'nextunique'), (value: StoredMessage) => {
-            const date = new Date((hasComposite ? <number>value.day : decode((<string>value.day).substr(2))) * dayMs);
+            const date = new Date((hasComposite ? <number>value.day : decode((<string>value.day).substring(2))) * dayMs);
             return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
         });
     }

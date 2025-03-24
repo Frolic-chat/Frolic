@@ -90,8 +90,8 @@ export default class Connection implements Interfaces.Connection {
             this.resetPinTimeout();
         });
         this.socket.onMessage(async(msg: string) => {
-            const type = <keyof Interfaces.ServerCommands>msg.substr(0, 3);
-            const data = msg.length > 6 ? <object>JSON.parse(msg.substr(4)) : undefined;
+            const type = <keyof Interfaces.ServerCommands>msg.substring(0, 3);
+            const data = msg.length > 6 ? <object>JSON.parse(msg.substring(4)) : undefined;
 
             log.silly(
               'socket.recv',

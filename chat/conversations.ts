@@ -17,7 +17,7 @@ import isChannel = Interfaces.isChannel;
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {
         type = MessageType.Action;
-        text = text.substr(text.charAt(4) === ' ' ? 4 : 3);
+        text = text.substring(text.charAt(4) === ' ' ? 4 : 3);
     }
     return new Message(type, sender, text, time);
 }
@@ -189,7 +189,7 @@ abstract class Conversation implements Interfaces.Conversation {
 
 
 class PrivateConversation extends Conversation implements Interfaces.PrivateConversation {
-    readonly name = this.character.name;
+    readonly name: string;
     readonly context = CommandContext.Private;
     typingStatus: Interfaces.TypingStatus = 'clear';
     readonly maxMessageLength = core.connection.vars.priv_max;
@@ -204,7 +204,10 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
 
     constructor(readonly character: Character) {
         super(character.name.toLowerCase(), state.pinned.private.indexOf(character.name) !== -1);
+
         this.lastRead = this.messages[this.messages.length - 1];
+
+        this.name  = this.character.name;
     }
 
     get enteredText(): string {
@@ -318,8 +321,8 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
 
 class ChannelConversation extends Conversation implements Interfaces.ChannelConversation {
     readonly context = CommandContext.Channel;
-    readonly name = this.channel.name;
-    isSendingAds = this.channel.mode === 'ads';
+    readonly name: string;
+    isSendingAds: boolean;
     nextAd = 0;
     private chat: Interfaces.Message[] = [];
     private ads: Interfaces.Message[] = [];
@@ -346,7 +349,12 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             this.mode = value;
             if(value !== 'both') this.isSendingAds = value === 'ads';
         });
+
         this.mode = channel.mode === 'both' && channel.id in state.modes ? state.modes[channel.id]! : channel.mode;
+
+        this.name = this.channel.name;
+
+        this.isSendingAds  = this.channel.mode === 'ads';
     }
 
     get maxMessageLength(): number {
@@ -390,7 +398,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         if((message.type === MessageType.Message || message.type === MessageType.Ad) && isWarn(message.text)) {
             const member = this.channel.members[message.sender.name];
             if(member !== undefined && member.rank > Channel.Rank.Member || message.sender.isChatOp)
-                message = new Message(MessageType.Warn, message.sender, message.text.substr(6), message.time);
+                message = new Message(MessageType.Warn, message.sender, message.text.substring(6), message.time);
         }
 
         if(message.type === MessageType.Ad) {
@@ -606,7 +614,7 @@ class State implements Interfaces.State {
     byKey(key: string): Conversation | undefined {
         if(key === '_') return this.consoleTab;
         key = key.toLowerCase();
-        return key[0] === '#' ? this.channelMap[key.substr(1)] : this.privateMap[key];
+        return key[0] === '#' ? this.channelMap[key.substring(1)] : this.privateMap[key];
     }
 
     async savePinned(): Promise<void> {
@@ -1019,7 +1027,7 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('BRO', async(data, time) => {
         if(data.character !== undefined) {
-            const content = decodeHTML(data.message.substr(data.character.length + 24));
+            const content = decodeHTML(data.message.substring(data.character.length + 24));
             const char = core.characters.get(data.character);
             const message = new BroadcastMessage(l('events.broadcast', `[user]${data.character}[/user]`, content), char, time);
             await state.consoleTab.addMessage(message);

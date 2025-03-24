@@ -4,7 +4,7 @@
     <div v-for="(report, index) in reports" :key="`report-${index}`" :class="`status-report ${report.type} ${(report.count > 0) && (report.count !== report.dismissedCount) ? 'active': ''}`">
       <a :href="report.url" @click="dismissReport(report)">
         <span class="count">{{report.count}}</span>
-        {{ `${report.count !== 1 ? report.title : report.title.substr(0, report.title.length - 1)}` }}
+        {{ `${report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1)}` }}
 
       </a>
       <a @click="dismissReport(report)" class="dismiss"><i class="fas fa-times-circle"></i></a>

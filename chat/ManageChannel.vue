@@ -1,7 +1,7 @@
 <template>
     <modal ref="dialog" :action="l('manageChannel.action', channel.name)" :buttonText="l('manageChannel.submit')" @submit="submit"
         dialogClass="w-100 modal-lg" @open="onOpen">
-        <div class="form-group" v-show="isChannelOwner && channel.id.substr(0, 4) === 'adh-'">
+        <div class="form-group" v-show="isChannelOwner && channel.id.substring(0, 4) === 'adh-'">
             <label class="control-label" for="isPublic">
                 <input type="checkbox" id="isPublic" v-model="isPublic"/>
                 {{l('manageChannel.isPublic')}}

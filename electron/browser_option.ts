@@ -6,7 +6,7 @@ import BrowserOption from './BrowserOption.vue';
 
 log.info('init.browser_option');
 
-const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substr(1));
+const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 const settings = <GeneralSettings>JSON.parse(params['settings']!);
 
 const logLevel = (process.env.NODE_ENV === 'production') ? 'info' : 'silly';

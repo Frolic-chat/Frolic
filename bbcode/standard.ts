@@ -15,8 +15,8 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
     cleanup: Vue[] = [];
 
     createInline(inline: InlineImage): HTMLElement {
-        const p1 = inline.hash.substr(0, 2);
-        const p2 = inline.hash.substr(2, 2);
+        const p1 = inline.hash.substring(0, 2);
+        const p2 = inline.hash.substring(2, 4);
         const outerEl = this.createElement('div');
         const el = this.createElement('img');
         el.className = 'inline-image';

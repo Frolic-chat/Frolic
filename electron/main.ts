@@ -504,7 +504,7 @@ function onReady(): void {
 
     //tslint:disable-next-line:no-floating-promises
     addSpellcheckerItems(spellcheckerMenu);
-    const themes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.substr(-4) === '.css').map((x) => x.slice(0, -4));
+    const themes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.slice(-4) === '.css').map((x) => x.slice(0, -4));
     const setTheme = (theme: string) => {
         settings.theme = theme;
         setGeneralSettings(settings);
@@ -608,7 +608,7 @@ function onReady(): void {
                             submenu: ['error', 'warn', 'info', 'verbose', 'debug', 'silly'].map((level: string) => (
                                 {
                                     checked: settings.risingSystemLogLevel === level,
-                                    label: `${level.substr(0, 1).toUpperCase()}${level.substr(1)}`,
+                                    label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
                                     click: () => setSystemLogLevel(level as log.LevelOption),
                                     type: <'radio'>'radio'
                                 }

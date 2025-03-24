@@ -20,7 +20,7 @@ const userPostfix: {[key: number]: string | undefined} = {
 
         // setTimeout(
         //     () => {
-        //         console.log('Now scoring high!', message.text.substr(0, 64));
+        //         console.log('Now scoring high!', message.text.substring(0, 64));
         //         message.score = Scoring.MATCH;
         //     },
         //     5000

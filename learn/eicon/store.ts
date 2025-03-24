@@ -133,11 +133,11 @@ export class EIconStore {
     const found = _.filter(this.lookup, (r) => r.eicon.indexOf(lcSearch) >= 0);
 
     return found.sort((a, b) => {
-      if ((a.eicon.substr(0, lcSearch.length) === lcSearch) && (b.eicon.substr(0, lcSearch.length) !== lcSearch)) {
+      if ((a.eicon.substring(0, lcSearch.length) === lcSearch) && (b.eicon.substring(0, lcSearch.length) !== lcSearch)) {
         return -1;
       }
 
-      if ((b.eicon.substr(0, lcSearch.length) === lcSearch) && (a.eicon.substr(0, lcSearch.length) !== lcSearch)) {
+      if ((b.eicon.substring(0, lcSearch.length) === lcSearch) && (a.eicon.substring(0, lcSearch.length) !== lcSearch)) {
         return 1;
       }
 

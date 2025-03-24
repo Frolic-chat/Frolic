@@ -278,7 +278,7 @@ export default class CharacterPreview extends Vue {
       _.takeRight(_.filter(messages, (m) => !matcher.exec(m.text)), 3),
         (m) => ({
           ...m,
-          text: m.text.length > 512 ? m.text.substr(0, 512) + '…' : m.text
+          text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text
         })
     );
   }
@@ -402,7 +402,7 @@ export default class CharacterPreview extends Vue {
 
     const s = this.onlineCharacter.status as string;
 
-    return `${s.substr(0, 1).toUpperCase()}${s.substr(1)}`;
+    return `${s.substring(0, 1).toUpperCase()}${s.substring(1)}`;
   }
 
 

@@ -162,7 +162,7 @@ export class BBCodeParser {
                 }
                 const param = paramStart > tagStart ? input.substring(paramStart + 1, i).trim() : '';
                 const close = tagKey[0] === '/';
-                if(close) tagKey = tagKey.substr(1).trim();
+                if(close) tagKey = tagKey.substring(1).trim();
                 if(this._tags[tagKey] === undefined) {
                     tagStart = -1;
                     continue;
@@ -176,7 +176,7 @@ export class BBCodeParser {
 										continue;
 									}
 								}
-				
+
 								isInCollapseParam = false;
                 if(!close) {
                     const tag = this._tags[tagKey]!;

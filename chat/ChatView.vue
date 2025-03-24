@@ -153,7 +153,9 @@
             <profile-analysis></profile-analysis>
             <template slot="title">
                 {{ownCharacter.name}}
-                <a class="btn" @click="showProfileAnalyzer"><i class="fa fa-sync" /></a>
+                <a class="btn" @click="showProfileAnalyzer">
+                    <i class="fa fa-sync"></i>
+                </a>
             </template>
         </modal>
 

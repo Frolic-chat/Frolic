@@ -70,9 +70,9 @@
             <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
             <template slot="title">
                 {{profileName}}
-                <a class="btn" @click="openProfileInBrowser"><i class="fa fa-external-link-alt"/></a>
+                <a class="btn" @click="openProfileInBrowser"><i class="fa fa-external-link-alt"></i></a>
                 <a class="btn" @click="openConversation"><i class="fa fa-comment"></i></a>
-                <a class="btn" @click="reloadCharacter"><i class="fa fa-sync" /></a>
+                <a class="btn" @click="reloadCharacter"><i class="fa fa-sync"></i></a>
 
                 <i class="fas fa-circle-notch fa-spin profileRefreshSpinner" v-show="isRefreshingProfile()"></i>
 
@@ -102,7 +102,7 @@
                 <a class="btn wordDefBtn urbandictionary" @click="openDefinitionWithUrbanDictionary"><i>UD</i></a>
                 <a class="btn wordDefBtn wikipedia" @click="openDefinitionWithWikipedia"><i>W</i></a>
 
-                <a class="btn" @click="openWordDefinitionInBrowser"><i class="fa fa-external-link-alt"/></a>
+                <a class="btn" @click="openWordDefinitionInBrowser"><i class="fa fa-external-link-alt"></i></a>
             </template>
         </modal>
 

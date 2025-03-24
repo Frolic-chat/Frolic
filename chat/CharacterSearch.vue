@@ -410,11 +410,11 @@
                 (keywords: string[], speciesIdStr: Species): SearchSpecies => {
                     // const speciesId: number = Species[speciesName];
                     const keywordsStr = `${keywords.join(', ')}`;
-                    const details = `${keywordsStr.substr(0, 24)}...`;
+                    const details = `${keywordsStr.substring(0, 24)}...`;
                     const speciesId = parseInt(speciesIdStr as any, 10);
 
                     if (speciesId in speciesNames) {
-                        const name = `${speciesNames[speciesId].substr(0, 1).toUpperCase()}${speciesNames[speciesId].substr(1)}`;
+                        const name = `${speciesNames[speciesId].substring(0, 1).toUpperCase()}${speciesNames[speciesId].substring(1)}`;
 
                         return {
                             details,

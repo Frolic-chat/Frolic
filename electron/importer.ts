@@ -89,8 +89,8 @@ function createMessage(line: string, ownCharacter: string, name: string, isChann
     let lineIndex = line.indexOf(']');
     if(lineIndex === -1) return;
     const time = line.substring(1, lineIndex);
-    let h = parseInt(time.substr(0, 2), 10);
-    const m = parseInt(time.substr(3, 2), 10);
+    let h = parseInt(time.substring(0, 2), 10);
+    const m = parseInt(time.substring(3, 5), 10);
     if(time.slice(-2) === 'AM') h -= 12;
     lineIndex += 2;
     if(line[lineIndex] === '[') {
@@ -100,12 +100,12 @@ function createMessage(line: string, ownCharacter: string, name: string, isChann
         sender = line.substring(lineIndex, endIndex);
         text = line.substring(endIndex + 6, 50000);
     } else {
-        if(lineIndex + ownCharacter.length <= line.length && line.substr(lineIndex, ownCharacter.length) === ownCharacter)
+        if(lineIndex + ownCharacter.length <= line.length && line.substring(lineIndex, lineIndex + ownCharacter.length) === ownCharacter)
             sender = ownCharacter;
-        else if(!isChannel && lineIndex + name.length <= line.length && line.substr(lineIndex, name.length) === name)
+        else if(!isChannel && lineIndex + name.length <= line.length && line.substring(lineIndex, lineIndex + name.length) === name)
             sender = name;
         else {
-            const matched = charRegex.exec(line.substr(lineIndex, 21));
+            const matched = charRegex.exec(line.substring(lineIndex, lineIndex + 21));
             sender = matched !== null && matched.length > 1 ? matched[1] : '';
         }
         lineIndex += sender.length;
@@ -117,7 +117,7 @@ function createMessage(line: string, ownCharacter: string, name: string, isChann
                 lineIndex += 3;
             }
         } else type = Conversation.Message.Type.Action;
-        text = line.substr(lineIndex, 50000);
+        text = line.substring(lineIndex, lineIndex + 50000);
     }
     return {type, sender: {name: sender}, text, time: addMinutes(date, h * 60 + m)};
 }
@@ -217,13 +217,14 @@ export async function importCharacter(ownCharacter: string, progress: (progress:
             let index = 0, start = 0;
             let ignoreLine = false;
             while(index < content.length) {
-                if(index === start && adRegex.test(content.substr(start, 14)))
+                if(index === start && adRegex.test(content.substring(start, start + 14)))
                     ignoreLine = true;
                 else {
                     const char = content[index];
                     if(ignoreLine) {
                         if(char === '\n') {
-                            const nextLine = content.substr(index + 1, 29);
+                            const i = index + 1;
+                            const nextLine = content.substring(i, i + 29);
                             if(logRegex.test(nextLine)) {
                                 ignoreLine = false;
                                 start = index + 1;
@@ -233,7 +234,8 @@ export async function importCharacter(ownCharacter: string, progress: (progress:
                         continue;
                     }
                     if(char === '\r' || char === '\n') {
-                        const nextLine = content.substr(index + (char === '\r' ? 2 : 1), 29);
+                        const i = index + (char === '\r' ? 2 : 1);
+                        const nextLine = content.substring(i, i + 29);
                         if(logRegex.test(nextLine) || content.length - index <= 2) {
                             const line = content.substring(start, index);
                             const message = createMessage(line, ownCharacter, name, isChannel, file.date);

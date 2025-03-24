@@ -141,7 +141,7 @@ webContents.on('context-menu', (_, props) => {
             accelerator: 'CmdOrCtrl+V',
             enabled: props.editFlags.canPaste
         });
-    else if(props.linkURL.length > 0 && props.mediaType === 'none' && props.linkURL.substr(0, props.pageURL.length) !== props.pageURL) {
+    else if(props.linkURL.length > 0 && props.mediaType === 'none' && props.linkURL.substring(0, props.pageURL.length) !== props.pageURL) {
         menuTemplate.push({
             id: 'copyLink',
             label: l('action.copyLink'),
@@ -233,7 +233,7 @@ function onSettings(s: GeneralSettings): void {
 
 electron.ipcRenderer.on('settings', (_: Event, s: GeneralSettings) => onSettings(s));
 
-const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substr(1));
+const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 let settings = <GeneralSettings>JSON.parse(params['settings']!);
 
 // console.log('SETTINGS', settings);

@@ -217,19 +217,18 @@
         }
 
         getSelection(): EditorSelection {
-            const length = this.element.selectionEnd - this.element.selectionStart;
             return {
                 start: this.element.selectionStart,
                 end: this.element.selectionEnd,
-                length,
-                text: this.element.value.substr(this.element.selectionStart, length)
+                length: this.element.selectionEnd - this.element.selectionStart,
+                text: this.element.value.substring(this.element.selectionStart, this.element.selectionEnd)
             };
         }
 
         replaceSelection(replacement: string): string {
             const selection = this.getSelection();
-            const start = this.element.value.substr(0, selection.start) + replacement;
-            const end = this.element.value.substr(selection.end);
+            const start = this.element.value.substring(0, selection.start) + replacement;
+            const end = this.element.value.substring(selection.end);
             this.element.value = start + end;
             this.element.dispatchEvent(new Event('input'));
             return start + end;
@@ -249,8 +248,8 @@
                 this.text = this.replaceSelection(replacement);
                 this.setSelection(selection.start, selection.start + replacement.length);
             } else {
-                const start = this.text.substr(0, selection.start) + startText;
-                const end = endText + this.text.substr(selection.start);
+                const start = this.text.substring(0, selection.start) + startText;
+                const end = endText + this.text.substring(selection.start);
                 this.text = start + (withInject || '') + end;
 
                 const selectionPoint = withInject ? start.length + withInject.length + endText.length : start.length;
