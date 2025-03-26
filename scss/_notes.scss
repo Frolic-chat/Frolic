@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 .note-folder {
     display: flex;
     width: 100%;
@@ -15,12 +17,12 @@
 
 .conversation-from-me, .conversation-from-them {
     margin-bottom: 5px;
-    max-width: percentage((($grid-columns - 4) / $grid-columns));
+    max-width: percentage(math.div(($grid-columns - 4), $grid-columns));
     word-wrap: break-word;
 }
 
 .conversation-from-me {
-    margin-right: percentage(( 4 / $grid-columns ));
+    margin-right: percentage(math.div(4, $grid-columns));
     background-color: $note-conversation-you-bg;
     color: $note-conversation-you-text;
     border-color: $note-conversation-you-border;
@@ -28,7 +30,7 @@
 }
 
 .conversation-from-them {
-    margin-left: percentage(( 4 / $grid-columns ));
+    margin-left: percentage(math.div(4, $grid-columns));
     background-color: $note-conversation-them-bg;
     color: $note-conversation-them-text;
     border-color: $note-conversation-them-border;

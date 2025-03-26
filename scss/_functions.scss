@@ -9,3 +9,25 @@
 @mixin text-outline($color) {
   text-shadow: $color 1px 0, $color -1px 0, $color 0 1px, $color 0 -1px, $color 1px 1px, $color -1px 1px, $color 1px -1px, $color -1px -1px;
 }
+
+
+/*
+ * This section is a response to the upcoming removal of lighten() and darken().
+ * It's quite complicated to remove these functions even with color.adjust()
+ * being a direct upgrade, due to this notice in the code that revealed:
+ * On dark based themes these are inverted in order to cooperate with
+ * bootstrap which assumes that all themes are light based.
+ *
+ * This means lighten() and darken() in some themes does the opposite, due
+ * to an overload in _invert. It needs a refactor once bootstrap actually
+ * updates to use sass `@use` modules. Then, we can change hue/sat/light/a below,
+ * into color.channel()
+ */
+
+@function lighten($color, $amount) {
+  @return hsla(hue($color), saturation($color), lightness($color) + $amount, alpha($color));
+}
+
+@function darken($color, $amount) {
+  @return hsla(hue($color), saturation($color), lightness($color) - $amount, alpha($color));
+}

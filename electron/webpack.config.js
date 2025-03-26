@@ -96,7 +96,15 @@ const mainConfig = {
                 use: [
                     'vue-style-loader',
                     {loader: 'css-loader', options: {esModule: false}},
-                    {loader: 'sass-loader', options: {warnRuleAsWarning: false}},
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            warnRuleAsWarning: false,
+                            sassOptions: {
+                                quietDeps: true
+                            }
+                        }
+                    }
                 ]
             },
             {
@@ -217,7 +225,15 @@ module.exports = function(mode) {
                     {loader: 'file-loader', options: {name: 'themes/[name].css'}},
                     'extract-loader',
                     {loader: 'css-loader', options: {esModule: false}},
-                    {loader: 'sass-loader', options: {warnRuleAsWarning: false}},
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            warnRuleAsWarning: false,
+                            sassOptions: {
+                                quietDeps: true
+                            }
+                        }
+                    }
                 ]
             }
         );
@@ -233,7 +249,15 @@ module.exports = function(mode) {
                 {loader: 'file-loader', options: {name: 'fa.css'}},
                 'extract-loader',
                 {loader: 'css-loader', options: {esModule: false}},
-                {loader: 'sass-loader', options: {warnRuleAsWarning: false}},
+                {
+                    loader: 'sass-loader',
+                    options: {
+                        warnRuleAsWarning: false,
+                        sassOptions: {
+                            quietDeps: true
+                        }
+                    }
+                }
             ]
         }
     );

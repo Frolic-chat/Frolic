@@ -2,7 +2,7 @@
   textarea {
     min-height: 150px;
     &:focus {
-      box-shadow: 0 0 0 ($input-btn-focus-width / 2) $input-btn-focus-color;
+      box-shadow: 0 0 0 calc($input-btn-focus-width / 2) $input-btn-focus-color;
     }
   }
 }
