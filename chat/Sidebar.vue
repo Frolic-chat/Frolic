@@ -2,24 +2,24 @@
     <div class="sidebar-wrapper" :class="{open: expanded}">
         <div :class="'sidebar sidebar-' + (right ? 'right' : 'left')">
             <button @click="expanded = !expanded" class="btn btn-secondary btn-xs expander" :aria-label="label">
-                <span v-if="right" class="fa fa-fw fa-rotate-270" :class="icon"></span>
                 <span
-                    v-if="right" v-show="!expanded"
-                    class="fa fa-rotate-270"
-                    :class="{
-                        'fa-fw fa-mail-bulk':    note &&  msg,
-                        'fa-fw fa-sticky-note': !note &&  msg,
-                        'fa-fw fa-envelope':     note && !msg,
-                    }"
+                    v-if="right"
+                    class="fa fa-fw fa-rotate-270"
+                    :class="(!expanded && (note || msg)) ? {
+                        'fa-mail-bulk': (note && msg),
+                        'fa-sticky-note': msg,
+                        'fa-envelope': note,
+                    } : icon"
                 ></span>
                 <span
                     class="fa fa-fw"
-                    :class="{
-                        'fa-chevron-down': !expanded,
-                        'fa-chevron-up':    expanded
-                    }"
+                    :class="{'fa-chevron-down': !expanded, 'fa-chevron-up': expanded}"
                 ></span>
-                <span v-if="!right" class="fa fa-fw fa-rotate-90" :class="icon"></span>
+                <span
+                    v-if="!right"
+                    class="fa fa-fw fa-rotate-90"
+                    :class="expanded ? 'fa ' + icon : 'far fa-comment-dots'"
+                ></span>
             </button>
             <div class="body">
                 <slot></slot>
@@ -77,7 +77,7 @@
             box-shadow: none;
         }
 
-        .fa-mail-bulk, .fa-sticky-note, .fa-envelope {
+        .fa-comment-dots, .fa-mail-bulk, .fa-sticky-note, .fa-envelope {
             color: var(--warning);
         }
     }
