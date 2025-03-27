@@ -14,13 +14,13 @@
         <div v-if="channel" style="padding-left:5px;flex:1;display:flex;flex-direction:column" v-show="tab === '1'">
             <div class="users" style="flex:1;padding-left:5px">
                 <h4>
-                  {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fa fa-sort"></i></a>
+                    {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fa fa-sort-amount-down"></i></a>
                 </h4>
                 <div v-for="member in filteredMembers" :key="member.character.name">
                     <user :character="member.character" :channel="channel" :showStatus="true"></user>
                 </div>
             </div>
-            <div class="input-group" style="margin-top:5px;flex-shrink:0">
+            <div class="member-filter input-group" style="flex-shrink:0">
                 <div class="input-group-prepend">
                     <div class="input-group-text">
                         <span class="fas fa-search"></span>
@@ -30,14 +30,16 @@
             </div>
         </div>
         <div v-if="!channel && !isConsoleTab" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
+            <div style="flex:1">
+                <a :href="profileUrl" target="_blank" class="btn profile-button">
+                    <span class="fa fa-fw fa-user"></span>
+                    {{l('userlist.profile')}}
+                </a>
 
-            <a :href="profileUrl" target="_blank" class="btn profile-button">
-                <span class="fa fa-fw fa-user"></span>
-                {{l('userlist.profile')}}
-            </a>
-
-            <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
+                <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
+            </div>
         </div>
+        <note-status v-if="showNoteification"></note-status>
     </sidebar>
 </template>
 
@@ -50,6 +52,7 @@
     import l from './localize';
     import Sidebar from './Sidebar.vue';
     import UserView from './UserView.vue';
+    import NoteStatus from '../site/NoteStatus.vue';
     import _ from 'lodash';
     import characterPage from '../site/character_page/character_page.vue';
     import { profileLink } from './common';
@@ -87,11 +90,19 @@
     const availableSorts = ['normal', 'status', 'gender'] as const;
 
     @Component({
-        components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}
+        components: {
+          characterPage,
+          user: UserView,
+          sidebar: Sidebar,
+          tabs: Tabs,
+          'note-status': NoteStatus
+        }
     })
+
     export default class UserList extends Vue {
         tab = '0';
         expanded = window.innerWidth >= 992;
+        showNoteification = core.state.settings.risingShowUnreadOfflineCount;
         filter = '';
         l = l;
         sorter = (x: Character, y: Character) => (x.name.toLocaleLowerCase() < y.name.toLocaleLowerCase() ? -1 : (x.name.toLocaleLowerCase() > y.name.toLocaleLowerCase() ? 1 : 0));
@@ -212,6 +223,10 @@
 
         .users {
             overflow: auto;
+            overflow-x: hidden;
+            // After much intense research, I can genuinely say
+            // that I do not know why this fixes the overflow issue.
+            flex: 1 1 0%;
         }
 
         .nav li:first-child a {
@@ -223,6 +238,12 @@
           .body {
             overflow-x: hidden;
           }
+        }
+
+        .member-filter {
+          margin-top: 5px;
+          margin-left: -5px;
+          width: auto;
         }
 
         @media (min-width: breakpoint-min(md)) {
@@ -243,6 +264,9 @@
         }
 
       .profile {
+        flex-grow: 1;
+        overflow: auto;
+
         .profile-button {
           border: 1px var(--secondary) solid;
           padding-top: 0.25rem;
