@@ -2,24 +2,22 @@
     <div class="sidebar-wrapper" :class="{open: expanded}">
         <div :class="'sidebar sidebar-' + (right ? 'right' : 'left')">
             <button @click="expanded = !expanded" class="btn btn-secondary btn-xs expander" :aria-label="label">
-                <span v-if="right" class="fa fa-fw fa-rotate-270" :class="icon"></span>
-                <span
-                    v-if="right" v-show="!expanded"
+                <span v-if="right"
+                    :class="note_icon"
                     class="fa fa-rotate-270"
-                    :class="{
-                        'fa-fw fa-mail-bulk':    note &&  msg,
-                        'fa-fw fa-sticky-note': !note &&  msg,
-                        'fa-fw fa-envelope':     note && !msg,
-                    }"
                 ></span>
                 <span
+                    :class="{'fa-chevron-down': !expanded, 'fa-chevron-up': expanded}"
                     class="fa fa-fw"
-                    :class="{
-                        'fa-chevron-down': !expanded,
-                        'fa-chevron-up':    expanded
-                    }"
                 ></span>
-                <span v-if="!right" class="fa fa-fw fa-rotate-90" :class="icon"></span>
+                <span v-if="!right"
+                    :class="room_icon"
+                    class="fa fa-fw fa-rotate-90"
+                ></span>
+                <span v-if="!right"
+                    :class="pm_icon"
+                    class="fa fa-rotate-90"
+                ></span>
             </button>
             <div class="body">
                 <slot></slot>
@@ -33,7 +31,36 @@
     import {Component, Prop, Watch, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from './core';
-    import { EventBus } from './preview/event-bus';
+    import { EventBus, SelectConversationEvent, ChannelMessageEvent, PrivateMessageEvent } from './preview/event-bus';
+    import { Conversation } from './interfaces';
+    import log from 'electron-log';
+
+    const NoneUnread    = Conversation.UnreadState.None;
+    const UnreadUnread  = Conversation.UnreadState.Unread;
+    const MentionUnread = Conversation.UnreadState.Mention;
+
+    type UnreadStatusKey = Record<Conversation.UnreadState, string>;
+
+    const PrivIcon: UnreadStatusKey = {
+        [NoneUnread]:    '', // valid; disappears
+        [UnreadUnread]:  'far fa-fw fa-comment-dots',
+        [MentionUnread]: 'far fa-fw fa-comment-dots mention',
+    }
+    const RoomIcon: UnreadStatusKey = {
+        [NoneUnread]:    '', // set during mount
+        [UnreadUnread]:  'far fa-fw fa-list-alt',
+        [MentionUnread]: 'far fa-fw fa-list-alt mention',
+    }
+
+    const watched_pms:   {[name: string]: Conversation.UnreadState} = {};
+    const watched_rooms: {[name: string]: Conversation.UnreadState} = {};
+
+    const NoteIcon: Record<number, string> = {
+        0: '', // set during mount
+        1: 'fa-fw fa-envelope',
+        2: 'fa-fw fa-rss-square',
+        3: 'fa-fw fa-mail-bulk',
+    };
 
     @Component
     export default class Sidebar extends Vue {
@@ -50,23 +77,133 @@
         @Watch('open')
         watchOpen(): void {
             this.expanded = this.open;
+
+            if (this.right)
+                this.updateNoteDisplay();
         }
 
-        note: boolean = false;
-        msg:  boolean = false;
+        pm_icon:   string = '';
+        room_icon: string = '';
+        note_icon: string = '';
+
+        onPrivateMessage(pmEvent: PrivateMessageEvent): void {
+            const conv = pmEvent.conv;
+
+            if (conv.unread === UnreadUnread) {
+                if (this.pm_icon === PrivIcon[NoneUnread])
+                    this.pm_icon = PrivIcon[UnreadUnread];
+
+                watched_pms[conv.name] = conv.unread;
+                log.debug('sidebar.msg.priv.unread', watched_rooms);
+            }
+            else if (conv.unread === MentionUnread) {
+                if (this.pm_icon !== PrivIcon[MentionUnread])
+                    this.pm_icon = PrivIcon[MentionUnread];
+
+                watched_pms[conv.name] = conv.unread;
+                log.debug('sidebar.msg.priv.mention', watched_pms);
+            }
+        };
+
+        onChannelMessage(roomEvent: ChannelMessageEvent): void {
+            const conv = roomEvent.channel;
+
+            if (conv === core.conversations.selectedConversation)
+                return;
+
+            if (conv.unread === UnreadUnread) {
+                if (this.room_icon === RoomIcon[NoneUnread])
+                    this.room_icon = RoomIcon[conv.unread];
+
+                watched_rooms[conv.name] = conv.unread;
+                log.debug('sidebar.msg.room.unread', watched_rooms);
+            }
+            else if (conv.unread === MentionUnread) {
+                if (this.room_icon !== RoomIcon[MentionUnread])
+                    this.room_icon = RoomIcon[conv.unread];
+
+                watched_rooms[conv.name] = conv.unread;
+                log.debug('sidebar.msg.room.mention', watched_rooms);
+            }
+        }
+
+        onConversationSelect(convEvent: SelectConversationEvent): void {
+            if (convEvent.conversation === null)
+                return;
+
+            const conversation = convEvent.conversation;
+
+            if (Conversation.isPrivate(conversation)) {
+                if (watched_pms[conversation.name])
+                    delete watched_pms[conversation.name];
+
+                let highest: Conversation.UnreadState = NoneUnread;
+                for (const state of Object.values(watched_pms)) {
+                    if (state === MentionUnread) {
+                        highest = MentionUnread;
+                        log.debug('sidebar.select.priv.highest', highest, watched_pms);
+                        break;
+                    }
+                    else if (state === UnreadUnread && highest === NoneUnread) {
+                        highest = UnreadUnread;
+                    }
+                }
+                this.pm_icon = PrivIcon[highest];
+                log.debug('sidebar.select.priv.fallthrough', highest, watched_pms);
+            }
+            else { // Room message
+                if (watched_rooms[conversation.name])
+                    delete watched_rooms[conversation.name]
+
+                let highest: Conversation.UnreadState = NoneUnread;
+                for (const [_, state] of Object.entries(watched_rooms)) {
+                    if (state === MentionUnread) {
+                        highest = MentionUnread;
+                        log.debug('sidebar.select.room.highest', highest, watched_rooms);
+                        break;
+                    }
+                    else if (state === UnreadUnread && highest === NoneUnread) {
+                        highest = UnreadUnread;
+                    }
+                }
+                // Room icon arbitrarily decided to display the default icon when not busy.
+                this.room_icon = highest === NoneUnread ? this.icon : RoomIcon[highest];
+                log.debug('sidebar.select.room.fallthrough', highest, watched_rooms);
+            }
+        }
 
         updateNoteDisplay(): void {
-            const counts = core.siteSession.interfaces.notes.getCounts();
+            if (this.expanded) {
+                this.note_icon = this.icon;
+                return;
+            }
 
-            this.note = counts.unreadNotes    > 0;
-            this.msg  = counts.unreadMessages > 0;
+            const count = core.siteSession.interfaces.notes.getCounts();
+            const sum = (count.unreadNotes    > 0 && 1 || 0)
+                      + (count.unreadMessages > 0 && 2 || 0);
+
+            this.note_icon = NoteIcon[sum || 0];
+            log.debug('sidebar.note.update');
         };
 
         @Hook('mounted')
         mounted(): void {
-            this.updateNoteDisplay();
+            if (this.right) {
+                NoteIcon[0] = this.icon;
+                this.updateNoteDisplay();
 
-            EventBus.$on('note-counts-update', this.updateNoteDisplay);
+                EventBus.$on('note-counts-update', this.updateNoteDisplay);
+                log.debug('sidebar.mount.right.success', { right: this.right, icon: this.icon, note: this.note_icon });
+            }
+            else { // left
+                RoomIcon[NoneUnread] = this.icon;
+                this.room_icon = RoomIcon[NoneUnread];
+
+                EventBus.$on('private-message-post', this.onPrivateMessage);
+                EventBus.$on('channel-message-post', this.onChannelMessage);
+                EventBus.$on('select-conversation',  this.onConversationSelect);
+                log.debug('sidebar.mount.left.success', { right: this.right, icon: this.icon, room: this.room_icon, priv: this.pm_icon });
+            }
         }
     }
 </script>
@@ -77,7 +214,11 @@
             box-shadow: none;
         }
 
-        .fa-mail-bulk, .fa-sticky-note, .fa-envelope {
+        .mention {
+            color: var(--danger);
+        }
+
+        .fa-comment-dots, .fa-mail-bulk, .fa-rss-square, .fa-envelope {
             color: var(--warning);
         }
     }

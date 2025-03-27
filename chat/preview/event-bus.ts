@@ -6,6 +6,7 @@ import { Character } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
+import PrivateConversation = Conversation.PrivateConversation;
 
 import { NoteCheckerCount } from '../../site/note-checker';
 
@@ -15,14 +16,15 @@ import { NoteCheckerCount } from '../../site/note-checker';
  * 'imagepreview-toggle-stickyness': {url: string}
  * 'character-data': {character: Character}
  * 'character-score': {character: Character, score: number, isFiltered: boolean}
- * 'private-message': {message: Message}
+ * 'private-message': {message: Message, conversation: PrivateConversation}
+ * 'private-message-post': {message: Message, conversation: PrivateConversation}
  * 'channel-ad': {message: Message, channel: Conversation, profile: ComplexCharacter | undefined}
- * 'channel-message': {message: Message, channel: Conversation}
+ * 'channel-message': {message: Message, channel: ChannelConversation}
+ * 'channel-message-post': {message: Message, channel: ChannelConversation}
  * 'select-conversation': { conversation: Conversation }
- * 'note-counts-update': {},
+ * 'note-counts-update': { unreadNotes: number, unreadMessages: number, onlineUsers: number }
  * 'character-memo': { character: string, memo: CharacterMemo }
  */
-
 
 export interface EventBusEvent {
     // tslint:disable: no-any
@@ -32,6 +34,11 @@ export interface EventBusEvent {
 export interface ChannelMessageEvent extends EventBusEvent {
     message: Message;
     channel: ChannelConversation;
+}
+
+export interface PrivateMessageEvent extends EventBusEvent {
+    message: Message,
+    conv: PrivateConversation
 }
 
 // tslint:disable-next-line no-empty-interface
@@ -94,4 +101,3 @@ class EventBusManager {
 
 export const EventBus = new EventBusManager();
 // export const EventBus = new Vue();
-

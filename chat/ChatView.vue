@@ -1,7 +1,7 @@
 <template>
     <div style="height:100%; display: flex; position: relative;" id="chatView" @click="userMenuHandle" @contextmenu="userMenuHandle" @touchstart.passive="userMenuHandle"
         @touchend="userMenuHandle">
-        <sidebar id="sidebar" :label="l('chat.menu')" icon="fa-bars">
+        <sidebar id="sidebar" :label="l('chat.menu')" icon="far fa-user-circle">
             <img :src="characterImage(ownCharacter.name)" v-if="showAvatars" style="float:left;margin-right:5px;margin-top:5px;width:70px; height: 70px;"/>
             <a target="_blank" :href="ownCharacterLink" class="btn" style="display:block">
                 {{ownCharacter.name}}

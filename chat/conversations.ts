@@ -843,10 +843,14 @@ export default function(this: any): Interfaces.State {
             return;
         }
 
-        EventBus.$emit('private-message', { message });
-
         const conv = state.getPrivate(char);
+
+        EventBus.$emit('private-message', { message: message,  conv: conv });
+
         await conv.addMessage(message);
+
+        EventBus.$emit('private-message-post', { message: message,  conv: conv })
+
     });
     connection.onMessage('MSG', async(data, time) => {
         const char = core.characters.get(data.character);
@@ -911,6 +915,8 @@ export default function(this: any): Interfaces.State {
                 characterImage(data.character), 'attention');
             if(conversation !== state.selectedConversation || !state.windowFocused) conversation.unread = Interfaces.UnreadState.Mention;
         }
+
+        EventBus.$emit('channel-message-post', { message, channel: conversation });
     });
     connection.onMessage('LRP', async(data, time) => {
         const char = core.characters.get(data.character);
