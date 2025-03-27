@@ -147,7 +147,6 @@
         <recent-conversations ref="recentDialog"></recent-conversations>
         <image-preview ref="imagePreview"></image-preview>
         <add-pm-partner ref="addPmPartnerDialog"></add-pm-partner>
-        <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
 
         <modal :buttons="false" ref="profileAnalysis" dialogClass="profile-analysis" >
             <profile-analysis></profile-analysis>
@@ -188,7 +187,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import ImagePreview from './preview/ImagePreview.vue';
     import PrivateConversation = Conversation.PrivateConversation;
     import * as _ from 'lodash';
-    import NoteStatus from '../site/NoteStatus.vue';
     import { Dialog } from '../helpers/dialog';
     // import { EventBus } from './preview/event-bus';
     import AdCenterDialog from './ads/AdCenter.vue';
@@ -209,7 +207,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             'user-menu': UserMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
-            'note-status': NoteStatus,
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
             modal: Modal,
