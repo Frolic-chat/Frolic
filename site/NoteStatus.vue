@@ -1,17 +1,14 @@
 <template>
   <div id="note-status" :class="{active: hasReports()}">
-
     <div v-for="(report, index) in reports" :key="`report-${index}`" :class="`status-report ${report.type} ${(report.count > 0) && (report.count !== report.dismissedCount) ? 'active': ''}`">
       <a :href="report.url" @click="dismissReport(report)">
-        <span class="count">{{report.count}}</span>
-        {{ `${report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1)}` }}
+        {{report.count}} {{ `${report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1)}` }}
 
       </a>
-      <a @click="dismissReport(report)" class="dismiss"><i class="fas fa-times-circle"></i></a>
     </div>
-
   </div>
 </template>
+
 <script lang="ts">
 import _ from 'lodash';
 import l from '../chat/localize';
@@ -48,7 +45,6 @@ export default class NoteStatus extends Vue {
   ];
 
   callback?: () => void;
-
 
   @Hook('mounted')
   mounted(): void {
@@ -107,26 +103,21 @@ export default class NoteStatus extends Vue {
   }
 }
 </script>
+
 <style lang="scss">
 
 #note-status {
-  position: absolute;
-  right: 3em;
-  bottom: 0;
-  z-index: 1000;
-  opacity: 0;
-  transition: all 0.25s;
-
-  border: 1px solid var(--input-color);
+  display: none;
+  color: var(--linkForcedColor);
+  border: 1px solid var(--secondary);
   background-color: var(--input-bg);
   padding: 0;
   border-radius: 3px;
 
   &.active {
-    opacity: 1;
-    right: 0;
+    display: block;
+    margin-top: 5px;
   }
-
 
   .status-report {
     display: none;
@@ -148,25 +139,6 @@ export default class NoteStatus extends Vue {
     a:hover {
       text-decoration: none;
       background-color: var(--secondary);
-    }
-
-    .count {
-      font-size: 30pt;
-      display: block;
-      line-height: 80%;
-      padding: 0;
-      margin: 0;
-    }
-
-    .dismiss {
-      position: absolute;
-      top: -0.4rem;
-      right: -0.4rem;
-      background-color: var(--input-bg);
-      border-radius: 8px;
-      margin: 0;
-      padding: 0;
-      line-height: 0;
     }
   }
 }
