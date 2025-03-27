@@ -615,6 +615,9 @@ Any existing FChat 3.0 data for this character will be overwritten.`,
     'eicon.favRemove': 'Remove from favorites',
     'eicon.favAdd': 'Add to favorites',
 
+    'notestatus.messages': 'Messages',
+    'notestatus.notes': 'Notes',
+
     'phelper.hook': 'Having problems with finding good matches?',
     'phelper.goal': 'The profile analyzer will identify if your profile could benefit from adjustments.',
     'phelper.working': 'Analyzing...',

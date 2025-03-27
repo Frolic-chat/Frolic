@@ -14,6 +14,7 @@
 </template>
 <script lang="ts">
 import _ from 'lodash';
+import l from '../chat/localize';
 import { Component, Hook } from '@f-list/vue-ts';
 import Vue from 'vue';
 import core from '../chat/core';
@@ -32,14 +33,14 @@ export default class NoteStatus extends Vue {
   reports: ReportState[] = [
     {
       type: 'message',
-      title: 'Messages',
+      title: l('notestatus.messages'),
       count: 0,
       dismissedCount: 0,
       url: 'https://www.f-list.net/messages.php'
     },
     {
       type: 'note',
-      title: 'Notes',
+      title: l('notestatus.notes'),
       count: 0,
       dismissedCount: 0,
       url: 'https://www.f-list.net/read_notes.php'
