@@ -55,11 +55,13 @@ export class NoteChecker implements SiteSessionInterface {
   }
 
 
-  private async check(): Promise<NoteCheckerCount> {
+  async check(): Promise<NoteCheckerCount> {
     log.debug('notechecker.check');
 
-    if (!core.state.settings.risingShowUnreadOfflineCount)
+    if (!core.state.settings.risingShowUnreadOfflineCount) {
+      log.debug('notechecker.check.notenabled')
       return this.latestCount;
+    }
 
     const res = await this.session.get('/', true);
     const messagesMatch = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);

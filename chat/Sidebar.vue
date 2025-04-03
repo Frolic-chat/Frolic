@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar-wrapper" :class="{open: expanded}">
         <div :class="'sidebar sidebar-' + (right ? 'right' : 'left')">
-            <button @click="expanded = !expanded" class="btn btn-secondary btn-xs expander" :aria-label="label">
+            <button @click="onButtonClick()" class="btn btn-secondary btn-xs expander" :aria-label="label">
                 <span v-if="right"
                     :class="note_icon"
                     class="fa fa-rotate-270"
@@ -23,12 +23,12 @@
                 <slot></slot>
             </div>
         </div>
-        <div class="modal-backdrop show" @click="expanded = false"></div>
+        <div class="modal-backdrop show" @click="onButtonClick()"></div>
     </div>
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Watch, Hook} from '@f-list/vue-ts';
+    import {Component, Prop, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from './core';
     import { EventBus, SelectConversationEvent, ChannelMessageEvent, PrivateMessageEvent } from './preview/event-bus';
@@ -74,12 +74,13 @@
         readonly open!: boolean;
         expanded = this.open;
 
-        @Watch('open')
-        watchOpen(): void {
-            this.expanded = this.open;
+        onButtonClick() {
+            this.expanded = !this.expanded;
 
             if (this.right)
                 this.updateNoteDisplay();
+
+            log.silly('sidebar.toggle.button', {expanded: this.expanded, right: this.right});
         }
 
         pm_icon:   string = '';
@@ -88,6 +89,9 @@
 
         onPrivateMessage(pmEvent: PrivateMessageEvent): void {
             const conv = pmEvent.conv;
+
+            if (conv === core.conversations.selectedConversation)
+                return;
 
             if (conv.unread === UnreadUnread) {
                 if (this.pm_icon === PrivIcon[NoneUnread])
@@ -108,6 +112,8 @@
         onChannelMessage(roomEvent: ChannelMessageEvent): void {
             const conv = roomEvent.channel;
 
+            //if (Conversation.isChannel(selected) && convos.indexOf(conv) === convos.indexOf(selected))
+            //if (Conversation.isChannel(selected) && conv === selected)
             if (conv === core.conversations.selectedConversation)
                 return;
 

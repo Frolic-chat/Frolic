@@ -1,8 +1,8 @@
 <template>
   <div id="note-status" :class="{active: hasReports()}">
-    <div v-for="(report, index) in reports" :key="`report-${index}`" :class="`status-report ${report.type} ${(report.count > 0) && (report.count !== report.dismissedCount) ? 'active': ''}`">
-      <a :href="report.url" @click="dismissReport(report)">
-        {{report.count}} {{ `${report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1)}` }}
+    <div v-for="(report, index) in reports" :key="`report-${index}`" :class="`status-report ${report.type} ${(report.count > 0) ? 'active' : ''}`">
+      <a :href="report.url" @click="scheduleUpdateFromClick()">
+        {{report.count}} {{ report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1) }}
 
       </a>
     </div>
@@ -11,6 +11,7 @@
 
 <script lang="ts">
 import _ from 'lodash';
+import log from 'electron-log';
 import l from '../chat/localize';
 import { Component, Hook } from '@f-list/vue-ts';
 import Vue from 'vue';
@@ -21,7 +22,6 @@ interface ReportState {
   type: string;
   title: string;
   count: number;
-  dismissedCount: number;
   url: string;
 }
 
@@ -32,45 +32,64 @@ export default class NoteStatus extends Vue {
       type: 'message',
       title: l('notestatus.messages'),
       count: 0,
-      dismissedCount: 0,
       url: 'https://www.f-list.net/messages.php'
     },
     {
       type: 'note',
       title: l('notestatus.notes'),
       count: 0,
-      dismissedCount: 0,
       url: 'https://www.f-list.net/read_notes.php'
     }
   ];
 
-  callback?: () => void;
+  //callback?: () => void;
 
   @Hook('mounted')
   mounted(): void {
     this.updateCounts();
 
-    this.callback = () => this.updateCounts();
+    //this.callback = () => this.updateCounts();
 
-    EventBus.$on('note-counts-update', this.callback);
+    EventBus.$on('note-counts-update', this.updateCounts);
   }
 
 
   @Hook('beforeDestroy')
   destroying(): void {
-    if (this.callback) {
-      EventBus.$off('note-counts-update', this.callback);
+    if (this.updateCounts) {
+      EventBus.$off('note-counts-update', this.updateCounts);
     }
   }
 
 
-  dismissReport(report: ReportState): void {
-    report.dismissedCount = report.count;
+  scheduleUpdateFromClick(): void {
+      setTimeout(
+          async () => {
+              try {
+                  await core.siteSession.interfaces.notes.check();
+              }
+              catch (err) {
+                  log.error('notechecker.check.error', err);
+              }
+          },
+          1.5 * 60 * 1000
+      );
+      setTimeout(
+          async () => {
+              try {
+                  await core.siteSession.interfaces.notes.check();
+              }
+              catch (err) {
+                  log.error('notechecker.check.error', err);
+              }
+          },
+          3   * 60 * 1000
+      );
   }
 
 
   hasReports(): boolean {
-    return !!_.find(this.reports, (r) => ((r.count > 0) && (r.dismissedCount !== r.count)));
+    return !!_.find(this.reports, (r) => (r.count > 0));
   }
 
 
@@ -92,10 +111,6 @@ export default class NoteStatus extends Vue {
         }
 
         const count = (v as any)[field] as number;
-
-        if (count !== report.dismissedCount) {
-          report.dismissedCount = 0;
-        }
 
         report.count = count;
       }
