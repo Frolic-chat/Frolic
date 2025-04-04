@@ -1,11 +1,26 @@
 <template>
-  <div id="note-status" :class="{active: hasReports()}">
-    <div v-for="(report, index) in reports" :key="`report-${index}`" :class="`status-report ${report.type} ${(report.count > 0) ? 'active' : ''}`">
-      <a :href="report.url" @click="scheduleUpdateFromClick()">
-        {{report.count}} {{ report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1) }}
-
-      </a>
-    </div>
+  <div id="note-status" class="input-group" :class="{active: hasReports()}">
+    <a
+      :class="{'disabled': checkpending}"
+      class="input-group-prepend"
+      @click.prevent="animateUpdateSpinner(); scheduleUpdateNow(); scheduleUpdateLater()"
+      href="#"
+    >
+      <div class="input-group-text">
+        <span :class="{'fa-spin': spinning }" class="fas fa-sync-alt"></span>
+      </div>
+    </a>
+    <a v-for="(report, index) in reports"
+      :key="`report-${index}`"
+      class="form-control"
+      :class="`status-report report-${report.type} ${(report.count > 0) ? 'active' : ''}`"
+      :href="report.url"
+      @click="scheduleUpdateLater()"
+    >
+      <span style="margin-left: auto; margin-right: auto;">
+        {{report.count}} <span :class="report.class" class="fa fa-fw"></span>
+      </span>
+    </a>
   </div>
 </template>
 
@@ -22,37 +37,47 @@ interface ReportState {
   type: string;
   title: string;
   count: number;
+  class: string;
   url: string;
 }
 
 @Component
 export default class NoteStatus extends Vue {
+  spinning: boolean = false;
+
+  animateUpdateSpinner(): void {
+    this.spinning = true;
+    setTimeout(
+      () => {
+        this.spinning = false;
+      },
+      2 * 1000
+    )
+  }
+
   reports: ReportState[] = [
     {
       type: 'message',
       title: l('notestatus.messages'),
       count: 0,
+      class: 'fa-rss-square',
       url: 'https://www.f-list.net/messages.php'
     },
     {
       type: 'note',
       title: l('notestatus.notes'),
       count: 0,
+      class: 'fa-envelope',
       url: 'https://www.f-list.net/read_notes.php'
     }
   ];
-
-  //callback?: () => void;
 
   @Hook('mounted')
   mounted(): void {
     this.updateCounts();
 
-    //this.callback = () => this.updateCounts();
-
     EventBus.$on('note-counts-update', this.updateCounts);
   }
-
 
   @Hook('beforeDestroy')
   destroying(): void {
@@ -61,40 +86,99 @@ export default class NoteStatus extends Vue {
     }
   }
 
+  checkpending: boolean = false;
+  now:       NodeJS.Timeout | null = null;
+  later:     NodeJS.Timeout | null = null;
+  muchLater: NodeJS.Timeout | null = null;
 
-  scheduleUpdateFromClick(): void {
-      setTimeout(
-          async () => {
-              try {
-                  await core.siteSession.interfaces.notes.check();
-              }
-              catch (err) {
-                  log.error('notechecker.check.error', err);
-              }
-          },
-          1.5 * 60 * 1000
-      );
-      setTimeout(
-          async () => {
-              try {
-                  await core.siteSession.interfaces.notes.check();
-              }
-              catch (err) {
-                  log.error('notechecker.check.error', err);
-              }
-          },
-          3   * 60 * 1000
-      );
+  scheduleUpdateNow(): void {
+    if (this.checkpending) {
+      log.debug('notechecker.schedule.now.canceled.pending');
+      return;
+    }
+
+    log.debug('notechecker.schedule.now');
+
+    this.now = setTimeout(
+      async () => {
+        this.now = null;
+        try {
+          await core.siteSession.interfaces.notes.check();
+        }
+        catch (err) {
+          log.error('notechecker.schedule.now.error', err);
+        }
+      },
+      1 * 1000 // 1 second
+    );
   }
 
+  scheduleUpdateLater(): void {
+    if (this.checkpending) {
+      log.debug('notechecker.schedule.canceled.pending');
+      return;
+    }
+
+    log.debug('notechecker.schedule.later');
+
+    this.checkpending = true;
+    this.later = setTimeout(
+      async () => {
+        this.later = null;
+        try {
+          await core.siteSession.interfaces.notes.check();
+        }
+        catch (err) {
+          log.error('notechecker.schedule.later.error', err);
+        }
+      },
+      1.6 * 60 * 1000 // 90 seconds wasn't returning update
+    );
+    this.muchLater = setTimeout(
+      async () => {
+        this.muchLater = null;
+        try {
+          await core.siteSession.interfaces.notes.check();
+        }
+        catch (err) {
+          log.error('notechecker.schedule.muchlater.error', err);
+        }
+      },
+      4 * 60 * 1000 // 4 minutes
+    );
+  }
 
   hasReports(): boolean {
     return !!_.find(this.reports, (r) => (r.count > 0));
   }
 
+  noTimersRunning(): boolean {
+    return this.now       === null
+        && this.later     === null
+        && this.muchLater === null;
+  }
 
+  updateTimeout: NodeJS.Timeout | null = null;
   updateCounts(): void {
     const v = core.siteSession.interfaces.notes.getCounts();
+
+    this.checkpending = true;
+
+    if (this.updateTimeout) {
+      this.updateTimeout.refresh();
+    }
+    else {
+      this.updateTimeout = setTimeout(
+        () => {
+          log.debug('notechecker.updatetimeout.resolving');
+          if (this.noTimersRunning())
+            this.checkpending = false;
+
+          this.updateTimeout = null;
+        },
+        1 * 60 * 1000 // 1 minute
+      )
+    }
 
     const mapper = {
       message: 'unreadMessages',
@@ -123,38 +207,48 @@ export default class NoteStatus extends Vue {
 
 #note-status {
   display: none;
-  color: var(--linkForcedColor);
-  border: 1px solid var(--secondary);
-  background-color: var(--input-bg);
-  padding: 0;
-  border-radius: 3px;
 
   &.active {
-    display: block;
+    display: flex;
     margin-top: 5px;
   }
 
   .status-report {
     display: none;
     text-align: center;
-    text-transform: uppercase;
-    font-size: 10pt;
-    padding: 0;
+    letter-spacing: 0.2em;
 
     &.active {
-      display: block;
+      display: flex;
     }
 
-    a {
-      padding: 5px;
-      padding-bottom: 3px;
-      display: block;
+    .fa-sync-alt {
+      &.fa-spin {
+        --fa-animation-iteration-count: 1;
+      }
     }
 
-    a:hover {
-      text-decoration: none;
-      background-color: var(--secondary);
+    span.fa.fa-fw {
+      color: inherit;
+      line-height: inherit;
     }
+  }
+
+  a {
+    &.disabled {
+      cursor: not-allowed;
+      pointer-events: none;
+      &:hover { background-color: inherit; }
+
+      .fa-sync-alt:not(.fa-spin) {
+        opacity: 0.31;
+      }
+    }
+  }
+
+  a:hover, a:hover > div.input-group-text {
+    text-decoration: none;
+    background-color: var(--secondary);
   }
 }
 </style>

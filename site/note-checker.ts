@@ -56,8 +56,6 @@ export class NoteChecker implements SiteSessionInterface {
 
 
   async check(): Promise<NoteCheckerCount> {
-    log.debug('notechecker.check');
-
     if (!core.state.settings.risingShowUnreadOfflineCount) {
       log.debug('notechecker.check.notenabled')
       return this.latestCount;
@@ -71,9 +69,9 @@ export class NoteChecker implements SiteSessionInterface {
     // console.log('MATCH', messagesMatch[1], notesMatch[1], statsMatch[1]);
 
     const summary = {
-      unreadNotes: (notesMatch && notesMatch.length > 1) ? parseInt(notesMatch[1], 10) : 0,
+      unreadNotes:    (notesMatch    && notesMatch.length    > 1) ? parseInt(notesMatch[1],    10) : 0,
       unreadMessages: (messagesMatch && messagesMatch.length > 1) ? parseInt(messagesMatch[1], 10) : 0,
-      onlineUsers: (statsMatch && statsMatch.length > 1) ? parseInt(statsMatch[1], 10) : 0
+      onlineUsers:    (statsMatch    && statsMatch.length    > 1) ? parseInt(statsMatch[1],    10) : 0
     };
 
     this.latestCount = summary;
