@@ -121,7 +121,7 @@ export default class NoteStatus extends Vue {
 
   scheduleUpdateLater(): void {
     if (this.anyPendingUpdateChecks()) {
-      log.debug('notechecker.schedule.canceled.pending');
+      log.debug('notechecker.schedule.later.canceled.pending');
       return;
     }
 
