@@ -91,8 +91,14 @@ export default class NoteStatus extends Vue {
   later:     NodeJS.Timeout | null = null;
   muchLater: NodeJS.Timeout | null = null;
 
+  anyPendingUpdateChecks(): boolean {
+    return this.now       !== null
+        || this.later     !== null
+        || this.muchLater !== null;
+  }
+
   scheduleUpdateNow(): void {
-    if (this.checkpending) {
+    if (this.anyPendingUpdateChecks()) {
       log.debug('notechecker.schedule.now.canceled.pending');
       return;
     }
@@ -114,7 +120,7 @@ export default class NoteStatus extends Vue {
   }
 
   scheduleUpdateLater(): void {
-    if (this.checkpending) {
+    if (this.anyPendingUpdateChecks()) {
       log.debug('notechecker.schedule.canceled.pending');
       return;
     }
@@ -152,33 +158,33 @@ export default class NoteStatus extends Vue {
     return !!_.find(this.reports, (r) => (r.count > 0));
   }
 
-  noTimersRunning(): boolean {
-    return this.now       === null
-        && this.later     === null
-        && this.muchLater === null;
-  }
-
-  updateTimeout: NodeJS.Timeout | null = null;
+  //updateTimeout: NodeJS.Timeout | null = null;
+  updateTimeout: ReturnType<typeof setTimeout> | null = null;
   updateCounts(): void {
     const v = core.siteSession.interfaces.notes.getCounts();
 
     this.checkpending = true;
 
-    if (this.updateTimeout) {
-      this.updateTimeout.refresh();
-    }
-    else {
-      this.updateTimeout = setTimeout(
-        () => {
-          log.debug('notechecker.updatetimeout.resolving');
-          if (this.noTimersRunning())
-            this.checkpending = false;
+    // This runs when an update check resolves.
+    // So set a 1m timer to undarken the button.
+    // But after that 1m if there's another check incoming, don't undarken the button.
+    // Since the check is already in queue,
+    // it will trigger updateCounts() and start another 1m timer.
+    if (this.updateTimeout)
+      clearTimeout(this.updateTimeout);
 
-          this.updateTimeout = null;
-        },
-        1 * 60 * 1000 // 1 minute
-      )
-    }
+    this.updateTimeout = setTimeout(
+      () => {
+        log.debug('notechecker.updatetimeout.resolving');
+
+        if (!this.anyPendingUpdateChecks())
+          this.checkpending = false;
+          // Don't need to restart because the next updateCounts() will restart if necessary.
+
+        this.updateTimeout = null;
+      },
+      1 * 60 * 1000 // 1 minute
+    )
 
     const mapper = {
       message: 'unreadMessages',
