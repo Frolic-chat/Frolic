@@ -1,9 +1,9 @@
 <template>
-  <div id="note-status" class="input-group" :class="{active: hasReports()}">
+  <div id="note-status" class="input-group">
     <a
       :class="{'disabled': checkpending}"
       class="input-group-prepend"
-      @click.prevent="animateUpdateSpinner(); scheduleUpdateNow(); scheduleUpdateLater()"
+      @click.prevent="scheduleUpdate('update')"
       href="#"
     >
       <div class="input-group-text">
@@ -12,12 +12,12 @@
     </a>
     <a v-for="(report, index) in reports"
       :key="`report-${index}`"
-      class="form-control"
-      :class="`status-report report-${report.type} ${(report.count > 0) ? 'active' : ''}`"
+      class="form-control status-report"
+      :class="`report-${report.type} ${(report.count <= 0) ? 'disabled' : ''}`"
       :href="report.url"
-      @click="scheduleUpdateLater()"
+      @click="scheduleUpdate('visit')"
     >
-      <span style="margin-left: auto; margin-right: auto;">
+      <span class="text-container">
         {{report.count}} <span :class="report.class" class="fa fa-fw"></span>
       </span>
     </a>
@@ -97,66 +97,66 @@ export default class NoteStatus extends Vue {
         || this.muchLater !== null;
   }
 
-  scheduleUpdateNow(): void {
-    if (this.anyPendingUpdateChecks()) {
-      log.debug('notechecker.schedule.now.canceled.pending');
-      return;
-    }
-
-    log.debug('notechecker.schedule.now');
-
-    this.now = setTimeout(
-      async () => {
-        this.now = null;
-        try {
-          await core.siteSession.interfaces.notes.check();
-        }
-        catch (err) {
-          log.error('notechecker.schedule.now.error', err);
-        }
-      },
-      1 * 1000 // 1 second
-    );
-  }
-
-  scheduleUpdateLater(): void {
-    if (this.anyPendingUpdateChecks()) {
-      log.debug('notechecker.schedule.later.canceled.pending');
-      return;
-    }
-
-    log.debug('notechecker.schedule.later');
-
+  scheduleUpdate(source: string = 'visit'): void {
+    this.animateUpdateSpinner();
     this.checkpending = true;
-    this.later = setTimeout(
-      async () => {
-        this.later = null;
-        try {
-          await core.siteSession.interfaces.notes.check();
-        }
-        catch (err) {
-          log.error('notechecker.schedule.later.error', err);
-        }
-      },
-      1.6 * 60 * 1000 // 90 seconds wasn't returning update
-    );
-    this.muchLater = setTimeout(
-      async () => {
-        this.muchLater = null;
-        try {
-          await core.siteSession.interfaces.notes.check();
-        }
-        catch (err) {
-          log.error('notechecker.schedule.muchlater.error', err);
-        }
-      },
-      4 * 60 * 1000 // 4 minutes
-    );
+
+    if (source === 'update' && !this.anyPendingUpdateChecks()) {
+      this.now = setTimeout(
+        async () => {
+          this.now = null;
+          try {
+            await core.siteSession.interfaces.notes.check();
+          }
+          catch (err) {
+            log.error('notechecker.schedule.now.error', err);
+          }
+        },
+        0.1 * 1000 // 100ms
+      );
+      log.debug('notechecker.schedule', { source: source, timer: this.now });
+    }
+
+    if (source === 'update' || source === 'visit') {
+      if (this.later)
+        clearTimeout(this.later);
+
+      this.later = setTimeout(
+        async () => {
+          this.later = null;
+          try {
+            await core.siteSession.interfaces.notes.check();
+          }
+          catch (err) {
+            log.error('notechecker.schedule.later.error', err);
+          }
+        },
+        1.6 * 60 * 1000 // 90 seconds wasn't returning update, so 96
+      );
+
+      if (this.muchLater)
+        clearTimeout(this.muchLater);
+
+      this.muchLater = setTimeout(
+        async () => {
+          this.muchLater = null;
+          try {
+            await core.siteSession.interfaces.notes.check();
+          }
+          catch (err) {
+            log.error('notechecker.schedule.muchlater.error', err);
+          }
+        },
+        4 * 60 * 1000 // 4 minutes
+      );
+
+      log.debug('notechecker.schedule', { source: source, timer1: this.later, timer2: this.muchLater });
+    }
   }
 
-  hasReports(): boolean {
-    return !!_.find(this.reports, (r) => (r.count > 0));
-  }
+  // hasReports(): boolean {
+  //   return !!_.find(this.reports, (r) => (r.count > 0));
+  // }
 
   //updateTimeout: NodeJS.Timeout | null = null;
   updateTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -177,9 +177,9 @@ export default class NoteStatus extends Vue {
       () => {
         log.debug('notechecker.updatetimeout.resolving');
 
+        // Only the last update will unlock the button.
         if (!this.anyPendingUpdateChecks())
           this.checkpending = false;
-          // Don't need to restart because the next updateCounts() will restart if necessary.
 
         this.updateTimeout = null;
       },
@@ -212,20 +212,17 @@ export default class NoteStatus extends Vue {
 <style lang="scss">
 
 #note-status {
-  display: none;
-
-  &.active {
-    display: flex;
-    margin-top: 5px;
-  }
+  display: flex;
+  margin-top: 5px;
 
   .status-report {
-    display: none;
+    display: flex;
     text-align: center;
     letter-spacing: 0.2em;
 
-    &.active {
-      display: flex;
+    .text-container {
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .fa-sync-alt {
@@ -241,20 +238,22 @@ export default class NoteStatus extends Vue {
   }
 
   a {
+    &:hover,
+    &:hover > div.input-group-text {
+      text-decoration: none;
+      background-color: var(--secondary);
+    }
+
     &.disabled {
       cursor: not-allowed;
       pointer-events: none;
+
       &:hover { background-color: inherit; }
 
-      .fa-sync-alt:not(.fa-spin) {
+      .fa-sync-alt:not(.fa-spin), .text-container {
         opacity: 0.31;
       }
     }
-  }
-
-  a:hover, a:hover > div.input-group-text {
-    text-decoration: none;
-    background-color: var(--secondary);
   }
 }
 </style>

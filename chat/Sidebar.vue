@@ -122,7 +122,7 @@
                     this.room_icon = RoomIcon[conv.unread];
 
                 watched_rooms[conv.name] = conv.unread;
-                log.debug('sidebar.msg.room.unread', watched_rooms);
+                log.silly('sidebar.msg.room.unread', watched_rooms);
             }
             else if (conv.unread === MentionUnread) {
                 if (this.room_icon !== RoomIcon[MentionUnread])
