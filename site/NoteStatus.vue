@@ -7,7 +7,7 @@
       href="#"
     >
       <div class="input-group-text">
-        <span :class="{'fa-spin': spinning }" class="fas fa-sync-alt"></span>
+        <span :class="{'fa-spin': spinning }" class="fas fa-sync-alt text-container"></span>
       </div>
     </a>
     <a v-for="(report, index) in reports"
@@ -215,15 +215,16 @@ export default class NoteStatus extends Vue {
   display: flex;
   margin-top: 5px;
 
+  .text-container {
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.8s;
+  }
+
   .status-report {
     display: flex;
     text-align: center;
     letter-spacing: 0.2em;
-
-    .text-container {
-      margin-left: auto;
-      margin-right: auto;
-    }
 
     .fa-sync-alt {
       &.fa-spin {
@@ -250,7 +251,7 @@ export default class NoteStatus extends Vue {
 
       &:hover { background-color: inherit; }
 
-      .fa-sync-alt:not(.fa-spin), .text-container {
+      .text-container:not(.fa-spin) {
         opacity: 0.31;
       }
     }
