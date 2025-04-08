@@ -117,7 +117,7 @@ export default class NoteStatus extends Vue {
       log.debug('notechecker.schedule', { source: source, timer: this.now });
     }
 
-    if (source === 'update' || source === 'visit') {
+    if (source === 'visit') {
       if (this.later)
         clearTimeout(this.later);
 
@@ -131,9 +131,11 @@ export default class NoteStatus extends Vue {
             log.error('notechecker.schedule.later.error', err);
           }
         },
-        1.6 * 60 * 1000 // 90 seconds wasn't returning update, so 96
+        2.5 * 60 * 1000 // 90 seconds wasn't returning update
       );
+    }
 
+    if (source === 'visit' || source === 'update') {
       if (this.muchLater)
         clearTimeout(this.muchLater);
 
@@ -147,7 +149,7 @@ export default class NoteStatus extends Vue {
             log.error('notechecker.schedule.muchlater.error', err);
           }
         },
-        4 * 60 * 1000 // 4 minutes
+        5 * 60 * 1000 // 5 minutes
       );
 
       log.debug('notechecker.schedule', { source: source, timer1: this.later, timer2: this.muchLater });
