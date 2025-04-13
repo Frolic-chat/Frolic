@@ -11,6 +11,10 @@ import { GeneralSettings } from '../electron/common';
 import { SiteSession } from '../site/site-session';
 import _ from 'lodash';
 
+import { EventBus } from './preview/event-bus';
+import log from 'electron-log';
+//import { Matcher } from '../learn/matcher';
+
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();
     for(const tag of state.settings.disallowedTags)
@@ -118,6 +122,8 @@ export function init(
     connection.onEvent('connecting', async() => {
         await data.reloadSettings();
         data.bbCodeParser = createBBCodeParser();
+
+        EventBus.$emit('core-connected', data.state.settings);
     });
 }
 
@@ -142,3 +148,4 @@ export interface Core {
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack
 
 export default core;
+log.verbose('init.core');

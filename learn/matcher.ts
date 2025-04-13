@@ -9,6 +9,9 @@ import anyAscii from 'any-ascii';
 
 import { Store } from '../site/character_page/data_store';
 
+import { Settings } from '../chat/interfaces';
+import { EventBus } from '../chat/preview/event-bus';
+
 import {
     BodyType,
     bodyTypeKinkMapping,
@@ -42,7 +45,6 @@ import {
     SubDomRole,
     TagId
 } from './matcher-types';
-
 
 export interface MatchReport {
     _isVue: true;
@@ -204,6 +206,14 @@ export class Matcher {
 
     readonly yourAnalysis: CharacterAnalysis;
     readonly theirAnalysis: CharacterAnalysis;
+
+    private static settings: Settings | null = null;
+
+    // Sadly, this method doesn't receive the settings object by reference, so it needs EventBus for 'configuration-update' to receive the updated values, instead of just once on load.
+    static importSettings(settings: Settings): void {
+        Matcher.settings = settings;
+        log.debug('matcher.settings.received', Matcher.settings.experimentalOrientationMatching)
+    }
 
     constructor(you: Character, them: Character, yourAnalysis?: CharacterAnalysis, theirAnalysis?: CharacterAnalysis) {
         this.you = you;
@@ -446,16 +456,80 @@ export class Matcher {
 
 
     static scoreOrientationByGender(yourGender: Gender | null, yourOrientation: Orientation | null, theirGender: Gender | null): Score {
-        if ((yourGender === null) || (theirGender === null) || (yourOrientation === null) || yourGender === Gender.None || theirGender === Gender.None)
+        function someoneDoesntHaveAGender(): boolean {
+            return yourGender  === null || yourGender  === Gender.None
+                || theirGender === null || theirGender === Gender.None
+        }
+
+        function youLoveEveryoneEqually(): boolean {
+            return yourOrientation === null
+                || yourOrientation === Orientation.Pansexual
+                || yourOrientation === Orientation.Asexual
+                || yourOrientation === Orientation.Unsure;
+        }
+
+        function approximatelyFemale(gender: Gender): boolean {
+            return gender === Gender.Female
+                || gender === Gender.Herm // Oof. But this is how flist uses it.
+                || gender === Gender.Shemale
+        }
+
+        function approximatelyMale(gender: Gender): boolean {
+            return gender === Gender.Male
+                || gender === Gender.MaleHerm // Double-oof.
+                || gender === Gender.Cuntboy
+        }
+
+        if (someoneDoesntHaveAGender() || youLoveEveryoneEqually())
             return new Score(Scoring.NEUTRAL);
+
+        if (yourOrientation === Orientation.Gay && theirGender === yourGender)
+            return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
+
+        if (yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Female)
+            return new Score(Scoring.MATCH, 'Loves <span>female</span> partners')
+        if (yourOrientation === Orientation.BiMalePreference   && theirGender === Gender.Male)
+            return new Score(Scoring.MATCH, 'Loves <span>male</span> partners');
+
+        // EXPERIMENT: Very obvious matching.
+
+        if (!this.settings) {
+            log.warn('matcher.importedsettings.unavailable', 'Was the matcher never able to import settings?')
+        }
+        else if (this.settings.experimentalOrientationMatching) {
+            if (yourOrientation === Orientation.Straight) {
+                // *Very* few people use straight herm to mean attracted to males.
+                if (approximatelyFemale(yourGender!) && theirGender === Gender.Male)
+                    return new Score(Scoring.MATCH, 'Loves <span>male</span> partners <small>🚧</small>');
+
+                if (approximatelyMale(yourGender!)   && theirGender === Gender.Female)
+                    return new Score(Scoring.MATCH, 'Loves <span>female</span> partners <small>🚧</small>');
+            }
+
+            if (yourOrientation === Orientation.BiCurious) {
+                if (approximatelyFemale(yourGender!)) {
+                    if (theirGender === Gender.Female)
+                        return new Score(Scoring.NEUTRAL);
+                    if (theirGender === Gender.Male)
+                        return new Score(Scoring.MATCH, 'Loves <span>male</span> partners <small>🚧</small>');
+                }
+
+                if (approximatelyMale(yourGender!)) {
+                    if (theirGender === Gender.Male)
+                        return new Score(Scoring.NEUTRAL);
+                    if (theirGender === Gender.Female)
+                        return new Score(Scoring.MATCH, 'Loves <span>female</span> partners <small>🚧</small>');
+                }
+            }
+        } // END EXPERIMENT: Very obvious matching.
 
         // CIS
         // tslint:disable-next-line curly
-        if (Matcher.isCisGender(yourGender)) {
+        if (Matcher.isCisGender(yourGender!)) {
             if (yourGender === theirGender) {
                 // same sex CIS
                 if (yourOrientation === Orientation.Straight)
-                    return new Score(Scoring.MISMATCH, 'No <span>same sex</span>');
+                    return new Score(Scoring.MISMATCH, 'No <span>same sex</span> partners');
 
                 if (
                     (yourOrientation === Orientation.Gay)
@@ -464,18 +538,19 @@ export class Matcher {
                     || ((yourOrientation === Orientation.BiFemalePreference) && (theirGender === Gender.Female))
                     || ((yourOrientation === Orientation.BiMalePreference) && (theirGender === Gender.Male))
                 )
-                    return new Score(Scoring.MATCH, 'Loves <span>same sex</span>');
+                    return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
 
                 if (
                     (yourOrientation === Orientation.BiCurious)
                     || ((yourOrientation === Orientation.BiFemalePreference) && (theirGender === Gender.Male))
                     || ((yourOrientation === Orientation.BiMalePreference) && (theirGender === Gender.Female))
                 )
-                    return new Score(Scoring.WEAK_MATCH, 'Likes <span>same sex</span>');
-            } else if (Matcher.isCisGender(theirGender)) {
+                    return new Score(Scoring.WEAK_MATCH, 'Likes <span>same sex</span> partners');
+            }
+            else if (Matcher.isCisGender(theirGender!)) {
                 // straight CIS
                 if (yourOrientation === Orientation.Gay)
-                    return new Score(Scoring.MISMATCH, 'No <span>opposite sex</span>');
+                    return new Score(Scoring.MISMATCH, 'No <span>opposite sex</span> partners');
 
                 if (
                     (yourOrientation === Orientation.Straight)
@@ -485,17 +560,19 @@ export class Matcher {
                     || ((yourOrientation === Orientation.BiFemalePreference) && (theirGender === Gender.Female))
                     || ((yourOrientation === Orientation.BiMalePreference) && (theirGender === Gender.Male))
                 )
-                    return new Score(Scoring.MATCH, 'Loves <span>opposite sex</span>');
+                    return new Score(Scoring.MATCH, 'Loves <span>opposite sex</span> partners');
 
                 if (
                     ((yourOrientation === Orientation.BiFemalePreference) && (theirGender === Gender.Male))
                     || ((yourOrientation === Orientation.BiMalePreference) && (theirGender === Gender.Female))
                 )
-                    return new Score(Scoring.WEAK_MATCH, 'Likes <span>opposite sex</span>');
+                    return new Score(Scoring.WEAK_MATCH, 'Likes <span>opposite sex</span> partners');
             }
         }
 
         return new Score(Scoring.NEUTRAL);
+
+        // Orientation play kink?
     }
 
 
@@ -1569,7 +1646,7 @@ export class Matcher {
 
         // const kinkScore = match.you.kinkScore.weighted;
 
-        log.debug(
+        log.silly(
             'report.score.search',
             match.you.you.name,
             match.them.you.name,
@@ -1592,6 +1669,11 @@ export class Matcher {
         return (atLevelScore + aboveLevelScore + penalty);
     }
 }
+
+EventBus.$on('core-connected',       Matcher.importSettings);
+EventBus.$on('configuration-update', Matcher.importSettings);
+
+log.debug('init.matcher');
 
 export class UserListSorter {
     static getGenderPreferenceFromKink(c: Character, fchatGender: string): Scoring | null {
@@ -1624,15 +1706,15 @@ export class UserListSorter {
             return null;
     }
 
-    static GetGenderPreferenceFromOrientation(c: Character, fchatGender: string, experimental: boolean = false): Scoring {
+    static GetGenderPreferenceFromOrientation(c: Character, fchatGender: string): Scoring {
         const myGender    = Matcher.getTagValueList(TagId.Gender, c);
         const orientation = Matcher.getTagValueList(TagId.Orientation, c);
         const theirGender = Matcher.strToGender(fchatGender);
 
         // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
-        const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender, experimental).score;
+        const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
 
-        log.verbose(
+        log.debug(
             'userlist.sorter.genderfromorientation',
             {
                 character: c.name,

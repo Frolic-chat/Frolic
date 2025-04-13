@@ -106,7 +106,7 @@
 
             // SCORE GENDER BY ORIENTATION
             if (scoring === null) {
-                scoring = UserListSorter.GetGenderPreferenceFromOrientation(you, gender, core.state.settings.experimentalOrientationMatching);
+                scoring = UserListSorter.GetGenderPreferenceFromOrientation(you, gender);
             }
 
             likes[scoring.toString()].push(gender);

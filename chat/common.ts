@@ -60,6 +60,7 @@ export class Settings implements ISettings {
     risingCharacterPreview = true;
     risingComparisonInUserMenu = true;
     risingComparisonInSearch = true;
+    experimentalOrientationMatching = false;
 
     risingShowUnreadOfflineCount = true;
     risingColorblindMode = false;

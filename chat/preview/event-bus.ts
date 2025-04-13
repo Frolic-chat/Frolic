@@ -11,17 +11,30 @@ import { NoteCheckerCount } from '../../site/note-checker';
 import { Character as CharacterProfile } from '../../site/character_page/interfaces';
 
 /**
+ * Prior undocumented emissions:
+ * 'conversation-load-more': { conversation: conversation}
+ * 'configuration-update' Settings
+ * 'core-connected': Settings
+ * 'word-definition': { lookupWord, x: props.x, y: props.y }
+ */
+
+/**
  * 'imagepreview-dismiss': {url: string}
  * 'imagepreview-show': {url: string}
  * 'imagepreview-toggle-stickyness': {url: string}
+ *
  * 'own-profile-update': {characterProfile: CharacterProfile (site/character_page/interfaces)}
  * 'character-data': {character: Character}
  * 'character-score': {character: Character, score: number, isFiltered: boolean}
+ *
  * 'private-message': {message: Message}
  * 'channel-ad': {message: Message, channel: Conversation, profile: ComplexCharacter | undefined}
  * 'channel-message': {message: Message, channel: Conversation}
+ *
  * 'select-conversation': { conversation: Conversation }
+ *
  * 'note-counts-update': {},
+ *
  * 'character-memo': { character: string, memo: CharacterMemo }
  */
 

@@ -166,6 +166,18 @@
                 </label>
             </div>
 
+            <div class="form-group">
+                <label class="control-label" for="experimentalOrientationMatching">
+                    <input type="checkbox" id="experimentalOrientationMatching" v-model="experimentalOrientationMatching"/>
+                        <b> {{ l('general.experiment') }}</b> {{ l('settings.experiment.orientationMatching') }}
+                </label>
+                <div v-if="experimentalOrientationMatching">
+                    <small>{{ l('settings.experiment.orientationMatching.selectedInfo') }}</small>
+                    <br>
+                    <small>{{ l('general.feedback') }}</small>
+                </div>
+            </div>
+
 <!--            <div class="form-group">-->
 <!--                <label class="control-label" for="hideProfileComparisonSummary">-->
 <!--                    <input type="checkbox" id="hideProfileComparisonSummary" :checked="!hideProfileComparisonSummary" @input="hideProfileComparisonSummary = !$event.target.checked"/>-->
@@ -433,6 +445,7 @@
         risingCharacterPreview!: boolean;
         risingComparisonInUserMenu!: boolean;
         risingComparisonInSearch!: boolean;
+        experimentalOrientationMatching!: boolean;
 
         risingShowUnreadOfflineCount!: boolean;
         risingColorblindMode!: boolean;
@@ -484,6 +497,7 @@
             this.risingCharacterPreview = settings.risingCharacterPreview;
             this.risingComparisonInUserMenu = settings.risingComparisonInUserMenu;
             this.risingComparisonInSearch = settings.risingComparisonInSearch;
+            this.experimentalOrientationMatching = settings.experimentalOrientationMatching;
             this.risingShowUnreadOfflineCount = settings.risingShowUnreadOfflineCount;
 
             this.risingColorblindMode = settings.risingColorblindMode;
@@ -556,6 +570,7 @@
                 risingCharacterPreview: this.risingCharacterPreview,
                 risingComparisonInUserMenu: this.risingComparisonInUserMenu,
                 risingComparisonInSearch: this.risingComparisonInSearch,
+                experimentalOrientationMatching: this.experimentalOrientationMatching,
                 risingShowUnreadOfflineCount: this.risingShowUnreadOfflineCount,
                 risingShowPortraitNearInput: this.risingShowPortraitNearInput,
                 risingShowPortraitInMessage: this.risingShowPortraitInMessage,

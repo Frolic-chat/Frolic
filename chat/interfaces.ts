@@ -241,6 +241,7 @@ export namespace Settings {
         readonly risingCharacterPreview: boolean;
         readonly risingComparisonInUserMenu: boolean;
         readonly risingComparisonInSearch: boolean;
+        readonly experimentalOrientationMatching: boolean;
 
         readonly risingShowUnreadOfflineCount: boolean;
         readonly risingColorblindMode: boolean;
