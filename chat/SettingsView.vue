@@ -584,6 +584,7 @@
             if(this.notifications) await core.notifications.requestPermission();
 
             EventBus.$emit('configuration-update', core.state.settings);
+            EventBus.$emit('own-profile-update', { profile: core.characters.ownProfile });
         }
 
         rebuildFilters() {
