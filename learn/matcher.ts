@@ -1592,3 +1592,58 @@ export class Matcher {
         return (atLevelScore + aboveLevelScore + penalty);
     }
 }
+
+export class UserListSorter {
+    static getGenderPreferenceFromKink(c: Character, fchatGender: string): Scoring | null {
+        const gender = Matcher.strToGender(fchatGender) || Gender.None;
+
+        if (!(gender in genderKinkMapping))
+            return null;
+
+        const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
+
+        log.debug(
+            'userlist.sorter.genderfromkink',
+            {
+                character: c.name,
+                fchatGender: fchatGender,
+                kinkGender: gender,
+                pref: pref
+            }
+        )
+
+        if      (pref === KinkPreference.Favorite)
+            return Scoring.MATCH;
+        else if (pref === KinkPreference.Yes)
+            return Scoring.WEAK_MATCH;
+        else if (pref === KinkPreference.Maybe)
+            return Scoring.WEAK_MISMATCH;
+        else if (pref === KinkPreference.No)
+            return Scoring.MISMATCH;
+        else     // null
+            return null;
+    }
+
+    static GetGenderPreferenceFromOrientation(c: Character, fchatGender: string, experimental: boolean = false): Scoring {
+        const myGender    = Matcher.getTagValueList(TagId.Gender, c);
+        const orientation = Matcher.getTagValueList(TagId.Orientation, c);
+        const theirGender = Matcher.strToGender(fchatGender);
+
+        // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
+        const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender, experimental).score;
+
+        log.verbose(
+            'userlist.sorter.genderfromorientation',
+            {
+                character: c.name,
+                fchatGender: fchatGender,
+                myGender: myGender,
+                orientation: orientation,
+                theirGender: theirGender,
+                score: score,
+            }
+        )
+
+        return score;
+    }
+}

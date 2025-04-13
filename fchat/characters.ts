@@ -4,6 +4,7 @@ import {decodeHTML} from './common';
 import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
 import Vue from 'vue';
+import { EventBus } from '../chat/preview/event-bus';
 
 class Character implements Interfaces.Character {
     gender: Interfaces.Gender = 'None';
@@ -147,6 +148,8 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
             // tslint:disable-next-line no-unnecessary-type-assertion
             core.cache.setProfile(state.ownProfile as CharacterProfile);
+
+            EventBus.$emit('own-profile-update', { profile: state.ownProfile });
         }
 
         character.name = data.identity;

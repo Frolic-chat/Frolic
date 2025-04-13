@@ -14,7 +14,7 @@
         <div v-if="channel" style="padding-left:5px;flex:1;display:flex;flex-direction:column" v-show="tab === '1'">
             <div class="users" style="flex:1;padding-left:5px">
                 <h4>
-                  {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fa fa-sort"></i></a>
+                  {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fas fa-sort-amount-down"></i></a>
                 </h4>
                 <div v-for="member in filteredMembers" :key="member.character.name">
                     <user :character="member.character" :channel="channel" :showStatus="true"></user>
@@ -54,6 +54,10 @@
     import characterPage from '../site/character_page/character_page.vue';
     import { profileLink } from './common';
 
+    import { UserListSorter } from '../learn/matcher';
+    import log from 'electron-log';
+    import { EventBus, CharacterProfileEvent } from './preview/event-bus';
+
     type StatusSort = {
       [key in Character.Status]: number;
     };
@@ -74,17 +78,69 @@
     };
 
     const genderSort: GenderSort = {
-      'Female': 0,
-      'Male': 1,
+      'Cunt-boy': 0,
+      'Female': 1,
       'Herm': 2,
-      'Shemale': 3,
-      'Cunt-boy': 4,
-      'Transgender': 5,
-      'Male-Herm': 6,
-      'None': 7
+      'Male': 3,
+      'Male-Herm': 4,
+      'None': 5,
+      'Shemale': 6,
+      'Transgender': 7,
     };
 
     const availableSorts = ['normal', 'status', 'gender'] as const;
+
+    function recalculateSorterGenderPriorities(profileEvent: CharacterProfileEvent): void {
+        const you = profileEvent.profile.character;
+        const likes: {[key: string]: string[]} = {
+            '1':    [],
+            '0.5':  [],
+            '0':    [],
+            '-0.5': [],
+            '-1':   [],
+        }; // turn this into a record of number to string array
+
+        for (const gender of Object.keys(genderSort)) {
+            // SCORE GENDER BY KINK
+            let scoring: number | null = UserListSorter.getGenderPreferenceFromKink(you, gender);
+
+            // SCORE GENDER BY ORIENTATION
+            if (scoring === null) {
+                scoring = UserListSorter.GetGenderPreferenceFromOrientation(you, gender, core.state.settings.experimentalOrientationMatching);
+            }
+
+            likes[scoring.toString()].push(gender);
+        }
+
+        // re-sort genderSort for character's gender pref.
+        for (const array of Object.values(likes)) {
+            array.sort(
+                (a, b) => {
+                    return a.localeCompare(b);
+                }
+            )
+        }
+
+        const simpleStruct = [
+          likes['1'], likes['0.5'], likes['0'], likes['-0.5'], likes['-1'],
+        ];
+        let i=0;
+        simpleStruct.forEach(
+            (array) => {
+                while (array.length > 0) {
+                    const value = array.shift() as Character.Gender;
+                    if (value !== undefined) {
+                        genderSort[value] = i;
+                        i++;
+                    }
+                }
+            }
+        )
+
+        log.debug('userlist.sorter.gender', { genderSort: genderSort })
+    }
+
+    EventBus.$on('own-profile-update',   recalculateSorterGenderPriorities);
 
     @Component({
         components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}
@@ -94,7 +150,14 @@
         expanded = window.innerWidth >= 992;
         filter = '';
         l = l;
-        sorter = (x: Character, y: Character) => (x.name.toLocaleLowerCase() < y.name.toLocaleLowerCase() ? -1 : (x.name.toLocaleLowerCase() > y.name.toLocaleLowerCase() ? 1 : 0));
+        sorter = (x: Character, y: Character) => (
+            x.name.toLocaleLowerCase() < y.name.toLocaleLowerCase()
+                ? -1
+                : ( x.name.toLocaleLowerCase() > y.name.toLocaleLowerCase()
+                    ? 1
+                    : 0
+                )
+        );
 
         sortType: typeof availableSorts[number] = 'normal';
 
@@ -113,8 +176,9 @@
         get isConsoleTab(): Boolean {
             return core.conversations.selectedConversation === core.conversations.consoleTab;
         }
+
         get profileName(): string | undefined {
-          return this.channel ? undefined : core.conversations.selectedConversation.name;
+            return this.channel ? undefined : core.conversations.selectedConversation.name;
         }
 
         get profileUrl(): string | undefined {
@@ -125,6 +189,12 @@
           return profileLink(this.profileName);
         }
 
+        /* If we should ever want to use custom icons for each sort type, combining level-down-alt with:
+         * stream (normal)
+         * user-clock (status)
+         * venus-mars (gender)
+         * would be easy and make sense.
+         */
         get filteredMembers(): ReadonlyArray<Channel.Member> {
           const members = this.getFilteredMembers();
 
