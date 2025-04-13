@@ -1106,7 +1106,7 @@ export const fchatGenderMap: FchatGenderMap = {
     Shemale: Gender.Shemale,
     Herm: Gender.Herm,
     'Male-Herm': Gender.MaleHerm,
-    'Cunt-Boy': Gender.Cuntboy,
+    'Cunt-boy': Gender.Cuntboy,
     Transgender: Gender.Transgender
 };
 
