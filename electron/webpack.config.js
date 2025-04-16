@@ -88,7 +88,7 @@ const mainConfig = {
             {test: /\.(woff2?)$/, loader: 'file-loader'},
             {test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
             {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
-            {test: /\.(wav|mp3|ogg)$/, loader: 'file-loader', options: {name: 'sounds/[name].[ext]'}},
+            {test: /\.mp3$/, loader: 'file-loader', options: {name: 'sounds/[name].[ext]'}},
             {test: /\.(png|ico|html)$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
             {
                 test: /\.vue\.scss/,
