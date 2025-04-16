@@ -420,14 +420,14 @@ export enum Species {
     Xenarthra = 25252525
  }
 
-export const nonAnthroSpecies = [
+export const nonAnthroSpecies: Species[] = [
     Species.Human, Species.Humanoid, Species.Demon, Species.Divinity,
     Species.Elf, Species.Orc, Species.Robot, Species.Exotic,
     Species.Alien, Species.Pokemon, Species.Fae, Species.Vampire, Species.Monster,
     Species.Hub,
 ];
 
-export const mammalSpecies = [
+export const mammalSpecies: Species[] = [
     Species.Bovine, Species.Equine, Species.Feline, Species.Canine, Species.Caprinae,
     Species.Vulpine, Species.Cervine, Species.Lapine, Species.Musteline, Species.Procyon,
     Species.Rodent, Species.Ursine, Species.MarineMammal, Species.Primate,
@@ -608,7 +608,7 @@ export const speciesMapping: SpeciesMap = {
                     // Generic:
         '.*cat', 'feline', '.*kitt(y|en)', '.*katze?', 'tabby', 'felinid', 'felis', 'catto', 'meow', 'kitteh', 'kat', 'chat(te)?', 'nyah', 'catus', '.*[ -]catus',
                     // Cats:
-        'calico', 'maine[ -]?coon', 'burmese', 'siamese', 'chartreux', 'german[ -]?rex', 'turkish[ -]?van', 'russian[ -]?blue', 'norwegian[ -]?forest[ -]?(cat)?', '(exotic|domestic|british|oriental|american|shaded)[ -]?shorthair', 'selkirk rex', '\w+[ -]bombay',
+        'calico', 'maine[ -]?coon', 'burmese', 'siamese', 'chartreux', 'german[ -]?rex', 'turkish[ -]?van', 'russian[ -]?blue', 'norwegian[ -]?forest[ -]?(cat)?', '(exotic|domestic|british|oriental|american|shaded)[ -]?shorthair', 'selkirk rex', '\\w+[ -]bombay',
                     // BIG:
         '.*lion', '.*tiger', 'tige?ress', 'tigre', 'panther', 'panthe?ress', 'leopard(ess)?', 'jaguar', 'cheetah', 'lynx', 'puma', 'cougar', 'ocelot', 'serval', 'lombax', 'liger', 'tigon', 'catamount', 'sab(re?|er)[ -]?tooth',
                     // Unsorted:
@@ -1152,7 +1152,7 @@ export const kinkMapping: KinkPreferenceMap = {
 
 export interface SpeciesMappingCacheRecord {
     regexp: RegExp;
-    keyword: string;
+    mappedPhrase: string;
 }
 
 

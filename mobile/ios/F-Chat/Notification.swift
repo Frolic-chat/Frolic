@@ -40,7 +40,7 @@ class Notification: NSObject, WKScriptMessageHandler, UNUserNotificationCenterDe
     func notify(_ notify: Bool, _ title: String, _ text: String, _ icon: String, _ sound: String?, _ data: String, _ cb: (String?) -> Void) {
         if(!notify) {
             if(sound != nil) {
-                let player = try! AVAudioPlayer(contentsOf: Bundle.main.url(forResource: "www/sounds/" + sound!, withExtension: "wav")!)
+                let player = try! AVAudioPlayer(contentsOf: Bundle.main.url(forResource: "www/sounds/" + sound!, withExtension: "mp3")!)
                 player.play()
             }
             cb(nil)
@@ -49,7 +49,7 @@ class Notification: NSObject, WKScriptMessageHandler, UNUserNotificationCenterDe
         let content = UNMutableNotificationContent()
         content.title = title
         if(sound != nil) {
-            content.sound = UNNotificationSound(named: UNNotificationSoundName(Bundle.main.path(forResource: "www/sounds/" + sound!, ofType: "wav")!))
+            content.sound = UNNotificationSound(named: UNNotificationSoundName(Bundle.main.path(forResource: "www/sounds/" + sound!, ofType: "mp3")!))
         }
         content.body = text
         content.userInfo["data"] = data

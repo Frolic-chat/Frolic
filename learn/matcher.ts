@@ -165,7 +165,7 @@ export class CharacterAnalysis {
     readonly isMammal: boolean;
 
     /**
-     * Used by anthro characters to coerce "likely human" into "human" for catgirls and other kemomimi. This way, they're labeled as both human and furry.
+     * Checks both species and body type to determine if you qualify as both (Kemonomimi). It is only used by species in the likelyHuman SpeciesMap.
      * @type {boolean}
      */
     readonly tiltHuman: boolean;
@@ -263,7 +263,7 @@ export class Matcher {
         const yourCharacterAnalyses = Matcher.generateAnalysisVariations(you);
         const theirCharacterAnalyses = Matcher.generateAnalysisVariations(them);
 
-        let bestScore = null;
+        let bestScore: Scoring | null = null;
         let bestScoreLevelCount = -10000;
         let bestReport: MatchReport;
 
@@ -299,7 +299,7 @@ export class Matcher {
                 if (
                     (bestScore === null)
                     || (
-                        (report.score !== null)
+                           (report.score !== null)
                         && (report.score >= bestScore)
                         && (scoreLevelCount !== null)
                         && (report.score * scoreLevelCount > bestScoreLevelCount)
@@ -1324,7 +1324,7 @@ export class Matcher {
     }
 
     static isHuman(c: Character, tiltHuman: boolean = false): boolean {
-        const bodyTypeId = Matcher.getTagValueList(TagId.BodyType, c);
+        const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
 
         if (bodyTypeId === BodyType.Human)
             return true;
@@ -1348,7 +1348,7 @@ export class Matcher {
      * This can change how a kemonomimi gets matched against human/furry preference.
      */
     static tiltHuman(c: Character): boolean {
-        const preference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
+        const preference: FurryPreference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
 
         // log.debug('matcher.tilthuman', { character: c.name, pref: preference });
 
@@ -1400,13 +1400,13 @@ export class Matcher {
     static generateSpeciesMappingCache(mapping: SpeciesMap): SpeciesMappingCache {
         return _.mapValues(
             mapping,
-            (keywords: string[]) => _.map(
-                keywords,
-                (keyword: string) => {
-                    const keywordPlural = `${keyword}s`; // this is weak: elf -> elves doesn't occur
+            (speciesPhraseList: string[]) => _.map(
+                speciesPhraseList,
+                (mappedPhrase: string) => {
+                    const phrasePlural = `${mappedPhrase}s`; // this is weak: elf -> elves doesn't occur
                     return {
-                        keyword,
-                        regexp: RegExp(`(^|\\b)(${keyword}|${keywordPlural})($|\\b)`)
+                        mappedPhrase,
+                        regexp: RegExp(`(^|\\b)(${mappedPhrase}|${phrasePlural})($|\\b)`)
                     };
                 }
             )
@@ -1430,8 +1430,8 @@ export class Matcher {
                     (matcher) => {
 
                         // finalSpecies.indexOf(k) >= 0)
-                        if ((matcher.keyword.length > match.length) && (matcher.regexp.test(finalSpecies))) {
-                            match = matcher.keyword;
+                        if (matcher.mappedPhrase.length > match.length && matcher.regexp.test(finalSpecies)) {
+                            match = matcher.mappedPhrase;
                             foundSpeciesId = parseInt(speciesId, 10);
                         }
                     }

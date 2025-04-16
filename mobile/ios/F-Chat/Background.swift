@@ -3,7 +3,7 @@ import WebKit
 import AVFoundation
 
 class Background: NSObject, WKScriptMessageHandler {
-    var player = try! AVAudioPlayer(contentsOf: Bundle.main.url(forResource: "www/sounds/login", withExtension: "wav")!)
+    var player = try! AVAudioPlayer(contentsOf: Bundle.main.url(forResource: "www/sounds/login", withExtension: "mp3")!)
 
     override init() {
         let session = AVAudioSession.sharedInstance();

@@ -3,7 +3,7 @@
 import core from './core';
 import {Conversation, Notifications as Interface} from './interfaces';
 
-const codecs: {[key: string]: string} = {mpeg: 'mp3', wav: 'wav', ogg: 'ogg'};
+const codecs: {[key: string]: string} = {mpeg: 'mp3'};
 
 export default class Notifications implements Interface {
     isInBackground = false;
