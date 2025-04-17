@@ -28,6 +28,7 @@ import {
     kinkMatchScoreMap,
     kinkMatchWeights,
     KinkPreference,
+    nekoMap,
     likelyHuman,
     mammalSpecies,
     nonAnthroSpecies,
@@ -184,10 +185,19 @@ export class CharacterAnalysis {
 
         this.age = Matcher.age(c);
 
-        this.isAnthro = Matcher.isAnthro(c);
-        this.isHuman = Matcher.isHuman(c, this.isAnthro);
-        this.isKemonomimi = Matcher.isKemonomimi(c);
-        this.isMammal = Matcher.isMammal(c);
+        if (this.species) {
+            this.isAnthro =     Matcher.isAnthro(c, this.species);
+            this.isHuman =      Matcher.isHuman(c, this.species);
+            this.isKemonomimi = Matcher.isKemonomimi(c, this.species);
+            this.isMammal =     Matcher.isMammal(c, this.species);
+        }
+        else {
+            this.isAnthro =     false;
+            this.isHuman =      false;
+            this.isKemonomimi = false;
+            this.isMammal =     false;
+
+        }
         this.tiltHuman = Matcher.tiltHuman(c);
     }
 }
@@ -1300,47 +1310,81 @@ export class Matcher {
         return (r !== null);
     }
 
-    static isMammal(c: Character): boolean {
-        const species = Matcher.species(c);
+    static isMammal(c: Character, species: Species | null = null): boolean {
+        if (!species)
+            species = Matcher.species(c);
 
-        if (species === null)
+        if (!species)
             return false;
 
         return (mammalSpecies.indexOf(species) >= 0);
     }
 
-    static isAnthro(c: Character): boolean {
-        const bodyTypeId = Matcher.getTagValueList(TagId.BodyType, c);
+    static isAnthro(c: Character, species: Species | null = null): boolean {
+        const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
 
         if (bodyTypeId === BodyType.Anthro)
             return true;
 
-        const speciesId = Matcher.species(c);
+        if (!species)
+            species = Matcher.species(c);
 
-        if (!speciesId)
+        if (!species)
             return false;
 
-        return (nonAnthroSpecies.indexOf(speciesId) < 0);
+        return (nonAnthroSpecies.indexOf(species) < 0);
     }
 
-    static isHuman(c: Character, tiltHuman: boolean = false): boolean {
+    static isHuman(c: Character, species: Species | null = null): boolean {
         const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
 
         if (bodyTypeId === BodyType.Human)
             return true;
 
-        const speciesId = Matcher.species(c, tiltHuman);
+        if (!species)
+            species = Matcher.species(c);
 
-        if (!speciesId)
+        if (!species)
             return false;
 
-        return (speciesId === Species.Human);
+        return (species === Species.Human);
     }
 
-    static isKemonomimi(c: Character): boolean {
-        // Kemonomimi need their own map. .isWhatever probably shouldn't even call .species
-        // Currently, all kemonomimi exist as both human and furry, so check isHuman and isFurry instead.
-        return Matcher.isAnthro(c) && Matcher.isHuman(c, true);
+    static getMappedKemonomimiSpecies(c: Character): Species | null {
+        const speciesTag = Matcher.getTagValue(TagId.Species, c);
+        if (!speciesTag || !speciesTag.string)
+            return null;
+
+        Matcher.ensureMapsAreBuilt();
+
+        const mappedSpecies = Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!)
+                           || Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!, true)
+
+        log.debug('matcher.species.kemonomimi', { character: c.name, mappedspecies: mappedSpecies })
+        return mappedSpecies || null;
+    }
+
+    /**
+     * There are two ways to be a kemonomimi:
+     * explicity match a neko species; or, human bodytype but anthro primary species.
+     * The inclusion of Species.Kemonomimi can't be done yet; we want kemonomimi to return their anthro species as well as being kemonomimi. Someone who says they don't want anteaters probably also doesn't want anteatergirls, so we need to track their anthro species.
+     * If we move to a "species phrase" = [taglist] layout, then we can fully encapsulate that a foxgirl is both a fox, kemomimi, mammal, and possibly human species all in one.
+     */
+    static isKemonomimi(c: Character, species: Species | null): boolean {
+        const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
+
+        if (!species)
+            species = Matcher.species(c);
+
+        if (!species)
+            return false;
+
+        if (bodyTypeId === BodyType.Human && nonAnthroSpecies.indexOf(species) < 0) {
+            log.verbose('matcher.species.kemomimi.indirect', { character: c.name, species: species });
+            return true;
+        }
+
+        return !!Matcher.getMappedKemonomimiSpecies(c) || false;
     }
 
     /**
@@ -1353,9 +1397,14 @@ export class Matcher {
         // log.debug('matcher.tilthuman', { character: c.name, pref: preference });
 
         // You are what you eat.
-        if (preference === FurryPreference.HumansOnly
-         || preference === FurryPreference.HumansPreferredFurriesOk)
+        if (     preference === FurryPreference.HumansOnly
+              || preference === FurryPreference.HumansPreferredFurriesOk) {
             return true;
+        }
+        else if (preference === FurryPreference.FurriesOnly
+              || preference === FurryPreference.FurriesPreferredHumansOk) {
+            return false;
+        }
 
         const h = Matcher.getKinkSpeciesPreference(c, Species.Human);
         const f = Matcher.getKinkSpeciesPreference(c, Species.Anthro);
@@ -1376,7 +1425,7 @@ export class Matcher {
         return false;
     }
 
-    static species(c: Character, tiltHuman: boolean = false): Species | null {
+    static species(c: Character): Species | null {
         const mySpecies = Matcher.getTagValue(TagId.Species, c);
 
         if (!mySpecies || !mySpecies.string) {
@@ -1389,7 +1438,7 @@ export class Matcher {
             return null;
         }
 
-        const s = Matcher.getMappedSpecies(mySpecies.string, tiltHuman);
+        const s = Matcher.getMappedSpecies(mySpecies.string);
 
         if (!s)
             log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });
@@ -1414,7 +1463,8 @@ export class Matcher {
     }
 
     private static speciesMappingCache?: SpeciesMappingCache;
-    private static likelyHumanCache?: SpeciesMappingCache;
+    private static likelyHumanCache?:    SpeciesMappingCache;
+    private static nekoCache?:           SpeciesMappingCache;
 
     private static matchMappedSpecies(species: string, mapping: SpeciesMappingCache, skipAscii: boolean = false): Species | null {
         let foundSpeciesId: Species | null = null;
@@ -1442,23 +1492,25 @@ export class Matcher {
         return foundSpeciesId;
     }
 
-    static getMappedSpecies(species: string, tiltHuman: boolean = false): Species | null {
+    static ensureMapsAreBuilt(): void {
         if (!Matcher.speciesMappingCache)
             Matcher.speciesMappingCache = Matcher.generateSpeciesMappingCache(speciesMapping);
-
         if (!Matcher.likelyHumanCache)
-            Matcher.likelyHumanCache = Matcher.generateSpeciesMappingCache(likelyHuman);
+            Matcher.likelyHumanCache =    Matcher.generateSpeciesMappingCache(likelyHuman);
+        if (!Matcher.nekoCache)
+            Matcher.nekoCache =           Matcher.generateSpeciesMappingCache(nekoMap);
+    }
 
-        const mappedSpecies = Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache)
-                           || Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache, true);
+    static getMappedSpecies(species: string): Species | null {
+        Matcher.ensureMapsAreBuilt();
 
-        const maybeHuman    = Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache)
-                           || Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache, true);
+        const mappedSpecies = Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!)
+                           || Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!, true);
+
+        const maybeHuman    = Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!)
+                           || Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!, true);
 
         // log.debug('matcher.getMappedSpecies', { mappedspecies: mappedSpecies, maybehuman: maybeHuman });
-
-        if (maybeHuman && tiltHuman)
-            return maybeHuman;
 
         return mappedSpecies || maybeHuman;
     }

@@ -500,6 +500,13 @@ const humanLikeNekoSpecies = [
   ...kemomimi_suidae,   ...kemomimi_ursine,     ...kemomimi_vulpine
 ];
 
+/**
+ * This is not used to give a person a Kemonomimi species to match a kink, since kemonomimi use the species of their animal. What it does is decide if we need to use complicated logic in the furry/human pairing.
+ */
+export const nekoMap: SpeciesMap = {
+    [Species.Kemonomimi]: [ ...humanLikeNekoSpecies ]
+}
+
 export const likelyHuman: SpeciesMap = {
     [Species.Human]: [
         '.*human', 'sapiens?',
