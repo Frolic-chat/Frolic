@@ -892,14 +892,18 @@ export class Matcher {
                 if (yourAge < theirAge && olderCharactersScore   !== null)
                     return Matcher.formatKinkScore(olderCharactersScore,   'older characters');
 
-                if (yourAge > theirAge && youngerCharactersScore !== null)
-                    return Matcher.formatKinkScore(youngerCharactersScore, 'younger characters');
+                if (yourAge > theirAge && youngerCharactersScore !== null) {
+                    if      (theirAge <  18 && yourAge <= 22)
+                        return Matcher.formatKinkScore(youngerCharactersScore, 'younger characters');
+                    else if (theirAge >= 18)
+                        return Matcher.formatKinkScore(youngerCharactersScore, 'younger characters');
+                }
             }
 
             // Match: Adults with no kinks matching proximity (inverse of o/y)
-            // Specifically don't match against UA.
-            if (yourAge >= 18 && theirAge >= 18 &&  ageDifference < neededDifference)
-                return new Score(Scoring.WEAK_MATCH, `Has <span>similar age</span>`);
+            //     It's probably better to return neutral and let other matching factors prevail.
+            //if (yourAge >= 18 && theirAge >= 18 && ageDifference < neededDifference)
+            //    return new Score(Scoring.WEAK_MATCH, `Has <span>similar age</span>`);
 
             // Matches: UA with no kinks matching proximity (inverse of o/y)
             if (yourAge < 18 && ageDifference <= neededDifference)
