@@ -785,7 +785,7 @@ export class Matcher {
 
         const weighted = scores.favorite.weighted + scores.yes.weighted + scores.maybe.weighted + scores.no.weighted;
 
-        log.debug('report.score.kink', this.them.name, this.you.name, scores, weighted);
+        log.debug('report.score.kink', { them: this.them.name, you: this.you.name, scores, weight: weighted });
 
         if (scores.favorite.count + scores.yes.count + scores.maybe.count + scores.no.count < 10) {
             return new Score(Scoring.NEUTRAL);
@@ -871,7 +871,7 @@ export class Matcher {
 
         if (bothInHumanAgeRange) {
             const ageDifference    = Math.abs(yourAge - theirAge);
-            const neededDifference = Math.floor(yourAge * 0.2);
+            const neededDifference = Math.floor(yourAge * 0.2); // 20%, magic number
 
             // Matches: Any age against any age, with age difference kinks
             // A young adult with YC will match against certain UA ages without UA kink.
@@ -879,8 +879,8 @@ export class Matcher {
                 const olderCharactersScore   = Matcher.getKinkPreference(you, Kink.OlderCharacters);
                 const youngerCharactersScore = Matcher.getKinkPreference(you, Kink.YoungerCharacters);
 
-                if (yourAge < theirAge && olderCharactersScore !== null)
-                    return Matcher.formatKinkScore(olderCharactersScore, 'older characters');
+                if (yourAge < theirAge && olderCharactersScore   !== null)
+                    return Matcher.formatKinkScore(olderCharactersScore,   'older characters');
 
                 if (yourAge > theirAge && youngerCharactersScore !== null)
                     return Matcher.formatKinkScore(youngerCharactersScore, 'younger characters');
@@ -1345,7 +1345,7 @@ export class Matcher {
 
     /**
      * Checks for deliberate signs that a character prefers humans over furries.
-     * This can change how your catgirl gets matched against humans or furries.
+     * This can change how a kemonomimi gets matched against human/furry preference.
      */
     static tiltHuman(c: Character): boolean {
         const preference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
@@ -1367,6 +1367,8 @@ export class Matcher {
                              || f === KinkPreference.Yes;
         const dislikesFurries = f === KinkPreference.Maybe
                              || f === KinkPreference.No;
+
+        log.debug('matcher.tilthuman.preferences', { character: c.name, humanpref:  h, anthropref: f })
 
         if ((likesHumans && !likesFurries) || (dislikesFurries && !dislikesHumans))
             return true;
