@@ -413,8 +413,9 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             message = new Message(MessageType.Warn, message.sender, message.text.substring(6), message.time);
         }
 
-        const conversation_inactive = (c: ChannelConversation) => {
-            return c !== state.selectedConversation || !state.windowFocused
+        const user_should_know = (c: ChannelConversation) => {
+            return this.mode !== 'ads'
+                && c !== state.selectedConversation || !state.windowFocused
         }
 
         if (message.type === MessageType.Ad) {
@@ -436,10 +437,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                     await core.logs.logMessage(this, message);
                 }
 
-                if (conversation_inactive(this)
-                 && this.unread === Interfaces.UnreadState.None
-                 && this.mode !== 'ads'
-                ) {
+                if (user_should_know(this) && this.unread === Interfaces.UnreadState.None) {
                     this.unread = Interfaces.UnreadState.Unread;
                 }
             }
