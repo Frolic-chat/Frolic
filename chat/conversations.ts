@@ -395,28 +395,64 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
 
         this.stretch();
 
-        if((message.type === MessageType.Message || message.type === MessageType.Ad) && isWarn(message.text)) {
-            const member = this.channel.members[message.sender.name];
-            if(member !== undefined && member.rank > Channel.Rank.Member || message.sender.isChatOp)
-                message = new Message(MessageType.Warn, message.sender, message.text.substring(6), message.time);
+        const is_warning_from_mod = (m: Interfaces.Message): m is BroadcastMessage | Message => {
+            if (m.type === MessageType.Message
+             || m.type === MessageType.Ad
+             && isWarn(m.text)
+            ) {
+                const member = this.channel.members[m.sender.name];
+
+                return member !== undefined
+                    && member.rank > Channel.Rank.Member
+                    || m.sender.isChatOp;
+            }
+            return false;
         }
 
-        if(message.type === MessageType.Ad) {
-            this.addModeMessage('ads', message);
-            if(core.state.settings.logAds) await core.logs.logMessage(this, message);
-        } else {
-            this.addModeMessage('chat', message);
-            if(message.type !== Interfaces.Message.Type.Event) {
-                if(message.type === Interfaces.Message.Type.Warn) this.addModeMessage('ads', message);
-                if(core.state.settings.logMessages) await core.logs.logMessage(this, message);
-                if(this.unread === Interfaces.UnreadState.None && (this !== state.selectedConversation || !state.windowFocused)
-                    && this.mode !== 'ads')
-                    this.unread = Interfaces.UnreadState.Unread;
-            } else this.addModeMessage('ads', message);
+        if (is_warning_from_mod(message)) {
+            message = new Message(MessageType.Warn, message.sender, message.text.substring(6), message.time);
         }
+
+        const conversation_inactive = (c: ChannelConversation) => {
+            return c !== state.selectedConversation || !state.windowFocused
+        }
+
+        if (message.type === MessageType.Ad) {
+            this.addModeMessage('ads', message);
+
+            if (core.state.settings.logAds) {
+                await core.logs.logMessage(this, message);
+            }
+        }
+        else {
+            this.addModeMessage('chat', message);
+
+            if (message.type !== Interfaces.Message.Type.Event) {
+                if (message.type === Interfaces.Message.Type.Warn) {
+                    this.addModeMessage('ads', message);
+                }
+
+                if (core.state.settings.logMessages) {
+                    await core.logs.logMessage(this, message);
+                }
+
+                if (conversation_inactive(this)
+                 && this.unread === Interfaces.UnreadState.None
+                 && this.mode !== 'ads'
+                ) {
+                    this.unread = Interfaces.UnreadState.Unread;
+                }
+            }
+            else {
+                this.addModeMessage('ads', message);
+            }
+        }
+
         this.addModeMessage('both', message);
-        if(message.type !== Interfaces.Message.Type.Event)
+
+        if (message.type !== Interfaces.Message.Type.Event) {
             safeAddMessage(this.reportMessages, message, 500);
+        }
     }
 
     clear(): void {
@@ -1027,15 +1063,21 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('BRO', async(data, time) => {
         if(data.character !== undefined) {
+
             const content = decodeHTML(data.message.substring(data.character.length + 24));
             const char = core.characters.get(data.character);
+
             const message = new BroadcastMessage(l('events.broadcast', `[user]${data.character}[/user]`, content), char, time);
+
             await state.consoleTab.addMessage(message);
-            await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content,
-                characterImage(data.character), 'attention');
+
+            await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, characterImage(data.character), 'attention');
+
             for(const conv of (<Conversation[]>state.channelConversations).concat(state.privateConversations))
                 await conv.addMessage(message);
-        } else return addEventMessage(new EventMessage(decodeHTML(data.message), time));
+        }
+        else
+            return addEventMessage(new EventMessage(decodeHTML(data.message), time));
     });
     connection.onMessage('CIU', async(data, time) => {
         const text = l('events.invite', `[user]${data.sender}[/user]`, `[session=${data.title}]${data.name}[/session]`);
