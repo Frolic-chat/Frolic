@@ -230,16 +230,18 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
 
         this.safeAddMessage(message);
         if (message.type !== Interfaces.Message.Type.Event) {
-            if (core.state.settings.logMessages)
-                await core.logs.logMessage(this, message);
+            if (message.type !== MessageType.Bcast) {
+                if (core.state.settings.logMessages)
+                    await core.logs.logMessage(this, message);
 
-            if (this.settings.notify !== Interfaces.Setting.False && message.sender !== core.characters.ownCharacter)
-                await core.notifications.notify(this, message.sender.name, message.text, characterImage(message.sender.name), 'attention');
+                if (this.settings.notify !== Interfaces.Setting.False && message.sender !== core.characters.ownCharacter)
+                    await core.notifications.notify(this, message.sender.name, message.text, characterImage(message.sender.name), 'attention');
 
-            if (this !== state.selectedConversation || !state.windowFocused)
-                this.unread = Interfaces.UnreadState.Mention;
+                if (this !== state.selectedConversation || !state.windowFocused)
+                    this.unread = Interfaces.UnreadState.Mention;
 
-            this.typingStatus = 'clear';
+                this.typingStatus = 'clear';
+            }
         }
     }
 
@@ -400,15 +402,10 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         this.stretch();
 
         const is_warning_from_mod = (m: Interfaces.Message): m is BroadcastMessage | Message => {
-            if (m.type === MessageType.Message
-             || m.type === MessageType.Ad
-             && isWarn(m.text)
-            ) {
-                const member = this.channel.members[m.sender.name];
+            if (m.type === MessageType.Message || m.type === MessageType.Ad) {
+                const is_mod = (this.channel.members[m.sender.name]?.rank ?? Channel.Rank.Member) > Channel.Rank.Member;
 
-                return member !== undefined
-                    && member.rank > Channel.Rank.Member
-                    || m.sender.isChatOp;
+                return isWarn(m.text) && (is_mod || m.sender.isChatOp);
             }
             return false;
         }
@@ -419,7 +416,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
 
         const user_should_know = (c: ChannelConversation) => {
             return this.mode !== 'ads'
-                && c !== state.selectedConversation || !state.windowFocused
+                && (c !== state.selectedConversation || !state.windowFocused)
         }
 
         if (message.type === MessageType.Ad) {
@@ -432,25 +429,24 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         else {
             this.addModeMessage('chat', message);
 
-            if (message.type !== MessageType.Event) {
-                if (message.type === MessageType.Warn) {
-                    this.addModeMessage('ads', message);
-                }
-
+            if (message.type === MessageType.Event) {
+                this.addModeMessage('ads', message);
+            }
+            else if (message.type === MessageType.Warn) {
+                this.addModeMessage('ads', message);
+            }
+            else if (message.type !== MessageType.Bcast) {
                 if (core.state.settings.logMessages)
                     await core.logs.logMessage(this, message);
 
                 if (user_should_know(this) && this.unread === Interfaces.UnreadState.None)
                     this.unread = Interfaces.UnreadState.Unread;
             }
-            else {
-                this.addModeMessage('ads', message);
-            }
         }
 
         this.addModeMessage('both', message);
 
-        if (message.type !== Interfaces.Message.Type.Event) {
+        if (message.type !== MessageType.Event) {
             safeAddMessage(this.reportMessages, message, 500);
         }
     }
