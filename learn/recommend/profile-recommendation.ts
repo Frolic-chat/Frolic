@@ -78,7 +78,7 @@ export class ProfileRecommendationAnalyzer {
   protected checkImages(): void {
     if (!this.profile.character.image_count) {
       this.add(`ADD_IMAGE`, ProfileRecommendationLevel.CRITICAL, l('phelper.addImage1'), l('phelper.addImage2'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Images');
-    } else if (this.profile.character.image_count > 1 && this.profile.character.image_count < 3) {
+    } else if (this.profile.character.image_count < 3) {
       this.add(`ADD_MORE_IMAGES`, ProfileRecommendationLevel.NOTE, l('phelper.addImage3'), l('phelper.addImage4'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Images');
     }
   }
