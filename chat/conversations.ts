@@ -1069,8 +1069,13 @@ export default function(this: any): Interfaces.State {
 
             await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, characterImage(data.character), 'attention');
 
-            for(const conv of (<Conversation[]>state.channelConversations).concat(state.privateConversations))
+            for (const conv of state.channelConversations)
                 await conv.addMessage(message);
+
+            if (core.state.settings.showBroadcastsInPMs) {
+                for (const conv of state.privateConversations)
+                    await conv.addMessage(message);
+            }
         }
         else
             return addEventMessage(new EventMessage(decodeHTML(data.message), time));

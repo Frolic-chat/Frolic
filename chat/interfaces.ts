@@ -218,6 +218,7 @@ export namespace Settings {
         readonly notifyOnFriendMessage: Conversation.RelationChooser;
         readonly highlight: boolean;
         readonly highlightWords: ReadonlyArray<string>;
+        readonly showBroadcastsInPMs: boolean;
         readonly showAvatars: boolean;
         readonly animatedEicons: boolean;
         readonly idleTimer: number;

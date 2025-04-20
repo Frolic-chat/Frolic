@@ -124,6 +124,12 @@
             </div>
             <div class="form-group"><hr></div>
             <div class="form-group">
+                <label class="control-label" for="showBroadcastsInPMs">
+                    <input type="checkbox" id="showBroadcastsInPMs" v-model="showBroadcastsInPMs"/>
+                    {{l('settings.showBroadcastsInPMs')}}
+                </label>
+            </div>
+            <div class="form-group">
                 <label class="control-label" for="showNeedsReply">
                     <input type="checkbox" id="showNeedsReply" v-model="showNeedsReply"/>
                     {{l('settings.showNeedsReply')}}
@@ -422,6 +428,7 @@
         notifyOnFriendMessage!: Conversation.RelationChooser;
         highlight!: boolean;
         highlightWords!: string;
+        showBroadcastsInPMs!: boolean;
         showAvatars!: boolean;
         animatedEicons!: boolean;
         idleTimer!: string;
@@ -470,6 +477,7 @@
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
             this.highlight = settings.highlight;
             this.highlightWords = settings.highlightWords.join(',');
+            this.showBroadcastsInPMs = settings.showBroadcastsInPMs;
             this.showAvatars = settings.showAvatars;
             this.animatedEicons = settings.animatedEicons;
             this.idleTimer = settings.idleTimer.toString();
@@ -547,6 +555,7 @@
                 notifyOnFriendMessage: this.notifyOnFriendMessage,
                 highlight: this.highlight,
                 highlightWords: this.highlightWords.split(',').map((x) => x.trim()).filter((x) => x.length),
+                showBroadcastsInPMs: this.showBroadcastsInPMs,
                 showAvatars: this.showAvatars,
                 animatedEicons: this.animatedEicons,
                 idleTimer: isNaN(idleTimer) ? 0 : idleTimer < 0 ? 0 : idleTimer > 1440 ? 1440 : idleTimer,

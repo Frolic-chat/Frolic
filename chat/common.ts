@@ -37,6 +37,7 @@ export class Settings implements ISettings {
     notifyOnFriendMessage = Conversation.RelationChooser.NoOne;
     highlight = true;
     highlightWords: string[] = [];
+    showBroadcastsInPMs = false;
     showAvatars = true;
     animatedEicons = true;
     idleTimer = 0;
