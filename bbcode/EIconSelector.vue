@@ -150,7 +150,7 @@ export default class EIconSelector extends CustomDialog {
                               // Furry
                   'cateatingchips', 'bunnyscrem8', 'kittyangy', 'fennec2', 'angydoggo', 'yote gasp', 'shhh', 'excuse me', 'cat2back',
                               // Anime:
-                  'no tax refund', 'kizunaai', 'angyraihan', 'heartseyes', 'confused01', 'ashemote3', 'hyperahegao', 'luminosebleed', 'baisergushing', 'aijam',
+                  'no tax refund', 'yappers', 'kizunaai', 'robotsmug', 'angyraihan', 'heartseyes', 'confused01', 'moronyeh', 'ashemote3', 'howembarrassing', 'hyperahegao', 'luminosebleed', 'baisergushing', 'aijam',
                               // Cartoon-ish:
                   'nuttoohard', 'bangfingerbang', 'simpwaifu', 'paishake', 'lip',
                               // Cartoon:
@@ -158,33 +158,33 @@ export default class EIconSelector extends CustomDialog {
                               // Emoji adjacent:
                   'catblob',  'catblobangery', 'blobhugs', 'geblobcatshrug', 'badkitty', 'eggplantemoji', 'peachemoji', 'splashemoji', 'eyes emoji',
                               // Emoji:
-                  'flushedemoji', 'pensiveemoji', 'heart eyes', 'kissing heart', 'melting emoji', 'thinkingemoji', 'party emoji', 'triumphemoji', 'uwuemoji', 'heartflooshed', 'blushpanic', 'love2', 'whentheohitsright', 'embarassment', 'twittersob',
+                  'flushedemoji', 'pensiveemoji', 'heart eyes', 'kissing heart', 'melting emoji', 'thinkingemoji', 'party emoji', 'triumphemoji', 'uwuemoji', 'bottomfingers', 'heartflooshed', 'blushpanic', 'love2', 'whentheohitsright', 'embarassment', 'twittersob',
               ];
 
           case 'soft':
               return [
                               // Hi!:
-                  'doggohi', 'smile5', 'fluffbrain', 'cat sit', 'kittypeeky',
+                  'dogdoin', 'doggohi', 'smile5', 'fluffbrain', 'cat sit', 'kittypeeky', 'doggosneekpeek',
                               // Fun:
-                  'kicky', 'nyehe', 'nyeheh', 'samodance', 'wibbl', 'kittygiggle', 'akittyclap', 'nodnodnod', 'bunnana', 'catkiss',
+                  'kicky', 'nyehe', 'nyeheh', 'kittygiggle', 'samodance', 'dogewut', 'wibbl', 'dogcited', 'wagglebrow', 'blobfoxbongo', 'akittyclap', 'nodnodnod', 'catbop', 'ermtime', 'bunnana', 'catkiss',
                               // Soft:
-                  'waitingcuddles', 'waitingforforeheadkissie', 'blushcat', 'bunhug', 'bottomfingers', 'meowhuggies', 'bunanxiety',
+                  'waitingcuddles', 'waitingforforeheadkissie', 'blushcat', 'bunhug', 'meowhuggies', 'bunanxiety', 'cat_waddle',
                               // Chaos:
-                  'catheadempty', 'bunnywavedash', 'cry cat', 'wolfnomf', 'yappers', 'stupid little woo woo boy', 'scuffedcat', 'scuffedhamster', 'nyooo',
+                  'catnapping', 'catheadempty', 'bunnywavedash', 'cry cat', 'wolfnomf', 'stupid little woo woo boy', 'scuffedcat', 'scuffedhamster', 'nyooo',
                               // Bye:
-                  'life', 'sleepdog', 'cat faceplant', 'eepy',
+                  'life', 'eepy', 'sleepdog', 'cat faceplant',
               ]
 
           case 'sexual':
               return [
                               // Act:
-                  'asutired1', 'asutired2', 'subj3', 'subj4', 'vanessamasturbate', 'musclefuck2', 'fingerblast3', 'worship', 'lapgrind', 'bbctitjob6', 'harmanfingers', 'salivashare', 'knotjob2', 'gaykiss', 'slurpkiss', 'cockiss', 'lovetosuck', 'handjob1nuke', 'cockloveeee', 'donglove', 'ballsworship3', 'every drop', 'cummz',  'orccummies2',  'horseoral9a', 'swallowit', 'paiplop', 'satsukinailed', 'futaorgy', 'kntbch1', 'dickslurp',
+                  'asutired1', 'asutired2', 'subj3', 'subj4', 'vanessamasturbate', 'musclefuck2', 'fingerblast3', 'worship', 'lapgrind', 'bbctitjob6', 'harmanfingers', 'salivashare', 'knotjob2', 'gaykiss', 'slurpkiss', 'cockiss', 'lovetosuck', 'handjob1nuke', 'cockloveeee', 'donglove', 'cummz',  'orccummies2',  'horseoral9a', 'swallowit', 'paiplop', 'satsukinailed', 'futaorgy', 'kntbch1', 'dickslurp',
                               // Showing Off:
-                  'influencerhater', 'sloppy01', 'fingersucc', 'vullylick', 'cmontakeit', 'hopelessly in love', 'ahega01 2', 'wolfsknot2', 'g4ebulge', 'absbulge', 'lixlove', 'knotjiggle', 'edgyoops', 'oralcreampie100px', 'debonairdick4', 'hossspurties2', 'jillbimbogiffell2', 'gayicon2', 'kirari1e', 'capstrip','pinkundress', 'georgiethot',
+                  'influencerhater', 'sloppy01', 'fingersucc', 'vullylick', 'cmontakeit', 'hopelessly in love', 'ahega01 2', 'g4ebulge', 'absbulge', 'lixlove', 'knotjiggle', 'edgyoops', 'oralcreampie100px', 'debonairdick4', 'hossspurties2', 'jillbimbogiffell2', 'gayicon2', 'kirari1e', 'capstrip','pinkundress', 'georgiethot',
                               // Body:
                   'wolf abs', 'jhab1', 'coralbutt4', 'rorobutt2', 'verobutt3', 'ballsack3', 'blackshem1', 'jessi flash', 'cheegrope2', 'patr1', '2buttw1', 'dropsqueeze', 'flaunt', 'haigure',
                               // BDSM:
-                  'gagged2', 'collaredpet', 'cumringgag',
+                  'gagged2', 'cumringgag', 'brainmelt',
                               // Symbols:
                   'melodypeg', 'heart beat', 'lovebreeders', 'cummies', 'a condom', 'kissspink',
               ];
@@ -192,11 +192,11 @@ export default class EIconSelector extends CustomDialog {
           case 'bubbles':
               return [
                               // Memetic:
-                  'speedl', 'speedr', 'notcashmoney', 'taftail', 'fuckyouasshole', 'chorse', 'ciaig', 'dicefuck', 'shemale', 'crimes', 'nagagross', 'shimathatlewd', 'sheepsass2', 'iamgoingtopunchyou', 'rude1', 'iamindanger', 'helpicantstopsuckingcocks', 'thatskindahot', 'ygod', 'eyesuphere', 'peggable2', 'sydeanothere', 'nothingcan', 'dinnersex', 'fallout-standby', 'request denied', 'goodending', 'bathwater', 'dickletsign', 'frfister',
+                  'speedl', 'speedr', 'notcashmoney', 'taftail', 'fuckyouasshole', 'chorse', 'ciaig', 'dicefuck', 'shemale', 'crimes', 'nagagross', 'shimathatlewd', 'sheepsass2', 'iamgoingtopunchyou', 'rude1', 'helpicantstopsuckingcocks', 'eyesuphere', 'peggable2', 'sydeanothere', 'nothingcan', 'dinnersex', 'fallout-standby', 'request denied', 'dickletsign', 'frfister',
                               // Cutesy:
-                  'iacs', 'bubblecute', 'pat my head', 'pawslut', 'inbagg', 'gwanna',
+                  'iacs', 'bubblecute', 'pat my head', 'pawslut', 'inbagg',
                               // Sexual:
-                  'lickme', 'takemetohornyjail', 'imahugeslut', 'knotslutbubble', 'toofuckinghot', 'pbmr', 'imabimbo', 'horseslut', 'fatdick', 'tomboypussy', 'breakthesubs', 'fuckingnya', 'iltclion', 'suckfuckobey', 'breedmaster', 'buttslutbb', 'onlyfans', 'horsecockneed', 'muskslut', '4lewdbubble', 'hypnosiss', 'imahypnoslut', 'notahealslut', '5lewdbubble', 'ratedmilf', 'ratedstud', 'ratedslut',  'xarcuminme', 'xarcumonme', 'choke me', 'fuckbun',  'talkpooltoy', 'simpbait', 'fuckpiggy', 'plappening', 'goodboy0', 'spitinmouth',
+                  'lickme', 'emp', 'takemetohornyjail', 'knotslutbubble', 'toofuckinghot', 'pbmr', 'imabimbo', 'horseslut', 'fatdick', 'tomboypussy', 'breakthesubs', 'fuckingnya', 'iltclion', 'suckfuckobey', 'breedmaster', 'buttslutbb', 'onlyfans', 'muskslut', '4lewdbubble', 'hypnosiss', 'imahypnoslut', 'notahealslut', '5lewdbubble', 'ratedmilf', 'ratedstud', 'ratedslut',  'xarcuminme', 'xarcumonme', 'choke me', 'fuckbun',  'talkpooltoy', 'simpbait', 'fuckpiggy', 'plappening', 'goodboy0', 'spitinmouth',
               ];
 
           case 'symbols':
@@ -206,7 +206,7 @@ export default class EIconSelector extends CustomDialog {
                               // Mosaics:
                   'no ai', 'xpgameover1', 'xpgameover2', 'goldboomboxl', 'goldboomboxr',
                               // Pop culture:
-                  'autobotsemblem', 'decepticonemblem', 'getnorgetout', 'playstation', 'idnd1', 'twitterlogo', 'ninetyfive',
+                  'getnorgetout', 'playstation', 'ninetyfive', 'autobotsemblem', 'decepticonemblem',
                               // Cards
                   'suitspades', 'suithearts', 'suitdiamonds',  'suitclubs',
                               // Letters and numbers:
@@ -219,7 +219,7 @@ export default class EIconSelector extends CustomDialog {
 
           case 'memes':
               return [
-                  'flowercatnopls', 'flowercatpls', 'bad eicon detected', 'admiss', 'perish', 'kille', 'majimamelon', 'dogboom', 'catexplode',  'despairing', 'doorkick', 'doorkick2', 'emptyhand', 'sweat 1', 'pethand', 'tailwaggy', 'tailsooo', 'e62pog', 'thehorse', 'guncock', 'michaelguns', 'watchbadass', 'gonnabang', 'flirting101', 'loudnoises', 'nyancat', 'gayb', 'fortasshole', 'hotdogface', 'apologize to god', 'jabbalick', 'raisefinger', 'whatislove', 'surprisemothafucka', 'females', 'thanksihateit', 'hell is this', 'confused travolta', 'no words', 'coffindance', 'homelander', 'thatsapenis', 'kermitbusiness', 'goodbye', 'oag', 'naughtyfood',
+                  'flowercatnopls', 'flowercatpls', 'bad eicon detected', 'admiss', 'perish', 'fsquint', 'kille', 'majimamelon', 'dogboom', 'catexplode',  'despairing', 'doorkick', 'doorkick2', 'emptyhand', 'sweat 1', 'tap the sign', 'soypoint', 'pethand', 'tailwaggy', 'tailsooo', 'e62pog', 'thehorse', 'guncock', 'nct1', 'michaelguns', 'squirtlegun', 'thatskindahot', 'ygod', 'flirting101', 'loudnoises', 'nyancat', 'gayb', 'apologize to god', 'jabbalick', 'raisefinger', 'whatislove', 'surprisemothafucka', 'thanksihateit', 'hell is this', 'confused travolta', 'no words', 'coffindance', 'homelander', 'thatsapenis', 'kermitbusiness', 'imdyingsquirtle', 'goodbye', 'oag',
               ];
 
           case 'favorites':

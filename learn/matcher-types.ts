@@ -516,7 +516,7 @@ export const likelyHuman: SpeciesMap = {
         '.*bo[yi]', 'bo[yi].*', 'brother', 'father', 'female', 'femboy', '.*girl', 'girl.*', 'guy', 'male', 'man', 'milf', 'mother', 'shemale', 'sister', 'woman',
 
                     // Origin:
-        'african[ -]?american', 'american', 'az[ea]r[oa]thian', 'black', 'british', 'caucasian', 'chinese', 'english', 'high[ -]?lander', 'hyur', 'irish', 'korean', 'kryptonian', 'latina', 'latino', 'mensch', 'mid[ -]?lander', 'nord', 'norse(man)?', 'saiyan',
+        'african[ -]?american', 'american', 'az[ea]r[oa]thian', 'black', 'british', 'caucasian', 'chinese', 'english', 'high[ -]?lander', 'irish', 'korean', 'kryptonian', 'latina', 'latino', 'mensch', 'mid[ -]?lander', 'nord', 'norse(man)?', 'saiyan',
 
                     // Predilection:
         'bimbo', 'brat', 'cumdump', 'cutie', 'french', 'fuckpig', 'goth', 'gyaru', 'homo', 'she-stud', '.*slut', 'slutty', 'thot', 'whore',
@@ -530,7 +530,6 @@ export const likelyHuman: SpeciesMap = {
 };
 
 // red panda / akai pandamimi
-// pangolin
 // echidna
 
 
@@ -551,7 +550,7 @@ export const speciesMapping: SpeciesMap = {
 
     [Species.Human]: [
         'human', 'human.*',
-        'hy?[uo]+m[aie]+ne?', "hume",
+        'hy?[uo]+m[aie]+ne?', "hume", 'hyur',
         'homo[ -]?sapi[ea]ns?',
     ],
 
@@ -562,10 +561,10 @@ export const speciesMapping: SpeciesMap = {
         'giant(ess)?', 'golem',
                     // Computers:
         'v(irtual)?[ -]?(you)?tuber', 'computer program',
-                    // Wet:
-        'siren', 'mermaid',
-                    // Animalistic:
-        'kirin', 'qilin', 'chima?era', 'basilisk', 'hippogr[iy](ff|ph)', 'manticore',
+                    // Magical:
+        'siren', 'mermaid', 'djinn', 'genie',
+                    // Mythical:
+        'kirin', 'qilin', 'chima?era', 'basilisk', 'hippogr[iy](ff|ph)', 'gryphon', 'griffin', 'manticore',
     ],
 
     [Species.Elf]: [
@@ -709,7 +708,7 @@ export const speciesMapping: SpeciesMap = {
         'decidueye', 'sceptile',
                     // Legendary & Mythic:
         'mew', 'mewtwo',
-        'zacian', 'dialga', 'lugia', 'groudon', 'shaymin', 'lati[ao]s', 'reshiram', 'marshadow', 'zygarde',
+        'zacian', 'dialga', 'lugia', 'groudon', 'shaymin', 'lati[ao]s', 'reshiram', 'marshadow', 'zygarde', 'genesect',
                     // "Furry":
         'lopunny',
         'riolu', 'lucario',
@@ -861,9 +860,9 @@ export const speciesMapping: SpeciesMap = {
 
     [Species.Hybrid]: [
                     // Generic:
-        '.*hybrid.*',
+        '.*?hybrid.*?',
                     // Specific:
-        'cabbit', 'fabbit', 'catmonkey', 'laquine', 'folf', 'tolf', 'foxcoon', 'drazelle', 'batpon', 'unifox', 'rooram', 'catbat', 'bunfox',
+        'cabbit', 'fabbit', 'catmonkey', 'laquine', 'folf', 'tolf', 'foxcoon', 'drazelle', 'batpon', 'unifox', 'rooram', 'catbat', 'bunfox', "shoxx?",
                     // Other:
         'myox', 'wolger', 'silkie', 'yumar',
     ],
@@ -1098,7 +1097,10 @@ export const speciesMapping: SpeciesMap = {
         'lycan', 'lycant[h]?rop[h]?[ey]?', 'were[ -]?.+',
         'were[ -]?wolf', 'were[ -]?coyote',
         'were[ -]?lion', 'were[ -]?tiger',
-        'were[ -]?bear', 'were[ -]?hog', 'were[ -]?squirrel', 'were[ -]?donkey', 'were[ -]?rat',
+        'were[ -]?bear', 'were[ -]?hog',
+        'were[ -]?squirrel', 'were[ -]?rat',
+        'were[ -]?donkey',
+
         'were[ -]?beast',
         'loup[ -]?garou[sx]?',
     ],
@@ -1112,7 +1114,7 @@ export const speciesMapping: SpeciesMap = {
 
     [Species.Robot]: [
                     // Hard robots:
-        'android', 'cyborg', 'gynoid', 'automaton', 'robot', 'animatronic', 'machinery',
+        'android', 'cyborg', 'gynoid', 'automaton', 'robot', 'animatronic', 'machine.*?',
                     // Fake humans:
         'realian', 'replicant', 'reploid', 'synthetic', 'synth', 'construct', 'living doll',
                     // Cool people:
