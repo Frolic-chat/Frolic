@@ -51,6 +51,7 @@ export class ProfileRecommendationAnalyzer {
         this.checkImages();
         this.checkInlineImage();
         this.checkDescriptionLength();
+        this.checkColorCodes();
 
         return this.recommendations;
     }
@@ -96,6 +97,14 @@ export class ProfileRecommendationAnalyzer {
             this.add(`ADD_DESCRIPTION`, ProfileRecommendationLevel.CRITICAL, l('phelper.addDesc1'), l('phelper.addDesc2'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Description');
         } else if (desc.length < 400) {
             this.add(`EXPAND_DESCRIPTION`, ProfileRecommendationLevel.NOTE, l('phelper.addDesc3'), l('phelper.addDesc4'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Description');
+        }
+    }
+
+    protected checkColorCodes(): void {
+        const invalid_colors = ProfileCache.invalidColorCodes(this.profile.character.description.trim());
+
+        if (invalid_colors) {
+            this.add(`INVALID_COLOR_CODES`, ProfileRecommendationLevel.CRITICAL, l('phelper.badColors1'), l('phelper.badColors2', invalid_colors))
         }
     }
 
