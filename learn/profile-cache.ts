@@ -211,6 +211,31 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         }
     }
 
+    static invalidColorCodes(description: string): string | null {
+        const matches = [ ...description.matchAll(/\[color=([^\]]+)\]/g) ];
+
+        if (!matches)
+            return null;
+
+        /**
+         * Color regexes are available in CoreBBCodeParser in bbcode/core.ts.
+         * In fact, there's probably a way to reuse those.
+         */
+        const valid_colors = ['red', 'blue', 'white', 'yellow', 'pink', 'gray', 'green', 'orange', 'purple', 'black', 'brown', 'cyan'];
+        const invalid: string[] = [];
+
+        log.debug('dev.phelper.color.matches', matches);
+
+        for (const match of matches) {
+            if (!valid_colors.includes(match[1]) && !invalid.includes(match[1]))
+                invalid.push(match[1]);
+        }
+
+        return (invalid.length > 0)
+            ? invalid.join(', ')
+            : null;
+    }
+
     async register(c: ComplexCharacter, skipStore: boolean = false): Promise<CharacterCacheRecord> {
         const k = AsyncCache.nameKey(c.character.name);
         const match = ProfileCache.match(c);
