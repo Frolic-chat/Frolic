@@ -186,31 +186,8 @@
         }
     );
 
-    // log.info('init.chat.keytar.load.start');
-    //
-    /* tslint:disable: no-any no-unsafe-any */ //because this is hacky
-    //
-
-    // const keyStore = nativeRequire<
-    //   {
-    //     getPassword(service: string, account: string): Promise<string>
-    //     setPassword(service: string, account: string, password: string): Promise<void>
-    //     deletePassword(service: string, account: string): Promise<void>
-    //     findCredentials(service: string): Promise<{ account: string, password: string }>
-    //     findPassword(service: string): Promise<string>
-    //     [key: string]: (...args: any[]) => Promise<any>
-    //   }
-    // >('keytar/build/Release/keytar.node');
-
     settings.configure({ electron: remote as any });
     const keyStore = new SecureStore('fchat-rising-accounts', remote, settings);
-
-    // const keyStore = import('keytar');
-    //
-    // for(const key in keyStore) keyStore[key] = promisify(<(...args: any[]) => any>keyStore[key].bind(keyStore, 'fchat'));
-    //tslint:enable
-
-    // log.info('init.chat.keytar.load.done');
 
     @Component({
         components: {

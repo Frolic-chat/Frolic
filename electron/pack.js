@@ -11,18 +11,14 @@ const isBeta = pkg.version.indexOf('beta') !== -1;
 const modules = path.join(__dirname, 'app', 'node_modules');
 
 // const spellcheckerPath = 'spellchecker/build/Release/spellchecker.node',
-//     keytarPath = 'keytar/build/Release/keytar.node',
 //     integerPath = 'integer/build/Release/integer.node',
 //     betterSqlite3 = 'better-sqlite3/build/Release/better_sqlite3.node';
 //
 // mkdir(path.dirname(path.join(modules, spellcheckerPath)));
-// mkdir(path.dirname(path.join(modules, keytarPath)));
 // fs.copyFileSync(require.resolve(spellcheckerPath), path.join(modules, spellcheckerPath));
-// fs.copyFileSync(require.resolve(keytarPath), path.join(modules, keytarPath));
 
 const includedPaths = [
     // 'spellchecker/build/Release/spellchecker.node',
-    // 'keytar/build/Release/keytar.node',
     'throat',
     'node-fetch',
     'jquery'
