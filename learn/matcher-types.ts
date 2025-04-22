@@ -445,6 +445,9 @@ export interface SpeciesStrMap {
     [key: number]: string;
 }
 
+/**
+ * Used in the profile display; not used in the tooltip.
+ */
 export const speciesNames: SpeciesStrMap = {
     [Species.MarineMammal]: 'marine mammals',
     [Species.Elf]: 'elves',
@@ -453,12 +456,11 @@ export const speciesNames: SpeciesStrMap = {
     [Species.Rhinoceros]: 'rhinoceros',
     [Species.Suidae]: 'swine',
     [Species.Exotic]: 'exotic creatures',
+    [Species.Divinity]: 'divinity',
 };
 
 const kemomimi_generic  = [ 'kemomimi', 'kemonomimi', 'kemono', 'gijinka' ];
-const kemomimi_canine   = [
-    'inumimi', 'oo?kamimi(mi)?', 'jakkarumimi', 'chinchiramimi',
-];
+const kemomimi_canine   = [ 'inumimi', 'oo?kamimi(mi)?', 'jakkarumimi', 'chinchiramimi', ];
 const kemomimi_equine   = [ 'umamimi', 'shimaumamimi' ];
 const kemomimi_feline   = [
     'neko', 'nekomata', 'neko[ -]?mimi', 'toramimi', 'shishimimi', 'pansamimi', 'hyoumimi',
