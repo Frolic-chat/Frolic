@@ -66,11 +66,25 @@ export function parse(this: void | never, input: string, context: CommandContext
                     break;
                 case ParamType.Character:
                     if(value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
-                        values[i] = value.substring(1, value.length - 1);
-                        break;
+                        const name = value.substring(1, value.length - 1);
+
+                        const clean = core.characters.validateCharacter(name);
+                        if (clean.err)
+                            return clean.err;
+
+                        values[i] = clean.out;
                     }
-                    const char = core.characters.get(value);
-                    if(char.status === 'offline') return l('commands.invalidCharacter');
+                    else {
+                        const clean = core.characters.validateCharacter(value);
+                        if (clean.err)
+                            return clean.err;
+
+                        const char = clean.char ?? core.characters.get(value);
+                        if (char.status === 'offline')
+                            return l('commands.invalidCharacter');
+
+                        values[i] = clean.out;
+                    }
             }
             index = endIndex === -1 ? args.length : endIndex + 1;
         }
@@ -156,14 +170,14 @@ const commands: { readonly [key: string]: Command | undefined } = {
         exec: (
             conv: ChannelConversation | PrivateConversation,
             dice: string
-        ) => { 
+        ) => {
             if (dice.toLocaleLowerCase() === "inf") {
                 conv.infoText = "Inf took many lives during its reign. Thankfully, you have been spared.";
                 return;
             }
             else if (Conversation.isChannel(conv))
                 core.connection.send("RLL", { channel: conv.channel.id, dice });
-            else 
+            else
                 core.connection.send("RLL", {
                     recipient: conv.character.name,
                     dice,

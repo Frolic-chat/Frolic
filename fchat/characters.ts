@@ -5,6 +5,7 @@ import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
 import Vue from 'vue';
 import { EventBus } from '../chat/preview/event-bus';
+import l from '../chat/localize';
 
 class Character implements Interfaces.Character {
     gender: Interfaces.Gender = 'None';
@@ -39,17 +40,82 @@ class State implements Interfaces.State {
     friendList: string[] = [];
     bookmarkList: string[] = [];
 
+    /**
+     * Turns a potentially-invalid character name into a validation object.
+     * @param name A potentially invalid character name
+     * @returns A structure containing the input name, output name, a character object if that character is online, any errors with the original name.
+     *
+     * The error will be `undefined` if the player is online. The character will be `undefined` if the player is offline.
+     */
+    validateCharacter(name: string): Interfaces.ValidatedCharacter {
+        let err: string | undefined;
+
+        // If the character is online it doesn't matter how badly their name violatees the site's rules - they somehow managed to log in with it.
+        const c = this.get(name);
+        if (c.status !== "offline") {
+            return {
+                char: c,
+                in:   name,
+                out:  name
+            };
+        }
+
+        const n = this.sanitize(name);
+
+        if (name.length < 2)
+            err = l('charName.empty');
+        else if (name.charAt(0) === ' ' || name.charAt(name.length - 1) === ' ')
+            err = l('charName.space');
+        else if (name.length > 20) // Arbitrary
+            err = l('charName.tooLong');
+        else if (name !== n)
+            err = l('charName.invalid');
+
+        return { in: name, out: n, err: err };
+    }
+
+    /**
+     * Attempt to format a name by F-List site rules.
+     * @param name A potentially invalid character name
+     * @returns A modified name put through various sanitizers to try to reach a username that could be created on the site.
+     */
+    private sanitize(name: string): string {
+        return name
+                .replace(/([^\x00-\x7F]|[{}\[\]<>\(\);\\"'`&\|$@%*])/g, '')
+                .trim().substring(0, 20).trim();
+        /** Sanitizes:
+         * Non-ASCII characters
+         * Common code blocks   {} [] <> ()
+         * Quotations:          " ' `
+         * Escape:              \ ; & |
+         * Misc:                $ @ % *
+         * I'm sure there's one I forgot and someone will crash the server with it.
+         *
+         * F-List character names follow certain restrictions:
+         * [a-zA-Z _ -] and 20 characters maximum;
+         * But we mostly care about reducing errors writing to filesystems.
+         */
+    }
+
     get(name: string): Character {
+        // Avoid the complexity of converting to `Character | null`
+        if (!name.trim()) name = 'Frolic Chat';
+        //else       name = this.sanitize(name);
+
         const key = name.toLowerCase();
         let char = this.characters[key];
-        if(char === undefined) {
+
+        if (char === undefined) {
             char = new Character(name);
-            char.isFriend = this.friendList.indexOf(name) !== -1;
+
+            char.isFriend     = this.friendList.indexOf(name)   !== -1;
             char.isBookmarked = this.bookmarkList.indexOf(name) !== -1;
-            char.isChatOp = this.opList.indexOf(name) !== -1;
-            char.isIgnored = this.ignoreList.indexOf(key) !== -1;
+            char.isChatOp     = this.opList.indexOf(name)       !== -1;
+            char.isIgnored    = this.ignoreList.indexOf(key)    !== -1;
+
             this.characters[key] = char;
         }
+
         return char;
     }
 

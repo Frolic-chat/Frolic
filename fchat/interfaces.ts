@@ -161,6 +161,18 @@ export namespace Character {
     export type Status = 'offline' | 'online' | 'away' | 'idle' | 'looking' | 'busy' | 'dnd' | 'crown';
     export type TypingStatus = 'typing' | 'paused' | 'clear';
 
+    export interface ValidationData {
+        in:  any;
+        out: any;
+        err?: string;
+    }
+
+    export interface ValidatedCharacter extends ValidationData {
+        in:  string;
+        out: string;
+        char?: Character;
+    }
+
     export interface State {
         readonly ownCharacter: Character
         readonly friends: ReadonlyArray<Character>
@@ -172,6 +184,7 @@ export namespace Character {
 
         readonly ownProfile: CharacterProfile;
 
+        validateCharacter(name: string): ValidatedCharacter;
         get(name: string): Character;
         setOverride(name: string, type: keyof CharacterOverrides, value: any): void;
     }
