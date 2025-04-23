@@ -1,5 +1,5 @@
 <template>
-   <modal :action="l('chat.newPM')" ref="dialog" @submit="submit" style="width:98%" dialogClass="ads-dialog" :buttonText="l('general.open')">
+   <modal :action="l('chat.newPM')" ref="dialog" @submit="submit" dialogClass="ads-dialog" :buttonText="l('general.open')">
         <div>
             <input type="text" id="name" v-model="name" :placeholder="l('general.name')" ref="name" />
             <div class="error" v-if="error">{{error}}</div>
@@ -10,7 +10,7 @@
 
 
 <script lang="ts">
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component, Prop, Watch } from '@f-list/vue-ts';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
 import core from './core';
@@ -24,12 +24,17 @@ export default class PmPartnerAdder extends CustomDialog {
     error: string | null = null;
     l = l;
 
+    @Prop
+    readonly switch!: boolean;
 
-    @Hook('activated')
-    async onMounted(): Promise<void> {
-      (this.$refs.name as HTMLInputElement).focus();
+    @Watch('switch')
+    open(): void {
+        this.$nextTick(() => {
+            (this.$refs.name as HTMLInputElement).focus();
+        });
+
+        this.error = '';
     }
-
 
     submit(): void {
         const c = core.characters.get(this.name);

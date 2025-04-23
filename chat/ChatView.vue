@@ -154,7 +154,7 @@
         <recent-conversations ref="recentDialog"></recent-conversations>
         <dev-tools ref="devTools"></dev-tools>
         <image-preview ref="imagePreview"></image-preview>
-        <add-pm-partner ref="addPmPartnerDialog"></add-pm-partner>
+        <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
         <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
 
         <modal :buttons="false" ref="profileAnalysis" dialogClass="profile-analysis" >
@@ -460,7 +460,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
           void (this.$refs.profileAnalysis as any).$children[0].analyze();
         }
 
+        addPmPartnerSwitch: boolean = false;
         showAddPmPartner(): void {
+            this.addPmPartnerSwitch = !this.addPmPartnerSwitch;
             (<PmPartnerAdder>this.$refs['addPmPartnerDialog']).show();
         }
 
