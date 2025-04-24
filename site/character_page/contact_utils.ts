@@ -3,7 +3,7 @@ import {Infotag} from '../../interfaces';
 
 const daUsernamePattern = /^([a-z0-9_\-]+)$/i;
 const daSitePattern = /^https?:\/\/([a-z0-9_\-]+)\.deviantart\.com\//i;
-const emailPattern = /^((?:[a-z0-9])+(?:[a-z0-9\._-])*@(?:[a-z0-9_-])+(?:[a-z0-9\._-]+)+)$/i;
+const emailPattern = /^([^@]{1,63}@[^.]{1,254}(?:\.[^.]{1,63})+)$/i;
 const faUsernamePattern = /^([a-z0-9_\-~.]+)$/i;
 const faSitePattern = /^https?:\/\/(?:www\.)?furaffinity\.net\/user\/([a-z0-9_\-~,]+)\/?$/i;
 const inkbunnyUsernamePattern = /^([a-z0-9]+)$/i;
