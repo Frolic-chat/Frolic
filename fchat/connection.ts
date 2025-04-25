@@ -25,6 +25,7 @@ async function queryApi(this: void, endpoint: string, data: object): Promise<Axi
 export default class Connection implements Interfaces.Connection {
     character = '';
     vars: Interfaces.Vars = <any>{}; //tslint:disable-line:no-any
+    _handleMessage: Function | undefined;
     protected socket: WebSocketConnection | undefined = undefined;
     //tslint:disable-next-line:no-object-literal-type-assertion
     private messageHandlers = <{ [key in keyof Interfaces.ServerCommands]: Interfaces.CommandHandler<key>[] }>{};
@@ -41,6 +42,8 @@ export default class Connection implements Interfaces.Connection {
 
     constructor(private readonly clientName: string, private readonly version: string,
                 private readonly socketProvider: new() => WebSocketConnection) {
+        if (process.env.NODE_ENV === 'development')
+            this._handleMessage = this.handleMessage;
     }
 
     setCredentials(account: string, ticketProvider: Interfaces.TicketProvider | string): void {

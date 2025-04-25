@@ -53,6 +53,13 @@
                 {{l('chat.helper')}}
             </a></div>
 
+            <div v-if="env === 'development'">
+                <a href="#" @click.prevent="showDevTools()" class="btn">
+                    <span class="fas fa-bug"></span>
+                    {{l('chat.devTools')}}
+                </a>
+            </div>
+
             <div class="list-group conversation-nav">
                 <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
                     class="list-group-item list-group-item-action">
@@ -145,6 +152,7 @@
         <report-dialog ref="reportDialog"></report-dialog>
         <user-menu ref="userMenu" :reportDialog="$refs['reportDialog']"></user-menu>
         <recent-conversations ref="recentDialog"></recent-conversations>
+        <dev-tools ref="devTools"></dev-tools>
         <image-preview ref="imagePreview"></image-preview>
         <add-pm-partner ref="addPmPartnerDialog"></add-pm-partner>
         <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
@@ -213,11 +221,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
             modal: Modal,
-            'profile-analysis': ProfileAnalysis
+            'profile-analysis': ProfileAnalysis,
+            ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/command_center.vue') } : {})
         }
     })
     export default class ChatView extends Vue {
         l = l;
+        env = process.env.NODE_ENV;
         sidebarExpanded = false;
         characterImage = characterImage;
         conversations = core.conversations;
@@ -437,6 +447,12 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         showAdLauncher(): void {
           (<AdLauncherDialog>this.$refs['adLauncher']).show();
+        }
+
+        showDevTools(): void {
+            if (this.env === 'development') {
+                (this.$refs.devTools as any).show();
+            }
         }
 
         showProfileAnalyzer(): void {

@@ -4,7 +4,7 @@
 
 This project contains contributions from:
 
-* The [FireUnderTheMountain](https://github.com/FireUnderTheMountain)
+* [Fire Under the Mountain](https://github.com/FireUnderTheMountain)
 * [Mr Stallion, esq.](https://github.com/hearmeneigh)
 * [twilight-sparkle-irl](https://github.com/twilight-sparkle-irl)
 * [ButterCheezii](https://github.com/ButterCheezii)
