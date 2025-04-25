@@ -1,6 +1,6 @@
 {
   "name": "fchat",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "author": "The F-List Team and all other contributors",
   "description": "A third-party F-List.net Chat Client",
   "main": "main.js",
@@ -13,6 +13,7 @@
     "start": "../node_modules/.bin/electron app",
     "startDebugMain": "export ELECTRON_ENABLE_LOGGING=1 && ../node_modules/.bin/electron  --serve --inspect-brk=9229 app",
     "startDebugRender": "export ELECTRON_ENABLE_LOGGING=1 && ../node_modules/.bin/electron --remote-debugging-port=9229 app",
-    "pack": "node ./pack"
+    "pack": "node ./pack",
+    "pack-all": "node ./pack-all"
   }
 }
