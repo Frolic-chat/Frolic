@@ -1060,6 +1060,14 @@ export default function(this: any): Interfaces.State {
     connection.onMessage('BRO', async(data, time) => {
         if(data.character !== undefined) {
 
+            log.error(
+                'devtools.debug.BRO', {
+                    sender: data.character,
+                    msg: data.message,
+                    time: time
+                }
+            )
+
             const content = decodeHTML(data.message.substring(data.character.length + 24));
             const char = core.characters.get(data.character);
 

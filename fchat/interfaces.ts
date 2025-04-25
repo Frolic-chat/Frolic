@@ -139,6 +139,7 @@ export namespace Connection {
     export interface Connection {
         readonly character: string
         readonly vars: Readonly<Vars>
+        readonly _handleMessage: Function | undefined;
         readonly isOpen: boolean
         setCredentials(account: string, ticketProvider: TicketProvider | string): void
         connect(character: string): void

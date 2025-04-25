@@ -122,6 +122,7 @@ const strings: {[key: string]: string | undefined} = {
     'chat.stopAds': 'Stop All Ads',
     'chat.toggleAds': 'Toggle Ads',
     'chat.helper': 'Profile Helper',
+    'chat.devTools': 'Frolic DevTools',
     'chat.channels': 'Channels',
     'chat.pms': 'PMs',
     'chat.newPM': 'Open Conversation',
