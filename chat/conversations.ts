@@ -229,19 +229,19 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         this.stretch();
 
         this.safeAddMessage(message);
-        if (message.type !== Interfaces.Message.Type.Event) {
-            if (message.type !== MessageType.Bcast) {
-                if (core.state.settings.logMessages)
-                    await core.logs.logMessage(this, message);
 
-                if (this.settings.notify !== Interfaces.Setting.False && message.sender !== core.characters.ownCharacter)
-                    await core.notifications.notify(this, message.sender.name, message.text, characterImage(message.sender.name), 'attention');
+        if (message.type !== MessageType.Event
+         && message.type !== MessageType.Bcast) {
+            if (core.state.settings.logMessages)
+                await core.logs.logMessage(this, message);
 
-                if (this !== state.selectedConversation || !state.windowFocused)
-                    this.unread = Interfaces.UnreadState.Mention;
+            if (this.settings.notify !== Interfaces.Setting.False && message.sender !== core.characters.ownCharacter)
+                await core.notifications.notify(this, message.sender.name, message.text, characterImage(message.sender.name), 'attention');
 
-                this.typingStatus = 'clear';
-            }
+            if (this !== state.selectedConversation || !state.windowFocused)
+                this.unread = Interfaces.UnreadState.Mention;
+
+            this.typingStatus = 'clear';
         }
     }
 
@@ -1070,7 +1070,6 @@ export default function(this: any): Interfaces.State {
 
             const content = decodeHTML(data.message.substring(data.character.length + 24));
             const char = core.characters.get(data.character);
-
             const message = new BroadcastMessage(l('events.broadcast', `[user]${data.character}[/user]`, content), char, time);
 
             await state.consoleTab.addMessage(message);
