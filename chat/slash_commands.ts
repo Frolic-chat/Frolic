@@ -240,7 +240,7 @@ const commands: { readonly [key: string]: Command | undefined } = {
         context: CommandContext.Channel,
         params: [
             { type: ParamType.Character, delimiter: "," },
-            { type: ParamType.Number, validator: (x) => x >= 1 },
+            { type: ParamType.Number, validator: (x: number) => x >= 1 },
         ],
     },
     gkick: {
@@ -267,7 +267,7 @@ const commands: { readonly [key: string]: Command | undefined } = {
         permission: Permission.ChatOp,
         params: [
             { type: ParamType.Character, delimiter: "," },
-            { type: ParamType.Number, validator: (x) => x >= 1 },
+            { type: ParamType.Number, validator: (x: number) => x >= 1 },
             { type: ParamType.String },
         ],
     },
