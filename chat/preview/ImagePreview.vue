@@ -236,7 +236,7 @@
                     if (e.errorCode < 0) {
                         const url = webview.getURL();
 
-                        if (url.match(/^https?:\/\/(www.)?pornhub.com/)) {
+                        if (url.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
                             const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
                                 || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 

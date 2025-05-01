@@ -227,7 +227,7 @@ function setUpWebContents(webContents: electron.WebContents): void {
 
     const openLinkExternally = (e: Event, linkUrl: string) => {
         e.preventDefault();
-        const profileMatch = linkUrl.match(/^https?:\/\/(www\.)?f-list.net\/c\/([^/#]+)\/?#?/);
+        const profileMatch = linkUrl.match(/^https?:\/\/(www\.)?f-list\.net\/c\/([^/#]+)\/?#?/);
         if(profileMatch !== null && settings.profileViewer) {
             webContents.send('open-profile', decodeURIComponent(profileMatch[2]));
             return;

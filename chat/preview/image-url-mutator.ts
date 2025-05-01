@@ -16,7 +16,7 @@ export class ImageUrlMutator {
 
     private static readonly IMGUR_CLIENT_ID = 'd60e27140a73b2e';
 
-    private static readonly IMGUR_IMAGE_URL_REGEX = /^https?:\/\/i.imgur.com\/([a-zA-Z0-9]+)(\.[a-z0-9A-Z]+)(.*)$/;
+    private static readonly IMGUR_IMAGE_URL_REGEX = /^https?:\/\/i\.imgur\.com\/([a-zA-Z0-9]+)(\.[a-z0-9A-Z]+)(.*)$/;
 
     private debug: boolean;
 
@@ -61,7 +61,7 @@ export class ImageUrlMutator {
         // );
 
         this.add(
-           /^https?:\/\/.*twitter.com\/(.*)/,
+           /^https?:\/\/.*twitter\.com\/(.*)/,
            async(url: string, match: RegExpMatchArray): Promise<string> => {
                 const path = match[1];
 
@@ -76,10 +76,10 @@ export class ImageUrlMutator {
                         if (!videoUrl) {
                             return url;
                         }
-    
+
                         if (this.debug)
                             console.log('Twitter', url, videoUrl);
-    
+
                         return videoUrl;
                     }
 
@@ -96,7 +96,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/rule34video.com\/videos\/([0-9a-zA-Z-_]+)/,
+          /^https?:\/\/rule34video\.com\/videos\/([0-9a-zA-Z-_]+)/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const videoId = match[1];
 
@@ -105,7 +105,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/(www.)?pornhub.com\/view_video.php\?viewkey=([a-z0-9A-Z]+)/,
+          /^https?:\/\/(www\.)?pornhub\.com\/view_video.php\?viewkey=([a-z0-9A-Z]+)/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             // https://www.pornhub.com/view_video.php?viewkey=ph5e11b975327f2
             // https://www.pornhub.com/embed/ph5e11b975327f2
@@ -117,7 +117,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/(www.)?pornhub.com\/gif\/([a-z0-9A-Z]+)/,
+          /^https?:\/\/(www\.)?pornhub\.com\/gif\/([a-z0-9A-Z]+)/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const gifId = match[2];
 
@@ -126,7 +126,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/(www.|v3.)?gifdeliverynetwork.com\/([a-z0-9A-Z]+)/,
+          /^https?:\/\/(www\.|v3\.)?gifdeliverynetwork\.com\/([a-z0-9A-Z]+)/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const redgifId = match[2];
 
@@ -136,7 +136,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/(www.|v3.)?redgifs.com\/watch\/([a-z0-9A-Z]+)/,
+          /^https?:\/\/(www\.|v3\.)?redgifs\.com\/watch\/([a-z0-9A-Z]+)/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const redgifId = match[2];
 
@@ -145,7 +145,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/media[0-9]?.giphy.com\/media\/(.+)$/,
+          /^https?:\/\/media[0-9]?\.giphy\.com\/media\/(.+)$/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const giphyUri = match[1];
 
@@ -154,7 +154,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-          /^https?:\/\/(www.)?gfycat.com\/([a-z0-9A-Z\-]+)\/?$/,
+          /^https?:\/\/(www\.)?gfycat\.com\/([a-z0-9A-Z\-]+)\/?$/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const gfyId = match[2];
 
@@ -164,7 +164,7 @@ export class ImageUrlMutator {
 
 
         this.add(
-          /^https?:\/\/e621.net\/(posts|post\/show)\/([0-9]+)/,
+          /^https?:\/\/e621\.net\/(posts|post\/show)\/([0-9]+)/,
           async(url: string, match: RegExpMatchArray): Promise<string> => {
             const galleryId = match[2];
 
@@ -190,7 +190,7 @@ export class ImageUrlMutator {
 
 
         this.add(
-            /^https?:\/\/((m|www).)?imgur.(com|io)\/gallery\/([a-zA-Z0-9]+)/,
+            /^https?:\/\/((m|www)\.)?imgur\.(com|io)\/gallery\/([a-zA-Z0-9]+)/,
             async(url: string, match: RegExpMatchArray): Promise<string> => {
                 // Imgur Gallery
                 const galleryId = match[4];
@@ -226,7 +226,7 @@ export class ImageUrlMutator {
         );
 
         this.add(
-            /^https?:\/\/((m|www).)?imgur.(com|io)\/a\/([a-zA-Z0-9]+)/,
+            /^https?:\/\/((m|www)\.)?imgur\.(com|io)\/a\/([a-zA-Z0-9]+)/,
             async(url: string, match: RegExpMatchArray): Promise<string> => {
                 // Imgur Album
                 const albumId = match[4];
@@ -263,7 +263,7 @@ export class ImageUrlMutator {
 
         // must be AFTER gallery & album test
         this.add(
-            /^https?:\/\/((m|www).)?imgur.(com|io)\/([a-zA-Z0-9]+)/,
+            /^https?:\/\/((m|www)\.)?imgur\.(com|io)\/([a-zA-Z0-9]+)/,
             async(url: string, match: RegExpMatchArray): Promise<string> => {
                 // Single Imgur Image
                 const imageId = match[4];

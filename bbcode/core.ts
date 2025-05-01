@@ -9,7 +9,7 @@ export type BBCodeElement = HTMLElement & {cleanup?(): void};
 export function domain(url: string): string | undefined {
     const pieces = urlRegex.exec(url);
     if(pieces === null) return;
-    const match = pieces[1].match(/(?:(https?|ftps?|irc):)?\/\/(?:www.)?([^\/]+)/);
+    const match = pieces[1].match(/(?:(https?|ftps?|irc):)?\/\/(?:www\.)?([^\/]+)/);
     return match !== null ? match[2] : undefined;
 }
 

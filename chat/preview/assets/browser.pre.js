@@ -35,7 +35,7 @@ const previewInitiationTime = Date.now();
 
 (() => {
     try {
-        if (window.location.href.match(/^https?:\/\/(www.)?pornhub.com/)) {
+        if (window.location.href.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
             // Inject JQuery
             const el = document.createElement('script');
             el.type='text/javascript';
