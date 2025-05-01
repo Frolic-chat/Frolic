@@ -1,8 +1,8 @@
 {
   "name": "Frolic",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "author": "The F-List Team and all other contributors",
-  "description": "A third-party F-List.net Chat Client",
+  "description": "🌺 Frolic! Chat Client for F-Chat",
   "license": "MIT",
   "main": "main.js",
   "devDependencies": {
