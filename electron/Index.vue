@@ -301,12 +301,12 @@
 
             Vue.set(core.state, 'generalSettings', this.settings);
 
-            electron.ipcRenderer.on('settings', (_e: Event, settings: GeneralSettings) => {
+            electron.ipcRenderer.on('settings', (_e: electron.IpcRendererEvent, settings: GeneralSettings) => {
               log.debug('settings.update.index');
               core.state.generalSettings = this.settings = settings;
             });
 
-            electron.ipcRenderer.on('open-profile', (_e: Event, name: string) => {
+            electron.ipcRenderer.on('open-profile', (_e: electron.IpcRendererEvent, name: string) => {
                 const profileViewer = <Modal>this.$refs['profileViewer'];
 
                 this.openProfile(name);
@@ -314,7 +314,7 @@
                 profileViewer.show();
             });
 
-            electron.ipcRenderer.on('reopen-profile', (_e: Event) => {
+            electron.ipcRenderer.on('reopen-profile', (_e: electron.IpcRendererEvent) => {
               if (
                 (this.profileNameHistory.length > 0)
                 && (this.profilePointer < this.profileNameHistory.length)
