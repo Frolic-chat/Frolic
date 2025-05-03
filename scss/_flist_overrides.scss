@@ -62,10 +62,7 @@ input:checked {
   unicode-range: U+1F1E6-1F1FF;
 }
 
-$font-family-base: system-ui, -apple-system, "Segoe UI", Roboto,
-"Helvetica Neue", Arial, "Noto Sans", "Liberation Sans",sans-serif
-"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
-OpenMoji;
+$font-family-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", OpenMoji;
 body{
   font-family: $font-family-base;
 }
