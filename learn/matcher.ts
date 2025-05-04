@@ -476,6 +476,10 @@ export class Matcher {
                 || yourOrientation === Orientation.Unsure;
         }
 
+        if (someoneDoesntHaveAGender() || youLoveEveryoneEqually())
+            return new Score(Scoring.NEUTRAL);
+
+
         function approximatelyFemale(gender: Gender): boolean {
             return gender === Gender.Female
                 || gender === Gender.Herm // Oof. But this is how flist uses it.
@@ -488,10 +492,8 @@ export class Matcher {
                 || gender === Gender.Cuntboy
         }
 
-        if (someoneDoesntHaveAGender() || youLoveEveryoneEqually())
-            return new Score(Scoring.NEUTRAL);
-
-        if (yourOrientation === Orientation.Gay && theirGender === yourGender)
+        if (yourOrientation === Orientation.Gay && theirGender === yourGender
+        && yourGender !== Gender.Transgender)
             return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
 
         if (yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Female)
