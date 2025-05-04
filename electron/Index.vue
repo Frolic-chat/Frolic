@@ -17,7 +17,8 @@
                     {{l('title')}}
 
                     <a href="#" @click.prevent="showLogs()" class="btn" style="flex:1;text-align:right">
-                        <span class="fa fa-file-alt"></span> <span class="btn-text">{{l('logs.title')}}</span>
+                        <span class="fa fa-file-alt"></span>
+                        <span class="btn-text">{{l('logs.title')}}</span>
                     </a>
                 </h3>
                 <div class="card-body">
@@ -147,22 +148,6 @@
     import { BBCodeView } from '../bbcode/view';
     import { EIconStore } from '../learn/eicon/store';
     import { SecureStore } from './secure-store';
-
-    // import ImagePreview from '../chat/preview/ImagePreview.vue';
-    // import Bluebird from 'bluebird';
-    // import Connection from '../fchat/connection';
-    // import Notifications from './notifications';
-
-    // import VueLazyload from 'vue-lazyload';
-    //
-    // Vue.use(VueLazyload, {
-    //   observer: true,
-    //
-    //   observerOptions: {
-    //     rootMargin: '0px',
-    //     threshold: 0,
-    //   }
-    // });
 
     const webContents = remote.getCurrentWebContents();
     const parent = remote.getCurrentWindow().webContents;
@@ -376,6 +361,7 @@
         async login(): Promise<void> {
             if(this.loggingIn) return;
             this.loggingIn = true;
+
             try {
                 if(!this.saveLogin) {
                   await keyStore.deletePassword('f-list.net', this.settings.account);

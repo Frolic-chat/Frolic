@@ -62,7 +62,16 @@
 
     function destroyTab(tab: Tab): void {
         if(tab.user !== undefined) electron.ipcRenderer.send('disconnect', tab.user);
+
+        console.log(
+            'window.tab.destroy.tray.2', { tab: tab, tray: tab.tray, gone: tab.tray.isDestroyed()  }
+        )
+
         tab.tray.destroy();
+
+        console.log(
+            'window.tab.destroy.tray.3', { tab: tab, tray: tab.tray, gone: tab.tray.isDestroyed() }
+        )
 
         tab.view.webContents.stop();
         tab.view.webContents.stopPainting();
@@ -150,6 +159,14 @@
             browserWindow.webContents.session.setSpellCheckerLanguages(getSafeLanguages(this.settings.spellcheckLang));
 
             log.debug('init.window.languages');
+
+            // electron.ipcRenderer.on(
+            //     'before-quit', (e: Event) => {
+            //         this.tabs.forEach((tab: Tab) => {
+            //             tab.tray.destroy();
+            //         })
+            //     }
+            // )
 
             electron.ipcRenderer.on('settings', (_e: Event, settings: GeneralSettings) => {
                 log.debug('settings.update.window');
@@ -415,6 +432,9 @@
         }
 
         remove(tab: Tab, shouldConfirm: boolean = true): void {
+            console.log(
+                'window.tab.destroy.tray.1', { tab: tab, tray: tab.tray, gone: tab.tray.isDestroyed() }
+            )
             if(this.lockTab || shouldConfirm && tab.user !== undefined && !confirm(l('chat.confirmLeave'))) return;
             this.tabs.splice(this.tabs.indexOf(tab), 1);
             electron.ipcRenderer.send('has-new', this.tabs.reduce((cur, t) => cur || t.hasNew, false));

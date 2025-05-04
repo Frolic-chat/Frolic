@@ -461,9 +461,9 @@
         risingShowPortraitInMessage!: boolean;
         risingShowHighQualityPortraits!: boolean;
 
-        risingFilter!: SmartFilterSettings = {} as any;
+        risingFilter: SmartFilterSettings = {} as any;
 
-        risingAvailableThemes!: ReadonlyArray<string> = [];
+        risingAvailableThemes: ReadonlyArray<string> = [];
         risingCharacterTheme!: string | undefined;
 
         smartFilterTypes = smartFilterTypesOrigin;

@@ -8,7 +8,6 @@ import { AdCache } from './ad-cache';
 import { ChannelConversationCache } from './channel-conversation-cache';
 import { CharacterProfiler } from './character-profiler';
 import { CharacterCacheRecord, ProfileCache } from './profile-cache';
-import Timer = NodeJS.Timer;
 import ChannelConversation = Conversation.ChannelConversation;
 import Message = Conversation.Message;
 import { Character } from '../fchat/interfaces';
@@ -50,7 +49,7 @@ export class CacheManager {
 
     protected queue: ProfileCacheQueueEntry[] = [];
 
-    protected profileTimer: Timer | null = null;
+    protected profileTimer: NodeJS.Timeout | null = null;
     protected characterProfiler: CharacterProfiler | undefined;
 
     protected profileStore?: PermanentIndexedStore;

@@ -281,9 +281,8 @@ export default class EIconSelector extends CustomDialog {
       }
 
     .eicon-selector-ui {
-      .loading {
-
-      }
+      // .loading {
+      // }
 
       .search-bar {
         display: flex;
@@ -312,9 +311,8 @@ export default class EIconSelector extends CustomDialog {
             border-top-right-radius: 0;
           }
 
-          .refresh {
-
-          }
+          // .refresh {
+          // }
 
         }
       }

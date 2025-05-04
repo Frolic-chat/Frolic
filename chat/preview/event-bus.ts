@@ -10,6 +10,8 @@ import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { Character as CharacterProfile } from '../../site/character_page/interfaces';
 
+import log from 'electron-log';
+
 /**
  * Prior undocumented emissions:
  * 'conversation-load-more': { conversation: conversation}
@@ -112,4 +114,5 @@ class EventBusManager {
 }
 
 export const EventBus = new EventBusManager();
+log.verbose('init.eventbus');
 // export const EventBus = new Vue();

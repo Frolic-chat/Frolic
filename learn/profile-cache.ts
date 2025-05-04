@@ -64,9 +64,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     getSync(name: string): CharacterCacheRecord | null {
         const key = AsyncCache.nameKey(name);
 
-        if (key in this.cache) {
+        if (key in this.cache)
             return this.cache[key];
-        }
 
         return null;
     }
@@ -75,13 +74,11 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     async get(name: string, skipStore: boolean = false, _fromChannel?: string): Promise<CharacterCacheRecord | null> {
         const key = AsyncCache.nameKey(name);
 
-        if (key in this.cache) {
+        if (key in this.cache)
             return this.cache[key];
-        }
 
-        if ((!this.store) || (skipStore)) {
+        if (!this.store || skipStore)
             return null;
-        }
 
         // if (false) {
         //     log.info(`Retrieve '${name}' for channel '${fromChannel}, gap: ${(Date.now() - this.lastFetch)}ms`);
@@ -90,9 +87,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         const pd = await this.store.getProfile(name);
 
-        if (!pd) {
+        if (!pd)
             return null;
-        }
 
         const cacheRecord = await this.register(pd.profileData, true);
 

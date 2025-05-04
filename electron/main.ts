@@ -257,8 +257,13 @@ function createWindow(): electron.BrowserWindow | undefined {
         show: false,
         icon: process.platform === 'win32' ? winIcon : pngIcon,
         webPreferences: {
-          webviewTag: true, nodeIntegration: true, nodeIntegrationInWorker: true, spellcheck: true,
-          enableRemoteModule: true, contextIsolation: false, partition: 'persist:fchat'
+          webviewTag: true,
+          nodeIntegration: true,
+          nodeIntegrationInWorker: true,
+          spellcheck: true,
+          enableRemoteModule: true,
+          contextIsolation: false,
+          partition: 'persist:fchat',
         } as any
     };
 
@@ -360,8 +365,13 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
         maxHeight: desiredHeight,
         maximizable: false,
         webPreferences: {
-            webviewTag: true, nodeIntegration: true, nodeIntegrationInWorker: true, spellcheck: true,
-            enableRemoteModule: true, contextIsolation: false, partition: 'persist:fchat'
+            webviewTag: true,
+            nodeIntegration: true,
+            nodeIntegrationInWorker: true,
+            spellcheck: true,
+            enableRemoteModule: true,
+            contextIsolation: false,
+            partition: 'persist:fchat',
         } as any
     };
 

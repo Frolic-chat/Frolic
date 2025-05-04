@@ -335,7 +335,6 @@ export class Matcher {
     }
 
 
-    // tslint:disable-next-line
     private static mergeResultScores(scores: MatchResultScores, results: MatchResultScores): void {
       _.each(scores, (v: Score, k: any) => {
           if (
@@ -370,8 +369,7 @@ export class Matcher {
         return _.map(
             speciesOptions,
             (species) => {
-                // Avoid _.cloneDeep because it chokes on array-like objects with very large keys
-                // _.cloneDeep will happily make arrays with 41 million elements
+                // Avoid _.cloneDeep - it chokes on array-likes with very large keys
                 const nc = {...c, infotags: {...c.infotags, [TagId.Species]: {string: species}}};
 
                 return { character: nc, analysis: new CharacterAnalysis(nc) };
@@ -413,8 +411,8 @@ export class Matcher {
             }
         }
 
-        // console.log('Profile score', c.character.name, score, m.you.total, m.them.total,
-        //    m.you.total + m.them.total, m.you.total * m.them.total);
+        log.silly('matcher.score.final', { finalscore: finalScore, you: m.you.total, them: m.them.total,
+           combined: m.you.total + m.them.total, mult: m.you.total * m.them.total });
 
         return (finalScore === null) ? Scoring.NEUTRAL : finalScore;
     }

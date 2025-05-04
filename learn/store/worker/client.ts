@@ -89,7 +89,7 @@ export class WorkerClient {
     const request: IndexedRequest = {
       cmd,
       id,
-      params
+      params,
     };
 
     return new Promise(
@@ -99,11 +99,12 @@ export class WorkerClient {
             id,
             resolve,
             reject,
-            request
+            request,
           );
 
           this.worker.postMessage(request);
-        } catch (err) {
+        }
+        catch (err) {
           reject(err);
           this.clearWaiter(id);
         }
