@@ -1,7 +1,3 @@
-// import Vue from 'vue';
-import _ from 'lodash';
-// import log from 'electron-log'; //tslint:disable-line:match-default-export-name
-
 import { Character } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Conversation } from '../interfaces';
@@ -105,7 +101,7 @@ class EventBusManager {
     $emit(eventName: string, eventData: EventBusEvent): void {
         // const d = Date.now();
 
-        _.each(this.eventCallbacks[eventName] || [], (cb) => (cb(eventData)));
+        (this.callbacks[event] || []).forEach((cb) => cb(data));
 
         // log.silly('event.bus.emit', { eventName, eventData, time: (Date.now() - d) / 1000 });
     }

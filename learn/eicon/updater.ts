@@ -1,6 +1,6 @@
 import Axios, { AxiosError } from 'axios';
 import { EventBus } from '../../chat/preview/event-bus';
-import log from 'lodash';
+import log from 'electron-log';
 
 export interface EIconRecord {
   eicon: string;
@@ -78,12 +78,15 @@ export class EIconUpdater {
 
     const lines: string[] = (result.data as string).split('\n');
 
-    const records = _.map(_.filter(lines, (line) => (line.trim().substring(0, 1) !== '#' && line.trim() !== '')), (line) => {
-      const [eicon, timestamp] = _.split(line, '\t', 2);
-      return { eicon: eicon.toLowerCase(), timestamp: parseInt(timestamp, 10) };
+    const records = lines.filter(
+        (line) => (line.trim().substring(0, 1) !== '#' && line.trim() !== '')
+    )
+    .map((line) => {
+        const [eicon, timestamp] = line.split('\t', 2);
+        return { eicon: eicon.toLowerCase(), timestamp: parseInt(timestamp, 10) };
     });
 
-    const asOfLine = _.first(_.filter(lines, (line) => line.substring(0, 9) === '# As Of: '));
+    const asOfLine = lines.find((line) => line.substring(0, 9) === '# As Of: ');
     const asOfTimestamp = asOfLine ? parseInt(asOfLine.substring(9), 10) : 0;
 
     if (!asOfTimestamp) {
@@ -102,14 +105,17 @@ export class EIconUpdater {
 
   async fetchUpdates(fromTimestampInSecs: number): Promise<{ recordUpdates: EIconRecordUpdate[], asOfTimestamp: number }> {
     const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`);
-    const lines: string[] = _.split(result.data, '\n');
+    const lines: string[] = (result.data as string).split('\n');
 
-    const recordUpdates = _.map(_.filter(lines, (line) => (line.trim().substring(0, 1) !== '#' && line.trim() !== '')), (line) => {
-      const [action, eicon, timestamp] = _.split(line, '\t', 3);
-      return { action: action as '+' | '-', eicon: eicon.toLowerCase(), timestamp: parseInt(timestamp, 10) };
+    const recordUpdates = lines.filter(
+        (line) => (line.trim().substring(0, 1) !== '#' && line.trim() !== '')
+    )
+    .map((line) => {
+        const [action, eicon, timestamp] = line.split('\t', 3);
+        return { action: action as '+' | '-', eicon: eicon.toLowerCase(), timestamp: parseInt(timestamp, 10) };
     });
 
-    const asOfLine = _.first(_.filter(lines, (line: string) => line.substring(0, 9) === '# As Of: '));
+    const asOfLine = lines.find((line) => line.substring(0, 9) === '# As Of: ');
     const asOfTimestamp = asOfLine ? parseInt(asOfLine.substring(9), 10) : 0;
 
     if (!asOfTimestamp) {

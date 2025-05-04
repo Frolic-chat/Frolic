@@ -57,7 +57,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
 
     onEachInMemory(cb: (c: CharacterCacheRecord, key: string) => void): void {
-        _.each(this.cache, cb);
+        Object.entries(this.cache).forEach(([k, v]) => cb(v, k));
     }
 
 

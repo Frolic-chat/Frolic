@@ -305,19 +305,16 @@
 
         @Watch('profileName')
         onProfileNameChange(newName: string): void {
-          if (this.profileNameHistory[this.profilePointer] !== newName) {
-            this.profileNameHistory = _.takeRight(
-              _.filter(
-                _.take(this.profileNameHistory, this.profilePointer + 1),
-                (n) => (n !== newName)
-              ),
-              30
-            );
+            if (this.profileNameHistory[this.profilePointer] !== newName) {
+                this.profileNameHistory = this.profileNameHistory
+                        .slice(0, this.profilePointer + 1)
+                        .filter((n) => n !== newName)
+                        .slice(-30);
 
-            this.profileNameHistory.push(newName);
+                this.profileNameHistory.push(newName);
 
-            this.profilePointer = this.profileNameHistory.length - 1;
-          }
+                this.profilePointer = this.profileNameHistory.length - 1;
+            }
         }
 
 

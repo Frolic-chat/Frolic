@@ -341,16 +341,13 @@ export class Matcher {
 
 
     private static mergeResultScores(scores: MatchResultScores, results: MatchResultScores): void {
-      _.each(scores, (v: Score, k: any) => {
-          if (
-            // tslint:disable-next-line no-unsafe-any
-            ((!(k in results)) || (v.score < results[k].score))
-            && (v.score !== Scoring.NEUTRAL)
-          ) {
-            results[k] = v;
-          }
-        }
-      );
+        Object.entries(scores)
+            .forEach(([k, v]: [any, Score]) => {
+                if (v.score !== Scoring.NEUTRAL
+                && (!(k in results) || v.score < results[k].score))
+                    results[k] = v;
+            }
+        )
     }
 
 
@@ -370,8 +367,7 @@ export class Matcher {
         if (speciesOptions.length === 0)
             speciesOptions.push('');
 
-        return _.map(
-            speciesOptions,
+        return speciesOptions.map(
             (species) => {
                 // Avoid _.cloneDeep - it chokes on array-likes with very large keys
                 const nc = {...c, infotags: {...c.infotags, [TagId.Species]: {string: species}}};
@@ -382,15 +378,13 @@ export class Matcher {
     }
 
     static calculateReportScore(m: MatchReport): Scoring | null {
-        const yourScores = _.values(m.you.scores);
-        const theirScores = _.values(m.them.scores);
+        const yourScores =  Object.values(m.you.scores);
+        const theirScores = Object.values(m.them.scores);
 
-        const finalScore = _.reduce(
-            _.concat(yourScores, theirScores),
-            (accum: Scoring | null, score: Score) => {
-                if (accum === null) {
+        const finalScore = [...yourScores, ...theirScores]
+            .reduce((accum: Scoring | null, score: Score) => {
+                if (accum === null)
                     return (score.score !== Scoring.NEUTRAL) ? score.score : null;
-                }
 
                 return (score.score === Scoring.NEUTRAL) ? accum : Math.min(accum, score.score);
             },
@@ -406,12 +400,9 @@ export class Matcher {
             }
 
             // Only neutral scores given
-            if (
-                (_.every(yourScores, (n: Scoring) => n === Scoring.NEUTRAL)) ||
-                (_.every(theirScores, (n: Scoring) => n === Scoring.NEUTRAL))
-            ) {
+            if ( yourScores.every((n: Scoring) => n === Scoring.NEUTRAL)
+            ||  theirScores.every((n: Scoring) => n === Scoring.NEUTRAL))
                 return Scoring.NEUTRAL;
-            }
         }
 
         log.silly('matcher.score.final', { finalscore: finalScore, you: m.you.total, them: m.them.total,
@@ -450,11 +441,8 @@ export class Matcher {
             }
         };
 
-        data.total = _.reduce(
-            data.scores,
-            (accum: number, s: Score) => (accum + s.score),
-            0
-        );
+        data.total = Object.values(data.scores)
+                        .reduce((accum: number, s: Score) => accum + s.score, 0);
 
         return data;
     }
