@@ -22,10 +22,12 @@ export class EIconStore {
 
     log.info('eicons.save', { records: recordArray.length, asOfTimestamp: this.asOfTimestamp, fn });
 
-    fs.writeFileSync(fn, JSON.stringify({
-      asOfTimestamp: this.asOfTimestamp,
-      records: recordArray
-    }));
+    if (recordArray.length > 0) {
+        fs.writeFileSync(fn, JSON.stringify({
+            asOfTimestamp: this.asOfTimestamp,
+            records: recordArray
+        }));
+    }
 
     remote.ipcMain.emit('eicons.reload', { asOfTimestamp: this.asOfTimestamp });
   }
