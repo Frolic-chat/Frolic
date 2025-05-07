@@ -243,6 +243,7 @@ export namespace Settings {
         readonly risingComparisonInUserMenu: boolean;
         readonly risingComparisonInSearch: boolean;
         readonly experimentalOrientationMatching: boolean;
+        readonly relaxPostLengthMatching: boolean;
 
         readonly risingShowUnreadOfflineCount: boolean;
         readonly risingColorblindMode: boolean;

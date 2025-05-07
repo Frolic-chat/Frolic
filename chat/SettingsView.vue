@@ -184,6 +184,17 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="control-label" for="relaxPostLengthMatching">
+                    <input type="checkbox" id="relaxPostLengthMatching" v-model="relaxPostLengthMatching"/>
+                    {{ l('settings.match.relaxlength') }}
+                </label>
+                <small v-if="relaxPostLengthMatching">
+                    <br />
+                    {{ l('settings.match.relaxlength.selectedInfo') }}
+                </small>
+            </div>
+
 <!--            <div class="form-group">-->
 <!--                <label class="control-label" for="hideProfileComparisonSummary">-->
 <!--                    <input type="checkbox" id="hideProfileComparisonSummary" :checked="!hideProfileComparisonSummary" @input="hideProfileComparisonSummary = !$event.target.checked"/>-->
@@ -453,6 +464,7 @@
         risingComparisonInUserMenu!: boolean;
         risingComparisonInSearch!: boolean;
         experimentalOrientationMatching!: boolean;
+        relaxPostLengthMatching!: boolean;
 
         risingShowUnreadOfflineCount!: boolean;
         risingColorblindMode!: boolean;
@@ -506,6 +518,7 @@
             this.risingComparisonInUserMenu = settings.risingComparisonInUserMenu;
             this.risingComparisonInSearch = settings.risingComparisonInSearch;
             this.experimentalOrientationMatching = settings.experimentalOrientationMatching;
+            this.relaxPostLengthMatching = settings.relaxPostLengthMatching;
             this.risingShowUnreadOfflineCount = settings.risingShowUnreadOfflineCount;
 
             this.risingColorblindMode = settings.risingColorblindMode;
@@ -580,6 +593,8 @@
                 risingComparisonInUserMenu: this.risingComparisonInUserMenu,
                 risingComparisonInSearch: this.risingComparisonInSearch,
                 experimentalOrientationMatching: this.experimentalOrientationMatching,
+                relaxPostLengthMatching: this.relaxPostLengthMatching,
+
                 risingShowUnreadOfflineCount: this.risingShowUnreadOfflineCount,
                 risingShowPortraitNearInput: this.risingShowPortraitNearInput,
                 risingShowPortraitInMessage: this.risingShowPortraitInMessage,

@@ -34,6 +34,7 @@ import {
     nonAnthroSpecies,
     Orientation,
     Position,
+    postLengthOrder,
     PostLengthPreference,
     postLengthPreferenceMapping,
     postLengthPreferenceScoreMapping,
@@ -614,7 +615,14 @@ export class Matcher {
             return new Score(Scoring.NEUTRAL);
         }
 
-        const score = postLengthPreferenceScoreMapping[yourLength][theirLength];
+        let score = postLengthPreferenceScoreMapping[yourLength][theirLength];
+
+        if (Matcher.settings?.relaxPostLengthMatching && score !== Scoring.MATCH) {
+            const d = postLengthOrder.indexOf(yourLength) - postLengthOrder.indexOf(theirLength);
+            if (d <= 2 && d >= -2) score += 0.5;
+
+            log.debug('matcher.postlength', { diff: d, before: score - 0.5, after: score })
+        }
 
         return this.formatScoring(score, postLengthPreferenceMapping[theirLength]);
     }
