@@ -106,7 +106,6 @@
                 <a class="btn" @click="openWordDefinitionInBrowser"><i class="fa fa-external-link-alt"></i></a>
             </template>
         </modal>
-
         <logs ref="logsDialog"></logs>
     </div>
 </template>
@@ -625,12 +624,10 @@
         -webkit-app-region: no-drag;
     }
 
-
     .profileRefreshSpinner {
         font-size: 12pt;
         opacity: 0.5;
     }
-
 
     .profile-viewer {
       .modal-title {
@@ -652,7 +649,6 @@
         }
       }
     }
-
 
     .initializer {
         position: fixed;

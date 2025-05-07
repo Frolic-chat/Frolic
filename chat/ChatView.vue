@@ -564,7 +564,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             display: flex;
             align-items: center;
             border-right: 0;
-            border-top-right-radius: 0;
+            border-top-right-radius:    0;
             border-bottom-right-radius: 0;
             .name {
                 flex: 1;

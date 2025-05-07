@@ -212,10 +212,10 @@ export class CharacterAnalysis {
  * to get the full picture
  */
 export class Matcher {
-    readonly you: Character;
+    readonly you:  Character;
     readonly them: Character;
 
-    readonly yourAnalysis: CharacterAnalysis;
+    readonly yourAnalysis:  CharacterAnalysis;
     readonly theirAnalysis: CharacterAnalysis;
 
     private static settings: Settings | null = null;
@@ -227,28 +227,28 @@ export class Matcher {
     }
 
     constructor(you: Character, them: Character, yourAnalysis?: CharacterAnalysis, theirAnalysis?: CharacterAnalysis) {
-        this.you = you;
+        this.you  = you;
         this.them = them;
 
-        this.yourAnalysis = yourAnalysis || new CharacterAnalysis(you);
+        this.yourAnalysis  = yourAnalysis  || new CharacterAnalysis(you);
         this.theirAnalysis = theirAnalysis || new CharacterAnalysis(them);
     }
 
     static generateReport(you: Character, them: Character): MatchReport {
-        const yourAnalysis = new CharacterAnalysis(you);
+        const yourAnalysis  = new CharacterAnalysis(you);
         const theirAnalysis = new CharacterAnalysis(them);
 
-        const youThem = new Matcher(you, them, yourAnalysis, theirAnalysis);
-        const themYou = new Matcher(them, you, theirAnalysis, yourAnalysis);
+        const youThem = new Matcher(you,  them, yourAnalysis,  theirAnalysis);
+        const themYou = new Matcher(them, you,  theirAnalysis, yourAnalysis);
 
         const youThemMatch = youThem.match('their');
         const themYouMatch = themYou.match('your');
 
         const report: MatchReport = {
             _isVue: true,
-            you: youThemMatch,
+            you:  youThemMatch,
             them: themYouMatch,
-            youMultiSpecies: false,
+            youMultiSpecies:  false,
             themMultiSpecies: false,
             merged: Matcher.mergeResults(youThemMatch, themYouMatch),
             score: null,
@@ -271,7 +271,7 @@ export class Matcher {
     static identifyBestMatchReport(you: Character, them: Character): MatchReport {
         const reportStartTime = Date.now();
 
-        const yourCharacterAnalyses = Matcher.generateAnalysisVariations(you);
+        const yourCharacterAnalyses  = Matcher.generateAnalysisVariations(you);
         const theirCharacterAnalyses = Matcher.generateAnalysisVariations(them);
 
         let bestScore: Scoring | null = null;
@@ -280,8 +280,12 @@ export class Matcher {
 
         for(const yourAnalysis of yourCharacterAnalyses) {
             for (const theirAnalysis of theirCharacterAnalyses) {
-                const youThem = new Matcher(yourAnalysis.character, theirAnalysis.character, yourAnalysis.analysis, theirAnalysis.analysis);
-                const themYou = new Matcher(theirAnalysis.character, yourAnalysis.character, theirAnalysis.analysis, yourAnalysis.analysis);
+                const youThem = new Matcher(
+                    yourAnalysis.character, theirAnalysis.character,
+                    yourAnalysis.analysis,  theirAnalysis.analysis);
+                const themYou = new Matcher(
+                    theirAnalysis.character, yourAnalysis.character,
+                    theirAnalysis.analysis,  yourAnalysis.analysis);
 
                 const youThemMatch = youThem.match('their');
                 const themYouMatch = themYou.match('your');
@@ -307,25 +311,25 @@ export class Matcher {
                 report.details.totalScoreDimensions = Matcher.countScoresTotal(report);
                 report.details.dimensionsAtScoreLevel = scoreLevelCount || 0;
 
-                if (
-                    (bestScore === null)
-                    || (
-                           (report.score !== null)
-                        && (report.score >= bestScore)
-                        && (scoreLevelCount !== null)
-                        && (report.score * scoreLevelCount > bestScoreLevelCount)
-                    )
-                ) {
-                    bestScore = report.score;
-                    bestScoreLevelCount = ((scoreLevelCount !== null) && (report.score !== null)) ? report.score * scoreLevelCount : -1000;
-                    bestReport = report;
+                function scoreBeatsCurrent(s: Scoring, bs: Scoring, level: number, bl: number): boolean {
+                    return s >= bs
+                        && s * level > bl;
+                }
+
+                if (bestScore === null
+                || (report.score !== null && scoreLevelCount !== null
+                 && scoreBeatsCurrent(report.score, bestScore, scoreLevelCount, bestScoreLevelCount))) {
+                        bestScore = report.score;
+                        bestScoreLevelCount = (scoreLevelCount !== null && report.score !== null)
+                                                    ? report.score * scoreLevelCount
+                                                    : -1000;
+                        bestReport = report;
                 }
             }
         }
 
         log.debug(
-            'report.identify.best',
-            {
+            'report.identify.best', {
                 buildTime: Date.now() - reportStartTime,
                 variations: yourCharacterAnalyses.length * theirCharacterAnalyses.length,
                 report: bestReport!
@@ -353,7 +357,7 @@ export class Matcher {
     static mergeResults(you: MatchResult, them: MatchResult): MatchResultScores {
         const results: MatchResultScores = {} as any;
 
-        Matcher.mergeResultScores(you.scores, results);
+        Matcher.mergeResultScores(you.scores,  results);
         Matcher.mergeResultScores(them.scores, results);
 
         return results;
@@ -363,9 +367,8 @@ export class Matcher {
     static generateAnalysisVariations(c: Character): CharacterAnalysisVariation[] {
         const speciesOptions = Matcher.getAllSpeciesAsStr(c);
 
-        if (speciesOptions.length === 0) {
+        if (speciesOptions.length === 0)
             speciesOptions.push('');
-        }
 
         return _.map(
             speciesOptions,
@@ -394,12 +397,11 @@ export class Matcher {
             null
         );
 
-        if ((finalScore !== null) && (finalScore > 0)) {
+        if (finalScore !== null && finalScore > 0) {
             // Manage edge cases where high score may not be ideal
 
             // Nothing to score
-            if ((yourScores.length === 0) || (theirScores.length === 0)) {
-                // can't know
+            if (yourScores.length === 0 || theirScores.length === 0) {
                 return Scoring.NEUTRAL;
             }
 
@@ -420,31 +422,31 @@ export class Matcher {
 
     match(pronoun: string): MatchResult {
         const data: MatchResult = {
-            you: this.you,
+            you:  this.you,
             them: this.them,
 
-            yourAnalysis: this.yourAnalysis,
+            yourAnalysis:  this.yourAnalysis,
             theirAnalysis: this.theirAnalysis,
 
             total: 0,
 
             scores: {
-                [TagId.Orientation]: this.resolveOrientationScore(),
-                [TagId.Gender]: this.resolveGenderScore(),
-                [TagId.Age]: this.resolveAgeScore(),
+                [TagId.Orientation]:     this.resolveOrientationScore(),
+                [TagId.Gender]:          this.resolveGenderScore(),
+                [TagId.Age]:             this.resolveAgeScore(),
                 [TagId.FurryPreference]: this.resolveFurryPairingsScore(),
-                [TagId.Species]: this.resolveSpeciesScore(),
-                [TagId.SubDomRole]: this.resolveSubDomScore(),
-                [TagId.Kinks]: this.resolveKinkScore(pronoun),
-                [TagId.PostLength]: this.resolvePostLengthScore(),
-                [TagId.Position]: this.resolvePositionScore(),
-                [TagId.BodyType]: this.resolveBodyTypeScore()
+                [TagId.Species]:         this.resolveSpeciesScore(),
+                [TagId.SubDomRole]:      this.resolveSubDomScore(),
+                [TagId.Kinks]:           this.resolveKinkScore(pronoun),
+                [TagId.PostLength]:      this.resolvePostLengthScore(),
+                [TagId.Position]:        this.resolvePositionScore(),
+                [TagId.BodyType]:        this.resolveBodyTypeScore()
             },
 
             info: {
-                species: Matcher.species(this.you),
-                gender: Matcher.getTagValueList(TagId.Gender, this.you),
-                orientation: Matcher.getTagValueList(TagId.Orientation, this.you)
+                species:     Matcher.species(this.you),
+                gender:      Matcher.getTagValueList(TagId.Gender,      this.you),
+                orientation: Matcher.getTagValueList(TagId.Orientation, this.you),
             }
         };
 
@@ -458,9 +460,10 @@ export class Matcher {
     }
 
     private resolveOrientationScore(): Score {
-        // Question: If someone identifies themselves as 'straight cuntboy', how should they be matched? like a straight female?
-
-        return Matcher.scoreOrientationByGender(this.yourAnalysis.gender, this.yourAnalysis.orientation, this.theirAnalysis.gender);
+        return Matcher.scoreOrientationByGender(
+            this.yourAnalysis.gender, this.yourAnalysis.orientation,
+            this.theirAnalysis.gender
+        );
     }
 
 
@@ -589,16 +592,16 @@ export class Matcher {
 
     static formatKinkScore(score: KinkPreference, description: string): Score {
         if (score === KinkPreference.No)
-            return new Score(Scoring.MISMATCH, `No <span>${description}</span>`);
+            return new Score(Scoring.MISMATCH,      `No <span>${description}</span>`);
 
         if (score === KinkPreference.Maybe)
             return new Score(Scoring.WEAK_MISMATCH, `Hesitant about <span>${description}</span>`);
 
         if (score === KinkPreference.Yes)
-            return new Score(Scoring.WEAK_MATCH, `Likes <span>${description}</span>`);
+            return new Score(Scoring.WEAK_MATCH,    `Likes <span>${description}</span>`);
 
         if (score === KinkPreference.Favorite)
-            return new Score(Scoring.MATCH, `Loves <span>${description}</span>`);
+            return new Score(Scoring.MATCH,         `Loves <span>${description}</span>`);
 
         return new Score(Scoring.NEUTRAL);
     }
@@ -607,13 +610,10 @@ export class Matcher {
         const yourLength  = this.yourAnalysis.postLengthPreference;
         const theirLength = this.theirAnalysis.postLengthPreference;
 
-        if (
-            (!yourLength) || (!theirLength)
-            || (yourLength  === PostLengthPreference.NoPreference)
-            || (theirLength === PostLengthPreference.NoPreference)
-        ) {
+        if (!yourLength || !theirLength
+        ||  yourLength  === PostLengthPreference.NoPreference
+        ||  theirLength === PostLengthPreference.NoPreference)
             return new Score(Scoring.NEUTRAL);
-        }
 
         let score = postLengthPreferenceScoreMapping[yourLength][theirLength];
 

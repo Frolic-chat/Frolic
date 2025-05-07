@@ -40,11 +40,8 @@ import log from 'electron-log';
  * 'character-memo': { character: string, memo: CharacterMemo }
  */
 
-
-export interface EventBusEvent {
-    // tslint:disable: no-any
-    [key: string]: any;
-}
+// tslint:disable: no-any
+export interface EventBusEvent { [key: string]: any; }
 
 export interface CharacterProfileEvent extends EventBusEvent {
     profile: CharacterProfile;
@@ -62,16 +59,13 @@ export interface CharacterDataEvent {
     character: Character;
 }
 
-
 export interface SelectConversationEvent extends EventBusEvent {
     conversation: Conversation | null;
 }
 
-export type EventCallback = (data: any) => void | Promise<void>;
-
-
 // tslint:disable-next-line no-empty-interface
 export interface NoteCountsUpdate extends EventBusEvent, NoteCheckerCount {}
+export type EventCallback = (data: any) => void | Promise<void>;
 
 class EventBusManager {
     private eventCallbacks: Record<string, EventCallback[]> = {};

@@ -68,7 +68,8 @@ export class WorkerClient {
         waiter.resolve(res.result);
       } else {
         log.error('store.worker.client.msg.err', { t: (Date.now() - waiter.initiated) / 1000, msg: res.msg, req: waiter.request });
-        waiter.reject(new Error(res.msg));
+        const err = new Error(res.msg);
+        waiter.reject(err);
       }
 
       this.clearWaiter(waiter.id);

@@ -166,105 +166,105 @@ export enum Kink {
     SwallowingFeces = 201,
 
     HyperWatersports = 414,
-    PissEnemas = 533,
-    SwallowingUrine = 203,
-    Watersports = 59,
-    Wetting = 371,
+    PissEnemas       = 533,
+    SwallowingUrine  = 203,
+    Watersports      = 59,
+    Wetting          = 371,
 
     BelchingBurping = 709,
-    DirtyFeet = 706,
-    ExtremeMusk = 335,
-    Farting = 549,
-    Filth = 707,
-    Messy = 89,
-    Slob = 570,
-    Smegma = 708,
+    DirtyFeet       = 706,
+    ExtremeMusk     = 335,
+    Farting         = 549,
+    Filth           = 707,
+    Messy           = 89,
+    Slob            = 570,
+    Smegma          = 708,
     SwallowingVomit = 560,
-    UnwashedMusk = 705,
-    Vomiting = 184,
+    UnwashedMusk    = 705,
+    Vomiting        = 184,
 
-    Absorption = 239,
-    AlternativeVore = 244,
-    AnalVore = 209,
-    Cannibalism = 714,
-    CockVore = 208,
-    CookingVore = 716,
-    Digestion = 238,
-    Disposal = 241,
-    HardVore = 66,
-    RealisticVore = 242,
-    SoftVore = 73,
-    Unbirthing = 210,
-    UnrealisticVore = 243,
-    VoreBeingPredator = 422,
-    VoreBeingPrey = 423,
+    Absorption          = 239,
+    AlternativeVore     = 244,
+    AnalVore            = 209,
+    Cannibalism         = 714,
+    CockVore            = 208,
+    CookingVore         = 716,
+    Digestion           = 238,
+    Disposal            = 241,
+    HardVore            = 66,
+    RealisticVore       = 242,
+    SoftVore            = 73,
+    Unbirthing          = 210,
+    UnrealisticVore     = 243,
+    VoreBeingPredator   = 422,
+    VoreBeingPrey       = 423,
 
     AlternativePregnancy = 702,
-    AnalPregnancy = 704,
-    Birthing = 461,
-    ExtremePregnancy = 272,
-    MalePregnancy = 198,
-    Pregnancy = 154,
+    AnalPregnancy        = 704,
+    Birthing             = 461,
+    ExtremePregnancy     = 272,
+    MalePregnancy        = 198,
+    Pregnancy            = 154,
 
     STDs = 656,
 
-    PseudoRape = 522,
-    DubConsensual = 657,
-    Nonconsensual = 100,
+    PseudoRape      = 522,
+    DubConsensual   = 657,
+    Nonconsensual   = 100,
 
-    Incest = 127,
-    IncestParental = 646,
-    IncestSiblings = 647,
+    Incest          = 127,
+    IncestParental  = 646,
+    IncestSiblings  = 647,
     ParentChildPlay = 304,
-    ForcedIncest = 53,
+    ForcedIncest    = 53,
 
-    AgeProgression = 622,
-    AgeRegression = 621,
-    Infantilism = 497,
+    AgeProgression  = 622,
+    AgeRegression   = 621,
+    Infantilism     = 497,
 
-    Zoophilia = 218,
-    AnimalsFerals = 487,
-    Quadrupeds = 382,
+    Zoophilia       = 218,
+    AnimalsFerals   = 487,
+    Quadrupeds      = 382,
 
-    HyperAsses = 595,
-    HyperBalls = 233,
-    HyperBreasts = 594,
-    HyperCocks = 60,
-    HyperFat = 377,
-    HyperMuscle = 376,
-    HyperVaginas = 593,
-    HyperVoluptous = 378,
-    HyperMuscleGrowth = 389,
+    HyperAsses          = 595,
+    HyperBalls          = 233,
+    HyperBreasts        = 594,
+    HyperCocks          = 60,
+    HyperFat            = 377,
+    HyperMuscle         = 376,
+    HyperVaginas        = 593,
+    HyperVoluptous      = 378,
+    HyperMuscleGrowth   = 389,
 
-    MacroAsses = 596,
-    MacroBalls = 550,
-    MacroBreasts = 91,
-    MacroCocks = 61,
-    Macrophilia = 285,
-    MegaMacro = 374,
-    Microphilia = 286,
+    MacroAsses      = 596,
+    MacroBalls      = 550,
+    MacroBreasts    = 91,
+    MacroCocks      = 61,
+    Macrophilia     = 285,
+    MegaMacro       = 374,
+    Microphilia     = 286,
     SizeDifferencesMicroMacro = 502,
-    GrowthMacro = 384,
-    ShrinkingMicro = 387,
+    GrowthMacro     = 384,
+    ShrinkingMicro  = 387,
 
-    Taurs = 68,
+    Taurs  = 68,
     Exotic = 481,
 }
 
 export enum FurryPreference {
-    FurriesOnly = 39,
-    FursAndHumans = 40,
-    HumansOnly = 41,
+    FurriesOnly              = 39,
+    FursAndHumans            = 40,
+    HumansOnly               = 41,
     HumansPreferredFurriesOk = 150,
-    FurriesPreferredHumansOk = 149
+    FurriesPreferredHumansOk = 149,
 }
 
 export const furryPreferenceMapping = {
-    [FurryPreference.FurriesOnly]: 'furries only',
-    [FurryPreference.FursAndHumans]: 'loves furries and humans',
-    [FurryPreference.HumansOnly]: 'humans only',
+    [FurryPreference.FurriesOnly]:              'furries only',
+    [FurryPreference.FursAndHumans]:            'loves furries and humans',
+    [FurryPreference.HumansOnly]:               'humans only',
     [FurryPreference.HumansPreferredFurriesOk]: 'loves humans, likes furries',
-    [FurryPreference.FurriesPreferredHumansOk]: 'loves furries, likes humans'
+    [FurryPreference.FurriesPreferredHumansOk]: 'loves furries, likes humans',
 };
 
 
@@ -279,68 +279,68 @@ export const postLengthOrder = [
 
 
 export const postLengthPreferenceMapping = {
-    [PostLengthPreference.MultiParagraph_14_25]: 'multi-paragraph posts',
+    [PostLengthPreference.MultiParagraph_14_25]:  'multi-paragraph posts',
     [PostLengthPreference.StrongParagraph_10_14]: 'strong paragraph posts',
-    [PostLengthPreference.Paragraph_7_10]: 'paragraph posts',
-    [PostLengthPreference.SemiParagraph_4_7]: 'semi-paragraph posts',
-    [PostLengthPreference.Short_2_4]: 'short posts',
-    [PostLengthPreference.VeryShort_1_2]: 'very short posts'
+    [PostLengthPreference.Paragraph_7_10]:        'paragraph posts',
+    [PostLengthPreference.SemiParagraph_4_7]:     'semi-paragraph posts',
+    [PostLengthPreference.Short_2_4]:             'short posts',
+    [PostLengthPreference.VeryShort_1_2]:         'very short posts',
 };
 
 
 export const postLengthPreferenceScoreMapping = {
     [PostLengthPreference.MultiParagraph_14_25]: {
-        [PostLengthPreference.MultiParagraph_14_25]: Scoring.MATCH,
-        [PostLengthPreference.StrongParagraph_10_14]: Scoring.MATCH,
-        [PostLengthPreference.Paragraph_7_10]: Scoring.WEAK_MATCH,
-        [PostLengthPreference.SemiParagraph_4_7]: Scoring.WEAK_MISMATCH,
-        [PostLengthPreference.Short_2_4]: Scoring.MISMATCH,
-        [PostLengthPreference.VeryShort_1_2]: Scoring.MISMATCH
+        [PostLengthPreference.MultiParagraph_14_25]:  Scoring.MATCH,
+        [PostLengthPreference.StrongParagraph_10_14]: Scoring.WEAK_MATCH,
+        [PostLengthPreference.Paragraph_7_10]:        Scoring.WEAK_MISMATCH,
+        [PostLengthPreference.SemiParagraph_4_7]:     Scoring.MISMATCH,
+        [PostLengthPreference.Short_2_4]:             Scoring.MISMATCH,
+        [PostLengthPreference.VeryShort_1_2]:         Scoring.MISMATCH,
     },
 
     [PostLengthPreference.StrongParagraph_10_14]: {
-        [PostLengthPreference.MultiParagraph_14_25]: Scoring.MATCH,
+        [PostLengthPreference.MultiParagraph_14_25]:  Scoring.WEAK_MATCH,
         [PostLengthPreference.StrongParagraph_10_14]: Scoring.MATCH,
-        [PostLengthPreference.Paragraph_7_10]: Scoring.MATCH,
-        [PostLengthPreference.SemiParagraph_4_7]: Scoring.WEAK_MATCH,
-        [PostLengthPreference.Short_2_4]: Scoring.MISMATCH,
-        [PostLengthPreference.VeryShort_1_2]: Scoring.MISMATCH
+        [PostLengthPreference.Paragraph_7_10]:        Scoring.WEAK_MATCH,
+        [PostLengthPreference.SemiParagraph_4_7]:     Scoring.WEAK_MISMATCH,
+        [PostLengthPreference.Short_2_4]:             Scoring.MISMATCH,
+        [PostLengthPreference.VeryShort_1_2]:         Scoring.MISMATCH,
     },
 
     [PostLengthPreference.Paragraph_7_10]: {
-        [PostLengthPreference.MultiParagraph_14_25]: Scoring.WEAK_MATCH,
-        [PostLengthPreference.StrongParagraph_10_14]: Scoring.MATCH,
-        [PostLengthPreference.Paragraph_7_10]: Scoring.MATCH,
-        [PostLengthPreference.SemiParagraph_4_7]: Scoring.MATCH,
-        [PostLengthPreference.Short_2_4]: Scoring.MISMATCH,
-        [PostLengthPreference.VeryShort_1_2]: Scoring.MISMATCH
+        [PostLengthPreference.MultiParagraph_14_25]:  Scoring.WEAK_MISMATCH,
+        [PostLengthPreference.StrongParagraph_10_14]: Scoring.WEAK_MATCH,
+        [PostLengthPreference.Paragraph_7_10]:        Scoring.MATCH,
+        [PostLengthPreference.SemiParagraph_4_7]:     Scoring.WEAK_MATCH,
+        [PostLengthPreference.Short_2_4]:             Scoring.WEAK_MISMATCH,
+        [PostLengthPreference.VeryShort_1_2]:         Scoring.MISMATCH,
     },
 
     [PostLengthPreference.SemiParagraph_4_7]: {
-        [PostLengthPreference.MultiParagraph_14_25]: Scoring.MISMATCH,
+        [PostLengthPreference.MultiParagraph_14_25]:  Scoring.MISMATCH,
         [PostLengthPreference.StrongParagraph_10_14]: Scoring.WEAK_MISMATCH,
-        [PostLengthPreference.Paragraph_7_10]: Scoring.MATCH,
-        [PostLengthPreference.SemiParagraph_4_7]: Scoring.MATCH,
-        [PostLengthPreference.Short_2_4]: Scoring.MATCH,
-        [PostLengthPreference.VeryShort_1_2]: Scoring.WEAK_MATCH
+        [PostLengthPreference.Paragraph_7_10]:        Scoring.WEAK_MATCH,
+        [PostLengthPreference.SemiParagraph_4_7]:     Scoring.MATCH,
+        [PostLengthPreference.Short_2_4]:             Scoring.WEAK_MATCH,
+        [PostLengthPreference.VeryShort_1_2]:         Scoring.WEAK_MISMATCH,
     },
 
     [PostLengthPreference.Short_2_4]: {
-        [PostLengthPreference.MultiParagraph_14_25]: Scoring.MISMATCH,
+        [PostLengthPreference.MultiParagraph_14_25]:  Scoring.MISMATCH,
         [PostLengthPreference.StrongParagraph_10_14]: Scoring.MISMATCH,
-        [PostLengthPreference.Paragraph_7_10]: Scoring.WEAK_MISMATCH,
-        [PostLengthPreference.SemiParagraph_4_7]: Scoring.MATCH,
-        [PostLengthPreference.Short_2_4]: Scoring.MATCH,
-        [PostLengthPreference.VeryShort_1_2]: Scoring.MATCH
+        [PostLengthPreference.Paragraph_7_10]:        Scoring.WEAK_MISMATCH,
+        [PostLengthPreference.SemiParagraph_4_7]:     Scoring.WEAK_MATCH,
+        [PostLengthPreference.Short_2_4]:             Scoring.MATCH,
+        [PostLengthPreference.VeryShort_1_2]:         Scoring.WEAK_MATCH,
     },
 
     [PostLengthPreference.VeryShort_1_2]: {
-        [PostLengthPreference.MultiParagraph_14_25]: Scoring.MISMATCH,
+        [PostLengthPreference.MultiParagraph_14_25]:  Scoring.MISMATCH,
         [PostLengthPreference.StrongParagraph_10_14]: Scoring.MISMATCH,
-        [PostLengthPreference.Paragraph_7_10]: Scoring.MISMATCH,
-        [PostLengthPreference.SemiParagraph_4_7]: Scoring.WEAK_MISMATCH,
-        [PostLengthPreference.Short_2_4]: Scoring.MATCH,
-        [PostLengthPreference.VeryShort_1_2]: Scoring.MATCH
+        [PostLengthPreference.Paragraph_7_10]:        Scoring.MISMATCH,
+        [PostLengthPreference.SemiParagraph_4_7]:     Scoring.WEAK_MISMATCH,
+        [PostLengthPreference.Short_2_4]:             Scoring.WEAK_MATCH,
+        [PostLengthPreference.VeryShort_1_2]:         Scoring.MATCH,
     }
 };
 
@@ -349,13 +349,13 @@ export interface GenderKinkIdMap {
 }
 
 export const genderKinkMapping: GenderKinkIdMap = {
-    [Gender.Female]: Kink.Females,
-    [Gender.Male]: Kink.Males,
-    [Gender.Cuntboy]: Kink.Cuntboys,
-    [Gender.Herm]: Kink.Herms,
-    [Gender.MaleHerm]: Kink.MaleHerms,
-    [Gender.Shemale]: Kink.Shemales,
-    [Gender.Transgender]: Kink.Transgenders
+    [Gender.Female]:      Kink.Females,
+    [Gender.Male]:        Kink.Males,
+    [Gender.Cuntboy]:     Kink.Cuntboys,
+    [Gender.Herm]:        Kink.Herms,
+    [Gender.MaleHerm]:    Kink.MaleHerms,
+    [Gender.Shemale]:     Kink.Shemales,
+    [Gender.Transgender]: Kink.Transgenders,
 };
 
 export interface BodyTypeKinkIdMap {
@@ -364,70 +364,70 @@ export interface BodyTypeKinkIdMap {
 
 export const bodyTypeKinkMapping: BodyTypeKinkIdMap = {
     [BodyType.Feral]: Kink.AnimalsFerals,
-    [BodyType.Taur]: Kink.Taurs
+    [BodyType.Taur]:  Kink.Taurs,
 };
 
  // if no species and 'no furry characters', === human
  // if no species and dislike 'anthro characters' === human
 
 export enum Species {
-    Human = 609,
-    Humanoid = 131,
-    Kemonomimi = 516,
-    Bovine = 318,
-    Equine = 236,
-    Feline = 212,
-    Canine = 226,
-    Caprinae = 558,
-    Demon = 7,
-    Divinity = 530,
-    Vulpine = 213,
-    Avian = 215,
-    Amphibian = 223,
-    Cervine = 227,
-    Insect = 237,
-    Lapine = 214,
-    Musteline = 328,
-    Dragon = 228,
-    Procyon = 325,
-    Rodent = 283,
-    Ursine = 326,
+    Human        = 609,
+    Humanoid     = 131,
+    Kemonomimi   = 516,
+    Bovine       = 318,
+    Equine       = 236,
+    Feline       = 212,
+    Canine       = 226,
+    Caprinae     = 558,
+    Demon        =   7,
+    Divinity     = 530,
+    Vulpine      = 213,
+    Avian        = 215,
+    Amphibian    = 223,
+    Cervine      = 227,
+    Insect       = 237,
+    Lapine       = 214,
+    Musteline    = 328,
+    Dragon       = 228,
+    Procyon      = 325,
+    Rodent       = 283,
+    Ursine       = 326,
     MarineMammal = 309,
-    Primate = 613,
-    Elf = 611,
-    Orc = 615,
-    Fish = 608,
-    Reptile = 225,
-    Marsupial = 322,
-    Anthro = 587,
-    Robot = 161,
-    Hyaenidae = 321,
-    Mephitidae = 323,
-    Bat = 451,
-    Alien = 281,
-    Dinosaur = 610,
-    Pokemon = 504,
-    Fae = 612,
-    Taur = 68,
-    Vampire = 182,
-    Naga = 619,
-    Monster = 483,
-    Exotic = 481,
+    Primate      = 613,
+    Elf          = 611,
+    Orc          = 615,
+    Fish         = 608,
+    Reptile      = 225,
+    Marsupial    = 322,
+    Anthro       = 587,
+    Robot        = 161,
+    Hyaenidae    = 321,
+    Mephitidae   = 323,
+    Bat          = 451,
+    Alien        = 281,
+    Dinosaur     = 610,
+    Pokemon      = 504,
+    Fae          = 612,
+    Taur         =  68,
+    Vampire      = 182,
+    Naga         = 619,
+    Monster      = 483,
+    Exotic       = 481,
 
-    Minotaur = 12121212,
-    Giraffe = 13131313,
-    Rhinoceros = 14141414,
-    Suidae = 15151515,
-    Herpestidae = 16161616,
-    Were = 17171717,
-    Erinaceidae = 18181818,
-    Elephantidae = 19191919,
-    Camielidae = 20202020,
-    Hippopotamidae = 21212121,
-    Hub = 22222222,
-    Pinniped = 23232323,
-    Hybrid = 24242424,
-    Xenarthra = 25252525
+    Minotaur        = 12121212,
+    Giraffe         = 13131313,
+    Rhinoceros      = 14141414,
+    Suidae          = 15151515,
+    Herpestidae     = 16161616,
+    Were            = 17171717,
+    Erinaceidae     = 18181818,
+    Elephantidae    = 19191919,
+    Camielidae      = 20202020,
+    Hippopotamidae  = 21212121,
+    Hub             = 22222222,
+    Pinniped        = 23232323,
+    Hybrid          = 24242424,
+    Xenarthra       = 25252525
  }
 
 export const nonAnthroSpecies: Species[] = [
@@ -460,13 +460,13 @@ export interface SpeciesStrMap {
  */
 export const speciesNames: SpeciesStrMap = {
     [Species.MarineMammal]: 'marine mammals',
-    [Species.Elf]: 'elves',
-    [Species.Fish]: 'fishes',
-    [Species.Mephitidae]: 'mephitis',
-    [Species.Rhinoceros]: 'rhinoceros',
-    [Species.Suidae]: 'swine',
-    [Species.Exotic]: 'exotic creatures',
-    [Species.Divinity]: 'divinity',
+    [Species.Elf]:          'elves',
+    [Species.Fish]:         'fishes',
+    [Species.Mephitidae]:   'mephitis',
+    [Species.Rhinoceros]:   'rhinoceros',
+    [Species.Suidae]:       'swine',
+    [Species.Exotic]:       'exotic creatures',
+    [Species.Divinity]:     'divinity',
 };
 
 const kemomimi_generic  = [ 'kemomimi', 'kemonomimi', 'kemono', 'gijinka' ];
@@ -709,7 +709,8 @@ export const speciesMapping: SpeciesMap = {
         'gengar', 'chandelur(e|ia)', 'gothitelle', 'mismagius',
         'delcatty', 'meowstick?', 'purrloin',
                     // Unsorted:
-        'buizel', 'absol', 'aggron', 'scyther', 'rattata', 'toxtricity', 'audino', 'sandslash', 'luxray', 'kecleon', 'quagsire', 'zigzagoon', 'joltik', 'hypnomade', 'zeraora', 'cinccino', 'salazzle', 'zubat', 'komala', 'zangoose', 'flygon', 'pansear', 'bibarel', 'lapras', 'hatteren[ea]', 'druddigon',
+        'rattata', 'buizel', 'bibarel', 'audino', 'sandslash', 'luxray', 'kecleon', 'zigzagoon', 'joltik', 'lapras', 'hatteren[ea]', 'druddigon', 'zangoose', 'flygon', 'pansear', 'cinccino', 'salazzle', 'zubat',
+        'absol', 'aggron', 'scyther', 'toxtricity', 'quagsire', 'hypnomade', 'zeraora', 'komala',
                     // Starters:
         'charmander', 'charmeleon', 'charizard',
         '(osha|de)wott', 'samurott?',
@@ -1149,14 +1150,14 @@ export interface FchatGenderMap {
 }
 
 export const fchatGenderMap: FchatGenderMap = {
-    None: Gender.None,
-    Male: Gender.Male,
-    Female: Gender.Female,
-    Shemale: Gender.Shemale,
-    Herm: Gender.Herm,
-    'Male-Herm': Gender.MaleHerm,
-    'Cunt-boy': Gender.Cuntboy,
-    Transgender: Gender.Transgender
+    None:           Gender.None,
+    Male:           Gender.Male,
+    Female:         Gender.Female,
+    Shemale:        Gender.Shemale,
+    Herm:           Gender.Herm,
+    'Male-Herm':    Gender.MaleHerm,
+    'Cunt-boy':     Gender.Cuntboy,
+    Transgender:    Gender.Transgender
 };
 
 export interface KinkPreferenceMap {
@@ -1165,9 +1166,9 @@ export interface KinkPreferenceMap {
 
 export const kinkMapping: KinkPreferenceMap = {
     favorite: KinkPreference.Favorite,
-    yes: KinkPreference.Yes,
-    maybe: KinkPreference.Maybe,
-    no: KinkPreference.No
+    yes:      KinkPreference.Yes,
+    maybe:    KinkPreference.Maybe,
+    no:       KinkPreference.No
 };
 
 
@@ -1185,37 +1186,37 @@ export interface SpeciesMappingCache {
 export const kinkMatchWeights = {
     // logBase: 10,
     weakMismatchThreshold: 16,
-    weakMatchThreshold: 16,
-    unicornThreshold: 9
+    weakMatchThreshold:    16,
+    unicornThreshold:       9,
 };
 
 export const kinkMatchScoreMap = {
     favorite: {
         favorite: 1,
-        yes: 0.35,
-        maybe: -0.5,
-        no: -1.5
+        yes:      0.35,
+        maybe:   -0.5,
+        no:      -1.5,
     },
 
     yes: {
         favorite: 0.35,
-        yes: 0.35,
-        maybe: -0.125,
-        no: -0.35
+        yes:      0.35,
+        maybe:   -0.125,
+        no:      -0.35,
     },
 
     maybe: {
         favorite: -0.35,
-        yes: -0.125,
-        maybe: 0,
-        no: 0
+        yes:      -0.125,
+        maybe:     0,
+        no:        0,
     },
 
     no: {
         favorite: -1.5,
-        yes: -0.5,
-        maybe: 0,
-        no: 0
+        yes:      -0.5,
+        maybe:     0,
+        no:        0,
     }
 };
 
@@ -1240,22 +1241,22 @@ export const kinkComparisonExclusions = {
     720: true, // toons
     354: true, // twinks
     183: true, // very fat characters
-    85: true, // very lithe characters
-    84: true, // very muscular characters
-    197: true // younger characters
+     85: true, // very lithe characters
+     84: true, // very muscular characters
+    197: true, // younger characters
 };
 
 export const kinkComparisonExclusionGroups = {
     29: true, // gender preferences
-    30: true // species preferences
+    30: true, // species preferences
 };
 
 
 export const kinkComparisonSwaps: Record<any, number> = {
     137: 157, // anal sex giving -> receiving
     157: 137, // anal sex receiving -> giving
-    163: 16, // rimming giving -> receiving
-    16: 163, // rimming receiving -> giving
+    163:  16, // rimming giving -> receiving
+     16: 163, // rimming receiving -> giving
     229: 340, // vaginal sex giving -> receiving
     340: 229, // vaginal sex receiving -> giving
     513: 515, // cunnilingus giving -> receiving
@@ -1263,15 +1264,15 @@ export const kinkComparisonSwaps: Record<any, number> = {
     141: 158, // oral sex giving -> receiving
     158: 141, // oral sex receiving -> giving
     512: 514, // fellatio performing -> fellatio receiving
-    514: 512 // fellatio receiving -> fellatio performing
+    514: 512, // fellatio receiving -> fellatio performing
 };
 
 
 export interface KinkBucketScore {
-    score: number;
-    count: number;
+    score:    number;
+    count:    number;
     weighted: number;
-    total: number;
+    total:    number;
 }
 
 export interface MatchResultKinkScores {

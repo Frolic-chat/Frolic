@@ -11,8 +11,7 @@ export interface EIconRecordUpdate extends EIconRecord {
 }
 
 export class EIconUpdater {
-  static readonly FULL_DATA_URL = 'https://xariah.net/eicons/Home/EiconsDataBase/base.doc';
-
+  static readonly FULL_DATA_URL   = 'https://xariah.net/eicons/Home/EiconsDataBase/base.doc';
   static readonly DATA_UPDATE_URL = 'https://xariah.net/eicons/Home/EiconsDataDeltaSince';
 
   async fetchAll(): Promise<{ records: EIconRecord[], asOfTimestamp: number }> {

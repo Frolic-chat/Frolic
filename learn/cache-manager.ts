@@ -240,17 +240,15 @@ export class CacheManager {
         }
 
         EventBus.$on(
-            'character-data',
-            async(data: CharacterDataEvent) => {
+            'character-data', async(data: CharacterDataEvent) => {
                 // this promise is intentionally NOT chained
                 // tslint:disable-next-line: no-floating-promises
-              this.onCharacterData(data);
+                this.onCharacterData(data);
             }
         );
 
         EventBus.$on(
-            'channel-message',
-            async(data: ChannelMessageEvent) => {
+            'channel-message', async(data: ChannelMessageEvent) => {
                 // this promise is intentionally NOT chained
                 // tslint:disable-next-line: no-floating-promises
                 this.onChannelMessage(data);
@@ -258,8 +256,7 @@ export class CacheManager {
         );
 
         EventBus.$on(
-            'channel-ad',
-            async(data: ChannelAdEvent) => {
+            'channel-ad', async(data: ChannelAdEvent) => {
                 // this promise is intentionally NOT chained
                 // tslint:disable-next-line: no-floating-promises
                 this.onChannelAd(data);
@@ -267,19 +264,17 @@ export class CacheManager {
         );
 
         EventBus.$on(
-            'select-conversation',
-            async(data: SelectConversationEvent) => {
+            'select-conversation', async(data: SelectConversationEvent) => {
               // this promise is intentionally NOT chained
-                // tslint:disable-next-line: no-floating-promises
+              // tslint:disable-next-line: no-floating-promises
               this.onSelectConversation(data);
             }
         );
 
         EventBus.$on(
-            'conversation-load-more',
-            async(data: SelectConversationEvent) => {
+            'conversation-load-more', async(data: SelectConversationEvent) => {
               // this promise is intentionally NOT chained
-                // tslint:disable-next-line: no-floating-promises
+              // tslint:disable-next-line: no-floating-promises
               this.onLoadMoreConversation(data);
             }
         );

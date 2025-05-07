@@ -175,7 +175,7 @@
             <div class="form-group">
                 <label class="control-label" for="experimentalOrientationMatching">
                     <input type="checkbox" id="experimentalOrientationMatching" v-model="experimentalOrientationMatching"/>
-                        <b> {{ l('general.experiment') }}</b> {{ l('settings.experiment.orientationMatching') }}
+                    <b> {{ l('general.experiment') }}</b> {{ l('settings.experiment.orientationMatching') }}
                 </label>
                 <div v-if="experimentalOrientationMatching">
                     <small>{{ l('settings.experiment.orientationMatching.selectedInfo') }}</small>
