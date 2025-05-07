@@ -2,35 +2,35 @@
     <div style="height:100%; display: flex; position: relative;" id="chatView" @click="userMenuHandle" @contextmenu="userMenuHandle" @touchstart.passive="userMenuHandle"
         @touchend="userMenuHandle">
         <sidebar id="sidebar" :label="l('chat.menu')" icon="fa-bars">
-            <img :src="characterImage(ownCharacter.name)" v-if="showAvatars" style="float:left;margin-right:5px;margin-top:5px;width:70px; height: 70px;"/>
-            <a target="_blank" :href="ownCharacterLink" class="btn" style="display:block">
-                {{ownCharacter.name}}
-            </a>
-            <a href="#" @click.prevent="logOut()" class="btn">
-                <i class="fas fa-sign-out-alt"></i>
-                {{l('chat.logout')}}
-            </a>
-            <br/>
-            <div>
-                {{l('chat.status')}}
-                <a href="#" @click.prevent="showStatus()" class="btn">
-                    <span class="fas fa-fw" :class="getStatusIcon(ownCharacter.status)"></span>
-                    {{l('status.' + ownCharacter.status)}}
-                </a>
+            <div class="character-header">
+                <div class="image-block" v-if="showAvatars">
+                    <img :src="characterImage(ownCharacter.name)" style="margin-top:5px; margin-right:5px; max-width: 100px;"/>
+                </div>
+                <div class="character-info">
+                    <a target="_blank" :href="ownCharacterLink" class="btn character-name">
+                        {{ownCharacter.name}}
+                    </a>
+                    <a href="#" @click.prevent="showStatus()" class="btn">
+                        <span class="fas fa-fw" :class="getStatusIcon(ownCharacter.status)"></span>
+                        {{l('status.' + ownCharacter.status)}}
+                    </a>
+                    <a href="#" @click.prevent="logOut()" class="btn">
+                        <span class="fas fa-fw fa-sign-out-alt"></span>
+                        {{l('chat.logout')}}
+                    </a>
+                </div>
             </div>
-            <div style="clear:both">
+
+            <div>
                 <a href="#" @click.prevent="showSearch()" class="btn">
                     <span class="fas fa-search"></span>
                     {{l('characterSearch.open')}}
                 </a>
             </div>
+
             <div><a href="#" @click.prevent="showSettings()" class="btn">
                 <span class="fas fa-cog"></span>
                 {{l('settings.open')}}
-            </a></div>
-            <div><a href="#" @click.prevent="showRecent()" class="btn">
-                <span class="fas fa-history"></span>
-                {{l('chat.recentConversations')}}
             </a></div>
 
             <div><a href="#" @click.prevent="showAdCenter()" class="btn">
@@ -68,7 +68,7 @@
             </div>
 
 
-            <a href="#" @click.prevent="showAddPmPartner()" class="btn">
+            <a href="#" @click.prevent="showAddPmPartner()" class="btn" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">
                 <span class="fas fa-comment"></span>
                 {{l('chat.pms')}}
             </a>
@@ -82,18 +82,19 @@
                     <div class="name">
                         <span>{{conversation.character.name}}</span>
                         <div style="line-height:0;display:flex">
-                            <span class="fas fa-reply" v-show="needsReply(conversation)"></span>
                             <span class='online-status' :class="getOnlineStatusIconClasses(conversation)"></span>
+                            <span class="fas fa-reply" v-show="needsReply(conversation)"></span>
                             <span style="flex:1"></span>
                             <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
                                 @click="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
-                            <span class="fas fa-times leave" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
+                            <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
                         </div>
                     </div>
                 </a>
 
-                <a href="#" @click.prevent="showAddPmPartner()" class="new-conversation" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">
-                    {{l('chat.newPM')}}
+                <a href="#" @click.prevent="showRecent()" class="recent-conversation">
+                    <span class="fas fa-history"></span>
+                    {{ l('chat.recentConversations') }}
                 </a>
             </div>
 
@@ -112,7 +113,7 @@
                           @click.stop="conversation.toggleAutomatedAds()"></span>
                         <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')"
                             @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
-                        <span class="fas fa-times leave" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
+                        <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
                     </span>
                 </a>
 
@@ -517,10 +518,39 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         user-select: text;
     }
 
-    .pm-add {
-        font-size: 90%;
-        float: right;
-        margin-right: 5px;
+    .character-header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+
+        margin-right: 3px;
+
+        .image-block {
+            display: flex;
+
+            min-width: 50px;
+            max-width: 105px;
+        }
+
+        .character-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            flex-shrink: 0;
+
+            min-width: 92px;
+            max-width: 147px;
+
+            > a {
+                display:block;
+            }
+
+            .character-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
     }
 
     .list-group.conversation-nav {
@@ -546,6 +576,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                 font-size: 16px;
                 padding: 0 3px;
                 &:last-child {
+                    padding-left: 0.375em;
                     padding-right: 0;
                 }
             }
@@ -661,6 +692,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             padding: 2px 0;
             text-align: left;
         }
+
         @media (min-width: breakpoint-min(md)) {
             .sidebar {
                 position: static;
@@ -693,7 +725,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
           }
         }
 
-        .new-conversation, .join-channel {
+        .recent-conversation, .join-channel {
           font-size: 90%;
           margin-left: 0.2em;
           margin-top: 0.25em;

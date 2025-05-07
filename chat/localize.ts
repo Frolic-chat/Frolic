@@ -109,7 +109,6 @@ const strings: {[key: string]: string | undefined} = {
     'channelList.create': 'Create room',
     'channelList.createName': 'Room name',
     'chat.logout': 'Log out',
-    'chat.status': 'Status:',
     'chat.setStatus': 'Set status',
     'chat.setStatus.status': 'Status',
     'chat.setStatus.message': 'Status message (optional)',
