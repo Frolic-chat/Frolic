@@ -73,45 +73,74 @@ export interface ErrorEvent extends EventBusEvent {
 export type EventCallback = (data: any) => void | Promise<void>;
 
 class EventBusManager {
-    private eventCallbacks: Record<string, EventCallback[]> = {};
+    private callbacks: Record<string, EventCallback[]> = {};
 
-    $on(eventName: string, callback: EventCallback): void {
-        this.$off(eventName, callback);
 
-        if (!(eventName in this.eventCallbacks)) {
-            this.eventCallbacks[eventName] = [];
-        }
+    $on(event: string, callback: EventCallback): void {
+        this.$off(event, callback);
 
-        this.eventCallbacks[eventName].push(callback);
+        if (!(event in this.callbacks)) this.callbacks[event] = [];
+
+        this.callbacks[event].push(callback);
+
+        log.debug('eventbus.on', { event: event, events: this.callbacks[event].length });
     }
 
 
-    $off(eventName: string, callback: EventCallback): void {
-        if (!(eventName in this.eventCallbacks)) {
-            return;
-        }
+    $off(event: string, callback: EventCallback): void {
+        const r = this.callbacks[event];
+        if (r === undefined) return;
+        r.splice(r.indexOf(callback), 1);
 
-        this.eventCallbacks[eventName] = _.filter(
-          this.eventCallbacks[eventName],
-          (cb) => (cb !== callback)
+        log.debug(
+            'eventbus.off', {
+                event: event,
+                remaining: r.length,
+            }
         );
     }
 
 
-    $emit(eventName: string, eventData: EventBusEvent): void {
-        // const d = Date.now();
+    $once(event: string, callback: EventCallback): void {
+        if (!(event in this.callbacks)) this.callbacks[event] = [];
 
+        // const once: EventCallback = (data: any) => {
+        //     callback(data); this.$off(event, once);
+        // };
+
+        // this.callbacks[event].push(once);
+
+        const onceWrapper: EventCallback = (data: any) => {
+            log.debug('eventbus.once.resolving');
+
+            Promise.resolve(callback(data))
+                .then(() => {
+                    this.$off(event, onceWrapper);
+                    log.debug('eventbus.once.resolved');
+                }
+            );
+        };
+
+        this.$on(event, onceWrapper);
+
+        log.debug(
+            'eventbus.once', {
+                event: event,
+                events: this.callbacks[event].length,
+            }
+        );
+    }
+
+
+    $emit(event: string, data: EventBusEvent): void {
         (this.callbacks[event] || []).forEach((cb) => cb(data));
-
-        // log.silly('event.bus.emit', { eventName, eventData, time: (Date.now() - d) / 1000 });
     }
 
 
     clear(): void {
-        this.eventCallbacks = {};
+        this.callbacks = {};
     }
 }
 
 export const EventBus = new EventBusManager();
 log.verbose('init.eventbus');
-// export const EventBus = new Vue();
