@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 
-
+import { EventBus } from '../../../chat/preview/event-bus';
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
 
 export interface WaiterDef {
@@ -68,6 +68,8 @@ export class WorkerClient {
         waiter.resolve(res.result);
       } else {
         log.error('store.worker.client.msg.err', { t: (Date.now() - waiter.initiated) / 1000, msg: res.msg, req: waiter.request });
+        EventBus.$emit('error', { source: 'store.worker.client', type: typeof res, message: res.msg })
+
         const err = new Error(res.msg);
         waiter.reject(err);
       }

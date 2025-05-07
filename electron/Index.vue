@@ -52,9 +52,34 @@
                         <label for="save"><input type="checkbox" id="save" v-model="saveLogin"/> {{l('login.save')}}</label>
                     </div>
                     <div class="form-group" style="margin:0;text-align:right">
-                        <button class="btn btn-primary" @click="login" :disabled="loggingIn">
+                        <button  v-if="!this.createHookFinished" key="login-denied" class="btn btn-primary">
+                            <span v-if="!this.createHookFinished">Loading...</span>
+                        </button>
+
+                        <button v-else-if="!this.fatalError" key="login" class="btn btn-primary" @click="this.login" :disabled="this.loggingIn">
                             {{l(loggingIn ? 'login.working' : 'login.submit')}}
                         </button>
+                    </div>
+                </div>
+
+                <div v-show="loginScreenErrors.length > 0 || loginScreenWarnings.length > 0"
+                    class="card-body" style="user-select: text;">
+                    <div v-show="this.fatalError" class="form-group error_block_header">
+                        You've encountered a fatal error, so your login has been prevented.
+                    </div>
+
+                    <div v-show="this.loginScreenErrors.length > 0" class="form-group login_error_group">
+                        <div style="text-align: center; font-size: 2.3rem;">🛑</div>
+                        <div v-for="error in this.loginScreenErrors" class="login_error">
+                            {{ error }}
+                        </div>
+                    </div>
+
+                    <div v-show="this.loginScreenWarnings.length > 0" class="form-group login_warning_group">
+                        <div style="text-align: center; font-size: 2.3rem;">⚠</div>
+                        <div v-for="warning in this.loginScreenWarnings" class="login_warning">
+                            {{ warning }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,8 +165,7 @@
     import {defaultHost, GeneralSettings} from './common';
     import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './filesystem';
     import * as SlimcatImporter from './importer';
-    import _ from 'lodash';
-    import { EventBus } from '../chat/preview/event-bus';
+    import { EventBus, ErrorEvent } from '../chat/preview/event-bus';
 
     import BBCodeTester from '../bbcode/Tester.vue';
     import { BBCodeView } from '../bbcode/view';
@@ -209,19 +233,60 @@
         profileNameHistory: string[] = [];
         profilePointer = 0;
 
+        allowedToLogin(): boolean {
+            log.debug(
+                'index.login.allowedCheck', {
+                    loggingIn: this.loggingIn,
+                    fatalError: this.fatalError,
+                    creatHookRan: this.createHookFinished,
+                }
+            );
+
+            return !this.loggingIn
+            &&     !this.fatalError
+            &&      this.createHookFinished;
+        }
+
+        createHookFinished: boolean = false;
+        fatalError: boolean = false;
+        loginScreenWarnings: string[] = [];
+        loginScreenErrors:   string[] = [];
+
+        errSetter = (e: ErrorEvent) => {
+            if (e.source === 'this.created')        this.loginScreenWarnings.push(e.message);
+            if (e.source === 'eicon.fetchall')      {
+                this.loginScreenWarnings.push(e.message);
+                this.loginScreenWarnings.push('Eicon search will not work until a connection can be established.');
+            }
+            if (e.source === 'eicon.fetchall.timestamp') {
+                this.loginScreenWarnings.push(e.message);
+                this.loginScreenWarnings.push('If you encounter this warning repeatedly, please report it to the Frolic development team.');
+            }
+            if (e.source === 'store.worker.client') {
+                this.fatalError = true;
+                this.loginScreenErrors.push(e.message);
+                this.loginScreenErrors.push('Did you leave another Frolic running in the background by accident?');
+            }
+        }
+
 
         async startAndUpgradeCache(): Promise<void> {
             log.debug('init.chat.cache.start');
 
-            const timer = setTimeout(
+            const spinner = setTimeout(
               () => {
                 this.shouldShowSpinner = true;
               },
               250
             );
 
-            // tslint:disable-next-line no-floating-promises
-            await core.cache.start(this.settings, this.hasCompletedUpgrades);
+            try {
+                await core.cache.start(this.settings, this.hasCompletedUpgrades);
+            }
+            catch (e) {
+                // This error is already handled deeper, but the handler doesn't capture it correctly.
+                // EventBus.$emit('error', { source: 'chat.cache.start', type: 'IndexedDB', message: e.msg || "IndexedDB" })
+            };
 
             log.debug('init.chat.cache.done');
 
@@ -229,7 +294,7 @@
 
             log.debug('init.eicons.update.done');
 
-            clearTimeout(timer);
+            clearTimeout(spinner);
 
             parent.send('rising-upgrade-complete');
             electron.ipcRenderer.send('rising-upgrade-complete');
@@ -275,6 +340,8 @@
 
         @Hook('created')
         async created(): Promise<void> {
+            EventBus.$on('error', this.errSetter);
+
             await this.startAndUpgradeCache();
 
             if(this.settings.account.length > 0) this.saveLogin = true;
@@ -355,10 +422,14 @@
 
                 dt.connect();
             }*/
+
+            this.createHookFinished = true;
         }
 
         async login(): Promise<void> {
-            if(this.loggingIn) return;
+            if (!this.allowedToLogin())
+                return;
+
             this.loggingIn = true;
 
             try {
@@ -699,6 +770,30 @@
         }
     }
 
+    .error_block_header {
+        text-align: center;
+        font-weight: bold;
+
+        padding: 1rem;
+    }
+
+    .login_error_group {
+        text-align: justify;
+
+        border: 2px solid var(--danger);
+        border-radius: 4px;
+
+        padding: 1rem;
+    }
+
+    .login_warning_group {
+        text-align: justify;
+
+        border: 2px solid var(--warning);
+        border-radius: 4px;
+
+        padding: 1rem;
+    }
 
     .btn.wordDefBtn {
         background-color: red;

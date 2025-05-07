@@ -38,6 +38,8 @@ import log from 'electron-log';
  * 'note-counts-update': {},
  *
  * 'character-memo': { character: string, memo: CharacterMemo }
+ *
+ * 'error': { source: string, type?: string, message: string }
  */
 
 // tslint:disable: no-any
@@ -65,6 +67,13 @@ export interface SelectConversationEvent extends EventBusEvent {
 
 // tslint:disable-next-line no-empty-interface
 export interface NoteCountsUpdate extends EventBusEvent, NoteCheckerCount {}
+
+export interface ErrorEvent extends EventBusEvent {
+    source:  string,
+    type?:   string,
+    message: string,
+}
+
 export type EventCallback = (data: any) => void | Promise<void>;
 
 class EventBusManager {
