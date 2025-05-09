@@ -611,36 +611,31 @@ function onReady(): void {
 
                 {type: 'separator'},
                 {
-                    label: l('action.bonus'),
-                    submenu: [
+                    label: l('action.logLevel'),
+                    submenu: ['error', 'warn', 'info', 'verbose', 'debug', 'silly'].map((level: string) => (
                         {
-                            label: l('action.logLevel'),
-                            submenu: ['error', 'warn', 'info', 'verbose', 'debug', 'silly'].map((level: string) => (
-                                {
-                                    checked: settings.risingSystemLogLevel === level,
-                                    label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
-                                    click: () => setSystemLogLevel(level as log.LevelOption),
-                                    type: <'radio'>'radio'
-                                }
-                            ))
-                        },
-                        {
-                            visible: process.platform === 'win32',
-                            label: l('action.toggleHighContrast'),
-                            type: 'checkbox',
-                            checked: settings.risingDisableWindowsHighContrast,
-                            click: (item: electron.MenuItem) => {
-                                settings.risingDisableWindowsHighContrast = item.checked;
-                                setGeneralSettings(settings);
-                            }
-                        },
-                        {
-                            label: l('settings.browserOption'),
-                            click: () => {
-                                openBrowserSettings();
-                            }
+                            checked: settings.risingSystemLogLevel === level,
+                            label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
+                            click: () => setSystemLogLevel(level as log.LevelOption),
+                            type: <'radio'>'radio'
                         }
-                    ]
+                    ))
+                },
+                {
+                    visible: process.platform === 'win32',
+                    label: l('action.toggleHighContrast'),
+                    type: 'checkbox',
+                    checked: settings.risingDisableWindowsHighContrast,
+                    click: (item: electron.MenuItem) => {
+                        settings.risingDisableWindowsHighContrast = item.checked;
+                        setGeneralSettings(settings);
+                    }
+                },
+                {
+                    label: l('settings.browserOption'),
+                    click: () => {
+                        openBrowserSettings();
+                    }
                 },
                 {
                     label: l('action.profile'),
