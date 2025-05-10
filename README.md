@@ -1,5 +1,5 @@
 ## 💾 Downloads
-The latest release is **0.7.2**. Downloads are found [on the Releases page](https://github.com/Frolic-chat/Frolic/releases). See each releases' new features on its release page, or [view the full Changelog](https://frolic-chat.github.io/wiki/development/CHANGELOG.html) to see all improvements.
+The latest release is **0.7.3**. Downloads are found [on the Releases page](https://github.com/Frolic-chat/Frolic/releases). See each releases' new features on its release page, or [view the full Changelog](https://frolic-chat.github.io/wiki/development/CHANGELOG.html) to see all improvements.
 
 <small>While Frolic doesn't mess with your logs, it's always wise to backup important files before installing or upgrading software. Your logs from the vanilla F-Chat desktop client and from F-Chat Rising are located at `%appdata%\fchat\data` on Windows and in `~/.config/fchat/data` on Linux. Frolic continues to use this location so you can continue your conversations right where you left off.</small>
 
@@ -8,8 +8,6 @@ The latest release is **0.7.2**. Downloads are found [on the Releases page](http
 **Frolic** is an extended version of the now-defunct F-Chat Rising which itself was an extended version of the [original F-Chat 3.0 client](https://wiki.f-list.net/F-Chat_3.0). Frolic's primary goal is to fine-tune the existing feature set of F-Chat Rising while keeping up with bug fixes and tidying up minor annoyances.
 
 You'll connect with the same F-List, same players, and same channels you're already used to, but with advanced features and quality of life improvements.
-
-In depth documentation about Frolic can be found on the [Frolic wiki](https://frolic-chat.github.io/wiki.html).
 
 For help installing, refer to the [original installation instructions](https://wiki.f-list.net/F-Chat_3.0/Installation).
 
@@ -30,6 +28,8 @@ To learn more about Frolic, here are some pages you might want to visit:
 * Improvements to [orientation/gender matching](https://frolic-chat.github.io/wiki/features/orientation.html)
 * Take a gander at [how to frustrate yourself](https://frolic-chat.github.io/wiki/features/how-to-not-match.html) if you're not getting good matches and want to know why
 * [General FAQ](https://frolic-chat.github.io/wiki/FAQ.html)
+
+In depth documentation about Frolic can be found on the [Frolic wiki](https://frolic-chat.github.io/wiki.html).
 
 ## If you're interested in working with Frolic's code
 [Development details](https://frolic-chat.github.io/wiki/development/development.html) and the [Project Goals/Code of Conduct](https://frolic-chat.github.io/wiki/development/CODE_OF_CONDUCT.html) are what you should read.
