@@ -622,9 +622,9 @@
         }
 
         .results {
-            .user-view {
-                // display: block;
-            }
+            // .user-view {
+            //     // display: block;
+            // }
             & > .search-result {
                 clear: both;
             }
@@ -692,8 +692,8 @@
             font-size: 80%;
         }
 
-        .search-spinner {
-            // float: right;
-        }
+        // .search-spinner {
+        //     // float: right;
+        // }
     }
 </style>
