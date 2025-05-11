@@ -61,7 +61,7 @@
     import {Point} from 'electron';
     import * as remote from '@electron/remote';
 
-    import Timer = NodeJS.Timer;
+    import Timer = NodeJS.Timeout;
     import IpcMessageEvent = Electron.IpcMessageEvent;
     import CharacterPreview from './CharacterPreview.vue';
 
