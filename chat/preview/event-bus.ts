@@ -97,16 +97,17 @@ class EventBusManager {
         const r = this.callbacks[event];
         if (r === undefined) return;
         const l = r.indexOf(callback);
-        if (l >= 0) r.splice(l, 1);
 
         log.debug(
             'eventbus.off', {
                 event: event,
-                found: r[l]?.toString() || false,
-                remaining: l !== -1 ? r.length : 'NA',
+                found: l >= 0 ? r[l].toString() : false,
+                remaining: r.length > 0 ? r.length - 1 : 0,
                 cb: callback.toString(),
             }
         );
+
+        if (l >= 0) r.splice(l, 1);
     }
 
 
@@ -120,12 +121,12 @@ class EventBusManager {
         // this.callbacks[event].push(once);
 
         const onceWrapper: EventCallback = (data: any) => {
-            log.debug('eventbus.once.resolving');
+            log.debug('eventbus.once.resolving', { event: event, cb: callback.toString() });
 
             Promise.resolve(callback(data))
                 .then(() => {
                     this.$off(event, onceWrapper);
-                    log.debug('eventbus.once.resolved');
+                    log.debug('eventbus.once.resolved', { event: event, cb: callback.toString() });
                 }
             );
         };
@@ -135,7 +136,9 @@ class EventBusManager {
         log.debug(
             'eventbus.once', {
                 event: event,
-                events: this.callbacks[event].length,
+                remaining: this.callbacks[event].length,
+                cb: callback.toString(),
+                wrapper: onceWrapper.toString(),
             }
         );
     }

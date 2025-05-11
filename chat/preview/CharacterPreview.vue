@@ -1,4 +1,4 @@
-                                                                                                                       <template>
+<template>
   <div class="character-preview">
     <div v-if="match && character" class="row">
       <div class="col-2">
@@ -78,6 +78,7 @@ import { Character as CharacterStatus } from '../../fchat';
 import { getStatusClasses, StatusClasses } from '../UserView.vue';
 import * as _ from 'lodash';
 import l from '../localize';
+import log from 'electron-log';
 import { AdCachedPosting } from '../../learn/ad-cache';
 import {formatTime} from '../common';
 import * as Utils from '../../site/utils';
@@ -162,12 +163,15 @@ export default class CharacterPreview extends Vue {
 
   @Hook('mounted')
   mounted(): void {
-    // tslint:disable-next-line no-unsafe-any no-any
-    this.scoreWatcher = (event: {character: Character, score: number}): void => {
-        // console.log('scoreWatcher', event);
+    log.debug('characterPreview.mounted');
+
+    this.scoreWatcher = (event: {character: Character, score: number, _isFiltered: boolean}): void => {
+        // CharacterPreview scoreWatcher
+        log.debug('characterPreview.scoreWatcher.activated');
 
         if (event.character && this.characterName
         &&  event.character.name === this.characterName) {
+            log.debug('characterPreview.scoreWatcher.activated.found');
             this.load(this.characterName, true);
         }
     };
@@ -178,11 +182,13 @@ export default class CharacterPreview extends Vue {
 
   @Hook('beforeDestroy')
   beforeDestroy(): void {
-      if (this.scoreWatcher) {
-          EventBus.$off('character-score', this.scoreWatcher);
+    log.debug('characterPreview.beforeDestroy');
 
-          this.scoreWatcher = null;
-      }
+    if (this.scoreWatcher) {
+        EventBus.$off('character-score', this.scoreWatcher);
+
+        this.scoreWatcher = null;
+    }
   }
 
 

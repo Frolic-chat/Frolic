@@ -145,6 +145,8 @@ export class CacheManager {
             }
         );
 
+        log.debug('cacheManager.updateAdScoring.emit');
+
         this.populateAllConversationsWithScore(c.character.name, score, isFiltered);
         void this.respondToPendingRejections(c);
     }

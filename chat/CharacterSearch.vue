@@ -311,7 +311,7 @@
                 this.resultsPending = this.countPendingResults(undefined, results);
 
                 log.debug('characterSearch.onMessage.preUpdater', this.countUpdater );
-                // This line is never run?
+
                 this.countUpdater?.start();
 
                 // this is done LAST to force Vue to wait with rendering
@@ -329,6 +329,7 @@
 
             // tslint:disable-next-line no-unsafe-any no-any
             this.scoreWatcher = (event: {character: ComplexCharacter, score: number, isFiltered: boolean}): void => {
+                // CharacterSearch scoreWatcher
                 log.debug('characterSearch.scoreWatcher', event);
 
                 if (event.character && this.state === 'results'
@@ -470,8 +471,6 @@
                     };
                 }
             ) as unknown[] as SearchSpecies[];
-
-            // console.log('SPECIES', species);
 
             return _.sortBy(species, 'name');
         }
@@ -624,35 +623,35 @@
       }
 
 
-      start() {
-        const schedule = () => {
-            this.timerId = setTimeout(
-                () => {
-                    log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
+        start() {
+            const schedule = () => {
+                this.timerId = setTimeout(
+                    () => {
+                        log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
 
-                    if (this.updatedNames.length > 0) {
-                        log.debug(
-                            'characterSearch.resultCountUpdater.tick.work',
-                            'WE WANT TO SEE THIS!!', {
-                                remaining: this.updatedNames.length,
-                                callback: this.callback.toString()
-                            }
-                        );
+                        if (this.updatedNames.length > 0) {
+                            log.debug(
+                                'characterSearch.resultCountUpdater.tick.work',
+                                'WE WANT TO SEE THIS!!', {
+                                    remaining: this.updatedNames.length,
+                                    callback: this.callback.toString()
+                                }
+                            );
 
-                        this.callback(this.updatedNames);
-                        this.updatedNames = [];
-                    }
+                            this.callback(this.updatedNames);
+                            this.updatedNames = [];
+                        }
 
-                    schedule();
-                },
-                5000
-            );
-        };
+                        schedule();
+                    },
+                    300
+                );
+            };
 
-        log.debug('characterSearch.resultCountUpdater.start', { timerId: this.timerId });
+            log.debug('characterSearch.resultCountUpdater.start', { timerId: this.timerId });
 
-        schedule();
-      }
+            schedule();
+        }
 
 
         stop() {

@@ -8,6 +8,7 @@ import Vue from 'vue';
 import {Channel, Character} from '../fchat';
 import { Score } from '../learn/matcher';
 import core from './core';
+import log from 'electron-log';
 import { EventBus } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import { characterImage } from './common';
@@ -53,10 +54,10 @@ export function getStatusClasses(
   showMatch: boolean
 ): StatusClasses {
     let rankIcon: string | null = null;
-    let statusClass = null;
-    let matchClass = null;
-    let matchScore = null;
-    let smartFilterIcon: string | null = null;
+    let statusClass:     string          | null = null;
+    let matchClass:      string          | null = null;
+    let matchScore:      string | number | null = null;
+    let smartFilterIcon: string          | null = null;
 
     if(character.isChatOp) {
         rankIcon = 'far fa-gem';
@@ -159,27 +160,31 @@ export default class UserView extends Vue {
         this.update();
 
         if ((this.match) && (!this.matchClass)) {
-            if (this.scoreWatcher) {
-                EventBus.$off('character-score', this.scoreWatcher);
-            }
+            // if (this.scoreWatcher) {
+            //     EventBus.$off('character-score', this.scoreWatcher);
+            // }
 
             // tslint:disable-next-line no-unsafe-any no-any
             this.scoreWatcher = (event: any): void => {
-                // console.log('scoreWatcher', event);
+                // UserView scoreWatcher
+                log.debug('userView.once.fired');
 
                 // tslint:disable-next-line no-unsafe-any no-any
                 if ((event.character) && (event.character.character.name === this.character.name)) {
                     this.update();
+                    log.debug('userView.once.fired.valid');
 
-                    if (this.scoreWatcher) {
-                        EventBus.$off('character-score', this.scoreWatcher);
+                    // if (this.scoreWatcher) {
+                    //     log.debug('userView.once.off');
+                    //     EventBus.$off('character-score', this.scoreWatcher);
 
-                        this.scoreWatcher = null;
-                    }
+                    //     this.scoreWatcher = null;
+                    // }
                 }
             };
 
-            EventBus.$on('character-score', this.scoreWatcher);
+            EventBus.$once('character-score', this.scoreWatcher);
+            //EventBus.$on('character-score', this.scoreWatcher);
         }
     }
 
