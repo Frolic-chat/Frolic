@@ -718,10 +718,10 @@
         &.interactive {
             pointer-events: auto;
 
-            .image-preview-local,
-            .image-preview-auto {
-                // pointer-events: auto;
-            }
+            // .image-preview-local,
+            // .image-preview-auto {
+            //     // pointer-events: auto;
+            // }
         }
 
         .image-preview-external {
