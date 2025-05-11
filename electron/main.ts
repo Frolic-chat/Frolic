@@ -171,7 +171,7 @@ async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
         }));
 }
 
-function openURLExternally(linkUrl: string): void {
+function openURLExternally(url: string): void {
 
     // check if user set a path and whether it exists
     const pathIsValid = (settings.browserPath !== '' && fs.existsSync(settings.browserPath));
@@ -192,10 +192,10 @@ function openURLExternally(linkUrl: string): void {
             const re = new RegExp('%25([0-9a-f]{2})', 'ig');
 
             // encode the URL no matter what
-            linkUrl = encodeURI(linkUrl);
+            url = encodeURI(url);
 
             // eliminate double-encoding using expression above
-            linkUrl = linkUrl.replace(re, '%$1');
+            url = url.replace(re, '%$1');
 
             if (!settings.browserArgs.includes('%s')) {
                 // append %s to params if it is not already there
@@ -203,7 +203,7 @@ function openURLExternally(linkUrl: string): void {
             }
 
             // replace %s in arguments with URL and encapsulate in quotes to prevent issues with spaces and special characters in the path
-            let link = settings.browserArgs.replace('%s', '\"' + linkUrl + '\"');
+            let link = settings.browserArgs.replace('%s', '\"' + url + '\"');
 
             const execFile = require('child_process').exec;
             if (process.platform === "darwin") {
@@ -219,32 +219,39 @@ function openURLExternally(linkUrl: string): void {
         }
     }
 
-    electron.shell.openExternal(linkUrl);
+    electron.shell.openExternal(url);
 }
 
 function setUpWebContents(webContents: electron.WebContents): void {
     remoteMain.enable(webContents);
 
-    const openLinkExternally = (e: Event, linkUrl: string) => {
-        e.preventDefault();
-        const profileMatch = linkUrl.match(/^https?:\/\/(www\.)?f-list\.net\/c\/([^/#]+)\/?#?/);
+    const openLinkExternally = (url: string) => {
+        const profileMatch = url.match(/^https?:\/\/(www\.)?f-list\.net\/c\/([^/#]+)\/?#?/);
         if(profileMatch !== null && settings.profileViewer) {
             webContents.send('open-profile', decodeURIComponent(profileMatch[2]));
             return;
         }
 
         // otherwise, try to open externally
-        openURLExternally(linkUrl);
+        openURLExternally(url);
 
     };
 
     webContents.setVisualZoomLevelLimits(1, 5);
 
+    webContents.on(
+        'will-navigate', (e: Event, url: string) => {
+            e.preventDefault();
+            openLinkExternally(url);
+        }
+    );
 
-    webContents.on('will-navigate', openLinkExternally);
-
-    // webContents.setWindowOpenHandler(openLinkExternally);
-    webContents.on('new-window', openLinkExternally);
+    webContents.setWindowOpenHandler(
+        ({ url }) => {
+            openLinkExternally(url);
+            return { action: 'deny' };
+        }
+    );
 }
 
 function createWindow(): electron.BrowserWindow | undefined {
