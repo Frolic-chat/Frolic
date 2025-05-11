@@ -83,19 +83,28 @@ class EventBusManager {
 
         this.callbacks[event].push(callback);
 
-        log.debug('eventbus.on', { event: event, events: this.callbacks[event].length });
+        log.debug(
+            'eventbus.on', {
+                event: event,
+                events: this.callbacks[event].length,
+                cb: callback.toString(),
+            }
+        );
     }
 
 
     $off(event: string, callback: EventCallback): void {
         const r = this.callbacks[event];
         if (r === undefined) return;
-        r.splice(r.indexOf(callback), 1);
+        const l = r.indexOf(callback);
+        if (l >= 0) r.splice(l, 1);
 
         log.debug(
             'eventbus.off', {
                 event: event,
-                remaining: r.length,
+                found: r[l]?.toString() || false,
+                remaining: l !== -1 ? r.length : 'NA',
+                cb: callback.toString(),
             }
         );
     }

@@ -179,10 +179,7 @@ export default class UserView extends Vue {
                 }
             };
 
-            EventBus.$on(
-                'character-score',
-                this.scoreWatcher
-            );
+            EventBus.$on('character-score', this.scoreWatcher);
         }
     }
 

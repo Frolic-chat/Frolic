@@ -166,29 +166,20 @@ export default class CharacterPreview extends Vue {
     this.scoreWatcher = (event: {character: Character, score: number}): void => {
         // console.log('scoreWatcher', event);
 
-        if (
-            (event.character)
-            && (this.characterName)
-            && (event.character.name === this.characterName)
-        ) {
-          this.load(this.characterName, true);
+        if (event.character && this.characterName
+        &&  event.character.name === this.characterName) {
+            this.load(this.characterName, true);
         }
     };
 
-    EventBus.$on(
-        'character-score',
-        this.scoreWatcher
-    );
+    EventBus.$on('character-score', this.scoreWatcher);
   }
 
 
   @Hook('beforeDestroy')
   beforeDestroy(): void {
       if (this.scoreWatcher) {
-          EventBus.$off(
-              'character-score',
-              this.scoreWatcher
-          );
+          EventBus.$off('character-score', this.scoreWatcher);
 
           this.scoreWatcher = null;
       }

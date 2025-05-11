@@ -28,14 +28,18 @@
             <search-history ref="searchHistory" :callback="updateSearch" :curSearch="data"></search-history>
         </div>
         <div v-else-if="state === 'results'" class="results">
-            <div class="debug" v-show="false">
+            <div class="debug" v-show="true">
               <textarea v-model="debugSearchJson"></textarea>
               <button class="btn" @click.prevent="debugUpdateResults()">{{l('characterSearch.update')}}</button>
             </div>
 
             <h4 v-if="hasReceivedResults">
                 {{ l('characterSearch.results', results.length) }}
-                <span v-if="resultsPending > 0" class="pending">{{ l('characterSearch.scoring', resultsPending) }} <i class="fas fa-circle-notch fa-spin search-spinner"></i></span>
+
+                <span v-if="resultsPending > 0" class="pending">
+                    {{ l('characterSearch.scoring', resultsPending) }}
+                    <i class="fas fa-circle-notch fa-spin search-spinner"></i>
+                </span>
             </h4>
             <h4 v-else>{{l('characterSearch.searching')}}</h4>
 
@@ -65,6 +69,7 @@
     import core from './core';
     import { Character, Connection, ExtendedSearchData, SearchData, SearchKink, SearchSpecies } from './interfaces';
     import l from './localize';
+    import log from 'electron-log';
     import UserView from './UserView.vue';
     import * as _ from 'lodash';
     import {EventBus} from './preview/event-bus';
@@ -80,6 +85,9 @@
     } from '../learn/matcher-types';
     import { CharacterCacheRecord } from '../learn/profile-cache';
     import Bluebird from 'bluebird';
+
+    // temp?
+    import { Character as ComplexCharacter } from '../site/character_page/interfaces';
 
     type Options = {
         kinks: SearchKink[],
@@ -136,7 +144,13 @@
 
 
     @Component({
-        components: {modal: Modal, user: UserView, 'filterable-select': FilterableSelect, bbcode: BBCodeView(core.bbCodeParser), 'search-history': CharacterSearchHistory}
+        components: {
+            modal: Modal,
+            user: UserView,
+            'filterable-select': FilterableSelect,
+            bbcode: BBCodeView(core.bbCodeParser),
+            'search-history': CharacterSearchHistory
+        }
     })
     export default class CharacterSearch extends CustomDialog {
         l = l;
@@ -181,13 +195,21 @@
         searchString = '';
 
         // tslint:disable-next-line no-any
-        scoreWatcher: ((event: any) => void) | null = null;
+        scoreWatcher: ((event: {character: ComplexCharacter, score: number, isFiltered: boolean}) => void) | null = null;
 
         @Hook('created')
         async created(): Promise<void> {
+            log.debug('characterSearch.created.start');
+
             if(options === undefined)
+            log.debug('characterSearch.created.noOptions');
                 options = <Options | undefined>(await Axios.get('https://www.f-list.net/json/api/mapping-list.php')).data;
-            if(options === undefined) return;
+            if(options === undefined) {
+                log.debug('characterSearch.created.noOptionsAgain');
+                log.debug('characterSearch.created', 'options was undefined; this is a strange or bad-internet error.');
+                return;
+            }
+
             this.options = Object.freeze({
                 kinks: options.kinks.sort((x, y) => (x.name < y.name ? -1 : (x.name > y.name ? 1 : 0))),
                 genders: options.listitems.filter((x) => x.name === 'gender').map((x) => x.value),
@@ -203,6 +225,8 @@
 
             this.countUpdater = new ResultCountUpdater(
                 (names: string[]) => {
+                    log.debug('characterSearch.countUpdater.execute', names);
+
                     this.resultsPending = this.countPendingResults(names);
 
                     if (this.resultsPending === 0) {
@@ -212,6 +236,8 @@
                     this.resort();
                 }
             );
+
+            log.debug('characterSearch.created.end');
         }
 
 
@@ -249,7 +275,11 @@
 
         @Hook('mounted')
         mounted(): void {
+            log.debug('characterSearch.mounted');
+
             core.connection.onMessage('ERR', (data) => {
+                log.debug('characterSearch.ERR', data);
+
                 this.state = 'search';
 
                 switch(data.number) {
@@ -265,6 +295,8 @@
             });
 
             core.connection.onMessage('FKS', async (data) => {
+                log.debug('characterSearch.FKS', data);
+
                 const results = data.characters.map((x) => ({ character: core.characters.get(x), profile: null }))
                     .filter((x) => core.state.hiddenUsers.indexOf(x.character.name) === -1 && !x.character.isIgnored)
                     .filter((x) => this.isSpeciesMatch(x) && this.isBodyTypeMatch(x) && !this.isSmartFiltered(x))
@@ -278,6 +310,8 @@
 
                 this.resultsPending = this.countPendingResults(undefined, results);
 
+                log.debug('characterSearch.onMessage.preUpdater', this.countUpdater );
+                // This line is never run?
                 this.countUpdater?.start();
 
                 // this is done LAST to force Vue to wait with rendering
@@ -287,39 +321,35 @@
                 this.resort(results);
             });
 
+            // This actually does nothing because this class is mounted once on login.
             if (this.scoreWatcher) {
+                log.debug('characterSearch.scoreWatcher.exists.mounted', "This should never fire!");
                 EventBus.$off('character-score', this.scoreWatcher);
             }
 
             // tslint:disable-next-line no-unsafe-any no-any
-            this.scoreWatcher = (event: any): void => {
-                // console.log('scoreWatcher', event);
+            this.scoreWatcher = (event: {character: ComplexCharacter, score: number, isFiltered: boolean}): void => {
+                log.debug('characterSearch.scoreWatcher', event);
 
-                if (
-                    (this.state === 'results')
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    && (event.character)
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    && (_.find(this.results, (s: SearchResult) => s.character.name === event.character.character.name))
-                ) {
+                if (event.character && this.state === 'results'
+                && this.results.find((s: SearchResult) => s.character.name === event.character.character.name)) {
+                    log.debug('characterSearch.scoreWatcher.results', 'THIS IS WHAT WE WANT TO SEE!!!');
                     this.countUpdater?.requestUpdate(event.character.character.name);
-              }
+                }
             };
 
-            EventBus.$on(
-                'character-score',
-                this.scoreWatcher
-            );
+            EventBus.$on('character-score', this.scoreWatcher);
         }
 
 
         @Hook('beforeDestroy')
         beforeDestroy(): void {
+            log.debug('characterSearch.beforeDestroy');
+
             if (this.scoreWatcher) {
-                EventBus.$off(
-                    'character-score',
-                    this.scoreWatcher
-                );
+                log.debug('characterSearch.scoreWatcher.exists.beforeDestroy', "This should never fire!");
+
+                EventBus.$off('character-score', this.scoreWatcher);
 
                 this.scoreWatcher = null;
             }
@@ -330,6 +360,8 @@
 
         @Watch('data', { deep: true })
         onDataChange(): void {
+            log.debug('characterSearch.data.update', { data: this.data });
+
             this.searchString = _.join(
                 _.map(
                     // tslint:disable-next-line no-unsafe-any no-any
@@ -357,7 +389,9 @@
 
           const knownCharacter = core.cache.profileCache.getSync(result.character.name);
 
+          // Since we primed the cache, does this ever abort here?
           if (!knownCharacter) {
+            log.debug('characterSearch.resort.notKnown', result.character.name);
             return true;
           }
 
@@ -365,7 +399,7 @@
           result.profile = knownCharacter;
 
           const isSearchingForAnthro = (!!_.find(this.data.species, (s) => s.id === Species.Anthro));
-          const isSearchingForHuman = (!!_.find(this.data.species, (s) => s.id === Species.Human));
+          const isSearchingForHuman  = (!!_.find(this.data.species, (s) => s.id === Species.Human));
 
           const species = Matcher.species(knownCharacter.character.character);
 
@@ -444,16 +478,19 @@
 
 
         countPendingResults(names?: string[], results = this.results): number {
-            // console.log('COUNTPENDINGRESULTS', names);
+            log.debug('characterSearch.countPending', { names: names, results: results });
 
             return _.reduce(
                 results,
                 (accum: number, result: SearchResult) => {
                   if (!!result.profile) {
+                    log.debug('characterSearch.countPending.exists', result.profile.character.character.name);
                     return accum;
                   }
 
                   if ((_.isUndefined(names)) || (_.indexOf(names, result.character.name) >= 0)) {
+                    log.debug('characterSearch.countPending.didntExist', result.character.name);
+
                     result.profile = core.cache.profileCache.getSync(result.character.name);
                   }
 
@@ -481,11 +518,15 @@
 
 
         reset(): void {
+            log.debug('characterSearch.reset');
+
             this.data = {kinks: [], genders: [], orientations: [], languages: [], furryprefs: [], roles: [], positions: [], species: [], bodytypes: []};
         }
 
 
         updateSearch(data?: ExtendedSearchData): void {
+            log.debug('characterSearch.updateSearch', data);
+
           if (data) {
             // this.data = {kinks: [], genders: [], orientations: [], languages: [], furryprefs: [], roles: [], positions: []};
             // this.data = data;
@@ -510,6 +551,8 @@
 
         submit(): void {
             if(this.state === 'results') {
+                log.debug('characterSearch.submit.withResults', 'This should stop countUpdater.');
+
                 this.results = [];
                 this.hasReceivedResults = false;
                 this.countUpdater?.stop();
@@ -517,13 +560,11 @@
                 return;
             }
 
-            this.shouldShowMatch = core.state.settings.risingComparisonInSearch;
+            this.shouldShowMatch  = core.state.settings.risingComparisonInSearch;
             this.shouldShowAvatar = core.state.settings.risingShowPortraitInMessage;
 
             this.results = [];
-
             this.state = 'results';
-
             this.error = '';
 
             const data: Connection.ClientCommands['FKS'] & {[key: string]: (string | number)[]} = {kinks: []};
@@ -535,6 +576,7 @@
             }
 
             core.connection.send('FKS', data);
+            log.debug('characterSearch.submit.sent');
 
             // tslint:disable-next-line
             this.updateSearchHistory(this.data);
@@ -568,43 +610,59 @@
 
       private updatedNames: string[] = [];
 
-      private timerId?: NodeJS.Timeout;
+      private timerId?: NodeJS.Timeout | null;
 
       constructor(private callback: (names: string[]) => void) {
-
+        log.debug('characterSearch.resultCountUpdater.created', { 'callback': this.callback.toString() });
       }
 
 
       requestUpdate(name: string): void {
         this.updatedNames.push(name);
+
+        log.debug('characterSearch.resultCountUpdater.requestUpdate', 'DO WE SEE THIS??', { name: name });
       }
 
 
       start() {
         const schedule = () => {
-          this.timerId = setTimeout(
-              () => {
-                if (this.updatedNames.length > 0) {
-                  this.callback(this.updatedNames);
-                  this.updatedNames = [];
-                }
+            this.timerId = setTimeout(
+                () => {
+                    log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
 
-                schedule();
-              },
-              250
-          );
+                    if (this.updatedNames.length > 0) {
+                        log.debug(
+                            'characterSearch.resultCountUpdater.tick.work',
+                            'WE WANT TO SEE THIS!!', {
+                                remaining: this.updatedNames.length,
+                                callback: this.callback.toString()
+                            }
+                        );
+
+                        this.callback(this.updatedNames);
+                        this.updatedNames = [];
+                    }
+
+                    schedule();
+                },
+                5000
+            );
         };
+
+        log.debug('characterSearch.resultCountUpdater.start', { timerId: this.timerId });
 
         schedule();
       }
 
 
-      stop() {
-        if (this.timerId) {
-          clearTimeout(this.timerId);
-          delete this.timerId;
+        stop() {
+            log.debug('characterSearch.resultCountUpdater.stop', { timerId: this.timerId });
+
+            if (this.timerId) {
+                clearTimeout(this.timerId);
+                this.timerId = null;
+            }
         }
-      }
     }
 
 </script>

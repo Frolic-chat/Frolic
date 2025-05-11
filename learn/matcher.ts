@@ -1360,7 +1360,7 @@ export class Matcher {
         const mappedSpecies = Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!)
                            || Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!, true)
 
-        log.debug('matcher.species.kemonomimi', { character: c.name, mappedspecies: mappedSpecies })
+        //log.debug('matcher.species.kemonomimi', { character: c.name, mappedspecies: mappedSpecies })
         return mappedSpecies || null;
     }
 
@@ -1417,7 +1417,7 @@ export class Matcher {
         const dislikesFurries = f === KinkPreference.Maybe
                              || f === KinkPreference.No;
 
-        log.debug('matcher.tilthuman.preferences', { character: c.name, humanpref:  h, anthropref: f })
+        //log.debug('matcher.tilthuman.preferences', { character: c.name, humanpref:  h, anthropref: f })
 
         if ((likesHumans && !likesFurries) || (dislikesFurries && !dislikesHumans))
             return true;
@@ -1738,15 +1738,15 @@ export class UserListSorter {
 
         const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
 
-        log.debug(
-            'userlist.sorter.genderfromkink',
-            {
-                character: c.name,
-                fchatGender: fchatGender,
-                kinkGender: gender,
-                pref: pref
-            }
-        )
+        // log.debug(
+        //     'userlist.sorter.genderfromkink',
+        //     {
+        //         character: c.name,
+        //         fchatGender: fchatGender,
+        //         kinkGender: gender,
+        //         pref: pref
+        //     }
+        // )
 
         if      (pref === KinkPreference.Favorite)
             return Scoring.MATCH;
@@ -1768,17 +1768,17 @@ export class UserListSorter {
         // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
         const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
 
-        log.debug(
-            'userlist.sorter.genderfromorientation',
-            {
-                character: c.name,
-                fchatGender: fchatGender,
-                myGender: myGender,
-                orientation: orientation,
-                theirGender: theirGender,
-                score: score,
-            }
-        )
+        // log.debug(
+        //     'userlist.sorter.genderfromorientation',
+        //     {
+        //         character: c.name,
+        //         fchatGender: fchatGender,
+        //         myGender: myGender,
+        //         orientation: orientation,
+        //         theirGender: theirGender,
+        //         score: score,
+        //     }
+        // )
 
         return score;
     }
