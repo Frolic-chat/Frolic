@@ -5,7 +5,7 @@ import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 
 import core from '../core';
 import { Conversation } from '../interfaces';
-import Timer = NodeJS.Timer;
+import Timer = NodeJS.Timeout;
 import ChannelConversation = Conversation.ChannelConversation;
 
 
