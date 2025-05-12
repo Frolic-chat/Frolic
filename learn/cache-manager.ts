@@ -138,8 +138,7 @@ export class CacheManager {
 
     updateAdScoringForProfile(c: ComplexCharacter, score: number, isFiltered: boolean): void {
         EventBus.$emit(
-            'character-score',
-            {
+            'character-score', {
                 character: c,
                 score,
                 isFiltered

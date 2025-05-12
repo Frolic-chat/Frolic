@@ -2,9 +2,7 @@ import { Character } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
-
 import { NoteCheckerCount } from '../../site/note-checker';
-import { Character as CharacterProfile } from '../../site/character_page/interfaces';
 
 import log from 'electron-log';
 
@@ -42,7 +40,7 @@ import log from 'electron-log';
 export interface EventBusEvent { [key: string]: any; }
 
 export interface CharacterProfileEvent extends EventBusEvent {
-    profile: CharacterProfile;
+    profile: Character;
 }
 
 export interface ChannelMessageEvent extends EventBusEvent {
