@@ -225,6 +225,31 @@ export class CacheManager {
         return this.characterProfiler ? this.characterProfiler.calculateInterestScoreForQueueEntry(e) : 0;
     }
 
+    private on_character_data = async(data: CharacterDataEvent) => {
+      // this promise is intentionally NOT chained
+      // tslint:disable-next-line: no-floating-promises
+      this.onCharacterData(data);
+    }
+    private on_channel_message = async(data: ChannelMessageEvent) => {
+      // this promise is intentionally NOT chained
+      // tslint:disable-next-line: no-floating-promises
+      this.onChannelMessage(data);
+    };
+    private on_channel_ad = async(data: ChannelAdEvent) => {
+      // this promise is intentionally NOT chained
+      // tslint:disable-next-line: no-floating-promises
+      this.onChannelAd(data);
+    };
+    private on_select_conversation = async(data: SelectConversationEvent) => {
+      // this promise is intentionally NOT chained
+      // tslint:disable-next-line: no-floating-promises
+      this.onSelectConversation(data);
+    };
+    private on_conversation_load_more = async(data: SelectConversationEvent) => {
+      // this promise is intentionally NOT chained
+      // tslint:disable-next-line: no-floating-promises
+      this.onLoadMoreConversation(data);
+    };
 
     async start(settings: GeneralSettings, skipFlush: boolean): Promise<void> {
         await this.stop();
@@ -239,45 +264,11 @@ export class CacheManager {
           await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
         }
 
-        EventBus.$on(
-            'character-data', async(data: CharacterDataEvent) => {
-                // this promise is intentionally NOT chained
-                // tslint:disable-next-line: no-floating-promises
-                this.onCharacterData(data);
-            }
-        );
-
-        EventBus.$on(
-            'channel-message', async(data: ChannelMessageEvent) => {
-                // this promise is intentionally NOT chained
-                // tslint:disable-next-line: no-floating-promises
-                this.onChannelMessage(data);
-            }
-        );
-
-        EventBus.$on(
-            'channel-ad', async(data: ChannelAdEvent) => {
-                // this promise is intentionally NOT chained
-                // tslint:disable-next-line: no-floating-promises
-                this.onChannelAd(data);
-            }
-        );
-
-        EventBus.$on(
-            'select-conversation', async(data: SelectConversationEvent) => {
-              // this promise is intentionally NOT chained
-              // tslint:disable-next-line: no-floating-promises
-              this.onSelectConversation(data);
-            }
-        );
-
-        EventBus.$on(
-            'conversation-load-more', async(data: SelectConversationEvent) => {
-              // this promise is intentionally NOT chained
-              // tslint:disable-next-line: no-floating-promises
-              this.onLoadMoreConversation(data);
-            }
-        );
+        EventBus.$on('character-data',          this.on_character_data);
+        EventBus.$on('channel-message',         this.on_channel_message);
+        EventBus.$on('channel-ad',              this.on_channel_ad);
+        EventBus.$on('select-conversation',     this.on_select_conversation);
+        EventBus.$on('conversation-load-more',  this.on_conversation_load_more);
 
 
         // EventBus.$on(
@@ -525,6 +516,11 @@ export class CacheManager {
         }
 
         // should do some $off here?
+        EventBus.$off('character-data',         this.on_character_data);
+        EventBus.$off('channel-message',        this.on_channel_message);
+        EventBus.$off('channel-ad',             this.on_channel_ad);
+        EventBus.$off('select-conversation',    this.on_select_conversation);
+        EventBus.$off('conversation-load-more', this.on_conversation_load_more);
     }
 
 
