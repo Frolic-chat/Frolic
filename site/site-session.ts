@@ -85,13 +85,13 @@ export class SiteSession {
 
     const input = res.body.match(/<input.*?csrf_token.*?>/);
 
-    if ((!input) || (input.length < 1)) {
+    if (!input || input.length < 1) {
       throw new Error('SiteSession.init: Missing csrf token');
     }
 
     const csrf = input[0].match(/value="([a-zA-Z0-9]+)"/);
 
-    if ((!csrf) || (csrf.length < 2)) {
+    if (!csrf || csrf.length < 2) {
       throw new Error('SiteSession.init: Missing csrf token value');
     }
 
@@ -102,7 +102,7 @@ export class SiteSession {
   private async login(): Promise<void> {
     log.debug('sitesession.login');
 
-    if ((this.password === '') || (this.account === '')) {
+    if (this.password === '' || this.account === '') {
       throw new Error('User credentials not set');
     }
 

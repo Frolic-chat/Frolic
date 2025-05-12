@@ -58,33 +58,33 @@
     import { EventBus, CharacterProfileEvent } from './preview/event-bus';
 
     type StatusSort = {
-      [key in Character.Status]: number;
+        [key in Character.Status]: number;
     };
 
     type GenderSort = {
-      [key in Character.Gender]: number;
+        [key in Character.Gender]: number;
     };
 
     const statusSort: StatusSort = {
-      'crown': 0,
-      'looking': 1,
-      'online': 2,
-      'idle': 3,
-      'away': 4,
-      'busy': 5,
-      'dnd': 6,
-      'offline': 7
+        'crown':   0,
+        'looking': 1,
+        'online':  2,
+        'idle':    3,
+        'away':    4,
+        'busy':    5,
+        'dnd':     6,
+        'offline': 7,
     };
 
     const genderSort: GenderSort = {
-      'Cunt-boy': 0,
-      'Female': 1,
-      'Herm': 2,
-      'Male': 3,
-      'Male-Herm': 4,
-      'None': 5,
-      'Shemale': 6,
-      'Transgender': 7,
+        'Cunt-boy':     0,
+        'Female':       1,
+        'Herm':         2,
+        'Male':         3,
+        'Male-Herm':    4,
+        'None':         5,
+        'Shemale':      6,
+        'Transgender':  7,
     };
 
     const availableSorts = ['normal', 'status', 'gender'] as const;
@@ -92,11 +92,7 @@
     function recalculateSorterGenderPriorities(profileEvent: CharacterProfileEvent): void {
         const you = profileEvent.profile.character;
         const likes: {[key: string]: string[]} = {
-            '1':    [],
-            '0.5':  [],
-            '0':    [],
-            '-0.5': [],
-            '-1':   [],
+            '1': [], '0.5': [], '0': [], '-0.5': [], '-1': [],
         }; // turn this into a record of number to string array
 
         for (const gender of Object.keys(genderSort)) {
@@ -124,19 +120,17 @@
           likes['1'], likes['0.5'], likes['0'], likes['-0.5'], likes['-1'],
         ];
         let i=0;
-        simpleStruct.forEach(
-            (array) => {
-                while (array.length > 0) {
-                    const value = array.shift() as Character.Gender;
-                    if (value !== undefined) {
-                        genderSort[value] = i;
-                        i++;
-                    }
+        simpleStruct.forEach(array => {
+            while (array.length > 0) {
+                const value = array.shift() as Character.Gender;
+                if (value !== undefined) {
+                    genderSort[value] = i;
+                    i++;
                 }
             }
-        )
+        });
 
-        log.debug('userlist.sorter.gender', { genderSort: genderSort })
+        log.debug('userlist.sorter.gender', { genderSort: genderSort });
     }
 
     EventBus.$on('own-profile-update',   recalculateSorterGenderPriorities);
@@ -161,11 +155,14 @@
         sortType: typeof availableSorts[number] = 'normal';
 
         get friends(): Character[] {
-            return core.characters.friends.slice().sort(this.sorter);
+            return core.characters.friends.slice()
+                                    .sort(this.sorter);
         }
 
         get bookmarks(): Character[] {
-            return core.characters.bookmarks.slice().filter((x) => core.characters.friends.indexOf(x) === -1).sort(this.sorter);
+            return core.characters.bookmarks.slice()
+                                    .filter(x => core.characters.friends.indexOf(x) === -1)
+                                    .sort(this.sorter);
         }
 
         get channel(): Channel {
@@ -241,7 +238,7 @@
             return members;
           }
 
-          return members.filter((m) => {
+          return members.filter(m => {
             const p = core.cache.profileCache.getSync(m.character.name);
 
             return !p || !p.match.isFiltered;
@@ -256,7 +253,7 @@
 
           const filter = new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
 
-          return sorted.filter((member) => filter.test(member.character.name));
+          return sorted.filter(member => filter.test(member.character.name));
         }
 
         switchSort() {

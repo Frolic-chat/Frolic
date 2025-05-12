@@ -10,22 +10,29 @@ import DateDisplay from '../components/date_display.vue';
 import SimplePager from '../components/simple_pager.vue';
 
 import {
-    Character as CharacterInfo, CharacterImage, CharacterImageOld, CharacterInfotag, CharacterSettings, Infotag, InfotagGroup, Kink,
-    KinkChoice, KinkGroup, ListItem, Settings, SimpleCharacter
+    Character as CharacterInfo, SimpleCharacter,
+    CharacterSettings, Settings,
+    CharacterImage, CharacterImageOld,
+    CharacterInfotag, Infotag, InfotagGroup,
+    Kink, KinkChoice, KinkGroup,
+    ListItem,
 } from '../interfaces';
 import {registerMethod, Store} from '../site/character_page/data_store';
 import {
-    Character, CharacterKink, Friend, FriendRequest, FriendsByCharacter, Guestbook, GuestbookPost, KinkChoiceFull
+    Character,
+    Friend, FriendRequest, FriendsByCharacter,
+    Guestbook, GuestbookPost,
+    CharacterKink, KinkChoiceFull,
 } from '../site/character_page/interfaces';
 import * as Utils from '../site/utils';
 import core from './core';
 import { EventBus } from './preview/event-bus';
 
 const parserSettings = {
-    siteDomain: 'https://www.f-list.net/',
-    staticDomain: 'https://static.f-list.net/',
-    animatedIcons: true,
-    inlineDisplayMode: InlineDisplayMode.DISPLAY_ALL
+    siteDomain:        'https://www.f-list.net/',
+    staticDomain:      'https://static.f-list.net/',
+    animatedIcons:      true,
+    inlineDisplayMode:  InlineDisplayMode.DISPLAY_ALL
 };
 
 
@@ -46,34 +53,51 @@ async function characterData(name: string | undefined, id: number = -1, skipEven
 // @ts-ignore
 async function executeCharacterData(name: string | undefined, id: number = -1, skipEvent: boolean = false): Promise<Character> {
     const data = await core.connection.queryApi<CharacterInfo & {
-        badges: string[]
-        customs_first: boolean
-        character_list: {id: number, name: string}[]
-        current_user: {inline_mode: number, animated_icons: boolean}
+        badges: string[],
+        customs_first: boolean,
+        character_list: { id: number, name: string }[],
+        current_user: {
+            inline_mode:    number,
+            animated_icons: boolean
+        },
         custom_kinks: {
-            [key: number]:
-                {id: number, choice: 'favorite' | 'yes' | 'maybe' | 'no', name: string, description: string, children: number[]}
-        }
-        custom_title: string
-        images: CharacterImage[]
-        kinks: {[key: string]: string}
-        infotags: {[key: string]: string}
-        memo?: {id: number, memo: string}
-        settings: CharacterSettings,
-        timezone: number
+            [key: number]: {
+                id:          number,
+                choice:     'favorite' | 'yes' | 'maybe' | 'no',
+                name:        string,
+                description: string,
+                children:    number[]
+            }
+        },
+        custom_title: string,
+        images:       CharacterImage[],
+        kinks:        {[key: string]: string},
+        infotags:     {[key: string]: string},
+        memo?:        {id: number, memo: string},
+        settings:     CharacterSettings,
+        timezone:     number,
     }>('character-data.php', {name});
+
     const newKinks: {[key: string]: KinkChoiceFull} = {};
-    for(const key in data.kinks)
+
+    for (const key in data.kinks)
         newKinks[key] = <KinkChoiceFull>(data.kinks[key] === 'fave' ? 'favorite' : data.kinks[key]);
-    for(const key in data.custom_kinks) {
+
+    for (const key in data.custom_kinks) {
         const custom = data.custom_kinks[key];
-        if((<'fave'>custom.choice) === 'fave') custom.choice = 'favorite';
+
+        if (<'fave'>custom.choice === 'fave') custom.choice = 'favorite';
+
         custom.id = parseInt(key, 10);
-        for(const childId of custom.children)
+
+        for (const childId of custom.children)
             newKinks[childId] = custom.id;
     }
+
     (<any>data.settings).block_bookmarks = (<any>data.settings).prevent_bookmarks; //tslint:disable-line:no-any
+
     const newInfotags: {[key: string]: CharacterInfotag} = {};
+
     for(const key in data.infotags) {
         const characterInfotag = data.infotags[key];
         const infotag = Store.shared.infotags[key];
@@ -87,28 +111,28 @@ async function executeCharacterData(name: string | undefined, id: number = -1, s
     const charData = {
         is_self: false,
         character: {
-            id: data.id,
-            name: data.name,
-            title: data.custom_title,
+            id:          data.id,
+            name:        data.name,
+            title:       data.custom_title,
             description: data.description,
-            created_at: data.created_at,
-            updated_at: data.updated_at,
-            views: data.views,
+            created_at:  data.created_at,
+            updated_at:  data.updated_at,
+            views:       data.views,
             image_count: data.images.length,
-            inlines: data.inlines,
-            kinks: newKinks,
-            customs: data.custom_kinks,
-            infotags: newInfotags,
+            inlines:     data.inlines,
+            kinks:       newKinks,
+            customs:     data.custom_kinks,
+            infotags:    newInfotags,
             online_chat: false,
-            timezone: data.timezone,
-            deleted: false
+            timezone:    data.timezone,
+            deleted:     false
         },
-        memo: data.memo,
+        memo:           data.memo,
         character_list: data.character_list,
-        badges: data.badges,
-        settings: data.settings,
-        bookmarked: core.characters.get(data.name).isBookmarked,
-        self_staff: false
+        badges:         data.badges,
+        settings:       data.settings,
+        bookmarked:     core.characters.get(data.name).isBookmarked,
+        self_staff:     false
     };
 
     if (!skipEvent)
@@ -122,72 +146,85 @@ function contactMethodIconUrl(name: string): string {
 }
 
 async function fieldsGet(): Promise<void> {
-    if(Store.shared !== undefined) return; //tslint:disable-line:strict-type-predicates
+    if (Store.shared !== undefined) return; //tslint:disable-line:strict-type-predicates
+
     try {
         const fields = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
-            listitems: {[key: string]: ListItem}
-            kinks: {[key: string]: Kink & {group_id: number}}
-            kink_groups: {[key: string]: KinkGroup}
-            infotags: {[key: string]: Infotag & {list: string, group_id: string}}
+            listitems:      {[key: string]: ListItem}
+            kinks:          {[key: string]: Kink & {group_id: number}}
+            kink_groups:    {[key: string]: KinkGroup}
+            infotags:       {[key: string]: Infotag & {list: string, group_id: string}}
             infotag_groups: {[key: string]: InfotagGroup & {id: string}}
         };
-        const kinks: {
-            listItems: {[key: string]: ListItem}
-            kinks: {[key: string]: Kink}
-            kinkGroups: {[key: string]: KinkGroup}
-            infotags: {[key: string]: Infotag}
-            infotagGroups: {[key: string]: InfotagGroup}
+
+        const kinks: {listItems:     {[key: string]: ListItem}
+                      kinks:         {[key: string]: Kink}
+                      kinkGroups:    {[key: string]: KinkGroup}
+                      infotags:      {[key: string]: Infotag}
+                      infotagGroups: {[key: string]: InfotagGroup}
         } = {kinks: {}, kinkGroups: {}, infotags: {}, infotagGroups: {}, listItems: {}};
-        for(const id in fields.kinks) {
+
+        for (const id in fields.kinks) {
             const oldKink = fields.kinks[id];
+
             kinks.kinks[oldKink.id] = {
-                id: oldKink.id,
-                name: oldKink.name,
+                id:          oldKink.id,
+                name:        oldKink.name,
                 description: oldKink.description,
-                kink_group: oldKink.group_id
+                kink_group:  oldKink.group_id
             };
         }
-        for(const id in fields.kink_groups) {
+
+        for (const id in fields.kink_groups) {
             const oldGroup = fields.kink_groups[id];
+
             kinks.kinkGroups[oldGroup.id] = {
-                id: oldGroup.id,
-                name: oldGroup.name,
+                id:          oldGroup.id,
+                name:        oldGroup.name,
                 description: '',
-                sort_order: oldGroup.id
+                sort_order:  oldGroup.id
             };
         }
-        for(const id in fields.infotags) {
+
+        for (const id in fields.infotags) {
             const oldInfotag = fields.infotags[id];
+
             kinks.infotags[oldInfotag.id] = {
-                id: oldInfotag.id,
-                name: oldInfotag.name,
-                type: oldInfotag.type,
-                validator: oldInfotag.list,
-                search_field: '',
-                allow_legacy: true,
+                id:            oldInfotag.id,
+                name:          oldInfotag.name,
+                type:          oldInfotag.type,
+                validator:     oldInfotag.list,
+                search_field:  '',
+                allow_legacy:  true,
                 infotag_group: parseInt(oldInfotag.group_id, 10)
             };
         }
-        for(const id in fields.listitems) {
+
+        for (const id in fields.listitems) {
             const oldListItem = fields.listitems[id];
+
             kinks.listItems[oldListItem.id] = {
-                id: oldListItem.id,
-                name: oldListItem.name,
-                value: oldListItem.value,
+                id:         oldListItem.id,
+                name:       oldListItem.name,
+                value:      oldListItem.value,
                 sort_order: oldListItem.id
             };
         }
-        for(const id in fields.infotag_groups) {
+
+        for (const id in fields.infotag_groups) {
             const oldGroup = fields.infotag_groups[id];
+
             kinks.infotagGroups[oldGroup.id] = {
-                id: parseInt(oldGroup.id, 10),
-                name: oldGroup.name,
+                id:          parseInt(oldGroup.id, 10),
+                name:        oldGroup.name,
                 description: oldGroup.description,
-                sort_order: oldGroup.id
+                sort_order:  oldGroup.id
             };
         }
+
         Store.shared = kinks;
-    } catch(e) {
+    }
+    catch(e) {
         Utils.ajaxError(e, 'Error loading character fields');
         throw e;
     }

@@ -131,14 +131,14 @@
 
     @Component({
         components: {
-            'contact-method': ContactMethodView,
-            date: DateDisplay,
-            'delete-dialog': DeleteDialog,
+            'contact-method':   ContactMethodView,
+             date:              DateDisplay,
+            'delete-dialog':    DeleteDialog,
             'duplicate-dialog': DuplicateDialog,
-            'friend-dialog': FriendDialog,
-            'infotag-item': InfotagView,
-            'memo-dialog': MemoDialog,
-            'report-dialog': ReportDialog
+            'friend-dialog':    FriendDialog,
+            'infotag-item':     InfotagView,
+            'memo-dialog':      MemoDialog,
+            'report-dialog':    ReportDialog
         }
     })
     export default class Sidebar extends Vue {
@@ -169,11 +169,11 @@
 
         badgeIconClass(badgeName: string): string {
             const classMap: {[key: string]: string} = {
-                admin: 'fa fa-gem',
-                global: 'far fa-gem',
-                chatop: 'far fa-gem',
-                chanop: 'fa fa-star',
-                helpdesk: 'fa fa-user',
+                admin:     'fa fa-gem',
+                global:    'far fa-gem',
+                chatop:    'far fa-gem',
+                chanop:    'fa fa-star',
+                helpdesk:  'fa fa-user',
                 developer: 'fa fa-terminal',
                 'subscription.lifetime': 'fa fa-certificate'
             };
@@ -182,14 +182,14 @@
 
         badgeTitle(badgeName: string): string {
             const badgeMap: {[key: string]: string} = {
-                admin: 'Administrator',
-                global: 'Global Moderator',
-                chatop: 'Chat Moderator',
-                chanop: 'Channel Moderator',
-                helpdesk: 'Helpdesk',
+                admin:     'Administrator',
+                global:    'Global Moderator',
+                chatop:    'Chat Moderator',
+                chanop:    'Channel Moderator',
+                helpdesk:  'Helpdesk',
                 developer: 'Developer',
                 'subscription.lifetime': 'Lifetime Subscriber',
-                'subscription.other': 'Subscriber'
+                'subscription.other':    'Subscriber'
             };
             return badgeName in badgeMap ? badgeMap[badgeName] : badgeName;
         }
@@ -244,8 +244,8 @@
         }
 
         get contactMethods(): {id: number, value?: string}[] {
-            return Object.keys(Store.shared.infotags).map((x) => Store.shared.infotags[x])
-                .filter((x) => x.infotag_group === CONTACT_GROUP_ID && this.character.character.infotags[x.id] !== undefined)
+            return Object.keys(Store.shared.infotags).map(x => Store.shared.infotags[x])
+                .filter(x => x.infotag_group === CONTACT_GROUP_ID && this.character.character.infotags[x.id] !== undefined)
                 .sort((a, b) => a.name < b.name ? -1 : 1);
         }
 

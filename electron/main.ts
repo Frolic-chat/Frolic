@@ -683,7 +683,8 @@ function onReady(): void {
                 {role: 'paste'},
                 {role: 'selectall'}
             ] as MenuItemConstructorOptions[]
-        }, viewItem, {
+        },
+        viewItem, {
             label: `&${l('help')}`,
             submenu: [
                 {

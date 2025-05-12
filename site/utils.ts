@@ -83,12 +83,10 @@ export function init(s: Settings, c: SimpleCharacter[]): void {
     characters = c;
 }
 
-function escapeRegExp(string: string):
-string {
+function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
-export function replaceAll(str: string, find: string, replace: string):
-string {
+export function replaceAll(str: string, find: string, replace: string): string {
   return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
 }
