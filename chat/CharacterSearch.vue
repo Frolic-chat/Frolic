@@ -575,27 +575,25 @@
 
 
       start() {
-        const schedule = () => {
-          this.timerId = setTimeout(
+          this.timerId = setInterval(
               () => {
                 if (this.updatedNames.length > 0) {
                   this.callback(this.updatedNames);
                   this.updatedNames = [];
                 }
 
-                schedule();
+                log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
               },
               250
           );
-        };
 
-        schedule();
+        log.debug('characterSearch.resultCountUpdater.start', this.timerId);
       }
 
 
       stop() {
         if (this.timerId) {
-          clearTimeout(this.timerId);
+          clearInterval(this.timerId);
           delete this.timerId;
         }
       }
