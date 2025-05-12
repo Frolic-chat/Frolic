@@ -1,4 +1,4 @@
-                                                                                                                       <template>
+<template>
   <div class="character-preview">
     <div v-if="match && character" class="row">
       <div class="col-2">
@@ -175,20 +175,14 @@ export default class CharacterPreview extends Vue {
         }
     };
 
-    EventBus.$on(
-        'character-score',
-        this.scoreWatcher
-    );
+    EventBus.$on('character-score', this.scoreWatcher);
   }
 
 
   @Hook('beforeDestroy')
   beforeDestroy(): void {
       if (this.scoreWatcher) {
-          EventBus.$off(
-              'character-score',
-              this.scoreWatcher
-          );
+          EventBus.$off('character-score', this.scoreWatcher);
 
           this.scoreWatcher = null;
       }
