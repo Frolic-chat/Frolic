@@ -141,7 +141,10 @@
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
     import settings from 'electron-settings';
-    import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+
+    import electronLog from 'electron-log';
+    const log = electronLog.scope('Index');
+
     import * as fs from 'fs';
     import * as path from 'path';
     import * as qs from 'querystring';

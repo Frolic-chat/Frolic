@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+import electronLog from 'electron-log';
+const log = electronLog.scope('site-session');
 import throat from 'throat';
 import { NoteChecker } from './note-checker';
 

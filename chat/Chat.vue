@@ -33,7 +33,9 @@
 </template>
 
 <script lang="ts">
-    import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+    import electronLog from 'electron-log'; //tslint:disable-line:match-default-export-name
+    const log = electronLog.scope('Chat');
+
     import {Component, Hook, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
     import Modal from '../components/Modal.vue';

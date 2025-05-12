@@ -59,7 +59,10 @@ import {Logs, SettingsStore} from './filesystem';
 import Notifications from './notifications';
 import * as SlimcatImporter from './importer';
 import Index from './Index.vue';
-import log from 'electron-log'; // tslint:disable-line: match-default-export-name
+
+import electronLog from 'electron-log';
+const log = electronLog.scope('chat');
+
 import { WordPosSearch } from '../learn/dictionary/word-pos-search';
 
 log.debug('init.chat');
@@ -224,8 +227,8 @@ if(process.platform === 'win32') //get the path in DOS (8-character) format as s
 function onSettings(s: GeneralSettings): void {
     settings = s;
 
-    log.transports.file.level = settings.risingSystemLogLevel;
-    log.transports.console.level = settings.risingSystemLogLevel;
+    electronLog.transports.file.level = settings.risingSystemLogLevel;
+    electronLog.transports.console.level = settings.risingSystemLogLevel;
 
     // spellchecker.setDictionary(s.spellcheckLang, dictDir);
     // for(const word of s.customDictionary) spellchecker.add(word);

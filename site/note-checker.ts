@@ -1,7 +1,8 @@
 import { SiteSession, SiteSessionInterface } from './site-session';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import { EventBus } from '../chat/preview/event-bus';
 import core from '../chat/core';
+import electronLog from 'electron-log';
+const log = electronLog.scope('note-checker');
 /* tslint:disable:no-unsafe-any */
 
 export interface NoteCheckerCount {

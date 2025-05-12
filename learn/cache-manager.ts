@@ -20,7 +20,8 @@ import { PermanentIndexedStore } from './store/types';
 import * as path from 'path';
 // import * as electron from 'electron';
 
-import log from 'electron-log';
+import electronLog from 'electron-log';
+const log = electronLog.scope('cache-manager');
 import { testSmartFilterForPrivateMessage } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 
 
@@ -173,7 +174,7 @@ export class CacheManager {
 
     async addProfile(character: string | ComplexCharacter): Promise<void> {
         if (typeof character === 'string') {
-            // console.log('Learn discover', character);
+            log.silly('Learn discover', character);
 
             await this.queueForFetching(character);
             return;
@@ -206,7 +207,7 @@ export class CacheManager {
 
         this.queue = _.sortBy(this.queue, 'score');
 
-        // console.log('QUEUE', _.map(this.queue, (q) => `${q.name}: ${q.score}`));
+        log.debug('QUEUE', _.map(this.queue, (q) => `${q.name}: ${q.score}`));
 
         const entry = this.queue.pop() as ProfileCacheQueueEntry;
 
@@ -215,7 +216,7 @@ export class CacheManager {
           this.queue = this.queue.filter(q => q.name !== entry.name);
         }
 
-        // console.log('PopFromQueue', entry.name, this.queue.length);
+        log.debug('PopFromQueue', entry.name, this.queue.length);
 
         return entry;
     }

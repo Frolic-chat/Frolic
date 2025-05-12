@@ -1,4 +1,5 @@
-import log from 'electron-log';
+import electronLog from 'electron-log';
+const log = electronLog.scope('blocker');
 import { ElectronBlocker, Request } from '@ghostery/adblocker-electron';
 // @ts-ignore no-unused-variable
 import fetch from 'node-fetch';
