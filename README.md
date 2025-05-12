@@ -1,5 +1,5 @@
 ## 💾 Downloads
-The latest release is **0.7.3**. Downloads are found [on the Releases page](https://github.com/Frolic-chat/Frolic/releases). See each releases' new features on its release page, or [view the full Changelog](https://frolic-chat.github.io/wiki/development/CHANGELOG.html) to see all improvements.
+The latest release is **0.7.4**. Downloads are found [on the Releases page](https://github.com/Frolic-chat/Frolic/releases). See each releases' new features on its release page, or [view the full Changelog](https://frolic-chat.github.io/wiki/development/CHANGELOG.html) to see all improvements.
 
 <small>While Frolic doesn't mess with your logs, it's always wise to backup important files before installing or upgrading software. Your logs from the vanilla F-Chat desktop client and from F-Chat Rising are located at `%appdata%\fchat\data` on Windows and in `~/.config/fchat/data` on Linux. Frolic continues to use this location so you can continue your conversations right where you left off.</small>
 
