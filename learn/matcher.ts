@@ -2,7 +2,9 @@
 
 import * as _ from 'lodash';
 import { Character, CharacterInfotag, KinkChoice } from '../interfaces';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+import electronLog from 'electron-log'; //tslint:disable-line:match-default-export-name
+const log = electronLog.scope('matcher');
+const ulslog = electronLog.scope('UserListSorter');
 // tslint:disable-next-line ban-ts-ignore
 // @ts-ignore
 import anyAscii from 'any-ascii';
@@ -1738,7 +1740,7 @@ export class UserListSorter {
 
         const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
 
-        log.debug(
+        ulslog.debug(
             'userlist.sorter.genderfromkink',
             {
                 character: c.name,
@@ -1768,7 +1770,7 @@ export class UserListSorter {
         // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
         const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
 
-        log.debug(
+        ulslog.debug(
             'userlist.sorter.genderfromorientation',
             {
                 character: c.name,

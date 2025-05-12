@@ -4,7 +4,8 @@ import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 
-import log from 'electron-log';
+import electronLog from 'electron-log';
+const log = electronLog.scope('event-bus');
 
 /**
  * Prior undocumented emissions:
@@ -81,7 +82,13 @@ class EventBusManager {
 
         this.callbacks[event].push(callback);
 
-        log.debug('eventbus.on', { event: event, events: this.callbacks[event].length });
+        log.debug(
+            'eventbus.on', {
+                event: event,
+                events: this.callbacks[event].length,
+                cb: callback.toString(),
+            }
+        );
     }
 
 
@@ -108,7 +115,9 @@ class EventBusManager {
         log.debug(
             'eventbus.off', {
                 event: event,
+                success: i > -1,
                 remaining: r.length,
+                cb: callback.toString(),
             }
         );
     }
