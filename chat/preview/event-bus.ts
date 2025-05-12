@@ -88,7 +88,22 @@ class EventBusManager {
     $off(event: string, callback: EventCallback): void {
         const r = this.callbacks[event];
         if (r === undefined) return;
-        r.splice(r.indexOf(callback), 1);
+
+        const i = r.indexOf(callback);
+        if (i < 0) {
+            log.debug(
+                'eventbus.off', {
+                    event: event,
+                    success: i > -1,
+                    remaining: r.length,
+                    cb: callback.toString(),
+                }
+            );
+
+            return;
+        }
+
+        r.splice(i, 1);
 
         log.debug(
             'eventbus.off', {
