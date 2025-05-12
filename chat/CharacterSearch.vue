@@ -81,6 +81,9 @@
     import { CharacterCacheRecord } from '../learn/profile-cache';
     import Bluebird from 'bluebird';
 
+    import electronLog from 'electron-log';
+    const log = electronLog.scope('CharacterSearch');
+
     type Options = {
         kinks: SearchKink[],
         listitems: {id: string, name: string, value: string}[]
@@ -203,6 +206,8 @@
 
             this.countUpdater = new ResultCountUpdater(
                 (names: string[]) => {
+                    log.debug('characterSearch.resultCountUpdater.callback', this.resultsPending);
+
                     this.resultsPending = this.countPendingResults(names);
 
                     if (this.resultsPending === 0) {
@@ -288,6 +293,7 @@
             });
 
             if (this.scoreWatcher) {
+                log.warn('characterSearch.scoreWatcher.exists.mounted', "This should never fire!");
                 EventBus.$off('character-score', this.scoreWatcher);
             }
 
@@ -313,6 +319,7 @@
         @Hook('beforeDestroy')
         beforeDestroy(): void {
             if (this.scoreWatcher) {
+                log.info('characterSearch.scoreWatcher.exists.beforeDestroy', "This should only fire on logout!!!");
                 EventBus.$off('character-score', this.scoreWatcher);
 
                 this.scoreWatcher = null;
@@ -379,7 +386,10 @@
             if (this.data.bodytypes.length === 0) return true
 
             const knownCharacter = core.cache.profileCache.getSync(result.character.name)
-            if (!knownCharacter) return false
+            if (!knownCharacter) {
+                log.warn('characterSearch.resort.notKnown', result.character.name, 'This should never occur, since we warmed the cache.');
+                return false
+            }
 
             result.profile = knownCharacter
 
@@ -565,7 +575,7 @@
       private timerId?: NodeJS.Timeout;
 
       constructor(private callback: (names: string[]) => void) {
-
+        log.debug('characterSearch.resultCountUpdater.registered', { cb: this.callback.toString() });
       }
 
 
@@ -578,6 +588,7 @@
           this.timerId = setInterval(
               () => {
                 if (this.updatedNames.length > 0) {
+                    log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
                   this.callback(this.updatedNames);
                   this.updatedNames = [];
                 }
@@ -592,7 +603,10 @@
 
 
       stop() {
+        log.debug('characterSearch.resultCountUpdater.stop', 'Trying...', this.timerId);
+
         if (this.timerId) {
+            log.debug('characterSearch.resultCountUpdater.stop', 'Stopped!', this.timerId);
           clearInterval(this.timerId);
           delete this.timerId;
         }
