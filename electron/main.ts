@@ -467,7 +467,8 @@ function onReady(): void {
     // );
 
     //tslint:disable-next-line: no-unsafe-any
-    const updaterUrl = `https://update.electronjs.org/Frolic-chat/Frolic/${process.platform}-${process.arch}/${pck.version}`;
+    //const updaterUrl = `https://update.electronjs.org/Frolic-chat/Frolic/${process.platform}-${process.arch}/${pck.version}`;
+    const updaterUrl = `https://update.electronjs.org/Frolic-chat/Frolic/win32-x64/${pck.version}`;
     if((process.env.NODE_ENV === 'production') && (process.platform !== 'darwin')) {
         electron.autoUpdater.setFeedURL({url: updaterUrl + (settings.beta ? '?channel=beta' : ''), serverType: 'json'});
         setTimeout(() => electron.autoUpdater.checkForUpdates(), 10000);
