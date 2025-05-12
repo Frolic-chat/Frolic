@@ -50,7 +50,6 @@
     import l from './localize';
     import Sidebar from './Sidebar.vue';
     import UserView from './UserView.vue';
-    import _ from 'lodash';
     import characterPage from '../site/character_page/character_page.vue';
     import { profileLink } from './common';
 
@@ -261,7 +260,7 @@
         }
 
         switchSort() {
-          const nextSortIndex = _.indexOf(availableSorts, this.sortType) + 1;
+          const nextSortIndex = availableSorts.indexOf(this.sortType) + 1;
 
           this.sortType = availableSorts[nextSortIndex % availableSorts.length];
         }

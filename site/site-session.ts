@@ -48,7 +48,7 @@ export class SiteSession {
       this.state = 'active';
 
       await Promise.all(
-        _.map(this.interfaces, (i) => i.start())
+        Object.values(this.interfaces).map(i => i.start())
       );
     } catch(err) {
       this.state = 'inactive';
@@ -60,7 +60,7 @@ export class SiteSession {
   async stop(): Promise<void> {
     try {
       await Promise.all(
-        _.map(this.interfaces, (i) => i.stop())
+        Object.values(this.interfaces).map(i => i.stop())
       );
     } catch(err) {
       log.error('sitesession.stop.error', err);

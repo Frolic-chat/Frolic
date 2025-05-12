@@ -4,7 +4,6 @@ import { ElectronBlocker, Request } from '@ghostery/adblocker-electron';
 import fetch from 'node-fetch';
 import path from 'path';
 import fs from 'fs';
-import * as _ from 'lodash';
 import * as electron from 'electron';
 
 export class BlockerIntegration {

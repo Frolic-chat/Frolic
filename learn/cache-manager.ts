@@ -157,11 +157,11 @@ export class CacheManager {
         const conv = core.conversations.getPrivate(char, true);
 
         if (conv && conv.messages.length > 0 && Date.now() - _.last(conv.messages)!.time.getTime() < 5 * 60 * 1000) {
-          const sessionMessages = _.filter(conv.messages, (m) => m.time.getTime() >= this.startTime.getTime());
+          const sessionMessages = conv.messages.filter(m => m.time.getTime() >= this.startTime.getTime());
 
           const allMessagesFromThem = _.every(
             sessionMessages,
-            (m) => ('sender' in m)  && m.sender.name === conv.character.name
+            m => ('sender' in m)  && m.sender.name === conv.character.name
           );
 
           if (sessionMessages.length > 0 && allMessagesFromThem) {
@@ -202,7 +202,7 @@ export class CacheManager {
         }
 
         // re-score
-        _.each(this.queue, (e: ProfileCacheQueueEntry) => e.score = this.calculateScore(e));
+        this.queue.forEach((e: ProfileCacheQueueEntry) => e.score = this.calculateScore(e));
 
         this.queue = _.sortBy(this.queue, 'score');
 
@@ -212,7 +212,7 @@ export class CacheManager {
 
         if (entry) {
           // just in case - remove duplicates
-          this.queue = _.filter(this.queue, (q) => q.name !== entry.name);
+          this.queue = this.queue.filter(q => q.name !== entry.name);
         }
 
         // console.log('PopFromQueue', entry.name, this.queue.length);
