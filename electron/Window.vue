@@ -39,6 +39,8 @@
 
     import {Component, Hook} from '@f-list/vue-ts';
     import * as electron from 'electron';
+    type Event = electron.IpcRendererEvent;
+
     import * as remote from '@electron/remote';
 
     import * as fs from 'fs';
