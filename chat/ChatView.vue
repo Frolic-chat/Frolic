@@ -81,9 +81,9 @@
                     <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
                     <div class="name">
                         <span>{{conversation.character.name}}</span>
-                        <div style="line-height:0;display:flex">
-                            <span class='online-status' :class="getOnlineStatusIconClasses(conversation)"></span>
-                            <span class="fas fa-reply" v-show="needsReply(conversation)"></span>
+                        <div class="icon-bed">
+                            <span class='fa-fw online-status' :class="getOnlineStatusIconClasses(conversation)"></span>
+                            <span class="fa-fw fas fa-reply" v-show="needsReply(conversation)"></span>
                             <span style="flex:1"></span>
                             <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
                                 @click="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
@@ -572,6 +572,14 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
+
+            .icon-bed {
+                line-height: 0;
+                display: flex;
+                align-items: center;
+                padding-bottom: 2px;
+            }
+
             .fas {
                 font-size: 16px;
                 padding: 0 3px;
@@ -580,6 +588,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     padding-right: 0;
                 }
             }
+
             &.item-private {
                 padding-left: 0;
                 padding-top: 0;
