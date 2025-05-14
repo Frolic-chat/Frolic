@@ -10,19 +10,10 @@ Frolic Devtools is distributed in the hope that it will be useful, but WITHOUT A
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <template>
-    <modal action="Spoof!" ref="dialog" dialogClass="ads-dialog" @submit="handle">
-        <div id="body">
-            <div class="info">{{ info }}</div>
-            <input type="text" v-model="data">
-            <div class="buttons">
-                <button type="button" class="btn btn-secondary" @click="display(cmd)"
-                    v-for="cmd in commands">{{ cmd }}
-                </button>
-                <button type="button" class="btn btn-secondary" @click="display('TST')">
-                    TST
-                </button>
-            </div>
-        </div>
+    <modal :action="tab === '0' ? 'Spoof!' : 'Logs'" ref="dialog" dialogClass="" @submit="handle" buttonText="Submit">
+        <tabs style="flex-shrink:0" :tabs="{ 0: 'Spoof!', 1: 'Logs' }" v-model="tab"></tabs>
+        <spoof v-show="tab === '0'" ref="0" id="spoof"></spoof>
+        <logs  v-show="tab === '1'" ref="1" id="logs" ></logs>
     </modal>
 </template>
 
@@ -30,94 +21,20 @@ You should have received a copy of the GNU General Public License along with thi
 import { Component } from '@f-list/vue-ts';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
-import { ServerCommandKeys, ServerCommandMap } from './api';
-import debug from './connection';
-
-
+import Tabs from '../components/tabs';
+import Spoof from './command_spoof.vue'
+import LogViewer from './log_viewer.vue';
 
 @Component({
-    components: { modal: Modal }
+    components: {   modal: Modal, tabs: Tabs,
+                    spoof: Spoof, logs: LogViewer }
 })
 export default class DevTools extends CustomDialog {
-commands = ServerCommandKeys;
+tab = '0';
 
-info = 'Command Spoofing';
-
-key: typeof ServerCommandKeys[number] | 'TST' = 'TST';
-data = '';
-
-handle(): void {
-    let data: object | undefined;
-
-    try {
-        data = this.data.length > 2
-                        ? <object>JSON.parse(this.data)
-                        : undefined;
-    }
-    catch (e) {
-        this.key = 'TST';
-        data = <object>JSON.parse(`{ "message": "${e}" }`);
-    }
-
-    debug.send(this.key, data);
-}
-
-display(cmd: string): void {
-    this.key = cmd as typeof ServerCommandKeys[number] | 'TST';
-
-    this.data = ServerCommandMap[this.key] ?? '{"test": test}'; // for 'TST'
-
-    switch(this.key) {
-    case 'BRO':
-        this.info = 'Incoming admin broadcast.';
-        // this.data = '{ "character": string, "message": string }';
-        break;
-    case 'CIU':
-        this.info = 'Invites a user to a channel.';
-        // this.data = '{ "sender": string, "title": string, "name": string }';
-        break;
-    case 'UPT':
-        this.info = "Informs the client of the server's self-tracked online time, and a few other bits of information";
-        // this.data = '{ "time": int, "starttime": int, "startstring": string, "accepted": int, "channels": int, "users": int, "maxusers": int }';
-        break;
-    case 'VAR':
-        this.info = 'Variables the server sends to inform the client about server variables.';
-        // this.data = '{ "variable": string, "value": int/float }';
-        break;
-    case 'TST':
-        this.info = 'Test Command Please Ignore';
-        // this.data = '{ "message": string }';
-        break;
-    default:
-        //this.key  = 'TST';
-        this.info = '[NYI] Fallback Info';
-        // this.data = '{ "message": string }';
-        break;
-    }
-}
+handle() { (this.$refs[this.tab] as any).handle(); }
 }
 </script>
 
-<style>
-#body {
-    display: flex;
-    flex-direction: column;
-
-    .info {
-        width: 100%;
-        align-items: center;
-        justify-content: center;
-    }
-
-    input {
-        width: 100%;
-    }
-
-    .buttons {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-around;
-    }
-}
+<style lang="css">
 </style>
