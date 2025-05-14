@@ -62,16 +62,16 @@ export class NoteChecker implements SiteSessionInterface {
       return this.latestCount;
 
     const res = await this.session.get('/', true);
-    const messagesMatch = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);
-    const notesMatch = res.body.match(/NavigationNotecount.*?([0-9]+?) Notes/);
-    const statsMatch = res.body.match(/Frontpage_Stats.*?([0-9]+?) characters/);
+    const messagesMatch: RegExpMatchArray | null = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);
+    const notesMatch: RegExpMatchArray | null    = res.body.match(/NavigationNotecount.*?([0-9]+?) Notes/);
+    const statsMatch: RegExpMatchArray | null    = res.body.match(/Frontpage_Stats.*?([0-9]+?) characters/);
 
-    // console.log('MATCH', messagesMatch[1], notesMatch[1], statsMatch[1]);
+    log.debug('notechecker.match.values', messagesMatch?.[1], notesMatch?.[1], statsMatch?.[1]);
 
     const summary = {
-      unreadNotes: (notesMatch && notesMatch.length > 1) ? parseInt(notesMatch[1], 10) : 0,
-      unreadMessages: (messagesMatch && messagesMatch.length > 1) ? parseInt(messagesMatch[1], 10) : 0,
-      onlineUsers: (statsMatch && statsMatch.length > 1) ? parseInt(statsMatch[1], 10) : 0
+        unreadNotes:    parseInt((notesMatch?.[1]    ?? '0'), 10),
+        unreadMessages: parseInt((messagesMatch?.[1] ?? '0'), 10),
+        onlineUsers:    parseInt((statsMatch?.[1]    ?? '0'), 10),
     };
 
     this.latestCount = summary;
