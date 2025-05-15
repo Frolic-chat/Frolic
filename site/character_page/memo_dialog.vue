@@ -1,11 +1,10 @@
 <template>
-    <Modal :action="'Memo for ' + name" buttonText="Save and Close" @close="onClose" @submit="save" dialog-class="modal-lg modal-dialog-centered">
+    <Modal :action="'Memo for ' + name" :buttonText="this.editing ? 'Save and Close' : 'Close'" @close="onClose" @submit="save" dialog-class="modal-lg modal-dialog-centered">
         <div class="form-group" v-if="editing">
             <textarea v-model="message" maxlength="1000" class="form-control"></textarea>
         </div>
         <div v-else>
-            <p>{{message}}</p>
-
+            <p>{{ message }}</p>
             <p><a href="#" @click="editing=true">Edit</a></p>
         </div>
     </Modal>
@@ -36,9 +35,9 @@
         readonly character!: {id: number, name: string};
         @Prop
         readonly memo?: Memo;
-        message = '';
-        editing = false;
-        saving = false;
+        message: string | null = null;
+        editing: boolean = false;
+        saving: boolean = false;
 
         get name(): string {
             return this.character.name;
@@ -60,8 +59,13 @@
         }
 
         async save(): Promise<void> {
+            if (!this.editing) return;
+
             try {
                 this.saving = true;
+
+                if (this.message === '')
+                    this.message = null;
 
                 const memoManager = new MemoManager(this.character.name);
                 await memoManager.set(this.message);
