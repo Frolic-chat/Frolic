@@ -718,6 +718,10 @@ function onReady(): void {
 
     electron.ipcMain.on('tab-added', (_event: Event, id: number) => {
         const webContents = electron.webContents.fromId(id);
+        if (!webContents) {
+            log.error('main.tab-added.error', 'Failed to have id when tab added, but still triggered tab-added. This is a weird error!');
+            return;
+        }
 
         setUpWebContents(webContents);
         ++tabCount;
