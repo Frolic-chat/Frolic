@@ -65,9 +65,8 @@ require('electron-packager')(
     const icon = path.join(__dirname, 'build', 'icon.ico');
 
     for (const appPath of appPaths) {
-        console.log('WinAppPath', appPath);
-
         const pathMatch = appPath.match(/Frolic-win32-([a-zA-Z0-9]+)$/);
+
         if (!pathMatch)
             continue;
 
@@ -80,7 +79,8 @@ require('electron-packager')(
 
         const setupName = `Frolic-${pkg.version}-win32-${appArch}.exe`;
 
-        if (fs.existsSync(path.join(distFinal, setupName))) fs.unlinkSync(path.join(distFinal, setupName));
+        if (fs.existsSync(path.join(distFinal, setupName)))
+            fs.unlinkSync(path.join(distFinal, setupName));
 
         const nupkgName = path.join(distFinal, `frolic-${pkg.version}-full.nupkg`);
         const deltaName = path.join(distFinal, `frolic-${pkg.version}-delta.nupkg`);
@@ -203,7 +203,7 @@ require('electron-packager')(
      **** Linux AppImage ****
      */
     console.log('Creating Linux AppImage');
-
+    // region Linux
     async function downloadAppImageTool(appImageBase) {
         const localArch = process.arch === 'x64' ? 'x86_64' : 'aarch64';
 
