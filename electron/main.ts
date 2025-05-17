@@ -54,6 +54,7 @@ import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { IpcMainEvent } from 'electron';
 import { BlockerIntegration } from './blocker/blocker';
 
+
 //tslint:disable-next-line:no-require-imports
 const pck = require('./package.json');
 
@@ -61,7 +62,32 @@ const pck = require('./package.json');
 const app = electron.app;
 
 
+// region Path
+const path_fchat = path.join(app.getPath('appData'), 'fchat');
+const path_logs = path.join(path_fchat, 'logs');
+
+console.log(  { //appPath:  app.getAppPath(),
+                //appData:  app.getPath('appData'),
+                userData: app.getPath('userData'),
+                //session:  app.getPath('sessionData'),
+                //logs:     app.getPath('logs'),
+                exe:      app.getPath('exe'),         }
+);
+
+app.setPath('userData', path_fchat);
+app.setAppLogsPath(path_logs);
 const userDataDir = path.join(app.getPath('userData'), 'data');
+
+console.log(  { //appPath:  app.getAppPath(),
+                //appData:  app.getPath('appData'),
+                userData: app.getPath('userData'),
+                //session:  app.getPath('sessionData'),
+                //logs:     app.getPath('logs'),
+                exe:      app.getPath('exe'),
+});
+
+
+//region Icon
 let pngIcon: string,
     winIcon: string;
 
