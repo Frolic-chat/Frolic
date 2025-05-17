@@ -1,10 +1,6 @@
-import {app, screen} from 'electron';
+import {screen} from 'electron';
 import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import * as fs from 'fs';
-import * as path from 'path';
-
-const baseDir = path.join(app.getPath('userData'), 'data');
-const windowStatePath = path.join(baseDir, 'window.json');
 
 interface SavedWindowState {
     x?: number
@@ -28,7 +24,7 @@ function mapToScreen(state: SavedWindowState): SavedWindowState {
     return state;
 }
 
-export function setSavedWindowState(window: Electron.BrowserWindow): void {
+export function setSavedWindowState(window: Electron.BrowserWindow, windowStatePath: string): void {
     const bounds = window.getBounds();
     const maximized = window.isMaximized();
     const windowState: SavedWindowState = {
@@ -41,7 +37,7 @@ export function setSavedWindowState(window: Electron.BrowserWindow): void {
     fs.writeFileSync(windowStatePath, JSON.stringify(windowState));
 }
 
-export function getSavedWindowState(): SavedWindowState {
+export function getSavedWindowState(windowStatePath: string): SavedWindowState {
     const defaultState = {
         height: 768,
         maximized: false,

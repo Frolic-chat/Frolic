@@ -61,6 +61,7 @@ const pck = require('./package.json');
 const app = electron.app;
 
 
+const userDataDir = path.join(app.getPath('userData'), 'data');
 let pngIcon: string,
     winIcon: string;
 
@@ -292,9 +293,13 @@ function setUpWebContents(webContents: electron.WebContents): void {
     );
 }
 
+
+const windowStatePath = path.join(userDataDir, 'window.json');
+
 function createWindow(): electron.BrowserWindow | undefined {
     if(tabCount >= 3) return;
-    const lastState = windowState.getSavedWindowState();
+
+    const lastState = windowState.getSavedWindowState(windowStatePath);
 
     const windowProperties: electron.BrowserWindowConstructorOptions & {maximized: boolean} = {
         ...lastState,
@@ -376,7 +381,7 @@ function createWindow(): electron.BrowserWindow | undefined {
     setUpWebContents(window.webContents);
 
     // Save window state when it is being closed.
-    window.on('close', () => windowState.setSavedWindowState(window));
+    window.on('close', () => windowState.setSavedWindowState(window, windowStatePath));
     window.on('closed', () => windows.splice(windows.indexOf(window), 1));
     window.once('ready-to-show', () => {
         window.show();
