@@ -10,7 +10,9 @@
             </h3>
 
             <ul>
-                <li v-for="score in getScores(characterMatch.you)" v-if="shouldShowScore(score)" :class="getScoreClass(score)" v-html="score.description"></li>
+                <template v-for="score in getScores(characterMatch.you)">
+                    <li v-if="shouldShowScore(score)" :class="getScoreClass(score)" v-html="score.description"></li>
+                </template>
             </ul>
         </div>
 
@@ -26,7 +28,9 @@
             </h3>
 
             <ul>
-                <li v-for="score in getScores(characterMatch.them)" v-if="shouldShowScore(score)" :class="getScoreClass(score)" v-html="score.description"></li>
+                <template v-for="score in getScores(characterMatch.them)">
+                    <li v-if="shouldShowScore(score)" :class="getScoreClass(score)" v-html="score.description"></li>
+                </template>
             </ul>
         </div>
     </div>

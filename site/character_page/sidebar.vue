@@ -39,8 +39,9 @@
 
             <div class="quick-info-block">
                 <!-- <infotag-item v-for="infotag in quickInfoItems" :infotag="infotag" :key="infotag.id" :characterMatch="characterMatch"></infotag-item> -->
-                <infotag-item v-for="id in quickInfoIds" v-if="character.character.infotags[id]" :infotag="getInfotag(id)"
-                    :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch"></infotag-item>
+                <template v-for="id in quickInfoIds">
+                    <infotag-item v-if="character.character.infotags[id]" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch"></infotag-item>
+                </template>
 
 <!--            <div class="contact-block">-->
 <!--                <contact-method v-for="method in contactMethods" :infotag="method" :key="method.id"-->
