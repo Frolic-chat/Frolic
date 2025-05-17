@@ -12,11 +12,9 @@
     "noUnusedParameters": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "experimentalDecorators": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
-    "types": [
-      "node",
-    ]
   },
-  "include": ["main.ts"]
+  "include": ["main.ts", "../**/*.d.ts"]
 }

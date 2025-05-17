@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
-const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@f-list/vue-ts/transform').default;
@@ -39,9 +39,11 @@ const mainConfig = {
     plugins: [
         new ForkTsCheckerWebpackPlugin({
             async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-main.json',
-            ignoreLintWarnings: true,
+            //tslint: path.join(__dirname, '../tslint.json'),
+            typescript: {
+                configFile: __dirname + '/tsconfig-main.json',
+                extensions: { vue: true }
+            }
         })
     ],
     resolve: {
@@ -127,10 +129,11 @@ const mainConfig = {
     plugins: [
         new ForkTsCheckerWebpackPlugin({
             async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-renderer.json',
-            vue: true,
-            ignoreLintWarnings: true,
+            //tslint: path.join(__dirname, '../tslint.json'),
+            typescript: {
+                configFile: __dirname + '/tsconfig-renderer.json',
+                vue: true,
+            }
         }),
         new VueLoaderPlugin(),
         new CopyPlugin(
@@ -207,10 +210,11 @@ const storeWorkerEndpointConfig = _.assign(
         plugins: [
             new ForkTsCheckerWebpackPlugin({
                 async: false,
-                tslint: path.join(__dirname, '../tslint.json'),
-                tsconfig: './tsconfig-renderer.json',
-                vue: true,
-                ignoreLintWarnings: true,
+                //tslint: path.join(__dirname, '../tslint.json'),
+                typescript: {
+                    configFile: __dirname + '/tsconfig-renderer.json',
+                    vue: true,
+                }
             })
         ]
     }
