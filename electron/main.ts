@@ -48,7 +48,6 @@ import * as windowState from './window_state';
 // import BrowserWindow = electron.BrowserWindow;
 import MenuItem = electron.MenuItem;
 import MenuItemConstructorOptions = electron.MenuItemConstructorOptions;
-import * as _ from 'lodash';
 import DownloadItem = electron.DownloadItem;
 import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { IpcMainEvent } from 'electron';
@@ -124,14 +123,14 @@ async function toggleDictionary(lang: string): Promise<void> {
 
     let newLangs: string[] = [];
 
-    if (_.indexOf(activeLangs, lang) >= 0) {
-        newLangs = _.reject(activeLangs, (al) => (al === lang));
+    if (activeLangs.indexOf(lang) >= 0) {
+        newLangs = activeLangs.filter(al => al !== lang);
     } else {
         activeLangs.push(lang);
         newLangs = activeLangs;
     }
 
-    settings.spellcheckLang = _.uniq(newLangs);
+    settings.spellcheckLang = Array.from(new Set(newLangs));
 
     setGeneralSettings(settings);
 
@@ -154,19 +153,20 @@ async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
     const selected = getSafeLanguages(settings.spellcheckLang);
     const langs = electron.session.defaultSession.availableSpellCheckerLanguages;
 
-    const sortedLangs = _.sortBy(
-        _.map(
-            langs,
-            (lang) => ({lang, name: (lang in knownLanguageNames) ? `${(knownLanguageNames as any)[lang]} (${lang})` : lang})
-        ),
-        'name'
-    );
+    const sortedLangs = langs.map(lang => (
+        {
+            lang, name: (lang in knownLanguageNames)
+                ? `${(knownLanguageNames as {[key: string]: string})[lang]} (${lang})`
+                : lang
+        }
+    ))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
     for (const lang of sortedLangs)
         menu.append(new electron.MenuItem({
             type: 'checkbox',
             label: lang.name,
-            checked: (_.indexOf(selected, lang.lang) >= 0),
+            checked: (selected.indexOf(lang.lang) >= 0),
             click: async() => toggleDictionary(lang.lang)
         }));
 }

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import core from '../core';
@@ -48,9 +47,9 @@ export class AdCoordinatorGuest {
 
 
     clear(): void {
-      _.each(this.pendingAds, (pa) => (pa.reject(new Error('Pending ad cleared'))));
+      Object.values(this.pendingAds).forEach(pa => (pa.reject(new Error('Pending ad cleared'))));
 
-      console.debug('adid.clear', _.keys(this.pendingAds), core.characters.ownCharacter?.name);
+      log.debug('adid.clear', Object.keys(this.pendingAds), core.characters.ownCharacter?.name);
 
       this.pendingAds = {};
     }
