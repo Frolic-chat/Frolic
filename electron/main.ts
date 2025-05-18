@@ -30,10 +30,6 @@
  * @see {@link https://github.com/f-list/exported|GitHub repo}
  */
 
-// import { DebugLogger } from './debug-logger';
-// // @ts-ignore
-// const dl = new DebugLogger('main');
-
 import * as electron from 'electron';
 import * as remoteMain from '@electron/remote/main';
 
@@ -498,7 +494,7 @@ function onReady(): void {
                 accelerator: 'CmdOrCtrl+='
             },
             {
-                // role: 'zoomIn',
+                // role: 'zoomOut',
                 label: l('action.zoomOut'),
                 click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
                     // log.info('MENU ZOOM-');
@@ -511,7 +507,6 @@ function onReady(): void {
                 },
                 accelerator: 'CmdOrCtrl+-'
             },
-            // {role: 'zoomOut'},
             {type: 'separator'},
             {role: 'togglefullscreen'}
         ]
@@ -522,7 +517,7 @@ function onReady(): void {
 
     //tslint:disable-next-line:no-floating-promises
     addSpellcheckerItems(spellcheckerMenu);
-    const themes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.slice(-4) === '.css').map((x) => x.slice(0, -4));
+    const themes = fs.readdirSync(path.join(__dirname, 'themes')).filter(x => x.slice(-4) === '.css').map(x => x.slice(0, -4));
     const setTheme = (theme: string) => {
         settings.theme = theme;
         setGeneralSettings(settings);
@@ -673,7 +668,8 @@ function onReady(): void {
                     }
                 }
             ] as MenuItemConstructorOptions[]
-        }, {
+        },
+        {
             label: `&${l('action.edit')}`,
             submenu: [
                 {role: 'undo'},
@@ -685,7 +681,8 @@ function onReady(): void {
                 {role: 'selectall'}
             ] as MenuItemConstructorOptions[]
         },
-        viewItem, {
+        viewItem,
+        {
             label: `&${l('help')}`,
             submenu: [
                 {
@@ -708,7 +705,10 @@ function onReady(): void {
                     label: l('help.report'),
                     click: () => openURLExternally('https://wiki.f-list.net/How_to_Report_a_User#In_chat')
                 },
-                {label: l('version', app.getVersion()), click: showPatchNotes}
+                {
+                    label: l('version', app.getVersion()),
+                    click: showPatchNotes
+                }
             ]
         }
     ]));
@@ -766,6 +766,7 @@ function onReady(): void {
         path.join(__dirname, <string>require('./build/badge.png').default)
     );
 
+    // Badge windows with alerts
     electron.ipcMain.on('has-new', (e: Event & {sender: electron.WebContents}, hasNew: boolean) => {
         if(process.platform === 'darwin') app.dock.setBadge(hasNew ? '!' : '');
         const window = electron.BrowserWindow.fromWebContents(e.sender) as electron.BrowserWindow | undefined;
@@ -832,7 +833,10 @@ app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
 
 
 const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
-if(isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock()) app.quit();
-else app.on('ready', onReady);
+if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
+    app.quit();
+else
+    app.on('ready', onReady);
+
 app.on('second-instance', createWindow);
 app.on('window-all-closed', () => app.quit());

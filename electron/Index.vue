@@ -183,7 +183,7 @@
     const session = remote.session;
 
     /* tslint:disable:no-unsafe-any no-any no-unnecessary-type-assertion */
-    session!.defaultSession!.webRequest!.onBeforeSendHeaders(
+    session.defaultSession.webRequest.onBeforeSendHeaders(
         {
             urls: [
                 'https://(api|i).imgur.com/.*'

@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as FLIST from '../constants/flist';
 
 import ElectronLog from 'electron-log';
-const log = ElectronLog.scope('electron/common')
+const log = ElectronLog.scope('electron/common');
 
 log.debug('init.common');
 
@@ -19,8 +19,8 @@ function getDefaultLanguage(): string {
 
 export class GeneralSettings {
     account = '';
-    closeToTray = true;
-    profileViewer = true;
+    closeToTray: boolean = true;
+    profileViewer: boolean = true;
     host: string = FLIST.DefaultHost;
     logDirectory = path.join(electron.app.getPath('userData'), 'data');
     spellcheckLang: string[] | string | undefined = [getDefaultLanguage()];
@@ -28,21 +28,12 @@ export class GeneralSettings {
     version = electron.app.getVersion();
     beta = false;
     customDictionary: string[] = [];
-    hwAcceleration = true;
-    risingCacheExpiryDays = 30;
+    hwAcceleration: boolean = true;
+    risingCacheExpiryDays: number = 30;
     risingSystemLogLevel: ElectronLog.LevelOption = 'info';
-    risingDisableWindowsHighContrast =  false;
-    browserPath = '';
-    browserArgs = '%s';
+    risingDisableWindowsHighContrast: boolean =  false;
+    browserPath: string = '';
+    browserArgs: string = '%s';
 }
-
-// //tslint:disable
-// const Module = require('module');
-//
-// export function nativeRequire<T>(module: string): T {
-//     return Module.prototype.require.call({paths: Module._nodeModulePaths(__dirname)}, module);
-// }
-//
-// //tslint:enable
 
 log.debug('init.common.done');
