@@ -1,12 +1,12 @@
 import * as electron from 'electron';
 import * as path from 'path';
 
+import * as FLIST from '../constants/flist';
+
 import ElectronLog from 'electron-log';
 const log = ElectronLog.scope('electron/common')
 
 log.debug('init.common');
-
-export const defaultHost = 'wss://chat.f-list.net/chat2';
 
 function getDefaultLanguage(): string {
     try {
@@ -21,10 +21,10 @@ export class GeneralSettings {
     account = '';
     closeToTray = true;
     profileViewer = true;
-    host = defaultHost;
+    host: string = FLIST.DefaultHost;
     logDirectory = path.join(electron.app.getPath('userData'), 'data');
     spellcheckLang: string[] | string | undefined = [getDefaultLanguage()];
-    theme = 'default';
+    theme: string = FLIST.theme;
     version = electron.app.getVersion();
     beta = false;
     customDictionary: string[] = [];

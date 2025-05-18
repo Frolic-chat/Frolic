@@ -42,7 +42,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 // import * as url from 'url';
 import l from '../chat/localize';
-import {defaultHost, GeneralSettings} from './common';
+import {GeneralSettings} from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
 import * as windowState from './window_state';
 // import BrowserWindow = electron.BrowserWindow;

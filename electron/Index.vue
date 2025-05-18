@@ -165,7 +165,8 @@
     import CharacterPage from '../site/character_page/character_page.vue';
     import WordDefinition from '../learn/dictionary/WordDefinition.vue';
     import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
-    import {defaultHost, GeneralSettings} from './common';
+    import {GeneralSettings} from './common';
+    import * as FLIST from '../constants/flist';
     import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './filesystem';
     import * as SlimcatImporter from './importer';
     import { EventBus, ErrorEvent } from '../chat/preview/event-bus';
@@ -507,7 +508,7 @@
         }
 
         resetHost(): void {
-            this.settings.host = defaultHost;
+            this.settings.host = FLIST.DefaultHost;
         }
 
         onMouseOver(e: MouseEvent): void {
