@@ -1,5 +1,6 @@
 import * as qs from 'querystring';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+import ElectronLog from 'electron-log';
+const log = ElectronLog.scope('window');
 
 import {GeneralSettings} from './common';
 import Window from './Window.vue';
@@ -11,9 +12,9 @@ const settings = <GeneralSettings>JSON.parse(params['settings']!);
 
 const logLevel = (process.env.NODE_ENV === 'production') ? 'info' : 'silly';
 
-log.transports.file.level = settings.risingSystemLogLevel || logLevel;
-log.transports.console.level = settings.risingSystemLogLevel || logLevel;
-log.transports.file.maxSize = 5 * 1024 * 1024;
+ElectronLog.transports.file.level    = settings.risingSystemLogLevel || logLevel;
+ElectronLog.transports.console.level = settings.risingSystemLogLevel || logLevel;
+ElectronLog.transports.file.maxSize = 5 * 1024 * 1024;
 
 log.info('init.window.vue');
 

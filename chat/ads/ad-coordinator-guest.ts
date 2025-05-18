@@ -1,5 +1,8 @@
 import { ipcRenderer, IpcRendererEvent } from 'electron';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+
+import ElectronLog from 'electron-log'; //tslint:disable-line:match-default-export-name
+const log = ElectronLog.scope('ad-guest');
+
 import core from '../core';
 
 interface PendingAd {

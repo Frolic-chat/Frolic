@@ -4,8 +4,8 @@ import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 
-import electronLog from 'electron-log';
-const log = electronLog.scope('event-bus');
+import ElectronLog from 'electron-log';
+const log = ElectronLog.scope('event-bus');
 
 /**
  * Prior undocumented emissions:

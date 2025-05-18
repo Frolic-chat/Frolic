@@ -1,6 +1,8 @@
 import {screen} from 'electron';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import * as fs from 'fs';
+
+import ElectronLog from 'electron-log';
+const log = ElectronLog.scope('window_state');
 
 interface SavedWindowState {
     x?: number

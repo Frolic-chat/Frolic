@@ -1,7 +1,8 @@
 import * as electron from 'electron';
 import * as path from 'path';
 
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+import ElectronLog from 'electron-log';
+const log = ElectronLog.scope('electron/common')
 
 log.debug('init.common');
 
@@ -29,7 +30,7 @@ export class GeneralSettings {
     customDictionary: string[] = [];
     hwAcceleration = true;
     risingCacheExpiryDays = 30;
-    risingSystemLogLevel: log.LevelOption = 'info';
+    risingSystemLogLevel: ElectronLog.LevelOption = 'info';
     risingDisableWindowsHighContrast =  false;
     browserPath = '';
     browserArgs = '%s';
@@ -45,4 +46,3 @@ export class GeneralSettings {
 // //tslint:enable
 
 log.debug('init.common.done');
-
