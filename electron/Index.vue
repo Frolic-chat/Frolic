@@ -140,7 +140,6 @@
     import Axios from 'axios';
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
-    import settings from 'electron-settings';
 
     import electronLog from 'electron-log';
     const log = electronLog.scope('Index');
@@ -152,6 +151,7 @@
     // import {promisify} from 'util';
     import Vue from 'vue';
     import Chat from '../chat/Chat.vue';
+    import { ipcRenderer } from 'electron';
     import {getKey, Settings} from '../chat/common';
     import core /*, { init as initCore }*/ from '../chat/core';
     import l from '../chat/localize';
@@ -174,7 +174,6 @@
     import BBCodeTester from '../bbcode/Tester.vue';
     import { BBCodeView } from '../bbcode/view';
     import { EIconStore } from '../learn/eicon/store';
-    import { SecureStore } from './secure-store';
 
     const webContents = remote.getCurrentWebContents();
     const parent = remote.getCurrentWindow().webContents;
@@ -196,9 +195,6 @@
             callback({requestHeaders: details.requestHeaders});
         }
     );
-
-    settings.configure({ electron: remote as any });
-    const keyStore = new SecureStore('fchat-rising-accounts', remote, settings);
 
     @Component({
         components: {
@@ -347,7 +343,7 @@
 
             if(this.settings.account.length > 0) this.saveLogin = true;
 
-            this.password = (await keyStore.getPassword('f-list.net', this.settings.account)) || '';
+            this.password = await ipcRenderer.invoke('getPassword', 'f-list.net', this.settings.account) || '';
 
             log.debug('init.chat.keystore.get.done');
 
@@ -435,7 +431,7 @@
 
             try {
                 if(!this.saveLogin) {
-                  await keyStore.deletePassword('f-list.net', this.settings.account);
+                  await ipcRenderer.invoke('deletePassword', 'f-list-net', this.settings.account);
                 }
 
                 core.siteSession.setCredentials(this.settings.account, this.password);
@@ -451,7 +447,7 @@
                 }
                 if(this.saveLogin) {
                     electron.ipcRenderer.send('save-login', this.settings.account, this.settings.host);
-                    await keyStore.setPassword('f-list.net', this.settings.account, this.password);
+                    await ipcRenderer.invoke('setPassword', 'f-list.net', this.settings.account, this.password);
                 }
                 Socket.host = this.settings.host;
 

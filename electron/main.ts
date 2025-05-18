@@ -49,6 +49,7 @@ import l from '../chat/localize';
 import {GeneralSettings} from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
 import * as windowState from './window_state';
+import SecureStore from './secure-store';
 import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
@@ -709,6 +710,21 @@ function onReady(): void {
         },
         6000 // 6 seconds
     );
+
+
+    //region SecureStore
+    electron.ipcMain.handle('setPassword', async (_event: Event, domain: string, account: string, password: string) => {
+        await SecureStore.setPassword(domain, account, password);
+    });
+
+    electron.ipcMain.handle('deletePassword', async (_event: Event, domain: string, account: string) => {
+        await SecureStore.deletePassword(domain, account);
+    });
+
+    electron.ipcMain.handle('getPassword', async (_event: Event, domain: string, account: string) => {
+        return await SecureStore.getPassword(domain, account);
+    });
+
 
     electron.ipcMain.on('tab-added', (_event: Event, id: number) => {
         const webContents = electron.webContents.fromId(id);
