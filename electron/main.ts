@@ -417,9 +417,7 @@ function onReady(): void {
     app.on('open-file', createWindow);
 
     if(settings.version !== app.getVersion()) {
-        showPatchNotes();
-        if(settings.host === 'wss://chat.f-list.net:9799')
-            settings.host = defaultHost;
+        // This is a useful place to put anything that needs to happen on upgrade.
         settings.version = app.getVersion();
         setGeneralSettings(settings);
     }
