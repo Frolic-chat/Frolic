@@ -26,8 +26,10 @@ const mainConfig = {
                 }
             },
             {test: path.join(__dirname, 'package.json'), loader: 'file-loader', options: {name: 'package.json'}, type: 'javascript/auto'},
-            {test: /\.(png|ico|html)$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
-            {test: /\.raw\.js$/, loader: 'raw-loader'}
+            {test: /\.html$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
+            {test: /\.raw\.js$/, loader: 'raw-loader'},
+            {test: /(badge|ic_notification|icon|tray.*)\.(png|ico)$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
+            {test: /lotus\d+\.(png|ico)$/, loader: 'file-loader', options: {name: 'icons/[name].[ext]'}}
         ]
     },
     node: {
@@ -143,6 +145,11 @@ const mainConfig = {
                         from: path.resolve(__dirname, '..', 'assets', '**', '*').replace(/\\/g, '/'),
                         to: path.join('assets'),
                         context: path.resolve(__dirname, '..', 'assets')
+                    },
+                    {
+                        from: path.resolve(__dirname, 'build', 'icons', '*').replace(/\\/g, '/'),
+                        to: path.join('icons'),
+                        context: path.resolve(__dirname, 'build', 'icons')
                     }
                 ]
             }

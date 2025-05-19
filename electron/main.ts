@@ -55,11 +55,50 @@ import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
 import checkForGitRelease from './updater';
 
-// tslint:disable-next-line:no-require-imports
-const pngIcon = path.join(__dirname, <string>require('./build/icon.png').default);
 
-// tslint:disable-next-line:no-require-imports
-const winIcon = path.join(__dirname, <string>require('./build/icon.ico').default);
+//region Icon
+let pngIcon: string,
+    winIcon: string;
+
+if (process.platform === 'win32') {
+    const iconDir = path.join(__dirname, 'icons');
+    const icons = fs.readdirSync(iconDir).filter(file => file.endsWith('.ico'));
+
+    //log.debug('main.icon.win32', { icondir: iconDir, icons: icons });
+
+    if (icons.length > 0) {
+        const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+        winIcon = path.join(iconDir, randomIcon);
+
+        log.debug('main.icon.win32.found', { randomicon: randomIcon, final: winIcon });
+    }
+    else {
+        // tslint:disable-next-line:no-require-imports
+        winIcon = path.join(__dirname, <string>require('./build/icon.ico').default);
+
+        log.debug('main.icon.unix.default', winIcon);
+    }
+}
+else {
+    const iconDir = path.join(__dirname, 'icons');
+    const icons = fs.readdirSync(iconDir).filter(file => file.endsWith('.png'));
+
+    //log.debug('main.icon.unix', { icondir: iconDir, icons: icons });
+
+    if (icons.length > 0) {
+        const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+        pngIcon = path.join(iconDir, randomIcon);
+
+        log.debug('main.icon.unix.found', { randomicon: randomIcon, final: pngIcon });
+    }
+    else {
+        // tslint:disable-next-line:no-require-imports
+        pngIcon = path.join(__dirname, <string>require('./build/icon.png').default);
+
+        log.debug('main.icon.unix.default', pngIcon);
+    }
+}
+
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
