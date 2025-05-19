@@ -29,39 +29,39 @@
  * @version 3.0
  * @see {@link https://github.com/f-list/exported|GitHub repo}
  */
-
-import * as electron from 'electron';
-import * as remoteMain from '@electron/remote/main';
-
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import * as fs from 'fs';
 import * as path from 'path';
-// import * as url from 'url';
+
+import * as electron from 'electron';
+const app = electron.app; // Module to control application life.
+
+import ElectronLog from 'electron-log';
+const log = ElectronLog.scope('main');
+
+// ElectronLog.transports.file.resolvePath = () => path.join(
+//     app.getPath('logs'), ElectronLog.transports.file.fileName
+// );
+
+import * as remoteMain from '@electron/remote/main';
+remoteMain.initialize();
+
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
 import * as windowState from './window_state';
-// import BrowserWindow = electron.BrowserWindow;
-import MenuItem = electron.MenuItem;
-import MenuItemConstructorOptions = electron.MenuItemConstructorOptions;
-import DownloadItem = electron.DownloadItem;
 import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
-import { IpcMainEvent } from 'electron';
 import { BlockerIntegration } from './blocker/blocker';
+
+type MenuItem = electron.MenuItem
 
 //tslint:disable-next-line:no-require-imports
 const pck = require('./package.json');
-
-// Module to control application life.
-const app = electron.app;
 
 // tslint:disable-next-line:no-require-imports
 const pngIcon = path.join(__dirname, <string>require('./build/icon.png').default);
 
 // tslint:disable-next-line:no-require-imports
 const winIcon = path.join(__dirname, <string>require('./build/icon.ico').default);
-
-remoteMain.initialize();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -141,8 +141,8 @@ function setGeneralSettings(value: GeneralSettings): void {
 
     shouldImportSettings = false;
 
-    log.transports.file.level = settings.risingSystemLogLevel;
-    log.transports.console.level = settings.risingSystemLogLevel;
+    ElectronLog.transports.file.level = settings.risingSystemLogLevel;
+    ElectronLog.transports.console.level = settings.risingSystemLogLevel;
 }
 
 async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
@@ -310,7 +310,7 @@ function createWindow(): electron.BrowserWindow | undefined {
     // stopping conversation logs from being downloaded
     electron.session.defaultSession.on(
         'will-download',
-        (e: Event, item: DownloadItem) => {
+        (e: Event, item: electron.DownloadItem) => {
             if (!item.getURL().match(/^blob:file:/)) {
                 log.info('download.prevent', { item, event: e });
                 e.preventDefault();
@@ -402,9 +402,9 @@ function onReady(): void {
 
     const logLevel = (process.env.NODE_ENV === 'production') ? 'info' : 'silly';
 
-    log.transports.file.level = settings.risingSystemLogLevel || logLevel;
-    log.transports.console.level = settings.risingSystemLogLevel || logLevel;
-    log.transports.file.maxSize = 5 * 1024 * 1024;
+    ElectronLog.transports.file.level = settings.risingSystemLogLevel || logLevel;
+    ElectronLog.transports.console.level = settings.risingSystemLogLevel || logLevel;
+    ElectronLog.transports.file.maxSize = 5 * 1024 * 1024;
 
     log.info('Starting application.');
 
@@ -523,8 +523,8 @@ function onReady(): void {
         setGeneralSettings(settings);
     };
 
-    const setSystemLogLevel = (logLevell: log.LevelOption) => {
-        settings.risingSystemLogLevel = logLevell;
+    const setSystemLogLevel = (logLevel: ElectronLog.LevelOption) => {
+        settings.risingSystemLogLevel = logLevel;
         setGeneralSettings(settings);
     };
 
@@ -619,7 +619,7 @@ function onReady(): void {
                         {
                             checked: settings.risingSystemLogLevel === level,
                             label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
-                            click: () => setSystemLogLevel(level as log.LevelOption),
+                            click: () => setSystemLogLevel(level as ElectronLog.LevelOption),
                             type: <'radio'>'radio'
                         }
                     ))
@@ -667,7 +667,7 @@ function onReady(): void {
                         }
                     }
                 }
-            ] as MenuItemConstructorOptions[]
+            ] as electron.MenuItemConstructorOptions[]
         },
         {
             label: `&${l('action.edit')}`,
@@ -679,7 +679,7 @@ function onReady(): void {
                 {role: 'copy'},
                 {role: 'paste'},
                 {role: 'selectall'}
-            ] as MenuItemConstructorOptions[]
+            ] as electron.MenuItemConstructorOptions[]
         },
         viewItem,
         {
@@ -756,7 +756,7 @@ function onReady(): void {
 
 
     const adCoordinator = new AdCoordinatorHost();
-    electron.ipcMain.on('request-send-ad', (event: IpcMainEvent, adId: string) => (adCoordinator.processAdRequest(event, adId)));
+    electron.ipcMain.on('request-send-ad', (event: electron.IpcMainEvent, adId: string) => (adCoordinator.processAdRequest(event, adId)));
 
 
     const emptyBadge = electron.nativeImage.createEmpty();
