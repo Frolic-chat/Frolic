@@ -51,11 +51,8 @@ import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from '
 import * as windowState from './window_state';
 import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { BlockerIntegration } from './blocker/blocker';
-
-type MenuItem = electron.MenuItem
-
-//tslint:disable-next-line:no-require-imports
-const pck = require('./package.json');
+import * as FROLIC from '../constants/frolic';
+import checkForGitRelease from './updater';
 
 // tslint:disable-next-line:no-require-imports
 const pngIcon = path.join(__dirname, <string>require('./build/icon.png').default);
@@ -349,7 +346,7 @@ function createWindow(): electron.BrowserWindow | undefined {
 
 function showPatchNotes(): void {
     //tslint:disable-next-line: no-floating-promises
-    //openURLExternally('https://github.com/Frolic-chat/Frolic/blob/master/CHANGELOG.md');
+    openURLExternally(FROLIC.ChangelogUrl);
 }
 
 function openBrowserSettings(): electron.BrowserWindow | undefined {
@@ -417,49 +414,13 @@ function onReady(): void {
         setGeneralSettings(settings);
     }
 
-    // require('update-electron-app')(
-    //   {
-    //     repo: 'https://github.com/Frolic-chat/Frolic.git',
-    //     updateInterval: '3 hours',
-    //     logger: require('electron-log')
-    //   }
-    // );
-
-    //tslint:disable-next-line: no-unsafe-any
-    const updaterUrl = `https://update.electronjs.org/Frolic-chat/Frolic/${process.platform}-${process.arch}/${pck.version}`;
-    if((process.env.NODE_ENV === 'production') && (process.platform !== 'darwin')) {
-        electron.autoUpdater.setFeedURL({url: updaterUrl + (settings.beta ? '?channel=beta' : ''), serverType: 'json'});
-        setTimeout(() => electron.autoUpdater.checkForUpdates(), 10000);
-        const updateTimer = setInterval(() => electron.autoUpdater.checkForUpdates(), 24 * 60 * 60 * 1000);
-        electron.autoUpdater.on('update-downloaded', () => {
-            clearInterval(updateTimer);
-            const menu = electron.Menu.getApplicationMenu()!;
-            const item = menu.getMenuItemById('update') as MenuItem | null;
-            if(item !== null) item.visible = true;
-            else
-                menu.append(new electron.MenuItem({
-                    label: l('action.updateAvailable'),
-                    submenu: electron.Menu.buildFromTemplate([{
-                        label: l('action.update'),
-                        click: () => {
-                            for(const w of windows) w.webContents.send('quit');
-                            electron.autoUpdater.quitAndInstall();
-                        }
-                    }, {
-                        label: l('help.changelog'),
-                        click: showPatchNotes
-                    }]),
-                    id: 'update'
-                }));
-            electron.Menu.setApplicationMenu(menu);
-            for(const w of windows) w.webContents.send('update-available', true);
-        });
-        electron.autoUpdater.on('update-not-available', () => {
-            for(const w of windows) w.webContents.send('update-available', false);
-            const item = electron.Menu.getApplicationMenu()!.getMenuItemById('update') as MenuItem | null;
-            if(item !== null) item.visible = false;
-        });
-        electron.autoUpdater.on('error', (e) => log.error(e));
+    const updateMenuItem = {
+        label: l('action.updateAvailable'),
+        id: 'update',
+        visible: false,
+        click: () => {
+            openURLExternally(FROLIC.GitHubReleasesUrl);
+        }
     }
 
     const viewItem = {
@@ -529,6 +490,7 @@ function onReady(): void {
     };
 
     electron.Menu.setApplicationMenu(electron.Menu.buildFromTemplate([
+        updateMenuItem,
         {
             label: `&${l('title')}`,
             submenu: [
@@ -712,6 +674,41 @@ function onReady(): void {
             ]
         }
     ]));
+
+    //region Updater
+    const updateCheckTimer = setInterval(
+        async () => {
+            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+
+            if (hasUpdate) {
+                clearInterval(updateCheckTimer);
+
+                const menu = electron.Menu.getApplicationMenu()!;
+                const item = menu.getMenuItemById(updateMenuItem.id);
+                if (item !== null) item.visible = true;
+
+                for (const w of windows) w.webContents.send('update-available', true);
+            }
+        },
+        FROLIC.UpdateCheckInterval
+    );
+
+    setTimeout(
+        async () => {
+            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+
+            if (hasUpdate) {
+                clearInterval(updateCheckTimer);
+
+                const menu = electron.Menu.getApplicationMenu()!;
+                const item = menu.getMenuItemById(updateMenuItem.id);
+                if (item !== null) item.visible = true;
+
+                for (const w of windows) w.webContents.send('update-available', true);
+            }
+        },
+        6000 // 6 seconds
+    );
 
     electron.ipcMain.on('tab-added', (_event: Event, id: number) => {
         const webContents = electron.webContents.fromId(id);

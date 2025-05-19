@@ -3,8 +3,8 @@
         <div v-html="styling"></div>
         <div style="display:flex;align-items:stretch;border-bottom-width:1px" class="border-bottom" id="window-tabs">
             <h4 style="padding:2px 0">🪻 Frolic!</h4>
-            <div class="btn" :class="'btn-' + (hasUpdate ? 'warning' : 'light')" @click="openMenu" id="settings">
-                <i class="fa fa-cog"></i>
+            <div class="btn" :class="'btn-' + (hasUpdate ? 'info' : 'light')" @click="openMenu" id="settings">
+                <i :class="hasUpdate ? 'far fa-sun' : 'fa fa-cog'"></i>
             </div>
             <ul class="nav nav-tabs" style="border-bottom:0;margin-bottom:-1px;margin-top:1px" ref="tabs">
                 <li v-for="(tab,index) in tabs" :key="'tab-' + index" class="nav-item" @click.middle="remove(tab)">
