@@ -272,10 +272,9 @@ function createWindow(): electron.BrowserWindow | undefined {
           nodeIntegration: true,
           nodeIntegrationInWorker: true,
           spellcheck: true,
-          enableRemoteModule: true,
           contextIsolation: false,
           partition: 'persist:fchat',
-        } as any
+        }
     };
 
     if(process.platform === 'darwin') {
