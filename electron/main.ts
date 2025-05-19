@@ -412,7 +412,7 @@ function onReady(): void {
 
     log.info('Starting application.');
 
-    app.setAppUserModelId('com.squirrel.fchat.F-Chat');
+    app.setAppUserModelId('com.squirrel.fchat.Frolic');
     app.on('open-file', createWindow);
 
     if(settings.version !== app.getVersion()) {
