@@ -57,7 +57,7 @@ type RequestData = {
                         amount: number;
                         folder: FolderId;           };
 
-    starred:             null;
+    starred:        {   };
                     // {   notes:      NoteId[];
                     //     state:      null;       // Fix this
                     //     csrf_token: string; };
@@ -66,7 +66,7 @@ type RequestData = {
                         amount: number;
                         folder: FolderId;           };
 
-    getFolders:         null;
+    getFolders:     {   };
     searchUser:     {   offset: number;
                         amount: number;
                         name:   CharacterName;      };
@@ -75,7 +75,7 @@ type RequestData = {
                         amount: number;
                         query:  string;             };
 
-    getFilters:         null;
+    getFilters:     {   };
     setFilters:     {   filters:    Filter[];       // ???
                         csrf_token: CsrfToken;      };
 
@@ -105,7 +105,7 @@ type RequestData = {
                         state:      null;       // Fix this
                         folder_id:  FolderId;       };
 
-    starSelected:       string,
+    starSelected:   {   };
     trashSelected:  {   notes:      NoteId[];
                         csrf_token: CsrfToken;      };
 
@@ -119,43 +119,51 @@ type RequestData = {
                         csrf_token: CsrfToken;      };
 }
 
+const RequestDataStatic: Partial<RequestData> = {
+
+}
+
 type RequestLayout = Record<Commands, { url: string, method?: 'GET' | 'POST', dataType?: 'json' }>;
 
 const RequestStatic: RequestLayout = {
-    refreshAllCounts: { url: 'json/notes-getfolders.json' },
-    emptyTrash:     {   url: 'json/notes-emptytrash.json', },
-    report:             'json/notes-report.json',
+    refreshAllCounts:
+                    {   url: 'json/notes-getfolders.json'    },
+    emptyTrash:     {   url: 'json/notes-emptytrash.json',   },
+    report:         {   url: 'json/notes-report.json',       },
 
-    send:               'json/notes-send.json',
+    send:           {   url: 'json/notes-send.json',         },
 
-    addFolder:          'json/notes-createfolder.json',
-    renameFolder:       'json/notes-renamefolder.json',
-    deleteFolder:       'json/notes-deletefolder.json',
+    addFolder:      {   url: 'json/notes-createfolder.json', },
+    renameFolder:   {   url: 'json/notes-renamefolder.json', },
+    deleteFolder:   {   url: 'json/notes-deletefolder.json', },
 
     // get
-    notes:              'json/notes-get.json',
-    unread:             'json/notes-getunread.json',
-    starred:            'json/notes-getstarred.json', // json/notes-getstarred.php
+    notes:          {   url: 'json/notes-get.json',          },
+    unread:         {   url: 'json/notes-getunread.json',    },
+    starred:        {   url: 'json/notes-getstarred.json',   },
+                        // json/notes-getstarred.php
 
-    getFolders:         'json/notes-getfolders.json',
+    getFolders:     {   url: 'json/notes-getfolders.json',   },
 
-    searchUser:         'json/notes-searchuser.json',
-    searchContent:      {   url:    'json/notes-searchcontent.json',
-                            method: 'GET',          },
-    getFilters:         'json/notes-getfilters.json',
-    setFilters:         'json/notes-setfilters.json',
+    searchUser:     {   url: 'json/notes-searchuser.json',   },
+    searchContent:  {   url: 'json/notes-searchcontent.json',
+                        method: 'GET',                       },
+    getFilters:     {   url: 'json/notes-getfilters.json',   },
+    setFilters:     {   url: 'json/notes-setfilters.json',   },
 
-    markNoteRead:       'json/notes-setread.json',
-    starNote:           'json/notes-setstarred.json',
-    trashNote:          'json/notes-trash.json',
-    undeleteNote:       {   url:    'json/notes-setfolder', // just uses setFolder
-                            method: 'POST',         },
+    markNoteRead:   {   url: 'json/notes-setread.json',      },
+    starNote:       {   url: 'json/notes-setstarred.json',   },
+    trashNote:      {   url: 'json/notes-trash.json',        },
+    undeleteNote:   {   url: 'json/notes-setfolder',
+                        method: 'POST',                      },
 
-    markSelectedRead:   'json/notes-setread.json',
-    starSelected:       'json/notes-setstarred.json',
-    trashSelected:      'json/notes-trash.json',
-    undeleteSelected:   'json/notes-setfolder.json',
-    moveSelected:       'json/notes-setfolder.json',
+    markSelectedRead:
+                    {   url: 'json/notes-setread.json',      },
+    starSelected:   {   url: 'json/notes-setstarred.json',   },
+    trashSelected:  {   url: 'json/notes-trash.json',        },
+    undeleteSelected:
+                    {   url: 'json/notes-setfolder.json',    },
+    moveSelected:   {   url: 'json/notes-setfolder.json',    },
 }
 
 type ResponseData = {
@@ -215,17 +223,10 @@ interface ApiReq<T extends Commands> {
 }
 
 function ConstructApiCall<T extends Commands>(key: T, data: RequestData[T]): ApiReq<T> {
-    // return {
-    //     url:        RequestStatic[key].url,
-    //     method:     RequestStatic[key].method || 'POST',
-    //     dataType:   RequestStatic[key].dataType || 'json',
-    //     data
-    // };
-
     return {
-        ...{ method: 'POST', dataType: 'json' }, // These are defaults, they are meant to be overwritten by any defined information.
-        ...RequestStatic[key], // This looks like: { url: string, method: 'POST' | 'GET'; dataType: 'json' | undefined }
-        data: { ...RequestDataStatic[key], ...data } // data is an object
+        ...{ method: 'POST', dataType: 'json' }, // defaults
+        ...RequestStatic[key],
+        data: { ...RequestDataStatic[key], ...data }
     };
 }
 
