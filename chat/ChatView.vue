@@ -539,7 +539,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             flex-shrink: 0;
 
             min-width: 92px;
-            max-width: 147px;
+            max-width: 138px;
 
             > a {
                 display:block;
@@ -712,6 +712,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
             .body {
                 display: block;
+                // overflow-x: hidden; // Possible solution to username ellipses overflowing.
             }
 
             .expander {
