@@ -1,16 +1,3 @@
-type CsrfToken      = string;
-type CharacterName  = string;
-type CharacterId    = number;
-type NoteId         = number;
-type ActionId       = number;
-type FolderId       = number;
-type ConditionId    = number;
-type NoteBool       = 1 | 0;
-
-// FList.Notes.xxx
-type offset = number;
-type amount = number;
-
 type Commands =
   | 'refreshAllCounts'
   | 'emptyTrash'
@@ -32,110 +19,26 @@ type Commands =
   | 'trashSelected'    | 'undeleteSelected'
   | 'moveSelected';
 
-type RequestData = {
-    // getFolders()
-    refreshAllCounts:
-                    {   notes:      [];         // Fix this
-                        folder_id:  FolderId;       };
-
-    send:           {   },
-
-    addFolder:      {   name:       string;
-                        csrf_token: CsrfToken;      };
-
-    renameFolder:   {   folder:     string;
-                        name:       string;
-                        csrf_token: CsrfToken;      };
-
-    deleteFolder:   {   folder:     string;
-                        csrf_token: CsrfToken;      };
-
-    emptyTrash:     {   csrf_token: CsrfToken;      };
-
-    // get
-    notes:          {   offset: number;
-                        amount: number;
-                        folder: FolderId;           };
-
-    starred:        {   };
-                    // {   notes:      NoteId[];
-                    //     state:      null;       // Fix this
-                    //     csrf_token: string; };
-
-    unread:         {   offset: number;
-                        amount: number;
-                        folder: FolderId;           };
-
-    getFolders:     {   };
-    searchUser:     {   offset: number;
-                        amount: number;
-                        name:   CharacterName;      };
-
-    searchContent:  {   offset: number;
-                        amount: number;
-                        query:  string;             };
-
-    getFilters:     {   };
-    setFilters:     {   filters:    Filter[];       // ???
-                        csrf_token: CsrfToken;      };
-
-    markNoteRead:   {   notes:      NoteMetadata[];
-                        state:      null;            // Fix this
-                        folder_id:  FolderId;
-                        csrf_token: CsrfToken;      };
-
-    starNote:       {   notes:      NoteMetadata[];
-                        state:      null;           // Fix this
-                        csrf_token: CsrfToken;      };
-
-    trashNote:      {   notes:      NoteMetadata[];
-                        csrf_token: CsrfToken;      };
-
-    undeleteNote:   {   notes:      NoteId[];
-                        folder_id:  1;
-                        csrf_token: CsrfToken;      };
-
-    report:         {   note_id:    NoteId;
-                        reason:     string;
-                        csrf_token: CsrfToken;      };
-
-    markSelectedRead:
-                    {   notes:      NoteId[];
-                        csrf_token: CsrfToken;
-                        state:      null;       // Fix this
-                        folder_id:  FolderId;       };
-
-    starSelected:   {   };
-    trashSelected:  {   notes:      NoteId[];
-                        csrf_token: CsrfToken;      };
-
-    undeleteSelected: // just uses moveSelected
-                    {   notes:      NoteId[];
-                        folder_id:  FolderId;
-                        csrf_token: CsrfToken;      };
-
-    moveSelected:   {   notes:      NoteId[];
-                        folder_id:  FolderId;
-                        csrf_token: CsrfToken;      };
-}
-
-const RequestDataStatic: Partial<RequestData> = {
-
-}
-
 type RequestLayout = Record<Commands, { url: string, method?: 'GET' | 'POST', dataType?: 'json' }>;
 
 const RequestStatic: RequestLayout = {
     refreshAllCounts:
                     {   url: 'json/notes-getfolders.json'    },
-    emptyTrash:     {   url: 'json/notes-emptytrash.json',   },
-    report:         {   url: 'json/notes-report.json',       },
+    emptyTrash:     {   url: 'json/notes-emptytrash.json',
+                        method: 'POST',
+                        dataType: 'json',                    },
+    report:         {   url: 'json/notes-report.json',
+                        method: 'POST',                      },
 
-    send:           {   url: 'json/notes-send.json',         },
+    send:           {   url: 'json/notes-send.json',
+                        method: 'POST',                      },
 
-    addFolder:      {   url: 'json/notes-createfolder.json', },
-    renameFolder:   {   url: 'json/notes-renamefolder.json', },
-    deleteFolder:   {   url: 'json/notes-deletefolder.json', },
+    addFolder:      {   url: 'json/notes-createfolder.json',
+                        method: 'POST',                      },
+    renameFolder:   {   url: 'json/notes-renamefolder.json',
+                        method: 'POST',                      },
+    deleteFolder:   {   url: 'json/notes-deletefolder.json',
+                        method: 'POST',                      },
 
     // get
     notes:          {   url: 'json/notes-get.json',          },
@@ -151,19 +54,160 @@ const RequestStatic: RequestLayout = {
     getFilters:     {   url: 'json/notes-getfilters.json',   },
     setFilters:     {   url: 'json/notes-setfilters.json',   },
 
-    markNoteRead:   {   url: 'json/notes-setread.json',      },
-    starNote:       {   url: 'json/notes-setstarred.json',   },
-    trashNote:      {   url: 'json/notes-trash.json',        },
+    markNoteRead:   {   url: 'json/notes-setread.json',
+                        method: 'POST',                      },
+    starNote:       {   url: 'json/notes-setstarred.json',
+                        method: 'POST',                      },
+    trashNote:      {   url: 'json/notes-trash.json',
+                        method: 'POST',                      },
     undeleteNote:   {   url: 'json/notes-setfolder',
                         method: 'POST',                      },
 
     markSelectedRead:
-                    {   url: 'json/notes-setread.json',      },
-    starSelected:   {   url: 'json/notes-setstarred.json',   },
-    trashSelected:  {   url: 'json/notes-trash.json',        },
+                    {   url: 'json/notes-setread.json',
+                        method: 'POST',                      },
+    starSelected:   {   url: 'json/notes-setstarred.json',
+                        method: 'POST',                      },
+    trashSelected:  {   url: 'json/notes-trash.json',
+                        method: 'POST',                      },
     undeleteSelected:
-                    {   url: 'json/notes-setfolder.json',    },
-    moveSelected:   {   url: 'json/notes-setfolder.json',    },
+                    {   url: 'json/notes-setfolder.json',
+                        method: 'POST',                      },
+    moveSelected:   {   url: 'json/notes-setfolder.json',
+                        method: 'POST',                      },
+}
+
+type RequestData = {
+    // getFolders()
+    refreshAllCounts: // TODO: Uses data from current folder.
+                    {   notes:      NoteId[];           // "items"
+                        folder_id:  FolderId;       };  // "_folder"
+
+    send:           {   title:      string,
+                        message:    string,
+                        dest:       string,
+                        source:     string,
+                        csrf_token: CsrfToken,      },
+
+    addFolder:      {   name:       string;
+                        csrf_token: CsrfToken;      };
+
+    renameFolder:   {   folder:     FolderId;
+                        name:       string;
+                        csrf_token: CsrfToken;      };
+
+    deleteFolder:   {   folder:     FolderId;
+                        csrf_token: CsrfToken;      };
+
+    emptyTrash:     {   csrf_token: CsrfToken;      };
+
+    // get
+    notes:          {   offset: offset;
+                        amount: amount;
+                        folder: FolderId;           };
+
+    starred:        {   offset: offset;                 // Probably
+                        amount: amount;
+                        folder: FolderId;           };
+
+    unread:         {   offset: offset;
+                        amount: amount;
+                        folder: FolderId;           };
+
+    getFolders:     null;
+    searchUser:     {   offset: offset;
+                        amount: amount;
+                        name:   CharacterName;      };
+
+    searchContent:  {   offset: offset;
+                        amount: amount;
+                        query:  string;             };
+
+    getFilters:     null;
+    setFilters:     {   filters:    Filter;
+                        csrf_token: CsrfToken;      };
+
+    markNoteRead:   {   notes:      NoteId[];
+                        state:      NoteBool;
+                        folder_id:  FolderId;
+                        csrf_token: CsrfToken;      };
+
+    starNote:       {   notes:      NoteId[];
+                        state:      NoteBool;
+                        csrf_token: CsrfToken;      };
+
+    trashNote:      {   notes:      NoteId[];
+                        csrf_token: CsrfToken;      };
+
+    undeleteNote:   {   notes:      NoteId[];
+                        folder_id:  1;
+                        csrf_token: CsrfToken;      };
+
+    report:         {   note_id:    NoteId;
+                        reason:     string;
+                        csrf_token: CsrfToken;      };
+
+    markSelectedRead:
+                    {   notes:      NoteId[];
+                        csrf_token: CsrfToken;
+                        state:      NoteBool;
+                        folder_id:  FolderId;       };
+
+    starSelected:   {   notes:      NoteId[],
+                        state:      NoteBool;
+                        csrf_token: CsrfToken;      };
+    trashSelected:  {   notes:      NoteId[];
+                        csrf_token: CsrfToken;      };
+
+    undeleteSelected:
+                    {   notes:      NoteId[];
+                        folder_id:  1;
+                        csrf_token: CsrfToken;      };
+
+    moveSelected:   {   notes:      NoteId[];
+                        folder_id:  FolderId;
+                        csrf_token: CsrfToken;      };
+}
+
+type DeepPartial<T>  = { [P in keyof T]?:  DeepPartial<T[P]>;  };
+type DeepRequired<T> = { [P in keyof T]-?: DeepRequired<T[P]>; };
+
+const RequestDataStatic: DeepPartial<RequestData> = {
+    refreshAllCounts:
+                    {   },
+
+    send:           {   },
+
+    addFolder:      {   },
+    renameFolder:   {   },
+    deleteFolder:   {   },
+    emptyTrash:     {   },
+
+    // get
+    notes:          {   },
+    starred:        {   },
+    unread:         {   },
+    getFolders:     null,
+
+    searchUser:     {   },
+    searchContent:  {   },
+    getFilters:     null,
+    setFilters:     {   },
+
+    markNoteRead:   {   },
+    starNote:       {   },
+    trashNote:      {   },
+    undeleteNote:   {   folder_id:  1,              },
+
+    report:         {   },
+
+    markSelectedRead:
+                    {   },
+    starSelected:   {   },
+    trashSelected:  {   },
+    undeleteSelected:
+                    {   },
+    moveSelected:   {   },
 }
 
 type ResponseData = {
@@ -222,13 +266,48 @@ interface ApiReq<T extends Commands> {
     data:       RequestData[T],
 }
 
-function ConstructApiCall<T extends Commands>(key: T, data: RequestData[T]): ApiReq<T> {
+/**
+ * @param call API request call to issue
+ * @param data Object containing the data to be sent with the request
+ * @returns A fully formatted API Request ready to be issued
+ * @example ConstructApiRequest("deleteFolder", { folder: 2, csrf_token: Token.get()})
+ */
+function ConstructApiRequest<T extends Commands>(call: T, data: RequestData[T] = null): ApiReq<T> {
+    // TODO:
+    //JSON.stringify(Filters);
+	//don't use `data` in certain Command types.
+    //        ConstructApiRequest("getFolders")
+
     return {
         ...{ method: 'POST', dataType: 'json' }, // defaults
-        ...RequestStatic[key],
-        data: { ...RequestDataStatic[key], ...data }
+        ...RequestStatic[call],
+        data: { ...RequestDataStatic[call], ...data }, // ??
     };
 }
+
+type CsrfToken      = string;
+type CharacterName  = string;
+type CharacterId    = number;
+/** The NoteId is a per-character(?) unique id
+ *
+ * In FList.js it's gotten by chopping the first 9 characters off the id of the span surrounding the checkbox.
+ * It can also be gotten from the name of the checkbox input.
+ *
+ * It can be used for all note-related tasks, including navigating to the page of the note.
+ * @example
+ * .../view_note.php?note_id=953
+ * span class="CheckNote panel list-highlight" id="CheckNote953"
+ * input type="checkbox" name="Note_953"
+ */
+type NoteId         = number;
+type ActionId       = number;
+type FolderId       = number;
+type ConditionId    = number;
+type NoteBool       = 1 | 0;
+
+// FList.Notes.xxx
+type offset = number;
+type amount = number;
 
 interface NoteMetadata {
     note_id:             NoteId;
@@ -251,16 +330,20 @@ interface Folder {
 }
 
 interface Condition {
-    condition_id:   ConditionId,
+    condition_id?:  ConditionId,        // not used in storefilters
     type:           'to-dest' | string,
     value:          string,
-    action_id:      ActionId,
+    action_id?:     ActionId,           // not used in storefilters
 }
 
+type Conditions = Condition[];
+
 interface Filter {
-    action_id:  ActionId,
+    action_id?: ActionId,   // not used in storefilters
     folder_id:  FolderId,
     read:       NoteBool,
     starred:    NoteBool,
-    conditions: Condition[],
+    conditions: Conditions,
 }
+
+type Filters = Filter[]; // Somewhere, we run this through JSON.stringify();
