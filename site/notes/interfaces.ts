@@ -19,14 +19,16 @@ type Commands =
   | 'trashSelected'    | 'undeleteSelected'
   | 'moveSelected';
 
-type RequestLayout = Record<Commands, { url: string, method?: 'GET' | 'POST', dataType?: 'json' }>;
+
+/**         REQUEST         */
+//region Request
+type RequestLayout = Record<Commands, { url: string, method?: 'GET' | 'POST', data?: RequestData[Commands]}>;
 
 const RequestStatic: RequestLayout = {
     refreshAllCounts:
                     {   url: 'json/notes-getfolders.json'    },
     emptyTrash:     {   url: 'json/notes-emptytrash.json',
-                        method: 'POST',
-                        dataType: 'json',                    },
+                        method: 'POST',                      },
     report:         {   url: 'json/notes-report.json',
                         method: 'POST',                      },
 
@@ -45,12 +47,10 @@ const RequestStatic: RequestLayout = {
     unread:         {   url: 'json/notes-getunread.json',    },
     starred:        {   url: 'json/notes-getstarred.json',   },
                         // json/notes-getstarred.php
-
     getFolders:     {   url: 'json/notes-getfolders.json',   },
 
     searchUser:     {   url: 'json/notes-searchuser.json',   },
-    searchContent:  {   url: 'json/notes-searchcontent.json',
-                        method: 'GET',                       },
+    searchContent:  {   url: 'json/notes-searchcontent.json',},
     getFilters:     {   url: 'json/notes-getfilters.json',   },
     setFilters:     {   url: 'json/notes-setfilters.json',   },
 
@@ -79,10 +79,13 @@ const RequestStatic: RequestLayout = {
 
 type RequestData = {
     // getFolders()
-    refreshAllCounts: // TODO: Uses data from current folder.
+    refreshAllCounts:           // TODO: Uses data from current folder.
                     {   notes:      NoteId[];           // "items"
                         folder_id:  FolderId;       };  // "_folder"
-
+    emptyTrash:     {   csrf_token: CsrfToken;      };
+    report:         {   note_id:    NoteId;
+                        reason:     string;
+                        csrf_token: CsrfToken;      };
     send:           {   title:      string,
                         message:    string,
                         dest:       string,
@@ -91,60 +94,45 @@ type RequestData = {
 
     addFolder:      {   name:       string;
                         csrf_token: CsrfToken;      };
-
     renameFolder:   {   folder:     FolderId;
                         name:       string;
                         csrf_token: CsrfToken;      };
-
     deleteFolder:   {   folder:     FolderId;
                         csrf_token: CsrfToken;      };
-
-    emptyTrash:     {   csrf_token: CsrfToken;      };
 
     // get
     notes:          {   offset: offset;
                         amount: amount;
                         folder: FolderId;           };
-
-    starred:        {   offset: offset;                 // Probably
-                        amount: amount;
-                        folder: FolderId;           };
-
     unread:         {   offset: offset;
                         amount: amount;
                         folder: FolderId;           };
+    starred:        {   offset: offset;                 // Probably
+                        amount: amount;
+                        folder: FolderId;           };
+    getFolders:     undefined;
 
-    getFolders:     null;
     searchUser:     {   offset: offset;
                         amount: amount;
                         name:   CharacterName;      };
-
     searchContent:  {   offset: offset;
                         amount: amount;
                         query:  string;             };
-
-    getFilters:     null;
-    setFilters:     {   filters:    Filter;
+    getFilters:     undefined;
+    setFilters:     {   filters:    Filters;
                         csrf_token: CsrfToken;      };
 
     markNoteRead:   {   notes:      NoteId[];
                         state:      NoteBool;
                         folder_id:  FolderId;
                         csrf_token: CsrfToken;      };
-
     starNote:       {   notes:      NoteId[];
                         state:      NoteBool;
                         csrf_token: CsrfToken;      };
-
     trashNote:      {   notes:      NoteId[];
                         csrf_token: CsrfToken;      };
-
     undeleteNote:   {   notes:      NoteId[];
                         folder_id:  1;
-                        csrf_token: CsrfToken;      };
-
-    report:         {   note_id:    NoteId;
-                        reason:     string;
                         csrf_token: CsrfToken;      };
 
     markSelectedRead:
@@ -152,18 +140,15 @@ type RequestData = {
                         csrf_token: CsrfToken;
                         state:      NoteBool;
                         folder_id:  FolderId;       };
-
     starSelected:   {   notes:      NoteId[],
                         state:      NoteBool;
                         csrf_token: CsrfToken;      };
     trashSelected:  {   notes:      NoteId[];
                         csrf_token: CsrfToken;      };
-
     undeleteSelected:
                     {   notes:      NoteId[];
                         folder_id:  1;
                         csrf_token: CsrfToken;      };
-
     moveSelected:   {   notes:      NoteId[];
                         folder_id:  FolderId;
                         csrf_token: CsrfToken;      };
@@ -173,97 +158,21 @@ type DeepPartial<T>  = { [P in keyof T]?:  DeepPartial<T[P]>;  };
 type DeepRequired<T> = { [P in keyof T]-?: DeepRequired<T[P]>; };
 
 const RequestDataStatic: DeepPartial<RequestData> = {
-    refreshAllCounts:
-                    {   },
-
-    send:           {   },
-
-    addFolder:      {   },
-    renameFolder:   {   },
-    deleteFolder:   {   },
-    emptyTrash:     {   },
-
-    // get
-    notes:          {   },
-    starred:        {   },
-    unread:         {   },
-    getFolders:     null,
-
-    searchUser:     {   },
-    searchContent:  {   },
-    getFilters:     null,
-    setFilters:     {   },
-
-    markNoteRead:   {   },
-    starNote:       {   },
-    trashNote:      {   },
-    undeleteNote:   {   folder_id:  1,              },
-
-    report:         {   },
-
-    markSelectedRead:
-                    {   },
-    starSelected:   {   },
-    trashSelected:  {   },
-    undeleteSelected:
-                    {   },
-    moveSelected:   {   },
-}
-
-type ResponseData = {
-//     refreshAllCounts:   {},
-
-//     send:               {},
-
-//     addFolder:          {},
-//     renameFolder:       string,
-//     deleteFolder:       string,
-
-//     emptyTrash:         string,
-
-//     // get
-//     getNotes:       {   notes: NoteMetadata[];
-//                         total: number;
-//                         error: string;      };
-
-//     getStarred:         string;
-//     getUnread:          string;
-//     getFolders:     {   folders: Folder[];
-//                         error:  string;     };
-
-//     searchUser:         string;
-//     searchContent:  {   notes: NoteMetadata[];
-//                         total: number;
-//                         error: string;      };
-
-//     getFilters:     {   filters: { [key: string]: Filter; },
-//                         error:   string;    };
-
-//     setFilters:         string,
-
-//     markNoteRead:       string,
-//     starNote:           string,
-//     trashNote:          string,
-//     undeleteNote:       string,
-
-//     report:             string,
-
-//     markSelectedRead:   string,
-//     starSelected:       string,
-//     trashSelected:      string,
-//     undeleteSelected:   string,
-//     moveSelected:       string,
+    getFolders:     undefined,
+    getFilters:     undefined,
+    undeleteNote:   {   folder_id:  1, },
 }
 
 /** ApiRequest
  *
- * A base type for all Api requests sent to the note server.
+ * An Api request to send to the note server.
  */
-interface ApiReq<T extends Commands> {
-    url:        typeof RequestStatic[T]['url'],
-    method:     'POST' | 'GET',
-    dataType:   'json',
-    data:       RequestData[T],
+interface NotesApiRequest<T extends Commands> {
+    url:        typeof RequestStatic[T]['url'],      // string
+    method:     typeof RequestStatic[T]['url'],      // string
+    dataType:   'json',                              // string literal
+    timeout:    number,                              // 30 seconds
+    data:       RequestData[T],                      // object | undefined
 }
 
 /**
@@ -272,23 +181,95 @@ interface ApiReq<T extends Commands> {
  * @returns A fully formatted API Request ready to be issued
  * @example ConstructApiRequest("deleteFolder", { folder: 2, csrf_token: Token.get()})
  */
-function ConstructApiRequest<T extends Commands>(call: T, data: RequestData[T] = null): ApiReq<T> {
+function ConstructApiRequest<T extends Commands>(call: T, data: RequestData[T]): NotesApiRequest<T> {
     // TODO:
-    //JSON.stringify(Filters);
 	//don't use `data` in certain Command types.
-    //        ConstructApiRequest("getFolders")
+    //        ConstructApiRequest("refreshAll")
+    // This could be done with an overload, then split the functions to understand only certain portions of Commands.
 
     return {
-        ...{ method: 'POST', dataType: 'json' }, // defaults
-        ...RequestStatic[call],
-        data: { ...RequestDataStatic[call], ...data }, // ??
+        ...{ method: 'GET', dataType: 'json', timeout: 30 * 1E3, }, // defaults
+        ...RequestStatic[call],                       // defaults for this call
+        data: { ...RequestDataStatic[call], ...data },
+        //data: RequestDataStatic[call] === undefined ? undefined : { ...RequestDataStatic[call], ...data },
     };
 }
 
+ConstructApiRequest("getFilters", undefined) // Shouldn't error, never has.
+//ConstructApiRequest("getFilters") // Shouldn't error
+//ConstructApiRequest("addFolder")  // Should error
+
+
+/**         RESPONSE        */
+//region Response
+type ResponseData = {
+    //     refreshAllCounts:   {},
+
+    //     send:               {},
+
+    //     addFolder:          {},
+    //     renameFolder:       string,
+    //     deleteFolder:       string,
+
+    //     emptyTrash:         string,
+
+    //     // get
+    notes:          {   notes: NoteMetadata[];
+                        total: number;
+                        error: string;              };
+
+    //     getStarred:         string;
+    //     getUnread:          string;
+    //     getFolders:     {   folders: Folder[];
+    //                         error:  string;     };
+
+    //     searchUser:         string;
+    //     searchContent:  {   notes: NoteMetadata[];
+    //                         total: number;
+    //                         error: string;      };
+
+    //     getFilters:     {   filters: { [key: string]: Filter; },
+    //                         error:   string;    };
+
+    //     setFilters:         string,
+
+    //     markNoteRead:       string,
+    //     starNote:           string,
+    //     trashNote:          string,
+    //     undeleteNote:       string,
+
+    //     report:             string,
+
+    //     markSelectedRead:   string,
+    //     starSelected:       string,
+    //     trashSelected:      string,
+    //     undeleteSelected:   string,
+    //     moveSelected:       string,
+}
+
+/**         TYPES           */
+//region Types
+/** CsrfToken is an authentican token from F-List'
+ *
+ * It is created in site-session (?)
+ * On the website it's gotten like this:
+ * @example
+ * FList.csrf_token = function() {
+ *     return $("#flcsrf-token").attr("content")
+ * }
+ */
 type CsrfToken      = string;
+/** Character name is a string.
+ *
+ * It should probably have validation, but doesn't.
+ */
 type CharacterName  = string;
+/** CharacterId is a number.
+ *
+ * It may be the site-wide ID of the user, but needs further research.
+ */
 type CharacterId    = number;
-/** The NoteId is a per-character(?) unique id
+/** NoteId is a per-character(?) unique id
  *
  * In FList.js it's gotten by chopping the first 9 characters off the id of the span surrounding the checkbox.
  * It can also be gotten from the name of the checkbox input.
@@ -301,6 +282,11 @@ type CharacterId    = number;
  */
 type NoteId         = number;
 type ActionId       = number;
+/** A numerical id.
+ * 1 - Inbox
+ * 2 - Outbox
+ * 3 - Trash
+ */
 type FolderId       = number;
 type ConditionId    = number;
 type NoteBool       = 1 | 0;
@@ -316,6 +302,9 @@ interface NoteMetadata {
     source_name:         CharacterName;
     dest_name:           CharacterName;
     dest_character_id:   CharacterId;
+    /** A relative time string.
+     * @example "1 mo, 5d ago"
+     */
     datetime_sent:       string;
     folder_id:           FolderId;
     read:                NoteBool;
@@ -335,7 +324,6 @@ interface Condition {
     value:          string,
     action_id?:     ActionId,           // not used in storefilters
 }
-
 type Conditions = Condition[];
 
 interface Filter {
@@ -345,5 +333,5 @@ interface Filter {
     starred:    NoteBool,
     conditions: Conditions,
 }
-
-type Filters = Filter[]; // Somewhere, we run this through JSON.stringify();
+type Filters = StringifiedJSON;
+type StringifiedJSON = string;
