@@ -46,7 +46,7 @@ const RequestStatic: RequestLayout = {
     notes:          {   url: 'json/notes-get.json',          },
     unread:         {   url: 'json/notes-getunread.json',    },
     starred:        {   url: 'json/notes-getstarred.json',   },
-                        // json/notes-getstarred.php
+                        // json/notes-getstarred.php ??? ?? ???????
     getFolders:     {   url: 'json/notes-getfolders.json',   },
 
     searchUser:     {   url: 'json/notes-searchuser.json',   },
@@ -60,7 +60,7 @@ const RequestStatic: RequestLayout = {
                         method: 'POST',                      },
     trashNote:      {   url: 'json/notes-trash.json',
                         method: 'POST',                      },
-    undeleteNote:   {   url: 'json/notes-setfolder',
+    undeleteNote:   {   url: 'json/notes-setfolder.json',
                         method: 'POST',                      },
 
     markSelectedRead:
@@ -78,7 +78,6 @@ const RequestStatic: RequestLayout = {
 }
 
 type RequestData = {
-    // getFolders()
     refreshAllCounts:           // TODO: Uses data from current folder.
                     {   notes:      NoteId[];           // "items"
                         folder_id:  FolderId;       };  // "_folder"
@@ -86,11 +85,7 @@ type RequestData = {
     report:         {   note_id:    NoteId;
                         reason:     string;
                         csrf_token: CsrfToken;      };
-    send:           {   title:      string,
-                        message:    string,
-                        dest:       string,
-                        source:     string,
-                        csrf_token: CsrfToken,      },
+    send:           NoteMetadata,
 
     addFolder:      {   name:       string;
                         csrf_token: CsrfToken;      };
@@ -139,7 +134,7 @@ type RequestData = {
                     {   notes:      NoteId[];
                         csrf_token: CsrfToken;
                         state:      NoteBool;
-                        folder_id:  FolderId;       };
+                        folder_id:  FolderId;       }; // Current folder (folder to return to?)
     starSelected:   {   notes:      NoteId[],
                         state:      NoteBool;
                         csrf_token: CsrfToken;      };
@@ -168,11 +163,11 @@ const RequestDataStatic: DeepPartial<RequestData> = {
  * An Api request to send to the note server.
  */
 interface NotesApiRequest<T extends Commands> {
-    url:        typeof RequestStatic[T]['url'],      // string
-    method:     typeof RequestStatic[T]['url'],      // string
-    dataType:   'json',                              // string literal
-    timeout:    number,                              // 30 seconds
-    data:       RequestData[T],                      // object | undefined
+    url:        RequestLayout[T]['url'],    // string
+    method:     RequestLayout[T]['method'], // string
+    dataType:   'json',                     // string literal
+    timeout:    number,                     // 30 seconds
+    data:       RequestData[T],             // object | undefined
 }
 
 /**
@@ -181,7 +176,7 @@ interface NotesApiRequest<T extends Commands> {
  * @returns A fully formatted API Request ready to be issued
  * @example ConstructApiRequest("deleteFolder", { folder: 2, csrf_token: Token.get()})
  */
-function ConstructApiRequest<T extends Commands>(call: T, data: RequestData[T]): NotesApiRequest<T> {
+function ComposeApiRequest<T extends Commands>(call: T, data: RequestData[T]): NotesApiRequest<T> {
     // TODO:
 	//don't use `data` in certain Command types.
     //        ConstructApiRequest("refreshAll")
@@ -195,56 +190,81 @@ function ConstructApiRequest<T extends Commands>(call: T, data: RequestData[T]):
     };
 }
 
-ConstructApiRequest("getFilters", undefined) // Shouldn't error, never has.
-//ConstructApiRequest("getFilters") // Shouldn't error
-//ConstructApiRequest("addFolder")  // Should error
+ComposeApiRequest("getFilters", undefined) // Shouldn't error, never has.
+//ComposeApiRequest("getFilters") // Shouldn't error
+//ComposeApiRequest("addFolder")  // Should error
 
 
 /**         RESPONSE        */
 //region Response
 type ResponseData = {
-    //     refreshAllCounts:   {},
+    //     refreshAllCounts:   {},  // Need experience.
+    //     emptyTrash:         {},
+    //     report:             {},
+    send:           {   total:  number,         // Inbox? Not always accurate.
+                        unread: number,
+                        error:  string,                 };
 
-    //     send:               {},
+    addFolder:      {   folder_id:  FolderId,
+                        name:       string,
+                        error:      string,             };
+    renameFolder:   {   name:  string,
+                        error: string,                  };
+    deleteFolder:   {   total:  number,         // Inbox
+                        unread: number,
+                        error:  string,                 };
 
-    //     addFolder:          {},
-    //     renameFolder:       string,
-    //     deleteFolder:       string,
-
-    //     emptyTrash:         string,
-
-    //     // get
-    notes:          {   notes: NoteMetadata[];
-                        total: number;
-                        error: string;              };
-
-    //     getStarred:         string;
-    //     getUnread:          string;
-    //     getFolders:     {   folders: Folder[];
-    //                         error:  string;     };
+    notes:          {   notes: NoteMetadata[],
+                        total: number,
+                        error: string,                  };
+    unread:         {   notes: NoteMetadata[],
+                        total: number,
+                        error: string,                  };
+    starred:         {  notes: NoteMetadata[],
+                        total: number,
+                        error: string,                  };
+    getFolders:     {   folders: Folder[],
+                        error:   string,                };
 
     //     searchUser:         string;
     //     searchContent:  {   notes: NoteMetadata[];
     //                         total: number;
     //                         error: string;      };
-
     //     getFilters:     {   filters: { [key: string]: Filter; },
     //                         error:   string;    };
-
     //     setFilters:         string,
 
-    //     markNoteRead:       string,
-    //     starNote:           string,
-    //     trashNote:          string,
-    //     undeleteNote:       string,
+    markNoteRead:   {   total:  number,
+                        unread: number,
+                        error:  string,                 };
+    starNote:       {   error:  string,                 };
+    trashNote:      {   counts: {   folder: number,
+                                    total:  number,
+                                    unread: number, }[],
+                        error:  string,                 };
+    undeleteNote:   {   counts: {   folder: number,
+                                    total:  number,
+                                    unread: number, }[],
+                        error:  string,                 };
 
-    //     report:             string,
-
-    //     markSelectedRead:   string,
-    //     starSelected:       string,
-    //     trashSelected:      string,
-    //     undeleteSelected:   string,
-    //     moveSelected:       string,
+    markSelectedRead:
+                    {   total:  number,
+                        unread: number,
+                        error:  string,                 };
+    starSelected:   {   error:  string,                 };
+    trashSelected:  {   counts: {   folder: number,
+                                    total:  number,
+                                    unread: number, }[],
+                        error:  string,                 };
+    undeleteSelected:
+                    {   counts: {   folder: number,
+                                    total:  number,
+                                    unread: number, }[],
+                        error:  string,                 };
+    moveSelected:   {   counts: {   folder: number,
+                                    total:  number,
+                                    unread: number, }[],
+                        error:  string,                 };
 }
 
 /**         TYPES           */
@@ -282,12 +302,15 @@ type CharacterId    = number;
  */
 type NoteId         = number;
 type ActionId       = number;
-/** A numerical id.
+/** A numerical id - sometimes received as a string for no apparent reason.
+ *
  * 1 - Inbox
+ *
  * 2 - Outbox
+ *
  * 3 - Trash
  */
-type FolderId       = number;
+type FolderId       = number | string;
 type ConditionId    = number;
 type NoteBool       = 1 | 0;
 
@@ -296,19 +319,27 @@ type offset = number;
 type amount = number;
 
 interface NoteMetadata {
-    note_id:             NoteId;
-    title:               string;
-    source_character_id: CharacterId;
-    source_name:         CharacterName;
-    dest_name:           CharacterName;
-    dest_character_id:   CharacterId;
+    note_id:             NoteId,
+    title:               string,
+    source_character_id: CharacterId,
+    source_name:         CharacterName,
+    dest_name:           CharacterName,
+    dest_character_id:   CharacterId,
     /** A relative time string.
      * @example "1 mo, 5d ago"
      */
-    datetime_sent:       string;
-    folder_id:           FolderId;
-    read:                NoteBool;
-    starred:             NoteBool;
+    datetime_sent:       string,
+    folder_id:           FolderId,
+    read:                NoteBool,
+    starred:             NoteBool,
+}
+
+interface Note {
+    title:      string,
+    message:    string,
+    dest:       CharacterName,
+    source:     CharacterId,
+    csrf_token: CsrfToken,
 }
 
 interface Folder {
