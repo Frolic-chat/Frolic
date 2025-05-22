@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import electronLog from 'electron-log';
 const log = electronLog.scope('site-session');
 import throat from 'throat';
@@ -149,15 +148,11 @@ export class SiteSession {
       await this.ensureLogin();
     }
 
-    return _.merge(
-      {
-        method,
-        uri: `https://www.f-list.net${uri}`,
-        resolveWithFullResponse: true
-      },
-      config
-    );
-  }
+        return {
+            ...{method, uri: `https://www.f-list.net${uri}`, resolveWithFullResponse: true},
+            ...config
+        }
+    }
 
 
   async get(uri: string, mustBeLoggedIn: boolean = false, config: Partial<request.Options> = {}): Promise<request.RequestPromise> {
@@ -179,7 +174,7 @@ export class SiteSession {
   ): Promise<request.RequestPromise> {
     return this.sessionThroat(
       async() => {
-        const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, _.merge({ form: data }, config));
+            const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, { ...{ form: data }, ...config });
 
         return this.request(finalConfig);
       }
