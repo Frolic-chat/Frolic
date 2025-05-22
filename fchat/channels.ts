@@ -10,25 +10,29 @@ interface SortableMember extends Interfaces.Member {
 export function queuedJoin(this: void, channels: string[]): void {
     const timer: NodeJS.Timeout = setInterval(() => {
         const channel = channels.shift();
-        if(channel === undefined) return clearInterval(timer);
+
+        if (channel === undefined)
+            return clearInterval(timer);
+
         state.join(channel);
-    }, 100);
+    },
+    100);
 }
 
 function sortMember(this: void | never, array: SortableMember[], member: SortableMember): void {
     let i = 0;
-    for(; i < array.length; ++i) {
+    for (; i < array.length; ++i) {
         const other = array[i];
-        if(other.character.isChatOp && !member.character.isChatOp) continue;
-        if(member.character.isChatOp && !other.character.isChatOp) break;
-        if(other.rank > member.rank) continue;
-        if(member.rank > other.rank) break;
-        if(!member.character.isFriend) {
+        if (other.character.isChatOp && !member.character.isChatOp) continue;
+        if (member.character.isChatOp && !other.character.isChatOp) break;
+        if (other.rank > member.rank) continue;
+        if (member.rank > other.rank) break;
+        if (!member.character.isFriend) {
             if(other.character.isFriend) continue;
             if(other.character.isBookmarked && !member.character.isBookmarked) continue;
             if(member.character.isBookmarked && !other.character.isBookmarked) break;
         } else if(!other.character.isFriend) break;
-        if(member.key < other.key) break;
+        if (member.key < other.key) break;
     }
     array.splice(i, 0, member);
 }
@@ -41,13 +45,14 @@ class Channel implements Interfaces.Channel {
     members: {[key: string]: SortableMember | undefined} = {};
     sortedMembers: SortableMember[] = [];
 
-    constructor(readonly id: string, readonly name: string) {
-    }
+    constructor(readonly id: string, readonly name: string) {}
 
     async addMember(member: SortableMember): Promise<void> {
         this.members[member.character.name] = member;
         sortMember(this.sortedMembers, member);
-        for(const handler of state.handlers) await handler('join', this, member);
+
+        for(const handler of state.handlers)
+            await handler('join', this, member);
     }
 
     async removeMember(name: string): Promise<void> {
@@ -55,7 +60,9 @@ class Channel implements Interfaces.Channel {
         if(member !== undefined) {
             delete this.members[name];
             this.sortedMembers.splice(this.sortedMembers.indexOf(member), 1);
-            for(const handler of state.handlers) await handler('leave', this, member);
+
+            for (const handler of state.handlers)
+                await handler('leave', this, member);
         }
     }
 
@@ -93,11 +100,11 @@ class State implements Interfaces.State {
     }
 
     join(channel: string): void {
-        this.connection.send('JCH', {channel});
+        this.connection.send('JCH', { channel });
     }
 
     leave(channel: string): void {
-        this.connection.send('LCH', {channel});
+        this.connection.send('LCH', { channel });
     }
 
     getChannelItem(id: string): ListItem | undefined {
@@ -114,7 +121,9 @@ class State implements Interfaces.State {
     }
 
     requestChannelsIfNeeded(maxAge: number): void {
-        if(this.lastRequest + maxAge > Date.now()) return;
+        if (this.lastRequest + maxAge > Date.now())
+            return;
+
         this.lastRequest = Date.now();
         this.connection.send('CHA');
         this.connection.send('ORS');
@@ -127,12 +136,12 @@ export default function(this: void, connection: Connection, characters: Characte
     state = new State(connection);
     let rejoin: string[] | undefined;
     connection.onEvent('connecting', (isReconnect) => {
-        if(isReconnect && rejoin === undefined) rejoin = Object.keys(state.joinedMap);
+        if (isReconnect && rejoin === undefined) rejoin = Object.keys(state.joinedMap);
         state.joinedChannels = [];
         state.joinedMap = {};
     });
     connection.onEvent('connected', () => {
-        if(rejoin !== undefined) {
+        if (rejoin !== undefined) {
             queuedJoin(rejoin);
             rejoin = undefined;
         }

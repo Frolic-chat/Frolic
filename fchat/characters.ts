@@ -153,49 +153,55 @@ export default function(this: void, connection: Connection): Interfaces.State {
     state = new State();
     let reconnectStatus: Connection.ClientCommands['STA'];
     connection.onEvent('connecting', async(isReconnect) => {
-        state.friends = [];
+        state.friends   = [];
         state.bookmarks = [];
-        state.bookmarkList = (await connection.queryApi<{characters: string[]}>('bookmark-list.php')).characters;
-        state.friendList = (await connection.queryApi<{friends: {source: string, dest: string, last_online: number}[]}>('friend-list.php'))
-            .friends.map((x) => x.dest);
-        if(isReconnect && (<Character | undefined>state.ownCharacter) !== undefined)
+
+        state.bookmarkList = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
+        state.friendList   = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php'))
+                .friends.map(x => x.dest);
+
+        if (isReconnect && (<Character | undefined>state.ownCharacter) !== undefined)
             reconnectStatus = {status: state.ownCharacter.status, statusmsg: state.ownCharacter.statusText};
-        for(const key in state.characters) {
+
+        for (const key in state.characters) {
             const character = state.characters[key]!;
-            character.isFriend = state.friendList.indexOf(character.name) !== -1;
+            character.isFriend     = state.friendList.indexOf(character.name)   !== -1;
             character.isBookmarked = state.bookmarkList.indexOf(character.name) !== -1;
             character.status = 'offline';
             character.statusText = '';
         }
     });
     connection.onEvent('connected', async(isReconnect) => {
-        if(!isReconnect) return;
+        if (!isReconnect)
+            return;
+
         connection.send('STA', reconnectStatus);
+
         for(const key in state.characters) {
             const char = state.characters[key]!;
-            char.isIgnored = state.ignoreList.indexOf(key) !== -1;
-            char.isChatOp = state.opList.indexOf(char.name) !== -1;
+            char.isIgnored = state.ignoreList.indexOf(key)   !== -1;
+            char.isChatOp  = state.opList.indexOf(char.name) !== -1;
         }
     });
     connection.onMessage('IGN', (data) => {
         switch(data.action) {
-            case 'init':
-                state.ignoreList = data.characters.slice();
-                break;
-            case 'add':
-                state.ignoreList.push(data.character.toLowerCase());
-                state.get(data.character).isIgnored = true;
-                break;
-            case 'delete':
-                state.ignoreList.splice(state.ignoreList.indexOf(data.character.toLowerCase()), 1);
-                state.get(data.character).isIgnored = false;
+        case 'init':
+            state.ignoreList = data.characters.slice();
+            break;
+        case 'add':
+            state.ignoreList.push(data.character.toLowerCase());
+            state.get(data.character).isIgnored = true;
+            break;
+        case 'delete':
+            state.ignoreList.splice(state.ignoreList.indexOf(data.character.toLowerCase()), 1);
+            state.get(data.character).isIgnored = false;
         }
     });
     connection.onMessage('ADL', (data) => {
         state.opList = data.ops.slice();
     });
     connection.onMessage('LIS', (data) => {
-        for(const char of data.characters) {
+        for (const char of data.characters) {
             const character = state.get(char[0]);
             character.gender = char[1];
             state.setStatus(character, char[2], char[3]);
@@ -207,7 +213,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
     connection.onMessage('NLN', async(data) => {
         const character = state.get(data.identity);
 
-        if(data.identity === connection.character) {
+        if (data.identity === connection.character) {
             state.ownCharacter = character;
 
             await state.resolveOwnProfile();
@@ -236,29 +242,35 @@ export default function(this: void, connection: Connection): Interfaces.State {
         char.isChatOp = false;
     });
     connection.onMessage('RTB', (data) => {
-        if(data.type !== 'trackadd' && data.type !== 'trackrem' && data.type !== 'friendadd' && data.type !== 'friendremove') return;
+        if (data.type !== 'trackadd' && data.type !== 'trackrem' && data.type !== 'friendadd' && data.type !== 'friendremove') {
+            return;
+        }
+
         const character = state.get(data.name);
+
         switch(data.type) {
             case 'trackadd':
                 state.bookmarkList.push(data.name);
                 character.isBookmarked = true;
-                if(character.status !== 'offline') state.bookmarks.push(character);
+                if (character.status !== 'offline') state.bookmarks.push(character);
                 break;
             case 'trackrem':
                 state.bookmarkList.splice(state.bookmarkList.indexOf(data.name), 1);
                 character.isBookmarked = false;
-                if(character.status !== 'offline') state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
+                if (character.status !== 'offline') state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
                 break;
             case 'friendadd':
-                if(character.isFriend) return;
+                if (character.isFriend)
+                    return;
+
                 state.friendList.push(data.name);
                 character.isFriend = true;
-                if(character.status !== 'offline') state.friends.push(character);
+                if (character.status !== 'offline') state.friends.push(character);
                 break;
             case 'friendremove':
                 state.friendList.splice(state.friendList.indexOf(data.name), 1);
                 character.isFriend = false;
-                if(character.status !== 'offline') state.friends.splice(state.friends.indexOf(character), 1);
+                if (character.status !== 'offline') state.friends.splice(state.friends.indexOf(character), 1);
         }
     });
     return state;
