@@ -37,31 +37,32 @@ export function getStatusIcon(status: Character.Status): string {
 
 
 export interface StatusClasses {
-  rankIcon: string | null;
-  smartFilterIcon: string | null;
-  statusClass: string | null;
-  matchClass: string | null;
-  matchScore: number | string | null;
-  userClass: string;
-  isBookmark: boolean;
+    rankIcon:         string | null;
+    smartFilterIcon:  string | null;
+    statusClass:      string | null;
+    matchClass:       string | null;
+    matchScore:       string | number | null;
+    userClass:        string;
+    isBookmark:       boolean;
 }
 
-export function getStatusClasses(
-  character: Character,
-  channel: Channel | undefined,
-  showStatus: boolean,
-  showBookmark: boolean,
-  showMatch: boolean
-): StatusClasses {
-    let rankIcon:        string | null = null;
-    let statusClass:     string | null = null;
-    let matchClass:      string | null = null;
-    let matchScore:      string | number | null = null;
-    let smartFilterIcon: string | null = null;
+export function getStatusClasses(   character:    Character,
+                                    channel:      Channel | undefined,
+                                    showStatus:   boolean,
+                                    showBookmark: boolean,
+                                    showMatch:    boolean
+                                ): StatusClasses {
 
-    if(character.isChatOp) {
+    let rankIcon:        StatusClasses['rankIcon']        = null;
+    let statusClass:     StatusClasses['statusClass']     = null;
+    let matchClass:      StatusClasses['matchClass']      = null;
+    let matchScore:      StatusClasses['matchScore']      = null;
+    let smartFilterIcon: StatusClasses['smartFilterIcon'] = null;
+
+    if (character.isChatOp) {
         rankIcon = 'far fa-gem';
-    } else if(channel !== undefined) {
+    }
+    else if (channel !== undefined) {
         rankIcon = (channel.owner === character.name)
             ? 'fa fa-key'
             : channel.opList.indexOf(character.name) !== -1
@@ -69,7 +70,7 @@ export function getStatusClasses(
                 : null;
     }
 
-    if ((showStatus) || (character.status === 'crown'))
+    if (showStatus || character.status === 'crown')
         statusClass = `fa-fw ${getStatusIcon(character.status)}`;
 
     let cache: CharacterCacheRecord | null | undefined = undefined;
@@ -91,7 +92,7 @@ export function getStatusClasses(
 
     // undefined == not interested
     // null == no cache hit
-    if ((cache === null) && (showMatch)) {
+    if (cache === null && showMatch) {
         void core.cache.addProfile(character.name);
     }
 
@@ -113,30 +114,26 @@ export function getStatusClasses(
     const baseGender = character.overrides.gender || character.gender;
     const gender = baseGender !== undefined ? baseGender.toLowerCase() : 'none';
 
-    const isBookmark = (showBookmark) && (core.connection.isOpen) && (core.state.settings.colorBookmarks) &&
-        ((character.isFriend) || (character.isBookmarked));
+    const isBookmark = showBookmark && core.connection.isOpen && core.state.settings.colorBookmarks &&
+        (character.isFriend || character.isBookmarked);
 
     const userClass = `user-view gender-${gender}${isBookmark ? ' user-bookmark' : ''}`;
 
     return {
-      rankIcon: rankIcon ? `user-rank ${rankIcon}` : null,
-      statusClass: statusClass ? `user-status ${statusClass}` : null,
-      matchClass,
-      matchScore,
-      userClass,
-      smartFilterIcon,
-      isBookmark
+        rankIcon:    rankIcon    ? `user-rank   ${rankIcon}`    : null,
+        statusClass: statusClass ? `user-status ${statusClass}` : null,
+        matchClass,
+        matchScore,
+        userClass,
+        smartFilterIcon,
+        isBookmark
     };
 }
 
 
-@Component({
-    components: {
-
-    }
-})
+@Component({ components: {} })
 export default class UserView extends Vue {
-    @Prop({required: true})
+    @Prop({ required: true })
     readonly character!: Character;
 
     @Prop()
@@ -173,7 +170,7 @@ export default class UserView extends Vue {
     onMounted(): void {
         this.update();
 
-        if ((this.match) && (!this.matchClass)) {
+        if (this.match && !this.matchClass) {
             if (this.scoreWatcher) {
                 EventBus.$off('character-score', this.scoreWatcher);
             }
@@ -183,7 +180,7 @@ export default class UserView extends Vue {
                 // console.log('scoreWatcher', event);
 
                 // tslint:disable-next-line no-unsafe-any no-any
-                if ((event.character) && (event.character.character.name === this.character.name)) {
+                if (event.character && event.character.character.name === this.character.name) {
                     this.update();
 
                     if (this.scoreWatcher) {
@@ -218,26 +215,26 @@ export default class UserView extends Vue {
 
     @Watch('character.status')
     onStatusUpdate(): void {
-      this.update();
+        this.update();
     }
 
     @Watch('character.overrides.avatarUrl')
     onAvatarUrlUpdate(): void {
-      this.update();
+        this.update();
     }
 
     update(): void {
-      // console.log('user.view.update', this.character.name);
+        // console.log('user.view.update', this.character.name);
 
-      const res = getStatusClasses(this.character, this.channel, !!this.showStatus, !!this.bookmark, !!this.match);
+        const res = getStatusClasses(this.character, this.channel, !!this.showStatus, !!this.bookmark, !!this.match);
 
-      this.rankIcon = res.rankIcon;
-      this.smartFilterIcon = res.smartFilterIcon;
-      this.statusClass = res.statusClass;
-      this.matchClass = res.matchClass;
-      this.matchScore = res.matchScore;
-      this.userClass = res.userClass;
-      this.avatarUrl = this.character.overrides.avatarUrl || characterImage(this.character.name);
+        this.rankIcon        = res.rankIcon;
+        this.smartFilterIcon = res.smartFilterIcon;
+        this.statusClass     = res.statusClass;
+        this.matchClass      = res.matchClass;
+        this.matchScore      = res.matchScore;
+        this.userClass       = res.userClass;
+        this.avatarUrl       = this.character.overrides.avatarUrl || characterImage(this.character.name);
     }
 
 
@@ -264,32 +261,29 @@ export default class UserView extends Vue {
 
 
     getCharacterUrl(): string {
-      return `flist-character://${this.character.name}`;
+        return `flist-character://${this.character.name}`;
     }
 
 
     dismiss(force: boolean = false): void {
-        if (!this.preview) {
-          return;
-        }
+        if (!this.preview)
+            return;
 
         EventBus.$emit('imagepreview-dismiss', {url: this.getCharacterUrl(), force});
     }
 
 
     show(): void {
-        if (!this.preview) {
-          return;
-        }
+        if (!this.preview)
+            return;
 
         EventBus.$emit('imagepreview-show', {url: this.getCharacterUrl()});
     }
 
 
     toggleStickyness(): void {
-        if (!this.preview) {
-          return;
-        }
+        if (!this.preview)
+            return;
 
         EventBus.$emit('imagepreview-toggle-stickyness', {url: this.getCharacterUrl()});
     }

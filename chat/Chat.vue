@@ -167,24 +167,29 @@
                 this.connecting = true;
 
                 log.debug(
-                  'connection.connecting',
-                  {
-                    character: core.characters.ownCharacter?.name
-                  }
+                    'connection.connecting', {
+                        character: core.characters.ownCharacter?.name
+                    }
                 );
 
-                profileApiInit({
-                    defaultCharacter: this.defaultCharacter, animateEicons: core.state.settings.animatedEicons, fuzzyDates: true,
-                    inlineDisplayMode: InlineDisplayMode.DISPLAY_ALL
-                }, this.ownCharacters);
-                if(core.state.settings.notifications) await core.notifications.requestPermission();
+                profileApiInit(
+                    {
+                        defaultCharacter: this.defaultCharacter,
+                        animateEicons: core.state.settings.animatedEicons,
+                        fuzzyDates: true,
+                        inlineDisplayMode: InlineDisplayMode.DISPLAY_ALL
+                    },
+                    this.ownCharacters
+                );
+
+                if (core.state.settings.notifications)
+                    await core.notifications.requestPermission();
             });
             core.connection.onEvent('connected', () => {
                 log.debug(
-                  'connection.connected',
-                  {
-                    character: core.characters.ownCharacter?.name
-                  }
+                    'connection.connected', {
+                        character: core.characters.ownCharacter?.name
+                    }
                 );
 
                 (<Modal>this.$refs['reconnecting']).hide();
@@ -198,22 +203,25 @@
                 core.siteSession.onConnectionEstablished();
                 core.cache.start((core.state as any).generalSettings, true);
             });
-            core.watch(() => core.conversations.hasNew, (hasNew) => {
-                document.title = (hasNew ? '💬 ' : '') + l(core.connection.isOpen ? 'title.connected' : 'title', core.connection.character);
-            });
-            core.connection.onError((e) => {
+            core.watch(
+                () => core.conversations.hasNew,
+                hasNew => {
+                    document.title = (hasNew ? '💬 ' : '') + l(core.connection.isOpen ? 'title.connected' : 'title', core.connection.character);
+                }
+            );
+            core.connection.onError(e => {
                 log.debug(
-                  'connection.error',
-                  {
-                    error: errorToString(e),
-                    character: core.characters.ownCharacter?.name
-                  }
+                    'connection.error', {
+                        error: errorToString(e),
+                        character: core.characters.ownCharacter?.name
+                    }
                 );
 
-                if((<Error & {request?: object}>e).request !== undefined) {//catch axios network errors
+                if ((<Error & {request?: object}>e).request !== undefined) {//catch axios network errors
                     this.error = l('login.connectError', errorToString(e));
                     this.connecting = false;
-                } else throw e;
+                }
+                else throw e;
             });
         }
 

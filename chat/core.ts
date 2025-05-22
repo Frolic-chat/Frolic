@@ -28,14 +28,18 @@ class State implements StateInterface {
     favoriteEIcons: Record<string, boolean> = {};
 
     get settings(): Settings {
-        if(this._settings === undefined) throw new Error('Settings load failed.');
+        if (this._settings === undefined)
+            throw new Error('Settings load failed.');
+
         return this._settings;
     }
 
     set settings(value: Settings) {
         this._settings = value;
+
         //tslint:disable-next-line:no-floating-promises
-        if(data.settingsStore !== undefined) data.settingsStore.set('settings', value);
+        if (data.settingsStore !== undefined) data.settingsStore.set('settings', value);
+
         data.bbCodeParser = createBBCodeParser();
     }
 }
@@ -51,8 +55,8 @@ const state = new State();
 
 const vue = <Vue & VueState>new Vue({
     data: {
-        channels: undefined,
-        characters: undefined,
+        channels:      undefined,
+        characters:    undefined,
         conversations: undefined,
         state
     }
@@ -97,9 +101,12 @@ const data = {
     }
 };
 
-export function init(
-    this: any, connection: Connection, settings: GeneralSettings, logsClass: new() => Logs,
-    settingsClass: new() => Settings.Store, notificationsClass: new() => Notifications): void {
+export function init(this: any,
+                     connection: Connection,
+                     settings: GeneralSettings,
+                     logsClass: new() => Logs,
+                     settingsClass: new() => Settings.Store,
+                     notificationsClass: new() => Notifications): void {
     data.connection = connection;
     data.logs = new logsClass();
     data.settingsStore = new settingsClass();
@@ -115,11 +122,12 @@ export function init(
     data.register('channels', Channels(connection, core.characters));
     data.register('conversations', Conversations());
 
-    data.watch(() => state.hiddenUsers, async(newValue) => {
-        if(data.settingsStore !== undefined) await data.settingsStore.set('hiddenUsers', newValue);
+    data.watch(() => state.hiddenUsers, async (newValue) => {
+        if (data.settingsStore !== undefined)
+            await data.settingsStore.set('hiddenUsers', newValue);
     });
 
-    connection.onEvent('connecting', async() => {
+    connection.onEvent('connecting', async () => {
         await data.reloadSettings();
         data.bbCodeParser = createBBCodeParser();
 

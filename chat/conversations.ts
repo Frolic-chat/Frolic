@@ -616,42 +616,52 @@ class State implements Interfaces.State {
     windowFocused = document.hasFocus();
 
     get hasNew(): boolean {
-        return this.privateConversations.some((x) => x.unread === Interfaces.UnreadState.Mention) ||
-            this.channelConversations.some((x) => x.unread === Interfaces.UnreadState.Mention);
+        return this.privateConversations.some(x => x.unread === Interfaces.UnreadState.Mention)
+            || this.channelConversations.some(x => x.unread === Interfaces.UnreadState.Mention);
     }
 
     getPrivate(character: Character): PrivateConversation;
     getPrivate(character: Character, noCreate: boolean = false): PrivateConversation | undefined {
         const key = character.name.toLowerCase();
-        let conv = state.privateMap[key];
-        if(conv !== undefined) return conv;
 
-        if (noCreate) {
+        let conv = state.privateMap[key];
+        if (conv !== undefined)
+            return conv;
+
+        if (noCreate)
             return;
-        }
 
         void core.cache.queueForFetching(character.name);
 
         conv = new PrivateConversation(character);
+
         this.privateConversations.push(conv);
         this.privateMap[key] = conv;
-        const index = this.recent.findIndex((c) => c.character === conv!.name);
-        if(index !== -1) this.recent.splice(index, 1);
-        if(this.recent.length >= 50) this.recent.pop();
+
+        const index = this.recent.findIndex(c => c.character === conv!.name);
+        if (index !== -1) this.recent.splice(index, 1);
+
+        if (this.recent.length >= 50) this.recent.pop();
+
         this.recent.unshift({character: conv.name});
         core.settingsStore.set('recent', this.recent); //tslint:disable-line:no-floating-promises
+
         return conv;
     }
 
     byKey(key: string): Conversation | undefined {
-        if(key === '_') return this.consoleTab;
+        if (key === '_')
+            return this.consoleTab;
+
         key = key.toLowerCase();
+
         return key[0] === '#' ? this.channelMap[key.substring(1)] : this.privateMap[key];
     }
 
     async savePinned(): Promise<void> {
-        this.pinned.channels = this.channelConversations.filter((x) => x.isPinned).map((x) => x.channel.id);
-        this.pinned.private = this.privateConversations.filter((x) => x.isPinned).map((x) => x.name);
+        this.pinned.channels = this.channelConversations.filter(x => x.isPinned).map(x => x.channel.id);
+        this.pinned.private  = this.privateConversations.filter(x => x.isPinned).map(x => x.name);
+
         await core.settingsStore.set('pinned', this.pinned);
     }
 
@@ -675,18 +685,23 @@ class State implements Interfaces.State {
     async reloadSettings(): Promise<void> {
         //tslint:disable:strict-boolean-expressions
         this.pinned = await core.settingsStore.get('pinned') || {private: [], channels: []};
-        this.modes = await core.settingsStore.get('modes') || {};
-        for(const conversation of this.channelConversations)
+        this.modes  = await core.settingsStore.get('modes') || {};
+
+        for (const conversation of this.channelConversations)
             conversation._isPinned = this.pinned.channels.indexOf(conversation.channel.id) !== -1;
-        for(const conversation of this.privateConversations)
+
+        for (const conversation of this.privateConversations)
             conversation._isPinned = this.pinned.private.indexOf(conversation.name) !== -1;
-        this.recent = await core.settingsStore.get('recent') || [];
+
+        this.recent         = await core.settingsStore.get('recent') || [];
         this.recentChannels = await core.settingsStore.get('recentChannels') || [];
+
         const settings = <{[key: string]: ConversationSettings}> await core.settingsStore.get('conversationSettings') || {};
-        for(const key in settings) {
+
+        for (const key in settings) {
             settings[key] = Object.assign(new ConversationSettings(), settings[key]);
             const conv = this.byKey(key);
-            if(conv !== undefined) conv._settings = settings[key];
+            if (conv !== undefined) conv._settings = settings[key];
         }
         this.settings = settings;
         //tslint:enable

@@ -26,7 +26,7 @@
             <div :class="canZip ? 'col-sm-8 col-10 col-xl-9' : 'col-sm-10'">
                 <filterable-select v-model="selectedConversation" :options="conversations" :filterFunc="filterConversation"
                                    :placeholder="l('general.filter')">
-                    <template slot-scope="s">
+                    <template v-slot="s">
                         {{s.option && ((s.option.key[0] == '#' ? '#' : '') + s.option.name) || l('logs.selectConversation')}}
                     </template>
                 </filterable-select>

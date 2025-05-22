@@ -18,30 +18,27 @@ const userPostfix: {[key: number]: string | undefined} = {
     render(this: MessageView, createElement: CreateElement): VNode {
         const message = this.message;
 
-        // setTimeout(
-        //     () => {
-        //         console.log('Now scoring high!', message.text.substring(0, 64));
-        //         message.score = Scoring.MATCH;
-        //     },
-        //     5000
-        // );
-
         const children: VNodeChildrenArrayContents =
             [createElement('span', {staticClass: 'message-time'}, `${formatTime(message.time)}`)];
+
         const separators = core.connection.isOpen ? core.state.settings.messageSeparators : false;
+
         /*tslint:disable-next-line:prefer-template*///unreasonable here
-        let classes = `message message-${Conversation.Message.Type[message.type].toLowerCase()}` + (separators ? ' message-block' : '') +
-            (message.type !== Conversation.Message.Type.Event && message.sender.name === core.connection.character ? ' message-own' : '') +
-            ((this.classes !== undefined) ? ` ${this.classes}` : '') +
-            ` ${this.scoreClasses}` +
-            ` ${this.filterClasses}`;
+        let classes =
+            `message message-${Conversation.Message.Type[message.type].toLowerCase()}`
+          + (separators ? ' message-block' : '')
+          + (message.type !== Conversation.Message.Type.Event && message.sender.name === core.connection.character ? ' message-own' : '')
+          + (this.classes !== undefined ? ` ${this.classes}` : '')
+          + ` ${this.scoreClasses}`
+          + ` ${this.filterClasses}`;
 
         function tryRisingPortrait() {
             try   { return core.state.settings.risingShowPortraitInMessage }
             catch { return false }
         }
 
-        if (message.type !== Conversation.Message.Type.Event) {
+
+        if  (message.type !== Conversation.Message.Type.Event) {
             children.push(
                 message.type === Conversation.Message.Type.Action
                     ? createElement('i', { class: 'message-pre fas fa-star-of-life' })
@@ -57,28 +54,46 @@ const userPostfix: {[key: number]: string | undefined} = {
                     ? createElement('span', { class: 'message-post' }, userPostfix[message.type])
                     : ' '
             );
-            if('isHighlight' in message && message.isHighlight) classes += ' message-highlight';
+
+            if ('isHighlight' in message && message.isHighlight) classes += ' message-highlight';
         }
+
         const isAd = message.type === Conversation.Message.Type.Ad && !this.logs;
-        children.push(createElement(BBCodeView(core.bbCodeParser),
-            {props: {unsafeText: message.text, afterInsert: isAd ? (elm: HTMLElement) => {
-                    setImmediate(() => {
-                        elm = elm.parentElement!;
-                        if(elm.scrollHeight > elm.offsetHeight) {
-                            const expand = document.createElement('div');
-                            expand.className = 'expand fas fa-caret-down';
-                            expand.addEventListener('click', function(): void { this.parentElement!.className += ' expanded'; });
-                            elm.appendChild(expand);
+
+        children.push(
+            createElement(
+                BBCodeView(core.bbCodeParser),
+                { props: {
+                    unsafeText: message.text,
+                    afterInsert: isAd
+                        ? (elm: HTMLElement) => {
+                            setImmediate(() => {
+                                elm = elm.parentElement!;
+
+                                if (elm.scrollHeight > elm.offsetHeight) {
+                                    const expand = document.createElement('div');
+
+                                    expand.className = 'expand fas fa-caret-down';
+
+                                    expand.addEventListener('click', function(): void { this.parentElement!.className += ' expanded'; });
+
+                                    elm.appendChild(expand);
+                                }
+                            });
                         }
-                    });
-                } : undefined}}));
-        const node = createElement('div', {attrs: {class: classes}}, children);
+                        : undefined
+                }}
+            )
+        );
+
+        const node = createElement('div', {attrs: { class: classes }}, children);
         node.key = message.id;
+
         return node;
     }
 })
 export default class MessageView extends Vue {
-    @Prop({required: true})
+    @Prop({ required: true })
     readonly message!: Conversation.Message;
     @Prop
     readonly classes?: string;
@@ -90,18 +105,14 @@ export default class MessageView extends Vue {
     scoreClasses = this.getMessageScoreClasses(this.message);
     filterClasses = this.getMessageFilterClasses(this.message);
 
-    scoreWatcher: (() => void) | null = ((this.message.type === Conversation.Message.Type.Ad) && (this.message.score === 0))
+    scoreWatcher: (() => void) | null = (this.message.type === Conversation.Message.Type.Ad && this.message.score === 0)
         ? this.$watch('message.score', () => this.scoreUpdate())
         : null;
 
 
     @Hook('beforeDestroy')
     onBeforeDestroy(): void {
-        // console.log('onbeforedestroy');
-
         if (this.scoreWatcher) {
-            // console.log('onbeforedestroy killed');
-
             this.scoreWatcher(); // stop watching
             this.scoreWatcher = null;
         }
@@ -109,19 +120,17 @@ export default class MessageView extends Vue {
 
     // @Watch('message.score')
     scoreUpdate(): void {
-        const oldScoreClasses = this.scoreClasses;
+        const oldScoreClasses  = this.scoreClasses;
         const oldFilterClasses = this.filterClasses;
 
-        this.scoreClasses = this.getMessageScoreClasses(this.message);
+        this.scoreClasses  = this.getMessageScoreClasses(this.message);
         this.filterClasses = this.getMessageFilterClasses(this.message);
 
         if (this.scoreClasses !== oldScoreClasses || this.filterClasses !== oldFilterClasses) {
-           this.$forceUpdate();
+            this.$forceUpdate();
         }
 
         if (this.scoreWatcher) {
-            // console.log('watch killed');
-
             this.scoreWatcher(); // stop watching
             this.scoreWatcher = null;
         }
@@ -139,10 +148,9 @@ export default class MessageView extends Vue {
     }
 
     getMessageFilterClasses(message: Conversation.Message): string {
-        if (!message.filterMatch) {
+        if (!message.filterMatch)
             return '';
-        }
-
-        return 'filter-match';
+        else
+            return 'filter-match';
     }
 }

@@ -379,7 +379,7 @@
             <div class="form-group">{{l('rising.exceptions')}}</div>
 
             <div class="form-group">
-                <textarea class="form-control" :value="getExceptionList()" @change="(v) => setExceptionList(v)" :placeholder="l('rising.exceptions.ph')"></textarea>
+                <textarea class="form-control" :value="getExceptionList()" @change="(e) => setExceptionList(e)" :placeholder="l('rising.exceptions.ph')"></textarea>
             </div>
         </div>
 
@@ -604,9 +604,9 @@
 
                 risingColorblindMode: this.risingColorblindMode,
                 risingFilter: {
-                  ...this.risingFilter,
-                  minAge: (minAge !== null && maxAge !== null) ? Math.min(minAge, maxAge) : minAge,
-                  maxAge: (minAge !== null && maxAge !== null) ? Math.max(minAge, maxAge) : maxAge
+                    ...this.risingFilter,
+                    minAge: (minAge !== null && maxAge !== null) ? Math.min(minAge, maxAge) : minAge,
+                    maxAge: (minAge !== null && maxAge !== null) ? Math.max(minAge, maxAge) : maxAge
                 },
 
                 risingCharacterTheme: this.risingCharacterTheme != "undefined" ? this.risingCharacterTheme : undefined
@@ -617,7 +617,7 @@
             const newRisingFilter = JSON.parse(JSON.stringify(core.state.settings.risingFilter));
 
             if (!_.isEqual(oldRisingFilter, newRisingFilter)) {
-              this.rebuildFilters();
+                this.rebuildFilters();
             }
 
             if(this.notifications) await core.notifications.requestPermission();
@@ -627,26 +627,26 @@
         }
 
         rebuildFilters() {
-          core.cache.profileCache.onEachInMemory(
-              (c) => {
-                const oldFiltered = c.match.isFiltered;
+            core.cache.profileCache.onEachInMemory(
+                c => {
+                    const oldFiltered = c.match.isFiltered;
 
-                c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
+                    c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
 
-                if (oldFiltered !== c.match.isFiltered) {
-                  core.cache.populateAllConversationsWithScore(c.character.character.name, c.match.matchScore, c.match.isFiltered);
+                    if (oldFiltered !== c.match.isFiltered) {
+                        core.cache.populateAllConversationsWithScore(c.character.character.name, c.match.matchScore, c.match.isFiltered);
+                    }
                 }
-              }
-          );
+            );
         }
 
         getAsNumber(input: any): number | null {
             if (input === null || input === undefined || input === '')
                 return null;
 
-          const n = parseInt(input, 10);
+            const n = parseInt(input, 10);
 
-          return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
+            return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
         }
 
         getExceptionList(): string {
@@ -658,11 +658,11 @@
         }
 
         getSmartFilter(key: keyof SmartFilterSelection): boolean {
-          return !!this.risingFilter.smartFilters?.[key];
+            return !!this.risingFilter.smartFilters?.[key];
         }
 
         setSmartFilter(key: keyof SmartFilterSelection , value: any): void {
-          this.risingFilter.smartFilters[key] = value.target.checked;
+            this.risingFilter.smartFilters[key] = value.target.checked;
         }
     }
 </script>

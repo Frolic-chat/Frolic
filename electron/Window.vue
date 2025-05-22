@@ -170,7 +170,7 @@
 
                 this.settings = settings;
 
-                log.transports.file.level = settings.risingSystemLogLevel;
+                log.transports.file.level    = settings.risingSystemLogLevel;
                 log.transports.console.level = settings.risingSystemLogLevel;
             });
 
@@ -202,13 +202,13 @@
             electron.ipcRenderer.on('connect', (_e: Event, id: number, name: string) => {
                 const tab = this.tabMap[id];
                 tab.user = name;
-                tab.tray.setToolTip(`${l('title')} - ${tab.user}`);
+                tab.tray.setToolTip(`${ l('title') } - ${tab.user}`);
                 const menu = this.createTrayMenu(tab);
-                menu.unshift({label: tab.user, enabled: false}, {type: 'separator'});
+                menu.unshift({ label: tab.user, enabled: false }, { type: 'separator' });
                 tab.tray.setContextMenu(remote.Menu.buildFromTemplate(menu));
             });
             electron.ipcRenderer.on('update-avatar-url', (_e: Event, characterName: string, url: string) => {
-                const tab = this.tabs.find((tab) => tab.user === characterName);
+                const tab = this.tabs.find(tab => tab.user === characterName);
 
                 if (!tab) {
                   return;
@@ -219,13 +219,18 @@
             });
             electron.ipcRenderer.on('disconnect', (_e: Event, id: number) => {
                 const tab = this.tabMap[id];
-                if(tab.hasNew) {
+
+                if (tab.hasNew) {
                     tab.hasNew = false;
                     electron.ipcRenderer.send('has-new', this.tabs.reduce((cur, t) => cur || t.hasNew, false));
                 }
+
                 tab.user = undefined;
+
                 Vue.set(tab, 'avatarUrl', undefined);
+
                 tab.tray.setToolTip(l('title'));
+
                 tab.tray.setContextMenu(remote.Menu.buildFromTemplate(this.createTrayMenu(tab)));
             });
             electron.ipcRenderer.on('has-new', (_e: Event, id: number, hasNew: boolean) => {
@@ -268,9 +273,10 @@
 
             Sortable.create(<HTMLElement>this.$refs['tabs'], {
                 animation: 50,
-                onEnd: (e) => {
+                onEnd: e => {
                     // log.debug('ONEND', e);
-                    if(e.oldIndex === e.newIndex) return;
+                    if (e.oldIndex === e.newIndex)
+                        return;
 
                     // log.debug('PRE', this.tabs);
                     //
@@ -285,20 +291,25 @@
 
             window.onbeforeunload = () => {
                 const isConnected = this.tabs.reduce((cur, tab) => cur || tab.user !== undefined, false);
-                if(process.env.NODE_ENV !== 'production' || !isConnected) {
+
+                if (process.env.NODE_ENV !== 'production' || !isConnected) {
                     this.destroyAllTabs();
                     return;
                 }
-                if(!this.settings.closeToTray)
+
+                if (!this.settings.closeToTray) {
                     return setImmediate(() => {
-                        if(confirm(l('chat.confirmLeave'))) {
+                        if (confirm(l('chat.confirmLeave'))) {
                             this.destroyAllTabs();
                             browserWindow.close();
                         }
                     });
+                }
+
                 browserWindow.hide();
                 return false;
             };
+
             this.isMaximized = browserWindow.isMaximized();
 
             log.debug('init.window.mounted');

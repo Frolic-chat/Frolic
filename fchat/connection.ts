@@ -40,7 +40,8 @@ export default class Connection implements Interfaces.Connection {
     private isReconnect = false;
     private pinTimeout?: NodeJS.Timeout;
 
-    constructor(private readonly clientName: string, private readonly version: string,
+    constructor(private readonly clientName: string,
+                private readonly version: string,
                 private readonly socketProvider: new() => WebSocketConnection) {
         if (process.env.NODE_ENV === 'development')
             this._handleMessage = this.handleMessage;
@@ -96,29 +97,26 @@ export default class Connection implements Interfaces.Connection {
             const type = <keyof Interfaces.ServerCommands>msg.substring(0, 3);
             const data = msg.length > 6 ? <object>JSON.parse(msg.substring(4)) : undefined;
 
-            log.silly(
-              'socket.recv',
-              {
-                type, data
-              }
-            );
+            log.silly('socket.recv', { type, data });
 
             return this.handleMessage(type, data);
         });
         this.socket.onClose(async(event: CloseEvent) => {
             log.debug(
-                'socket.onclose',
-              {
-                code: event.code,
-                reason: event.reason,
-                wasClean: event.wasClean,
-                event
-              }
+                'socket.onclose', {
+                    code: event.code,
+                    reason: event.reason,
+                    wasClean: event.wasClean,
+                    event
+                }
             );
 
-            if(this.pinTimeout) clearTimeout(this.pinTimeout);
-            if(!this.cleanClose) this.reconnect();
+            if (this.pinTimeout) clearTimeout(this.pinTimeout);
+
+            if (!this.cleanClose) this.reconnect();
+
             this.socket = undefined;
+
             await this.invokeHandlers('closed', !this.cleanClose);
         });
         this.socket.onError((error: Error) => this.invokeErrorHandlers(error, true));
