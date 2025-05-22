@@ -52,10 +52,10 @@ export function getStatusClasses(
   showBookmark: boolean,
   showMatch: boolean
 ): StatusClasses {
-    let rankIcon: string | null = null;
-    let statusClass = null;
-    let matchClass = null;
-    let matchScore = null;
+    let rankIcon:        string | null = null;
+    let statusClass:     string | null = null;
+    let matchClass:      string | null = null;
+    let matchScore:      string | number | null = null;
     let smartFilterIcon: string | null = null;
 
     if(character.isChatOp) {
