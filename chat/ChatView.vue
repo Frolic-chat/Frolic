@@ -60,37 +60,40 @@
                 </a>
             </div>
 
-            <div class="list-group conversation-nav">
-                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
-                    class="list-group-item list-group-item-action">
-                    {{conversations.consoleTab.name}}
-                </a>
+            <div class="nav-group-container"><!-- CONSOLE -->
+                <div class="list-group conversation-nav">
+                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
+                        class="list-group-item list-group-item-action">
+                        {{conversations.consoleTab.name}}
+                    </a>
+                </div>
             </div>
 
-
-            <a href="#" @click.prevent="showAddPmPartner()" class="btn" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">
-                <span class="fas fa-comment"></span>
-                {{l('chat.pms')}}
-            </a>
-
-            <div class="list-group conversation-nav" ref="privateConversations">
-                <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
-                    :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
-                    class="list-group-item list-group-item-action item-private" :key="conversation.key"
-                    @click.middle.prevent.stop="conversation.close()">
-                    <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
-                    <div class="name">
-                        <span>{{conversation.character.name}}</span>
-                        <div class="icon-bed">
-                            <span class='fa-fw online-status' :class="getOnlineStatusIconClasses(conversation)"></span>
-                            <span class="fa-fw fas fa-reply" v-show="needsReply(conversation)"></span>
-                            <span style="flex:1"></span>
-                            <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
-                                @click="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
-                            <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
-                        </div>
-                    </div>
+            <div class="nav-group-container"><!-- PMs -->
+                <a href="#" @click.prevent="showAddPmPartner()" class="btn" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">
+                    <span class="fas fa-comment"></span>
+                    {{l('chat.pms')}}
                 </a>
+
+                <div class="list-group conversation-nav" ref="privateConversations">
+                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
+                        :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
+                        class="list-group-item list-group-item-action item-private" :key="conversation.key"
+                        @click.middle.prevent.stop="conversation.close()">
+                        <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
+                        <div class="name">
+                            <span>{{conversation.character.name}}</span>
+                            <div class="icon-bed">
+                                <span class='fa-fw online-status' :class="getOnlineStatusIconClasses(conversation)"></span>
+                                <span class="fa-fw fas fa-reply" v-show="needsReply(conversation)"></span>
+                                <span style="flex:1"></span>
+                                <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
+                                    @click="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
+                                <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
 
                 <a href="#" @click.prevent="showRecent()" class="recent-conversation">
                     <span class="fas fa-history"></span>
@@ -98,24 +101,26 @@
                 </a>
             </div>
 
-            <a href="#" @click.prevent="showChannels()" class="btn">
-                <span class="fas fa-list"></span>
-                {{l('chat.channels')}}
-            </a>
-
-            <div class="list-group conversation-nav" ref="channelConversations">
-                <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
-                    :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" :key="conversation.key"
-                    @click.middle.prevent.stop="conversation.close()">
-                    <span class="name">{{conversation.name}}</span>
-                    <span>
-                        <span v-if="conversation.hasAutomatedAds()" class="fas fa-ad" :class="{'active': conversation.isSendingAutomatedAds()}" :aria-label="l('chat.toggleAds')"
-                          @click.stop="conversation.toggleAutomatedAds()"></span>
-                        <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')"
-                            @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
-                        <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
-                    </span>
+            <div class="nav-group-container"><!-- CHANNELS -->
+                <a href="#" @click.prevent="showChannels()" class="btn">
+                    <span class="fas fa-list"></span>
+                    {{l('chat.channels')}}
                 </a>
+
+                <div class="list-group conversation-nav" ref="channelConversations">
+                    <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
+                        :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" :key="conversation.key"
+                        @click.middle.prevent.stop="conversation.close()">
+                        <span class="name">{{conversation.name}}</span>
+                        <span>
+                            <span v-if="conversation.hasAutomatedAds()" class="fas fa-ad" :class="{'active': conversation.isSendingAutomatedAds()}" :aria-label="l('chat.toggleAds')"
+                            @click.stop="conversation.toggleAutomatedAds()"></span>
+                            <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')"
+                                @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
+                            <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
+                        </span>
+                    </a>
+                </div>
 
                 <a href="#" @click.prevent="showChannels()" class="join-channel" :class="{ glowing: conversations.channelConversations.length === 0 && channelCanGlow }">
                     {{l('chat.joinChannel')}}
@@ -553,12 +558,15 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
     }
 
+    .nav-group-container {
+        margin-bottom: 10px;
+    }
+
     .list-group.conversation-nav {
         .fas.active {
           color: #02a002;
         }
 
-        margin-bottom: 10px;
         .list-group-item {
             padding: 5px;
             display: flex;
