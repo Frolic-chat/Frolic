@@ -105,7 +105,7 @@ type RequestData = {
     starred:        {   offset: offset;                 // Probably
                         amount: amount;
                         folder: FolderId;           };
-    getFolders:     undefined;
+    getFolders?:    undefined;
 
     searchUser:     {   offset: offset;
                         amount: amount;
@@ -113,7 +113,7 @@ type RequestData = {
     searchContent:  {   offset: offset;
                         amount: amount;
                         query:  string;             };
-    getFilters:     undefined;
+    getFilters?:    undefined;
     setFilters:     {   filters:    Filters;
                         csrf_token: CsrfToken;      };
 
@@ -185,7 +185,7 @@ function ComposeApiRequest<T extends Commands>(call: T, data: RequestData[T]): N
     return {
         ...{ method: 'GET', dataType: 'json', timeout: 30 * 1E3, }, // defaults
         ...RequestStatic[call],                       // defaults for this call
-        data: { ...RequestDataStatic[call], ...data },
+        data: typeof data === 'undefined' ? data : { ...RequestDataStatic[call], ...data },
         //data: RequestDataStatic[call] === undefined ? undefined : { ...RequestDataStatic[call], ...data },
     };
 }
