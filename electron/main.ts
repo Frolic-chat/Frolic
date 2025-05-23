@@ -787,9 +787,16 @@ function onReady(): void {
         setGeneralSettings(settings);
     });
     electron.ipcMain.on('connect', (e: Event & {sender: electron.WebContents}, character: string) => {
-        if(characters.indexOf(character) !== -1) return e.returnValue = false;
-        characters.push(character);
-        e.returnValue = true;
+        // This is the "not logged in" check.
+        if (characters.indexOf(character) === -1) {
+            log.debug('ipcMain.connect.notLoggedIn');
+            characters.push(character); // add to "logged in"
+            return e.returnValue = true;
+        }
+        else {
+            log.debug('ipcMain.connect.alreadyLoggedIn');
+            return e.returnValue = false;
+        }
     });
     electron.ipcMain.on('dictionary-add', (_event: Event, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
