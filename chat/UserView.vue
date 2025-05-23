@@ -11,6 +11,7 @@ import core from './core';
 import { EventBus } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import { characterImage } from './common';
+import { CharacterCacheRecord } from '../learn/profile-cache';
 
 
 export function getStatusIcon(status: Character.Status): string {
@@ -71,9 +72,22 @@ export function getStatusClasses(
     if ((showStatus) || (character.status === 'crown'))
         statusClass = `fa-fw ${getStatusIcon(character.status)}`;
 
-    const cache = (((showMatch) && (core.state.settings.risingAdScore)) || (core.state.settings.risingFilter.showFilterIcon))
-      ? core.cache.profileCache.getSync(character.name)
-      : undefined;
+    let cache: CharacterCacheRecord | null | undefined = undefined;
+    try {
+        /**
+         * In legacy portions of the code, `core.connection.isOpen` is used as
+         * a proxy for having loaded `core.state.settings`, and it works only
+         * because you're stuck on a load screen for the duration of both
+         * structures setting up. However, this coupling seems like it's just
+         * tip-toeing around the issue. `.settings` *deliberately* throws, so
+         * it's better to catch than pretend we care about `.isOpen`.
+         */
+        cache = ((showMatch && core.state.settings.risingAdScore)
+             || core.state.settings.risingFilter.showFilterIcon)
+                    ? core.cache.profileCache.getSync(character.name)
+                    : undefined;
+    }
+    catch {}
 
     // undefined == not interested
     // null == no cache hit
@@ -81,18 +95,19 @@ export function getStatusClasses(
         void core.cache.addProfile(character.name);
     }
 
-    if ((core.state.settings.risingAdScore) && (showMatch) && (cache)) {
-        if ((cache.match.searchScore >= kinkMatchWeights.unicornThreshold) && (cache.match.matchScore === Scoring.MATCH)) {
-          matchClass = 'match-found unicorn';
-          matchScore = 'unicorn';
-        } else {
-          matchClass = `match-found ${Score.getClasses(cache.match.matchScore)}`;
-          matchScore = cache.match.matchScore;
+    if (cache && showMatch && core.state.settings.risingAdScore) {
+        if (cache.match.searchScore >= kinkMatchWeights.unicornThreshold && cache.match.matchScore === Scoring.MATCH) {
+            matchClass = 'match-found unicorn';
+            matchScore = 'unicorn';
+        }
+        else {
+            matchClass = `match-found ${Score.getClasses(cache.match.matchScore)}`;
+            matchScore = cache.match.matchScore;
         }
     }
 
-    if (core.state.settings.risingFilter.showFilterIcon && cache?.match.isFiltered) {
-      smartFilterIcon = 'user-filter fas fa-filter';
+    if (cache?.match.isFiltered && core.state.settings.risingFilter.showFilterIcon) {
+        smartFilterIcon = 'user-filter fas fa-filter';
     }
 
     const baseGender = character.overrides.gender || character.gender;

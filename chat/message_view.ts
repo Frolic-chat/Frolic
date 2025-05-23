@@ -35,11 +35,27 @@ const userPostfix: {[key: number]: string | undefined} = {
             ((this.classes !== undefined) ? ` ${this.classes}` : '') +
             ` ${this.scoreClasses}` +
             ` ${this.filterClasses}`;
-        if(message.type !== Conversation.Message.Type.Event) {
+
+        function tryRisingPortrait() {
+            try   { return core.state.settings.risingShowPortraitInMessage }
+            catch { return false }
+        }
+
+        if (message.type !== Conversation.Message.Type.Event) {
             children.push(
-                (message.type === Conversation.Message.Type.Action) ? createElement('i', { class: 'message-pre fas fa-star-of-life' }) : '',
-                createElement(UserView, {props: {avatar: core.state.settings.risingShowPortraitInMessage, character: message.sender, channel: this.channel}}),
-                userPostfix[message.type] !== undefined ? createElement('span', { class: 'message-post' }, userPostfix[message.type]) : ' '
+                message.type === Conversation.Message.Type.Action
+                    ? createElement('i', { class: 'message-pre fas fa-star-of-life' })
+                    : '',
+                createElement(UserView, {
+                    props: {
+                        avatar: tryRisingPortrait(),
+                        character: message.sender,
+                        channel: this.channel,
+                    }
+                }),
+                userPostfix[message.type] !== undefined
+                    ? createElement('span', { class: 'message-post' }, userPostfix[message.type])
+                    : ' '
             );
             if('isHighlight' in message && message.isHighlight) classes += ' message-highlight';
         }
@@ -112,9 +128,12 @@ export default class MessageView extends Vue {
     }
 
     getMessageScoreClasses(message: Conversation.Message): string {
-        if ((!core.state.settings.risingAdScore) || (message.type !== Conversation.Message.Type.Ad)) {
-            return '';
+        try {
+            if (message.type !== Conversation.Message.Type.Ad
+             || !core.state.settings.risingAdScore)
+                    return '';
         }
+        catch { return '' }
 
         return `message-score ${Score.getClasses(message.score as Scoring)}`;
     }
