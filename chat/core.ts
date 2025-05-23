@@ -84,7 +84,7 @@ const data = {
         const s = await core.settingsStore.get('settings');
 
         state._settings = _.mergeWith(new SettingsImpl(), s, (oVal, sVal) => {
-            if (_.isArray(oVal) && _.isArray(sVal)) {
+            if (Array.isArray(oVal) && Array.isArray(sVal)) {
                 return sVal;
             }
         });

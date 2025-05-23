@@ -641,9 +641,8 @@
         }
 
         getAsNumber(input: any): number | null {
-          if (_.isNil(input) || input === '') {
-            return null;
-          }
+            if (input === null || input === undefined || input === '')
+                return null;
 
           const n = parseInt(input, 10);
 
@@ -651,11 +650,11 @@
         }
 
         getExceptionList(): string {
-          return _.join(this.risingFilter.exceptionNames, '\n');
+            return this.risingFilter.exceptionNames?.join('\n') || '';
         }
 
         setExceptionList(v: any): void {
-          this.risingFilter.exceptionNames = _.map(_.split(v.target.value), (v) => _.trim(v));
+            this.risingFilter.exceptionNames = (v.target.value as string).split('/[\r\n]+/').map(n => n.trim());
         }
 
         getSmartFilter(key: keyof SmartFilterSelection): boolean {
