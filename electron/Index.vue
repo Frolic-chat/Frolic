@@ -453,8 +453,7 @@
                 Socket.host = this.settings.host;
 
                 core.connection.onEvent('connecting', async() => {
-                    if (!electron.ipcRenderer.sendSync('connect', core.connection.character)
-                     && process.env.NODE_ENV === 'production') {
+                    if (!electron.ipcRenderer.sendSync('connect', core.connection.character)) {
                         alert(l('login.alreadyLoggedIn'));
                         return core.connection.close();
                     }
