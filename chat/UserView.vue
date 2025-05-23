@@ -11,6 +11,8 @@ import core from './core';
 import { EventBus } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import { characterImage } from './common';
+import ElectronLog from 'electron-log';
+const log = ElectronLog.scope('UserView');
 
 
 export function getStatusIcon(status: Character.Status): string {

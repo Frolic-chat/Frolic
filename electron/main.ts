@@ -871,8 +871,7 @@ function onReady(): void {
     });
 
     electron.ipcMain.handle('browser-option-browse', async () => {
-        log.debug('settings.browserOption.browse');
-        console.log('settings.browserOption.browse', JSON.stringify(settings));
+        log.debug('settings.browserOption.browse', JSON.stringify(settings));
 
         let filters;
         if (process.platform === "win32") {
