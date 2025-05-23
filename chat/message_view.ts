@@ -32,6 +32,11 @@ const userPostfix: {[key: number]: string | undefined} = {
           + ` ${this.scoreClasses}`
           + ` ${this.filterClasses}`;
 
+        function tryRisingPortrait() {
+            try   { return core.state.settings.risingShowPortraitInMessage }
+            catch { return false }
+        }
+
         if (message.type !== Conversation.Message.Type.Event) {
             children.push(
                 message.type === Conversation.Message.Type.Action
@@ -39,7 +44,7 @@ const userPostfix: {[key: number]: string | undefined} = {
                     : '',
                 createElement(UserView, {
                     props: {
-                        avatar: core.state.settings.risingShowPortraitInMessage,
+                        avatar: tryRisingPortrait(),
                         character: message.sender,
                         channel: this.channel,
                     }
@@ -131,10 +136,12 @@ export default class MessageView extends Vue {
     }
 
     getMessageScoreClasses(message: Conversation.Message): string {
-        if (!core.state.settings.risingAdScore
-         || message.type !== Conversation.Message.Type.Ad) {
-            return '';
+        try {
+            if (message.type !== Conversation.Message.Type.Ad
+             || !core.state.settings.risingAdScore)
+                    return '';
         }
+        catch { return '' }
 
         return `message-score ${Score.getClasses(message.score as Scoring)}`;
     }
