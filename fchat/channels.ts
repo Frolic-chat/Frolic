@@ -109,7 +109,9 @@ class State implements Interfaces.State {
 
     getChannelItem(id: string): ListItem | undefined {
         id = id.toLowerCase();
-        return (id.substring(0, 4) === 'adh-' ? this.openRooms : this.officialChannels)[id];
+        return id.substring(0, 4) === 'adh-'
+            ? this.openRooms[id]
+            : this.officialChannels[id];
     }
 
     onEvent(handler: Interfaces.EventHandler): void {
