@@ -22,7 +22,7 @@
     "@vue/runtime-dom": "^3.5.13",
     "any-ascii": "^0.3.0",
     "async": "^0.9.0",
-    "axios": "^0.24.0",
+    "axios": "^1.9.0",
     "bluebird": "~3.7.2",
     "bootstrap": "^4.6.2",
     "copy-webpack-plugin": "^6.2.1",
