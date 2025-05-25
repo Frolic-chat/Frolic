@@ -4,7 +4,7 @@ export const Theme = 'default';
 /**
  * The f-list domain used for site connections.
  *
- * Should be kept identical to f-list's `f-list.js`
+ * Should be kept identical to the domain listed in f-list's `f-list.js`
  */
 export const Domain = 'https://www.f-list.net/';
 /**
