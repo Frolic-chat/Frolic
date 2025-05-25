@@ -96,6 +96,72 @@ export class ImageUrlMutator {
         );
 
         this.add(
+            /^https?:\/\/(?:.*\.)?x\.com\/(.*)/,
+            async(url: string, match: RegExpMatchArray): Promise<string> => {
+                 const path = match[1];
+
+                 try {
+                    const result = await Axios.get(
+                        `https://api.fixupx.com/${path}`
+                    );
+
+                    const imageUrl = _.get(result, 'data.tweet.media.photos.0.url', null);
+                    if (imageUrl) {
+                        if (this.debug) console.log('X', url, imageUrl);
+
+                        return imageUrl;
+                    }
+                    else {
+                        const videoUrl = _.get(result, 'data.tweet.media.videos.0.url', null);
+                        if (!videoUrl)
+                            return url;
+
+                         if (this.debug) console.log('X', url, videoUrl);
+
+                        return videoUrl;
+                    }
+                }
+                catch (err) {
+                    console.error('X Failure', url, err);
+                    return url;
+                }
+            }
+        );
+
+        // this.add(
+        //     /^https?:\/\/(?:.*\.)?bsky\.app\/(.*)/,
+        //     async(url: string, match: RegExpMatchArray): Promise<string> => {
+        //          const path = match[1];
+
+        //          try {
+        //             const result = await Axios.get(
+        //                 `https://api.fxbsky.com/${path}`
+        //             );
+
+        //             // const imageUrl = _.get(result, 'data.tweet.media.photos.0.url', null);
+        //             // if (imageUrl) {
+        //             //     if (this.debug) console.log('X', url, imageUrl);
+
+        //             //     return imageUrl;
+        //             // }
+        //             // else {
+        //             //     const videoUrl = _.get(result, 'data.tweet.media.videos.0.url', null);
+        //             //     if (!videoUrl)
+        //             //         return url;
+
+        //             //      if (this.debug) console.log('X', url, videoUrl);
+
+        //             //     return videoUrl;
+        //             // }
+        //         }
+        //         catch (err) {
+        //             console.error('Bsky Failure', url, err);
+        //             return url;
+        //         }
+        //     }
+        // );
+
+        this.add(
           /^https?:\/\/rule34video\.com\/videos\/([0-9a-zA-Z-_]+)/,
           async(_url: string, match: RegExpMatchArray): Promise<string> => {
             const videoId = match[1];
