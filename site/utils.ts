@@ -14,7 +14,10 @@ export function setFlashMessageImplementation(impl: FlashMessageImpl): void {
 
 export function avatarURL(name: string): string {
     const uregex = /^[a-zA-Z0-9_\-\s]+$/;
-    if(!uregex.test(name)) return '#';
+
+    if (!uregex.test(name))
+        return '#';
+
     return `${staticDomain}images/avatar/${name.toLowerCase()}.png`;
 }
 
@@ -25,8 +28,8 @@ export function characterURL(name: string): string {
 }
 
 //tslint:disable-next-line:no-any
-export function isJSONError(error: any): error is Error & {response: AxiosResponse<{[key: string]: object | string | number}>} {
-    return (<AxiosError>error).response !== undefined && typeof (<AxiosError>error).response!.data === 'object';
+export function isJSONError(error: any): error is AxiosError & { response: AxiosResponse } {
+    return error instanceof AxiosError && error.response !== undefined && typeof error.response.data === 'object';
 }
 
 export function ajaxError(error: any, prefix: string, showFlashMessage: boolean = true): void { //tslint:disable-line:no-any
@@ -34,19 +37,26 @@ export function ajaxError(error: any, prefix: string, showFlashMessage: boolean 
     if(error instanceof Error) {
         if(axios.isCancel(error)) return;
 
-        if(isJSONError(error)) {
+        if (isJSONError(error)) {
             const data = <{error?: string | string[]}>error.response.data;
-            if(typeof (data.error) === 'string')
+            if (typeof data.error === 'string')
                 message = data.error;
-            else if(typeof (data.error) === 'object' && data.error.length > 0)
+            else if (typeof data.error === 'object' && data.error.length > 0)
                 message = data.error[0];
         }
-        if(message === undefined)
-            message = (<Error & {response?: AxiosResponse}>error).response !== undefined ?
-                (<Error & {response: AxiosResponse}>error).response.statusText : error.name;
-    } else message = <string>error;
+
+        if (message === undefined)
+            message = (<Error & {response?: AxiosResponse}>error).response !== undefined
+                ? (<Error & {response: AxiosResponse}>error).response.statusText
+                : error.name;
+    }
+    else {
+        message = <string>error;
+    }
+
     console.error(error);
-    if(showFlashMessage) flashError(`[ERROR] ${prefix}: ${message}`);
+
+    if (showFlashMessage) flashError(`[ERROR] ${prefix}: ${message}`);
 }
 
 export function flashError(message: string): void {
@@ -61,7 +71,7 @@ export function flashMessage(type: FlashMessageType, message: string): void {
     flashImpl(type, message);
 }
 
-export let siteDomain = '';
+export let siteDomain   = '';
 export let staticDomain = '';
 
 export let settings: Settings = {
