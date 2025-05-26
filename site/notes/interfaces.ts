@@ -1,4 +1,4 @@
-type Commands =
+export type Commands =
   | 'refreshAllCounts'
   | 'emptyTrash'
   | 'report'
@@ -170,6 +170,20 @@ interface NotesApiRequest<T extends Commands> {
     data:       RequestData[T],             // object | undefined
 }
 
+
+const POST = {
+    method: 'POST',
+    url: 'https://httpbin.org/post',
+    data: {
+        item: 'thing',
+    },
+};
+
+const GET = {
+    method: 'GET',
+    url: 'https://httpbin.org/post',
+    responseType: 'json/application'
+};
 /**
  * @param call API request call to issue
  * @param data Object containing the data to be sent with the request
