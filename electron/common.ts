@@ -24,7 +24,7 @@ export class GeneralSettings {
     host: string = FLIST.DefaultHost;
     logDirectory = path.join(electron.app.getPath('userData'), 'data');
     spellcheckLang: string[] | string | undefined = [getDefaultLanguage()];
-    theme: string = FLIST.theme;
+    theme: string = FLIST.DefaultTheme;
     version = electron.app.getVersion();
     beta = false;
     customDictionary: string[] = [];
