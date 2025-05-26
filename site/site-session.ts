@@ -7,8 +7,8 @@ import { NoteChecker } from './note-checker';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
-import { wrapper } from 'axios-cookiejar-support';
-import { CookieJar } from 'tough-cookie';
+// import { wrapper } from 'axios-cookiejar-support';
+// import { CookieJar } from 'tough-cookie';
 //import Cookies from 'js-cookie';
 
 /* tslint:disable:no-unsafe-any */
@@ -44,10 +44,12 @@ export class SiteSession {
         params: {},
         timeout: 10000,
         maxRedirects: 0,
-        jar: new CookieJar(),
+        adapter: 'fetch',
+        //jar: new CookieJar(),
     });
 
-    private request = wrapper(this.a);
+    private request = this.a;
+    //private request = wrapper(this.a);
 
 
     setCredentials(account: string, password: string): void {
@@ -68,6 +70,8 @@ export class SiteSession {
             await this.login();
 
             this.state = 'active';
+
+            log.debug('start.loggedIn.debug', "This is a break before we start the interfaces.");
 
             await Promise.all(
                 Object.values(this.interfaces).map(i => i.start())
@@ -168,7 +172,7 @@ export class SiteSession {
             }
         );
 
-        log.verbose('login.info', { res });
+        log.verbose('login.info.flist', { res });
 
         // const a = new FormData();
         // a.append('username', this.account);
@@ -209,14 +213,8 @@ export class SiteSession {
         if (mustBeLoggedIn)
             await this.ensureLogin();
 
-        const r: AxiosRequestConfig = {
-            url: url ?? '',
-            ...config
-        };
-
-        log.verbose('siteSession.get.finalConfig', r);
-
-        return this.sessionThroat(async() => this.request(r));
+        log.verbose('siteSession.get.finalConfig', url, config);
+        return this.sessionThroat(async() => this.request.get(url, config));
     }
 
 
@@ -228,16 +226,8 @@ export class SiteSession {
         if (mustBeLoggedIn)
             await this.ensureLogin();
 
-        const r: AxiosRequestConfig = {
-            url: url ?? '',
-            method: 'post',
-            data: data,
-            ...config
-        };
-
-        log.verbose('siteSession.get.finalConfig', r);
-
-        return this.sessionThroat(async() => this.request(r));
+        log.verbose('siteSession.get.finalConfig', { url, data, config });
+        return this.sessionThroat(async() => this.request.post(url, data, config));
     }
 
 
