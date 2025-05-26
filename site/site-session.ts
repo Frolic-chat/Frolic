@@ -4,12 +4,8 @@ import throat from 'throat';
 //import * as qs from 'querystring';
 
 import { NoteChecker } from './note-checker';
-import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
-// import { wrapper } from 'axios-cookiejar-support';
-// import { CookieJar } from 'tough-cookie';
-//import Cookies from 'js-cookie';
 
 /* tslint:disable:no-unsafe-any */
 
@@ -24,7 +20,6 @@ export interface SiteSessionInterfaceCollection extends Record<string, SiteSessi
 
 
 export class SiteSession {
-    private readonly sessionThroat = throat(1);
 
     readonly interfaces: SiteSessionInterfaceCollection = {
         notes: new NoteChecker(this)
@@ -34,22 +29,6 @@ export class SiteSession {
     private account:  string = '';
     private password: string = '';
     private csrf:     string = '';
-
-    //private request: request.RequestPromiseAPI = request.defaults({ jar: request.jar() });
-    private a: AxiosInstance = axios.create({
-        baseURL: FLIST_DOMAIN,
-        //baseURL: 'http://localhost:8000',
-        allowAbsoluteUrls: true,
-        withCredentials: true,
-        params: {},
-        timeout: 10000,
-        maxRedirects: 0,
-        adapter: 'fetch',
-        //jar: new CookieJar(),
-    });
-
-    private request = this.a;
-    //private request = wrapper(this.a);
 
 
     setCredentials(account: string, password: string): void {
@@ -61,9 +40,6 @@ export class SiteSession {
     //private isActive() { return !!(this.csrf); }
 
     async start(): Promise<void> {
-        this.request.defaults.params = {};
-        log.debug('axios.debug.start', { axios: this.request });
-
         try {
             await this.stop();
             await this.init();
@@ -109,6 +85,8 @@ export class SiteSession {
         // A waste if only called right after stop()
         this.csrf = '';
 
+        // renderer.invoke('get_csrf_token', )
+
         const res = await this.request.get('');
         if (res.status !== 200)
             throw new Error(`SiteSession.init: Invalid status code: ${res.status}`);
@@ -134,65 +112,7 @@ export class SiteSession {
     private async login(): Promise<void> {
         log.debug('sitesession.login');
 
-        if (this.password === '' || this.account === '')
-            throw new Error('User credentials not set');
-
-        // In theory, useless because login() only called after init()
-        // if (!this.csrf)
-        //     throw new Error('Csrf token unset when it should be.');
-
-        const localr = await this.request.post(
-            'http://localhost:8000', {
-                username:   this.account,
-                password:   this.password,
-                csrf_token: this.csrf,
-                //roaming:    'on',
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }
-        );
-
-        log.verbose('login.info.local', { localr });
-
-
-        const res = await this.request.post(
-            'https://www.f-list.net/action/script_login.php', {
-                username:   this.account,
-                password:   this.password,
-                csrf_token: this.csrf,
-                //roaming:    'on',
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-            }
-        );
-
-        log.verbose('login.info.flist', { res });
-
-        // const a = new FormData();
-        // a.append('username', this.account);
-        // a.append('password', "dog's aren't that great~~");
-        // a.append('csrf_token', 'ad2fo8ayds8ah457ia582yhahg8ha97psd5agh7pi1gh4a5p2');
-        // const re = await axios.post(
-        //     'http://localhost:8000',
-        //     a,
-        //     {
-        //         headers: {
-        //             'Content-Type': 'application/x-www-form-urlencoded',
-        //         },
-        //         withCredentials: true,
-        //     }
-        // );
-
-        //throw new Error('This is just a test.');
-
-        if (res.status !== 302)
-            throw new Error(`Invalid status code ${res.status}`);
+        // invoke ('site-session-login', {});
 
         log.debug('sitesession.login.success');
     }
@@ -213,8 +133,11 @@ export class SiteSession {
         if (mustBeLoggedIn)
             await this.ensureLogin();
 
-        log.verbose('siteSession.get.finalConfig', url, config);
-        return this.sessionThroat(async() => this.request.get(url, config));
+        config.url = url;
+        config.method = 'get';
+
+        log.verbose('siteSession.get.finalConfig', config);
+        // invoke('site-session-get', config);
     }
 
 
@@ -226,8 +149,12 @@ export class SiteSession {
         if (mustBeLoggedIn)
             await this.ensureLogin();
 
-        log.verbose('siteSession.get.finalConfig', { url, data, config });
-        return this.sessionThroat(async() => this.request.post(url, data, config));
+        config.url = url;
+        config.method = 'post';
+        config.data = data;
+
+        log.verbose('siteSession.get.finalConfig', { config });
+        // invoke('site-session-post', config);
     }
 
 
