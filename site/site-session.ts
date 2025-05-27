@@ -6,9 +6,8 @@ import { NoteChecker } from './note-checker';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import throat from 'throat';
-import request from 'request-promise'; //tslint:disable-line:match-default-export-name
-
-/* tslint:disable:no-unsafe-any */
+import request from 'request-promise';
+import { Response } from 'request';
 
 export interface SiteSessionInterface {
   start(): Promise<void>;
@@ -81,10 +80,12 @@ export class SiteSession {
         this.request = request.defaults({ jar: request.jar() });
         this.csrf = '';
 
-        const res = await this.get('/');
+        const res = await this.get('');
+
+        log.debug('init.debug', { headers: res.headers, code: res.statusCode, body: res.body });
 
         if (res.statusCode !== 200) {
-            throw new Error(`SiteSession.init: Invalid status code: ${res.status}`);
+            throw new Error(`SiteSession.init: Invalid status code: ${res.statusCode}`);
         }
 
         const input = res.body.match(/<input.*?csrf_token.*?>/);
@@ -111,7 +112,7 @@ export class SiteSession {
         }
 
         const res = await this.post(
-            '/action/script_login.php',
+            'action/script_login.php',
             {
                 username: this.account,
                 password: this.password,
@@ -124,11 +125,11 @@ export class SiteSession {
             }
         );
 
-        if (res.statusCode !== 302) {
-            throw new Error('Invalid status code');
-        }
+        log.debug('login.debug', { url: res.request.uri, headers: res.headers, code: res.statusCode, body: res.body });
 
-        // console.log('RES RES RES', res);
+        if (res.statusCode !== 302) {
+            throw new Error(`Invalid status code ${res.statusCode}`);
+        }
 
         log.debug('sitesession.login.success');
     }
@@ -141,28 +142,31 @@ export class SiteSession {
     }
 
 
-  private async prepareRequest( method: string,
-                                uri: string,
-                                mustBeLoggedIn: boolean,
-                                config: Partial<request.Options>
-                              ): Promise<request.OptionsWithUri> {
+    private async prepareRequest(
+                                    method: string,
+                                    uri: string,
+                                    mustBeLoggedIn: boolean,
+                                    config: Partial<request.Options>
+                                ): Promise<request.OptionsWithUri> {
         if (mustBeLoggedIn) {
             await this.ensureLogin();
         }
 
-    return {
-        method,
-        uri: FLIST_DOMAIN + uri,
-        resolveWithFullResponse: true,
-        ...config
-    };
+        return {
+            method,
+            uri: FLIST_DOMAIN + uri,
+            resolveWithFullResponse: true,
+            ...config
+        };
   }
 
 
-    async get(uri: string, mustBeLoggedIn: boolean = false, config: Partial<request.Options> = {}): Promise<request.RequestPromise> {
+    async get(uri: string, mustBeLoggedIn: boolean = false, config: Partial<request.Options> = {}): Promise<request.RequestPromise<Response>> {
         return this.sessionThroat(
             async() => {
                 const finalConfig = await this.prepareRequest('get', uri, mustBeLoggedIn, config);
+
+                log.debug('get.debug', finalConfig);
 
                 return this.request(finalConfig);
             }
@@ -174,10 +178,12 @@ export class SiteSession {
                 data: Record<string, any>,
                 mustBeLoggedIn: boolean = false,
                 config: Partial<request.Options> = {}
-            ): Promise<request.RequestPromise> {
+            ): Promise<request.RequestPromise<Response>> {
         return this.sessionThroat(
             async() => {
                 const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, { form: data, ...config });
+
+                log.debug('post.debug', finalConfig);
 
                 return this.request(finalConfig);
             }
