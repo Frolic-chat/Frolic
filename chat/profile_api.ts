@@ -27,10 +27,11 @@ import {
 import * as Utils from '../site/utils';
 import core from './core';
 import { EventBus } from './preview/event-bus';
+import * as FLIST from '../constants/flist';
 
 const parserSettings = {
-    siteDomain:        'https://www.f-list.net/',
-    staticDomain:      'https://static.f-list.net/',
+    siteDomain:         FLIST.Domain,
+    staticDomain:       FLIST.StaticDomain,
     animatedIcons:      true,
     inlineDisplayMode:  InlineDisplayMode.DISPLAY_ALL
 };
