@@ -13,4 +13,4 @@ export const Domain = 'https://www.f-list.net/';
  *
  * Should be kept identical to f-list's `f-list.js`
  */
-export const StaticDomain = 'https://static.f-list.net';
+export const StaticDomain = 'https://static.f-list.net/';
