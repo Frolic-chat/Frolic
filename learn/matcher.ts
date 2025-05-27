@@ -1740,7 +1740,7 @@ export class UserListSorter {
 
         const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
 
-        ulslog.debug(
+        ulslog.silly(
             'userlist.sorter.genderfromkink',
             {
                 character: c.name,
@@ -1770,7 +1770,7 @@ export class UserListSorter {
         // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
         const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
 
-        ulslog.debug(
+        ulslog.silly(
             'userlist.sorter.genderfromorientation',
             {
                 character: c.name,
