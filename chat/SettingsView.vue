@@ -370,7 +370,7 @@
             <h5>{{l('rising.header.typeMatch')}}</h5>
             <div class="form-group filters" >
                 <label class="control-label" :for="'risingFilter.smartFilters.' + key" v-for="(value, key) in smartFilterTypes">
-                    <input type="checkbox" :id="'risingFilter.smartFilters.' + key" v-bind:checked="getSmartFilter(key)" @change="(v) => setSmartFilter(key, v)"/>
+                    <input type="checkbox" :id="'risingFilter.smartFilters.' + key" v-bind:checked="getSmartFilter(key)" @change="v => setSmartFilter(key, v)"/>
                     {{value.name}}
                 </label>
             </div>
@@ -379,7 +379,7 @@
             <div class="form-group">{{l('rising.exceptions')}}</div>
 
             <div class="form-group">
-                <textarea class="form-control" :value="getExceptionList()" @change="(e) => setExceptionList(e)" :placeholder="l('rising.exceptions.ph')"></textarea>
+                <textarea class="form-control" :value="getExceptionList()" @change="setExceptionList" :placeholder="l('rising.exceptions.ph')"></textarea>
             </div>
         </div>
 
@@ -653,16 +653,16 @@
             return this.risingFilter.exceptionNames?.join('\n') || '';
         }
 
-        setExceptionList(v: any): void {
-            this.risingFilter.exceptionNames = (v.target.value as string).split('/[\r\n]+/').map(n => n.trim());
+        setExceptionList(v: Event): void {
+            this.risingFilter.exceptionNames = (v.target as HTMLInputElement).value.split('/[\r\n]+/').map(n => n.trim());
         }
 
         getSmartFilter(key: keyof SmartFilterSelection): boolean {
             return !!this.risingFilter.smartFilters?.[key];
         }
 
-        setSmartFilter(key: keyof SmartFilterSelection , value: any): void {
-            this.risingFilter.smartFilters[key] = value.target.checked;
+        setSmartFilter(key: keyof SmartFilterSelection, v: Event): void {
+            this.risingFilter.smartFilters[key] = (v.target as HTMLInputElement).checked;
         }
     }
 </script>
