@@ -129,7 +129,7 @@ type RequestData = {
     trashNote:      {   notes:      NoteId[];
                         csrf_token: CsrfToken;      };
     undeleteNote:   {   notes:      NoteId[];
-                        folder_id:  1;
+                        folder_id?:  1;
                         csrf_token: CsrfToken;      };
 
     markSelectedRead:
@@ -144,7 +144,7 @@ type RequestData = {
                         csrf_token: CsrfToken;      };
     undeleteSelected:
                     {   notes:      NoteId[];
-                        folder_id:  1;
+                        folder_id?:  1;
                         csrf_token: CsrfToken;      };
     moveSelected:   {   notes:      NoteId[];
                         folder_id:  FolderId;
@@ -155,28 +155,42 @@ type DeepPartial<T>  = { [P in keyof T]?:  DeepPartial<T[P]>;  };
 type DeepRequired<T> = { [P in keyof T]-?: DeepRequired<T[P]>; };
 
 const RequestDataStatic: DeepPartial<RequestData> = {
-    getFolders:     undefined,
-    getFilters:     undefined,
-    undeleteNote:   {   folder_id:  1, },
-}
-
-/** ApiRequest
- *
- * An Api request to send to the note server.
- */
-interface Axios_NotesApiRequest<T extends Commands> {
-    uri:        RequestLayout[T]['uri'],    // string
-    method:     RequestLayout[T]['method'], // string
-    dataType:   'json',                     // string literal
-    timeout:    number,                     // 30 seconds
-    data:       RequestData[T],             // object | undefined
+    getFolders:         undefined,
+    getFilters:         undefined,
+    undeleteNote:       {   folder_id:  1, },
+    undeleteSelected:   {   folder_id:  1, },
 }
 
 /**
+ * An Api request to send to the note server.
+ */
+// interface Axios_NotesApiRequest<T extends Commands> {
+//     uri:        RequestLayout[T]['uri'],    // string
+//     method:     RequestLayout[T]['method'], // string
+//     dataType:   'json',                     // string literal
+//     timeout:    number,                     // 30 seconds
+//     data:       RequestData[T],             // object | undefined
+// }
+
+// exclude where RequestStatic[T] = undefined???
+//type HasNoRequestStatic = Commands
+// type DataWithoutStatic<T, U> = {
+//     [K in keyof T as Exclude<K, keyof U>]: T[K];
+// };
+
+//type Static = keyof typeof RequestDataStatic;
+//type OmitStatic<T extends Commands> = Omit<RequestData[T], Static>;
+
+//Exclude<RequestData<T>, typeof RequestDataStatic[T]>
+//ComposeApiRequest("undeleteNote", { notes: [ 1, 2, 3 ], csrf_token: "adsrasd" })
+
+/** ApiRequest
  * From the original `f-list.js` implementation,
  * timeout still needs to be reimplemented.
+ *
+ * This version is designed to be sent to request-promise
  */
-type NotesApiRequest<T extends Commands> = {
+export type NotesApiRequest<T extends Commands> = {
     uri:        RequestLayout[T]['uri'],    // string
     method:     RequestLayout[T]['method'], // string
     json:       true,                       // bool
@@ -240,7 +254,7 @@ type ResponseData = {
     //     refreshAllCounts:   {},  // Need experience.
     //     emptyTrash:         {},
     //     report:             {},
-    send:           {   total:  number,         // Inbox? Not always accurate.
+    send:           {   total:  number,         // Inbox? Not accurate if sending to yourself.
                         unread: number,
                         error:  string,                 };
 
