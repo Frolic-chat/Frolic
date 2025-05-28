@@ -21,7 +21,7 @@
                         This character has been blocked and is not visible to the public. Reason:
                         <br/> {{ character.block_reason }}
                     </div>
-                    <div v-if="character.memo && character.memo.memo !== null" id="headerCharacterMemo" class="alert alert-info">Memo: {{ character.memo.memo }}</div>
+                    <div v-if="character.memo && character.memo.memo" id="headerCharacterMemo" class="alert alert-info">Memo: {{ character.memo.memo }}</div>
                     <div class="card bg-light">
                         <div class="card-header character-card-header">
                             <tabs class="card-header-tabs" v-model="tab">

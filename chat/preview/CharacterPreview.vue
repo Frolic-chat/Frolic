@@ -122,7 +122,7 @@ export default class CharacterPreview extends Vue {
   statusClasses?: StatusClasses;
   latestAd?: AdCachedPosting;
   statusMessage?: string;
-  memo?: string;
+  memo: string | null = null;
   l = l;
 
   smartFilterIsFiltered?: boolean;
@@ -208,7 +208,7 @@ export default class CharacterPreview extends Vue {
     this.match = undefined;
     this.character = undefined;
     this.customs = undefined;
-    this.memo = undefined;
+    this.memo = null;
     this.ownCharacter = core.characters.ownProfile;
 
     this.conversation = undefined;
@@ -305,7 +305,7 @@ export default class CharacterPreview extends Vue {
   }
 
   updateMemo(): void {
-    this.memo = this.character?.memo?.memo;
+    this.memo = this.character?.memo?.memo || null;
   }
 
   updateCustoms(): void {
