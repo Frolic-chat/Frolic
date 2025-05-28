@@ -1,3 +1,5 @@
+import { OptionsWithUrl } from "request-promise";
+
 export type Commands =
   | 'refreshAllCounts'
   | 'emptyTrash'
@@ -22,58 +24,58 @@ export type Commands =
 
 /**         REQUEST         */
 //region Request
-type RequestLayout = Record<Commands, { url: string, method?: 'GET' | 'POST', data?: RequestData[Commands]}>;
+type RequestLayout = Record<Commands, { uri: string, method?: 'GET' | 'POST', data?: RequestData[Commands]}>;
 
 const RequestStatic: RequestLayout = {
     refreshAllCounts:
-                    {   url: 'json/notes-getfolders.json'    },
-    emptyTrash:     {   url: 'json/notes-emptytrash.json',
+                    {   uri: 'json/notes-getfolders.json'    },
+    emptyTrash:     {   uri: 'json/notes-emptytrash.json',
                         method: 'POST',                      },
-    report:         {   url: 'json/notes-report.json',
-                        method: 'POST',                      },
-
-    send:           {   url: 'json/notes-send.json',
+    report:         {   uri: 'json/notes-report.json',
                         method: 'POST',                      },
 
-    addFolder:      {   url: 'json/notes-createfolder.json',
+    send:           {   uri: 'json/notes-send.json',
                         method: 'POST',                      },
-    renameFolder:   {   url: 'json/notes-renamefolder.json',
+
+    addFolder:      {   uri: 'json/notes-createfolder.json',
                         method: 'POST',                      },
-    deleteFolder:   {   url: 'json/notes-deletefolder.json',
+    renameFolder:   {   uri: 'json/notes-renamefolder.json',
+                        method: 'POST',                      },
+    deleteFolder:   {   uri: 'json/notes-deletefolder.json',
                         method: 'POST',                      },
 
     // get
-    notes:          {   url: 'json/notes-get.json',          },
-    unread:         {   url: 'json/notes-getunread.json',    },
-    starred:        {   url: 'json/notes-getstarred.json',   },
+    notes:          {   uri: 'json/notes-get.json',          },
+    unread:         {   uri: 'json/notes-getunread.json',    },
+    starred:        {   uri: 'json/notes-getstarred.json',   },
                         // json/notes-getstarred.php ??? ?? ???????
-    getFolders:     {   url: 'json/notes-getfolders.json',   },
+    getFolders:     {   uri: 'json/notes-getfolders.json',   },
 
-    searchUser:     {   url: 'json/notes-searchuser.json',   },
-    searchContent:  {   url: 'json/notes-searchcontent.json',},
-    getFilters:     {   url: 'json/notes-getfilters.json',   },
-    setFilters:     {   url: 'json/notes-setfilters.json',   },
+    searchUser:     {   uri: 'json/notes-searchuser.json',   },
+    searchContent:  {   uri: 'json/notes-searchcontent.json',},
+    getFilters:     {   uri: 'json/notes-getfilters.json',   },
+    setFilters:     {   uri: 'json/notes-setfilters.json',   },
 
-    markNoteRead:   {   url: 'json/notes-setread.json',
+    markNoteRead:   {   uri: 'json/notes-setread.json',
                         method: 'POST',                      },
-    starNote:       {   url: 'json/notes-setstarred.json',
+    starNote:       {   uri: 'json/notes-setstarred.json',
                         method: 'POST',                      },
-    trashNote:      {   url: 'json/notes-trash.json',
+    trashNote:      {   uri: 'json/notes-trash.json',
                         method: 'POST',                      },
-    undeleteNote:   {   url: 'json/notes-setfolder.json',
+    undeleteNote:   {   uri: 'json/notes-setfolder.json',
                         method: 'POST',                      },
 
     markSelectedRead:
-                    {   url: 'json/notes-setread.json',
+                    {   uri: 'json/notes-setread.json',
                         method: 'POST',                      },
-    starSelected:   {   url: 'json/notes-setstarred.json',
+    starSelected:   {   uri: 'json/notes-setstarred.json',
                         method: 'POST',                      },
-    trashSelected:  {   url: 'json/notes-trash.json',
+    trashSelected:  {   uri: 'json/notes-trash.json',
                         method: 'POST',                      },
     undeleteSelected:
-                    {   url: 'json/notes-setfolder.json',
+                    {   uri: 'json/notes-setfolder.json',
                         method: 'POST',                      },
-    moveSelected:   {   url: 'json/notes-setfolder.json',
+    moveSelected:   {   uri: 'json/notes-setfolder.json',
                         method: 'POST',                      },
 }
 
@@ -162,64 +164,74 @@ const RequestDataStatic: DeepPartial<RequestData> = {
  *
  * An Api request to send to the note server.
  */
-interface NotesApiRequest<T extends Commands> {
-    url:        RequestLayout[T]['url'],    // string
+interface Axios_NotesApiRequest<T extends Commands> {
+    uri:        RequestLayout[T]['uri'],    // string
     method:     RequestLayout[T]['method'], // string
     dataType:   'json',                     // string literal
     timeout:    number,                     // 30 seconds
     data:       RequestData[T],             // object | undefined
 }
 
+/**
+ * From the original `f-list.js` implementation,
+ * timeout still needs to be reimplemented.
+ */
+type NotesApiRequest<T extends Commands> = {
+    uri:        RequestLayout[T]['uri'],    // string
+    method:     RequestLayout[T]['method'], // string
+    json:       true,                       // bool
+    body:       RequestData[T],             // object | undefined
+}
 
-const POST = {
-    method: 'POST',
-    uri: 'https://httpbin.org/post',
-    form: {
-        item: 'thing',
-    },
-    headers: {
-        'content-type': 'application/x-www-form-urlencoded'
-    }
-};
-
-const JSON = {
-    method: 'POST',
-    uri: 'https://httpbin.org/post',
-    body: {
-        item: 'thing',
-    },
-    json: true, // auto-stringify
-};
-
-
-const GET = {
-    method: 'GET',
-    uri: 'https://httpbin.org/post',
-    responseType: 'json/application'
-};
 /**
  * @param call API request call to issue
  * @param data Object containing the data to be sent with the request
  * @returns A fully formatted API Request ready to be issued
  * @example ConstructApiRequest("deleteFolder", { folder: 2, csrf_token: Token.get()})
  */
-function ComposeApiRequest<T extends Commands>(call: T, data: RequestData[T]): NotesApiRequest<T> {
-    // TODO:
-	//don't use `data` in certain Command types.
-    //        ConstructApiRequest("refreshAll")
-    // This could be done with an overload, then split the functions to understand only certain portions of Commands.
+export function ComposeApiRequest<T extends 'getFolders' | 'getFilters'>(call: T, data?: undefined): NotesApiRequest<T>;
+export function ComposeApiRequest<T extends Exclude<Commands, 'getFolders' | 'getFilters'>>(call: T, data: RequestData[T]): NotesApiRequest<T>;
 
+export function ComposeApiRequest<T extends Commands>(call: T, data: RequestData[T]): NotesApiRequest<T> {
     return {
-        ...{ method: 'GET', dataType: 'json', timeout: 30 * 1E3, }, // defaults
-        ...RequestStatic[call],                       // defaults for this call
-        data: typeof data === 'undefined' ? data : { ...RequestDataStatic[call], ...data },
-        //data: RequestDataStatic[call] === undefined ? undefined : { ...RequestDataStatic[call], ...data },
+        ...{ method: 'GET', json: true }, // defaults
+        ...RequestStatic[call], // call defaults
+        body: { ...data, ...RequestDataStatic[call] },
     };
 }
 
-ComposeApiRequest("getFilters", undefined) // Shouldn't error, never has.
+//ComposeApiRequest('getFolders', undefined) // Might error
 //ComposeApiRequest("getFilters") // Shouldn't error
-//ComposeApiRequest("addFolder")  // Should error
+//ComposeApiRequest('addFolder')  // Should error
+
+// function NoteRequest<T extends Commands>(call: T, data: RequestData[T]): OptionsWithUrl {
+//     return {
+//         uri: RequestStatic[call].uri,
+//         method: RequestStatic[call].method,
+//         resolveWithFullResponse: true,
+//         body: { ...data, ...RequestDataStatic[call] },
+//         json: true
+//     }
+// }
+// const POST = {
+//     method: 'POST',
+//     uri: 'https://httpbin.org/post',
+//     form: {
+//         item: 'thing',
+//     },
+//     headers: {
+//         'content-type': 'application/x-www-form-urlencoded'
+//     }
+// };
+
+// const JSON = {
+//     method: 'POST',
+//     uri: 'https://httpbin.org/post',
+//     body: {
+//         item: 'thing',
+//     },
+//     json: true, // auto-stringify
+// };
 
 
 /**         RESPONSE        */
