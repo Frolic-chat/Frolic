@@ -62,7 +62,7 @@
             </a>
         </div>
         <modal :action="l('user.memo.action')" ref="memo" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
-            <div style="float:right;text-align:right;">{{getByteLength(memo)}} / 1000</div>
+            <div style="float:right;text-align:right;">{{memo ? getByteLength(memo) : 0}} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
         </modal>
         <ad-view ref="adViewDialog" :character="character" v-if="character"></ad-view>
@@ -99,7 +99,7 @@ import { MemoManager } from './character/memo';
         characterImage: string | undefined;
         touchedElement: HTMLElement | undefined;
         channel: Channel | undefined;
-        memo = '';
+        memo: string | null = '';
         // memoId = 0;
         memoLoading = false;
         match: MatchReport | null = null;

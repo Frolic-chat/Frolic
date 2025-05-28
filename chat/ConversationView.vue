@@ -320,7 +320,7 @@
         isPrivate = Conversation.isPrivate;
         showNonMatchingAds = true;
 
-        userMemo: string = '';
+        userMemo: string | null = null;
         editorMemo: string = '';
         memoManager?: MemoManager;
 
@@ -434,11 +434,11 @@
             this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
             this.scrolledDown = true;
             this.refreshAutoPostingTimer();
-            this.userMemo = '';
+            this.userMemo = null;
 
             if (this.isPrivate(this.conversation)) {
               const c = await core.cache.profileCache.get(this.conversation.name);
-              this.userMemo = c?.character?.memo?.memo || '';
+              this.userMemo = c?.character?.memo?.memo ?? null;
             }
         }
 
@@ -700,8 +700,8 @@
         }
 
         updateMemo(): void {
-          this.memoManager?.set(this.editorMemo).catch((e: object) => alert(errorToString(e)))
-          this.userMemo = this.editorMemo;
+          this.memoManager?.set(this.editorMemo || null).catch((e: object) => alert(errorToString(e)))
+          this.userMemo = this.editorMemo ?? null;
         }
 
         refreshMemo(event: { character: string, memo: CharacterMemo }): void {
@@ -721,7 +721,7 @@
               await this.memoManager.load();
 
               this.userMemo = this.memoManager.get().memo;
-              this.editorMemo = this.userMemo;
+              this.editorMemo = this.userMemo ?? '';
             } catch(e) {
                 alert(errorToString(e));
             }

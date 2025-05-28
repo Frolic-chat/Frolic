@@ -98,7 +98,7 @@ export interface CharacterGroup {
 
 export interface CharacterMemo {
     id: number;
-    memo: string;
+    memo: string | null;
 }
 
 export interface Character {
