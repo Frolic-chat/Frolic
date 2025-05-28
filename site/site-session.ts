@@ -113,16 +113,20 @@ export class SiteSession {
 
         const res = await this.post(
             'action/script_login.php',
-            {
-                username: this.account,
-                password: this.password,
-                csrf_token: this.csrf
-            },
             false,
             {
                 followRedirect: false,
-                simple: false
-            }
+                simple: false,
+                form: {
+                    username: this.account,
+                    password: this.password,
+                    csrf_token: this.csrf
+                },
+                // headers: {
+                // Implied
+                //     'content-type': 'application/x-www-form-urlencoded'
+                // }
+            },
         );
 
         log.debug('login.debug', { url: res.request.uri, headers: res.headers, code: res.statusCode, body: res.body });
@@ -142,29 +146,52 @@ export class SiteSession {
     }
 
 
-    private async prepareRequest(
-                                    method: string,
+    private async prepareRequest(   method: string,
                                     uri: string,
-                                    mustBeLoggedIn: boolean,
-                                    config: Partial<request.Options>
+                                    mustBeLoggedIn: boolean = false,
+                                    config: Partial<request.Options> = {}
                                 ): Promise<request.OptionsWithUri> {
         if (mustBeLoggedIn) {
             await this.ensureLogin();
         }
 
         return {
-            method,
+            ...config,
+            method: config.method ?? method,
             uri: FLIST_DOMAIN + uri,
             resolveWithFullResponse: true,
-            ...config
         };
-  }
+    }
 
 
-    async get(uri: string, mustBeLoggedIn: boolean = false, config: Partial<request.Options> = {}): Promise<request.RequestPromise<Response>> {
+    async get(  uri: string,
+                config: Partial<request.Options>
+             ): Promise<request.RequestPromise<Response>>;
+    async get(  uri: string,
+                mustBeLoggedIn?: boolean,
+                config?: Partial<request.Options>,
+             ): Promise<request.RequestPromise<Response>>;
+
+    async get(  uri: string,
+                loggedInOrConfig: boolean | Partial<request.Options> = false,
+                config: Partial<request.Options> = {}
+             ): Promise<request.RequestPromise<Response>> {
+
+        let mustBeLoggedIn: boolean = true;
+        let conf: Partial<request.Options>;
+
+        if (typeof loggedInOrConfig === 'boolean') {
+            mustBeLoggedIn = loggedInOrConfig;
+            conf = config;
+        }
+        else {
+            mustBeLoggedIn = true;
+            conf = loggedInOrConfig;
+        }
+
         return this.sessionThroat(
             async() => {
-                const finalConfig = await this.prepareRequest('get', uri, mustBeLoggedIn, config);
+                const finalConfig = await this.prepareRequest('get', uri, mustBeLoggedIn, conf);
 
                 log.debug('get.debug', finalConfig);
 
@@ -173,15 +200,35 @@ export class SiteSession {
         );
     }
 
+    async post( uri: string,
+                config: Partial<request.Options>
+              ): Promise<request.RequestPromise<Response>>;
+    async post( uri: string,
+                mustBeLoggedIn: boolean,
+                config?: Partial<request.Options>,
+              ): Promise<request.RequestPromise<Response>>;
 
-  async post(   uri: string,
-                data: Record<string, any>,
-                mustBeLoggedIn: boolean = false,
-                config: Partial<request.Options> = {}
-            ): Promise<request.RequestPromise<Response>> {
+    async post( uri: string,
+                loggedInOrConfig: boolean | Partial<request.Options> = false,
+                config: Partial<request.Options> = {},
+              ): Promise<request.RequestPromise<Response>> {
+
+        let mustBeLoggedIn: boolean = true;
+        let conf: Partial<request.Options>;
+
+        if (typeof loggedInOrConfig === 'boolean') {
+            mustBeLoggedIn = loggedInOrConfig;
+            conf = config;
+        }
+        else {
+            mustBeLoggedIn = true;
+            conf = loggedInOrConfig;
+        }
+
+
         return this.sessionThroat(
             async() => {
-                const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, { form: data, ...config });
+                const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, conf);
 
                 log.debug('post.debug', finalConfig);
 
@@ -189,7 +236,6 @@ export class SiteSession {
             }
         );
     }
-
 
     async onConnectionClosed(): Promise<void> {
         await this.stop();
