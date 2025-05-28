@@ -1,16 +1,12 @@
-import _ from 'lodash';
+import throat from 'throat';
+import request from 'request-promise';
+import { Response } from 'request';
+
+import { NoteChecker } from './note-checker';
+import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('site-session');
-
-import { NoteChecker } from './note-checker';
-
-import { Domain as FLIST_DOMAIN } from '../constants/flist';
-
-import throat from 'throat';
-import request from 'request-promise'; //tslint:disable-line:match-default-export-name
-
-/* tslint:disable:no-unsafe-any */
 
 export interface SiteSessionInterface {
     start(): Promise<void>;
@@ -20,7 +16,6 @@ export interface SiteSessionInterface {
 export interface SiteSessionInterfaceCollection extends Record<string, SiteSessionInterface> {
     notes: NoteChecker;
 }
-
 
 export class SiteSession {
     private readonly sessionThroat = throat(1);
@@ -55,7 +50,7 @@ export class SiteSession {
                 Object.values(this.interfaces).map(i => i.start())
             );
         }
-        catch(err) {
+        catch (err) {
             this.state = 'inactive';
             log.error('sitesession.start.error', err);
         }
@@ -68,7 +63,7 @@ export class SiteSession {
                 Object.values(this.interfaces).map(i => i.stop())
             );
         }
-        catch(err) {
+        catch (err) {
             log.error('sitesession.stop.error', err);
         }
 
@@ -83,23 +78,20 @@ export class SiteSession {
         this.request = request.defaults({ jar: request.jar() });
         this.csrf = '';
 
-        const res = await this.get('/');
+        const res = await this.get('');
 
-        if (res.statusCode !== 200) {
-            throw new Error(`SiteSession.init: Invalid status code: ${res.status}`);
-        }
+        if (res.statusCode !== 200)
+            throw new Error(`SiteSession.init: Invalid status code: ${res.statusCode}`);
 
         const input = res.body.match(/<input.*?csrf_token.*?>/);
 
-        if (!input || input.length < 1) {
+        if (!input || input.length < 1)
             throw new Error('SiteSession.init: Missing csrf token');
-        }
 
         const csrf = input[0].match(/value="([a-zA-Z0-9]+)"/);
 
-        if (!csrf || csrf.length < 2) {
+        if (!csrf || csrf.length < 2)
             throw new Error('SiteSession.init: Missing csrf token value');
-        }
 
         this.csrf = csrf[1];
     }
@@ -108,63 +100,83 @@ export class SiteSession {
     private async login(): Promise<void> {
         log.debug('sitesession.login');
 
-        if (this.password === '' || this.account === '') {
+        if (this.password === '' || this.account === '')
             throw new Error('User credentials not set');
-        }
 
         const res = await this.post(
-            '/action/script_login.php',
-            {
-                username: this.account,
-                password: this.password,
-                csrf_token: this.csrf
-            },
+            'action/script_login.php',
             false,
             {
                 followRedirect: false,
-                simple: false
-            }
+                simple: false,
+                form: {
+                    username: this.account,
+                    password: this.password,
+                    csrf_token: this.csrf
+                },
+                // headers: {
+                        // Implied
+                //     'content-type': 'application/x-www-form-urlencoded'
+                // }
+            },
         );
 
-        if (res.statusCode !== 302) {
+        if (res.statusCode !== 302)
             throw new Error('Invalid status code');
-        }
-
-        // console.log('RES RES RES', res);
 
         log.debug('sitesession.login.success');
     }
 
 
-  // tslint:disable-next-line:prefer-function-over-method
-    private async ensureLogin(): Promise<void> {
+    private ensureLogin(): void {
         if (this.state !== 'active')
             throw new Error('Site session not active');
     }
 
 
-  private async prepareRequest( method: string,
-                                uri: string,
-                                mustBeLoggedIn: boolean,
-                                config: Partial<request.Options>
-                              ): Promise<request.OptionsWithUri> {
-        if (mustBeLoggedIn) {
-            await this.ensureLogin();
+    private async prepareRequest(   method: string,
+                                    uri: string,
+                                    mustBeLoggedIn: boolean = false,
+                                    config: Partial<request.Options> = {}
+                                ): Promise<request.OptionsWithUri> {
+        if (mustBeLoggedIn)
+            this.ensureLogin();
+
+        return {
+            ...config,
+            method: config.method ?? method,
+            uri: FLIST_DOMAIN + uri,
+            resolveWithFullResponse: true,
+        };
+    }
+
+
+    async get(  uri: string,
+                config: Partial<request.Options>
+             ): Promise<request.RequestPromise<Response>>;
+    async get(  uri: string,
+                mustBeLoggedIn?: boolean,
+                config?: Partial<request.Options>,
+             ): Promise<request.RequestPromise<Response>>;
+    async get(  uri: string,
+                loggedInOrConfig: boolean | Partial<request.Options> = false,
+                config: Partial<request.Options> = {}
+             ): Promise<request.RequestPromise<Response>> {
+        let mustBeLoggedIn: boolean = true;
+        let conf: Partial<request.Options>;
+
+        if (typeof loggedInOrConfig === 'boolean') {
+            mustBeLoggedIn = loggedInOrConfig;
+            conf = config;
+        }
+        else {
+            mustBeLoggedIn = true;
+            conf = loggedInOrConfig;
         }
 
-    return {
-        method,
-        uri: FLIST_DOMAIN + uri,
-        resolveWithFullResponse: true,
-        ...config
-    };
-  }
-
-
-    async get(uri: string, mustBeLoggedIn: boolean = false, config: Partial<request.Options> = {}): Promise<request.RequestPromise> {
         return this.sessionThroat(
             async() => {
-                const finalConfig = await this.prepareRequest('get', uri, mustBeLoggedIn, config);
+                const finalConfig = await this.prepareRequest('get', uri, mustBeLoggedIn, conf);
 
                 return this.request(finalConfig);
             }
@@ -172,14 +184,32 @@ export class SiteSession {
     }
 
 
-  async post(   uri: string,
-                data: Record<string, any>,
-                mustBeLoggedIn: boolean = false,
-                config: Partial<request.Options> = {}
-            ): Promise<request.RequestPromise> {
+    async post( uri: string,
+                config: Partial<request.Options>
+              ): Promise<request.RequestPromise<Response>>;
+    async post( uri: string,
+                mustBeLoggedIn: boolean,
+                config?: Partial<request.Options>,
+              ): Promise<request.RequestPromise<Response>>;
+    async post( uri: string,
+                loggedInOrConfig: boolean | Partial<request.Options> = false,
+                config: Partial<request.Options> = {},
+              ): Promise<request.RequestPromise<Response>> {
+        let mustBeLoggedIn: boolean = true;
+        let conf: Partial<request.Options>;
+
+        if (typeof loggedInOrConfig === 'boolean') {
+            mustBeLoggedIn = loggedInOrConfig;
+            conf = config;
+        }
+        else {
+            mustBeLoggedIn = true;
+            conf = loggedInOrConfig;
+        }
+
         return this.sessionThroat(
             async() => {
-                const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, { form: data, ...config });
+                const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, conf);
 
                 return this.request(finalConfig);
             }
