@@ -260,7 +260,10 @@
                 this.show(this.tabMap[id]);
             });
             document.addEventListener('click', () => this.activeTab!.view.webContents.focus());
-            window.addEventListener('focus', () => this.activeTab!.view.webContents.focus());
+            window.addEventListener('focus', () => {
+                if (!browserWindow.isMinimized())
+                    this.activeTab!.view.webContents.focus()
+            });
 
             log.debug('init.window.listeners');
 
