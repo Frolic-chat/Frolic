@@ -296,7 +296,10 @@
               <div>{{l('rising.filter.beta')}}</div>
             </div>
 
-            <h5>{{l('rising.header.visibility')}}</h5>
+            <div>
+                <h5>{{ l('rising.header.visibility') }}</h5>
+                <p><small>{{ l('rising.header.visibilityCaveat') }}</small></p>
+            </div>
 
             <div class="form-group filters">
                 <label class="control-label" for="risingFilter.hideAds">
@@ -416,8 +419,7 @@
     import {Settings as SettingsInterface} from './interfaces';
     import {Conversation} from './interfaces';
     import l from './localize';
-    import { SmartFilterSettings, SmartFilterSelection } from '../learn/filter/types';
-    import { smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
+    import { SmartFilterSettings, SmartFilterSelection, smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
     import _ from 'lodash';
     import { matchesSmartFilters } from '../learn/filter/smart-filter';
     import { EventBus } from './preview/event-bus';
