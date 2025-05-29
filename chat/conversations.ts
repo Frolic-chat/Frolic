@@ -897,16 +897,17 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('MSG', async(data, time) => {
         const char = core.characters.get(data.character);
+        if (char.isIgnored)
+            return;
+
         const conversation = state.channelMap[data.channel.toLowerCase()];
-        if(conversation === undefined) return core.channels.leave(data.channel);
-        if(char.isIgnored) return;
+        if (conversation === undefined)
+            return core.channels.leave(data.channel);
+
+        if (await testSmartFilterForChannel(char, conversation) === true)
+            return;
 
         const message = createMessage(MessageType.Message, char, decodeHTML(data.message), time);
-
-        if (await testSmartFilterForChannel(char, conversation) === true) {
-            return;
-        }
-
         await conversation.addMessage(message);
         EventBus.$emit('channel-message', { message, channel: conversation });
 
@@ -931,32 +932,39 @@ export default function(this: any): Interfaces.State {
                      core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Bookmarks ||
                      core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both    )
         }
-        // This conversation's settings
 
         const words = conversation.settings.highlightWords.slice();
-        if(conversation.settings.defaultHighlights) words.push(...core.state.settings.highlightWords);
-        if(conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight ||
-            conversation.settings.highlight === Interfaces.Setting.True) words.push(core.connection.character);
-        for(let i = 0; i < words.length; ++i)
-            words[i] = words[i].replace(/[^\w]/gi, '\\$&');
-        //tslint:disable-next-line:no-null-keyword
-        const results = words.length > 0 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
-        if(results !== null) {
-            await core.notifications.notify(conversation, data.character, l('chat.highlight', results[0], conversation.name, message.text),
-                characterImage(data.character), 'attention');
-            if(conversation !== state.selectedConversation || !state.windowFocused) conversation.unread = Interfaces.UnreadState.Mention;
-            message.isHighlight = true;
-            await state.consoleTab.addMessage(new EventMessage(l('events.highlight', `[user]${data.character}[/user]`, results[0],
-                `[session=${conversation.name}]${data.channel}[/session]`), time));
+        if (conversation.settings.defaultHighlights)
+            words.push(...core.state.settings.highlightWords);
+
+        if ((conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight)
+         ||  conversation.settings.highlight === Interfaces.Setting.True) {
+            words.push(core.connection.character);
         }
-        else if (
-                conversation.settings.notify === Interfaces.Setting.True
-            || (shouldNotifyOnFriendMessage()   && core.characters.friendList.includes(data.character))
-            || (shouldNotifyOnBookmarkMessage() && core.characters.bookmarkList.includes(data.character))
-        ){
+
+        for (let i = 0; i < words.length; ++i)
+            words[i] = words[i].replace(/[^\w]/gi, '\\$&');
+
+        const results = words.length > 0 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
+
+        if (results !== null) {
+            await core.notifications.notify(conversation, data.character, l('chat.highlight', results![0], conversation.name, message.text), characterImage(data.character), 'attention');
+
+            if (conversation !== state.selectedConversation || !state.windowFocused)
+                conversation.unread = Interfaces.UnreadState.Mention;
+
+            message.isHighlight = true;
+
+            await state.consoleTab.addMessage(new EventMessage(l('events.highlight', `[user]${data.character}[/user]`, results![0], `[session=${conversation.name}]${data.channel}[/session]`), time));
+        }
+        else if (conversation.settings.notify === Interfaces.Setting.True
+        || (shouldNotifyOnFriendMessage()   && core.characters.friendList.includes(data.character))
+        || (shouldNotifyOnBookmarkMessage() && core.characters.bookmarkList.includes(data.character))) {
             await core.notifications.notify(conversation, conversation.name, messageToString(message),
                 characterImage(data.character), 'attention');
-            if(conversation !== state.selectedConversation || !state.windowFocused) conversation.unread = Interfaces.UnreadState.Mention;
+
+            if (conversation !== state.selectedConversation || !state.windowFocused)
+                conversation.unread = Interfaces.UnreadState.Mention;
         }
     });
     connection.onMessage('LRP', async(data, time) => {
