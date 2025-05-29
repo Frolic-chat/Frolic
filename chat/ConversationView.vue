@@ -766,6 +766,7 @@
 
         .btn-toolbar {
             .btn-group {
+                margin-left: 0.3rem;
                 margin-right: 0.3rem;
 
                 &:last-child {
