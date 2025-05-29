@@ -86,7 +86,7 @@ export let defaultButtons: ReadonlyArray<EditorButton> = [
     {
         title: 'EIcon (Ctrl+E)\n\nShows a previously uploaded eicon. If the icon is a gif, it will be shown as animated unless a user has turned this off.',
         tag: 'eicon',
-        class: 'far ',
+        class: 'far fa-fw ',
         icon: 'fa-smile',
         key: Keys.KeyE
     },

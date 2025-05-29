@@ -24,11 +24,11 @@
                 </div>
 
                 <div class="btn btn-light btn-sm" v-for="button in buttons" :class="button.outerClass" :title="button.title" @click.prevent.stop="apply(button)">
-                    <i :class="(button.class ? button.class : 'fa ') + button.icon"></i>
+                    <i :class="(button.class ? button.class : 'fa fa-fw ') + button.icon"></i>
                 </div>
                 <div @click="previewBBCode" class="btn btn-light btn-sm" :class="preview ? 'active' : ''"
                     :title="preview ? 'Close Preview' : 'Preview'">
-                    <i class="fa fa-eye"></i>
+                    <i class="fa fa-fw fa-eye"></i>
                 </div>
             </div>
             <button type="button" class="close" aria-label="Close" style="margin-left:10px" @click="showToolbar = false">&times;</button>
