@@ -374,16 +374,28 @@
             this.$emit('keyup', e);
         }
 
+        /** All this just to set the height of the editor box...
+         *
+         * `getComputedStyle()` will always return pixel values,
+         * so they're safe to fuck around with.
+        */
         resize(): void {
-            const styles = getComputedStyle(this.element);
-            const paddingLeft = parseFloat(styles.paddingLeft) || 0;
-            const paddingRight = parseFloat(styles.paddingRight) || 0;
+            const computed = getComputedStyle(this.element);
+            const paddingLeft = parseFloat(computed.paddingLeft) || 0;
+            const paddingRight = parseFloat(computed.paddingRight) || 0;
             const contentWidth = this.element.clientWidth - paddingLeft - paddingRight;
+
             this.sizer.style.fontSize = this.element.style.fontSize;
             this.sizer.style.lineHeight = this.element.style.lineHeight;
+
+            // I wonder if clientWidth would work.
             this.sizer.style.width = `${contentWidth}px`;
             this.sizer.value = this.element.value;
-            this.element.style.height = `${Math.max(Math.min(this.sizer.scrollHeight, this.maxHeight), this.minHeight)}px`;
+
+            const paddingBotPx = parseFloat(computed.paddingBottom) || 0;
+
+            // + 2 is heuristics. Spooky! 👻 (Is it the 1px border?)
+            this.element.style.height = `${Math.max(Math.min(this.sizer.scrollHeight + paddingBotPx + 2, this.maxHeight), this.minHeight)}px`;
             this.sizer.style.width = '0';
         }
 
