@@ -945,8 +945,12 @@ export default function(this: any): Interfaces.State {
         for (let i = 0; i < words.length; ++i)
             words[i] = words[i].replace(/[^\w]/gi, '\\$&');
 
-        const msgResults  = words.length > 0 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
-        const nameResults = words.length > 0 ? data.character.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
+        const msgResults  = words.length > 0
+                ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
+                : null;
+        const nameResults = conversation.settings.highlightUsers && words.length > 0
+                ? data.character.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
+                : null;
 
         if (msgResults !== null || nameResults !== null) {
             const results = msgResults !== null ? msgResults : nameResults;

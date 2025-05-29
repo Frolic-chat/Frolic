@@ -37,6 +37,7 @@ export class Settings implements ISettings {
     notifyOnFriendMessage = Conversation.RelationChooser.NoOne;
     highlight = true;
     highlightWords: string[] = [];
+    highlightUsers = false;
     showBroadcastsInPMs = false;
     showAvatars = true;
     animatedEicons = true;
@@ -126,6 +127,7 @@ export class ConversationSettings implements Conversation.Settings {
     notifyOnFriendMessage = Conversation.RelationChooser.Default;
     highlight = Conversation.Setting.Default;
     highlightWords: string[] = [];
+    highlightUsers = false;
     joinMessages = Conversation.Setting.Default;
     defaultHighlights = true;
     adSettings: Conversation.AdSettings = { ads: [], randomOrder: false, lastAdTimestamp: 0 };

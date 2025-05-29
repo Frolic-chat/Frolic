@@ -441,6 +441,7 @@
         notifyOnFriendMessage!: Conversation.RelationChooser;
         highlight!: boolean;
         highlightWords!: string;
+        highlightUsers!: boolean;
         showBroadcastsInPMs!: boolean;
         showAvatars!: boolean;
         animatedEicons!: boolean;
@@ -491,6 +492,7 @@
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
             this.highlight = settings.highlight;
             this.highlightWords = settings.highlightWords.join(',');
+            this.highlightUsers = settings.highlightUsers;
             this.showBroadcastsInPMs = settings.showBroadcastsInPMs;
             this.showAvatars = settings.showAvatars;
             this.animatedEicons = settings.animatedEicons;
@@ -570,6 +572,7 @@
                 notifyOnFriendMessage: this.notifyOnFriendMessage,
                 highlight: this.highlight,
                 highlightWords: this.highlightWords.split(',').map((x) => x.trim()).filter((x) => x.length),
+                highlightUsers: this.highlightUsers,
                 showBroadcastsInPMs: this.showBroadcastsInPMs,
                 showAvatars: this.showAvatars,
                 animatedEicons: this.animatedEicons,

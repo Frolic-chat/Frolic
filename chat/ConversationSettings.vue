@@ -45,6 +45,10 @@
                 {{l('settings.highlightWords')}}
             </label>
             <input :id="'highlightWords' + conversation.key" class="form-control" v-model="highlightWords"/>
+            <label class="control-label" for="highlightUsers">
+                <input type="checkbox" id="highlightUsers" v-model="highlightUsers"/>
+                {{ l('settings.highlightUsersChannel') }}
+            </label>
         </div>
         <div class="form-group"><hr></div>
         <div class="form-group">
@@ -79,6 +83,7 @@
         notify!: Conversation.Setting;
         highlight!: Conversation.Setting;
         highlightWords!: string;
+        highlightUsers!: boolean;
         joinMessages!: Conversation.Setting;
         defaultHighlights!: boolean;
         notifyOnFriendMessage!: Conversation.RelationChooser;
@@ -88,6 +93,7 @@
             this.notify = settings.notify;
             this.highlight = settings.highlight;
             this.highlightWords = settings.highlightWords.join(',');
+            this.highlightUsers = settings.highlightUsers;
             this.joinMessages = settings.joinMessages;
             this.defaultHighlights = settings.defaultHighlights;
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
@@ -98,6 +104,7 @@
                 notify: this.notify,
                 highlight: this.highlight,
                 highlightWords: this.highlightWords.split(',').map((x) => x.trim()).filter((x) => (x.length > 0)),
+                highlightUsers: this.highlightUsers,
                 joinMessages: this.joinMessages,
                 defaultHighlights: this.defaultHighlights,
                 adSettings: this.conversation.settings.adSettings,

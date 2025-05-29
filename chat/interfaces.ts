@@ -119,6 +119,7 @@ export namespace Conversation {
         readonly notifyOnFriendMessage: RelationChooser;
         readonly highlight: Setting;
         readonly highlightWords: ReadonlyArray<string>;
+        readonly highlightUsers: boolean;
         readonly joinMessages: Setting;
         readonly defaultHighlights: boolean;
         readonly adSettings: AdSettings;
@@ -218,6 +219,7 @@ export namespace Settings {
         readonly notifyOnFriendMessage: Conversation.RelationChooser;
         readonly highlight: boolean;
         readonly highlightWords: ReadonlyArray<string>;
+        readonly highlightUsers: boolean;
         readonly showBroadcastsInPMs: boolean;
         readonly showAvatars: boolean;
         readonly animatedEicons: boolean;
