@@ -945,9 +945,11 @@ export default function(this: any): Interfaces.State {
         for (let i = 0; i < words.length; ++i)
             words[i] = words[i].replace(/[^\w]/gi, '\\$&');
 
-        const results = words.length > 0 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
+        const msgResults  = words.length > 0 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
+        const nameResults = words.length > 0 ? data.character.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i')) : null;
 
-        if (results !== null) {
+        if (msgResults !== null || nameResults !== null) {
+            const results = msgResults !== null ? msgResults : nameResults;
             await core.notifications.notify(conversation, data.character, l('chat.highlight', results![0], conversation.name, message.text), characterImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
