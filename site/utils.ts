@@ -1,4 +1,4 @@
-import axios, {AxiosError, AxiosResponse} from 'axios';
+import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 import {InlineDisplayMode, Settings, SimpleCharacter} from '../interfaces';
 
 type FlashMessageType = 'info' | 'success' | 'warning' | 'danger';
@@ -27,6 +27,15 @@ export function characterURL(name: string): string {
     return `${siteDomain}c/${name}`;
 }
 
+/** https://github.com/axios/axios/issues/5153
+ * axios.isCancel(error) asserts value is Cancel, which has message, which
+ * implies error can't have message, which means error can't be AxiosError
+ * as AxiosError has message, causing typescript to flip its lid.
+ */
+function isCancel(value: Error | CanceledError<never>): boolean {
+    return value instanceof CanceledError;
+}
+
 //tslint:disable-next-line:no-any
 export function isJSONError(error: any): error is AxiosError & { response: AxiosResponse } {
     return error instanceof AxiosError && error.response !== undefined && typeof error.response.data === 'object';
@@ -34,8 +43,9 @@ export function isJSONError(error: any): error is AxiosError & { response: Axios
 
 export function ajaxError(error: any, prefix: string, showFlashMessage: boolean = true): void { //tslint:disable-line:no-any
     let message: string | undefined;
-    if(error instanceof Error) {
-        if(axios.isCancel(error)) return;
+    if (error instanceof Error) {
+        if (isCancel(error))
+            return;
 
         if (isJSONError(error)) {
             const data = <{error?: string | string[]}>error.response.data;
