@@ -152,7 +152,15 @@ type RequestData = {
 }
 
 type DeepPartial<T>  = { [P in keyof T]?:  DeepPartial<T[P]>;  };
-type DeepRequired<T> = { [P in keyof T]-?: DeepRequired<T[P]>; };
+//type DeepRequired<T> = { [P in keyof T]-?: DeepRequired<T[P]>; };
+
+// type RequestDataWithoutDynamic = {
+//     getFolders:         undefined,
+//     getFilters:         undefined,
+//     undeleteNote:       {   folder_id: 1,   },
+//     undeleteSelected:   {   folder_id: 1,   },
+// };
+
 
 const RequestDataStatic: DeepPartial<RequestData> = {
     getFolders:         undefined,
@@ -160,6 +168,8 @@ const RequestDataStatic: DeepPartial<RequestData> = {
     undeleteNote:       {   folder_id:  1, },
     undeleteSelected:   {   folder_id:  1, },
 }
+
+//type RequestDataWithoutStatic = Omit<RequestData, keyof typeof RequestDataStatic>
 
 /**
  * An Api request to send to the note server.
@@ -214,9 +224,10 @@ export function ComposeApiRequest<T extends Commands>(call: T, data: RequestData
     };
 }
 
-//ComposeApiRequest('getFolders', undefined) // Might error
-//ComposeApiRequest("getFilters") // Shouldn't error
-//ComposeApiRequest('addFolder')  // Should error
+// ComposeApiRequest('getFolders', undefined) // Might error
+// ComposeApiRequest("getFilters") // Shouldn't error
+// ComposeApiRequest('addFolder')  // Should error
+// ComposeApiRequest('undeleteNote', { notes: [], csrf_token: "adfasdfsafd"})
 
 // function NoteRequest<T extends Commands>(call: T, data: RequestData[T]): OptionsWithUrl {
 //     return {
