@@ -59,10 +59,10 @@
 
         <div class="carousel slide w-100 results">
           <div class="carousel-inner w-100" role="listbox">
-            <div class="carousel-item" v-for="eicon in results" role="img" :aria-label="eicon" tabindex="0">
-              <img class="eicon" :alt="eicon" :src="'https://static.f-list.net/images/eicon/' + eicon + '.gif'" :title="eicon" role="button" :aria-label="eicon" @click.prevent.stop="selectIcon(eicon, $event)">
+            <div class="carousel-item" v-for="eicon in results" :key="eicon" role="img" :aria-label="eicon" tabindex="0">
+              <img class="eicon" v-if="results.includes(eicon)" :alt="eicon" :src="'https://static.f-list.net/images/eicon/' + eicon + '.gif'" :title="eicon" role="button" :aria-label="eicon" @click.prevent.stop="selectIcon(eicon, $event)">
 
-              <div class="btn favorite-toggle" :class="{ favorited: isFavorite(eicon) }" @click.prevent.stop="toggleFavorite(eicon)" role="button" :aria-label="isFavorite(eicon) ? l('eicon.favRemove') : l('eicon.favAdd')">
+              <div class="btn favorite-toggle" v-if="results.includes(eicon)" :class="{ favorited: isFavorite(eicon) }" @click.prevent.stop="toggleFavorite(eicon)" role="button" :aria-label="isFavorite(eicon) ? l('eicon.favRemove') : l('eicon.favAdd')">
                 <i class="fas fa-thumbtack"></i>
               </div>
             </div>
@@ -164,27 +164,27 @@ export default class EIconSelector extends CustomDialog {
           case 'soft':
               return [
                               // Hi!:
-                  'dogdoin', 'doggohi', 'smile5', 'fluffbrain', 'coolraccoon', 'cat sit', 'kittypeeky', 'doggosneekpeek',
+                  'dogdoin', 'doggohi', 'smile5', 'fluffbrain', 'coolraccoon', 'cat sit', 'kittypeeky',
                               // Fun:
                   'kicky', 'yappers', 'nyehe', 'nyeheh', 'kittygiggle', 'samodance', 'dogewut', 'wibbl', 'dogcited', 'wagglebrow', 'fennec2', 'blobfoxbongo', 'akittyclap', 'nodnodnod', 'catbop', 'ermtime', 'bunnana', 'cateatingchips', 'catkiss',
                               // Soft:
                   'imdieforever', 'waitingcuddles', 'waitingforforeheadkissie', 'blushcat', 'bunhug', 'meowhuggies', 'bunanxiety', 'cat_waddle',
                               // Chaos:
-                  'catnapping', 'catheadempty', 'bunnywavedash', 'bunnyscrem8', 'cry cat', 'wolfnomf', 'yote gasp', 'cat2back', 'stupid little woo woo boy', 'chedoggo', 'eerrmm', 'scuffedhamster', 'angydoggo', 'kittyangy', 'nyooo',
+                  'catnapping', 'catheadempty', 'bunnywavedash', 'bunnyscrem8', 'cry cat', 'yote gasp', 'cat2back', 'stupid little woo woo boy', 'chedoggo', 'eerrmm', 'scuffedhamster', 'angydoggo', 'kittyangy', 'nyooo',
                               // Bye:
-                  'forgormyoter', 'life', 'eepy', 'sleepdog', 'cat faceplant',
-              ]
+                  'life', 'eepy', 'sleepdog', 'cat faceplant',
+              ];
 
           case 'sexual':
               return [
                               // Act:
-                  'asutired1', 'asutired2', 'subj3', 'subj4', 'vanessamasturbate', 'musclefuck2', 'fingerblast3', 'worshipping3', 'lapgrind', 'bbctitjob6', 'spit swap', 'salivashare', 'knotjob2', 'gaykiss', 'slurpkiss', 'cockiss', 'lovetosuck', 'cockloveeee', 'donglove', 'orccummies2', 'horseoral9a', 'swallowit', 'paiplop', 'satsukinailed', 'kntbch1', 'dickslurp',
+                  'asutired1', 'asutired2', 'vanessamasturbate', 'musclefuck2', 'worshipping3', 'lapgrind', 'salivashare', 'slurpkiss', 'cockiss', 'lovetosuck', 'cockloveeee', 'donglove', 'horseoral9a', 'swallowit', 'paiplop', 'satsukinailed', 'kntbch1', 'dickslurp',
                               // Showing Off:
-                  'influencerhater', 'sloppy01', 'fingersucc', 'cmontakeit', 'hopelessly in love', 'ahega01 2', 'absbulge', 'lixlove', 'knotjiggle', 'edgyoops', 'oralcreampie100px', 'debonairdick4', 'hossspurties2', 'jillbimbogiffell2', 'gayicon2', 'kirari1e', 'capstrip','pinkundress', 'georgiethot',
+                  'influencerhater', 'sloppy01', 'fingersucc', 'cmontakeit', 'hopelessly in love', 'ahega01 2', 'absbulge', 'edgyoops', 'oralcreampie100px', 'debonairdick4', 'kirari1e', 'pinkundress', 'georgiethot',
                               // Body:
-                  'wolf abs', 'jhab1', 'coralbutt4', 'rorobutt2', 'verobutt3', 'ballsack3', 'blackshem1', 'jessi flash', 'cheegrope2', 'patr1', '2buttw1', 'dropsqueeze', 'flaunt', 'haigure',
+                  'jhab1', 'coralbutt4', 'rorobutt2', 'ballsack3', 'blackshem1', 'cheegrope2', 'dropsqueeze', 'flaunt', 'haigure',
                               // BDSM:
-                  'gagged2', 'cumringgag', 'brainmelt',
+                  'gagged2', 'cumringgag',
                               // Symbols:
                   'thekonlook', 'melodypeg', 'heart beat', 'lovebreeders', 'cummies', 'a condom', 'kissspink',
               ];
@@ -192,11 +192,11 @@ export default class EIconSelector extends CustomDialog {
           case 'bubbles':
               return [
                               // Memetic:
-                  'speedl', 'speedr', 'notcashmoney', 'taftail', 'fuckyouasshole', 'chorse', 'ciaig', 'dicefuck', 'shemale', 'crimes', 'nagagross', 'shimathatlewd', 'sheepsass2', 'iamgoingtopunchyou', 'rude1', 'helpicantstopsuckingcocks', 'eyesuphere', 'peggable2', 'sydeanothere', 'dickdick', 'nothingcan', 'dinnersex', 'request denied', 'dickletsign', 'frfister',
+                  'speedl', 'speedr', 'notcashmoney', 'taftail', 'fuckyouasshole', 'ciaig', 'crimes', 'nagagross', 'rude1', 'helpicantstopsuckingcocks', 'eyesuphere', 'peggable2', 'sydeanothere', 'dickdick', 'frfister',
                               // Cutesy:
-                  'iacs', 'bubblecute', 'pat my head', 'pawslut', 'inbagg',
+                  'iacs', 'pat my head', 'pawslut', 'inbagg',
                               // Sexual:
-                  'lickme', 'emp', 'takemetohornyjail', 'knotslutbubble', 'toofuckinghot', 'pbmr', 'imabimbo', 'horseslut', 'fatdick', 'callmemommy', 'breakthesubs', 'fuckingnya', 'suckfuckobey', 'breedmaster', 'buttslutbb', 'simpbait', 'onlyfans', 'muskslut', '4lewdbubble', 'hypnosiss', 'imahypnoslut', 'notahealslut', '5lewdbubble', 'ratedmilf', 'ratedstud', 'ratedslut',  'xarcuminme', 'xarcumonme', 'choke me', 'fuckbun', 'fuckpiggy', 'plappening', 'goodboy0', 'spitinmouth',
+                  'lickme', 'takemetohornyjail', 'knotslutbubble', 'toofuckinghot', 'pbmr', 'imabimbo', 'fatdick', 'callmemommy', 'breakthesubs', 'fuckingnya', 'suckfuckobey', 'breedmaster', 'buttslutbb', 'simpbait', 'muskslut', '4lewdbubble', 'hypnosiss', 'imahypnoslut', 'notahealslut', '5lewdbubble', 'ratedmilf', 'ratedstud', 'ratedslut',  'xarcuminme', 'xarcumonme', 'fuckbun', 'fuckpiggy', 'plappening', 'goodboy0', 'spitinmouth',
               ];
 
           case 'symbols':
@@ -206,15 +206,15 @@ export default class EIconSelector extends CustomDialog {
                               // Mosaics:
                   'no ai', 'xpgameover1', 'xpgameover2', 'goldboomboxl', 'goldboomboxr',
                               // Pop culture:
-                  'getnorgetout', 'playstation', 'ninetyfive', 'autobotsemblem', 'decepticonemblem',
+                  'getnorgetout', 'playstation', 'autobotsemblem', 'decepticonemblem',
                               // Cards
                   'suitspades', 'suithearts', 'suitdiamonds',  'suitclubs',
                               // Letters and numbers:
                   'num-1', 'num-2', 'num-3', 'num-4', 'num-5', 'num-6', 'num-7', 'num-8', '9ball', 'agrade',
                               // Emoji adjacent:
-                  'pimpdcash', 'carrots1', 'pinetree', 'sunshine', 'discovered', 'pls stop', 'question mark', 'questget', 'music', 'speaker emoji', 'cam',
+                  'pimpdcash', 'discovered', 'pls stop', 'question mark', 'questget', 'music', 'speaker emoji', 'cam',
                               // Misc:
-                  'goldendicegmgolddicegif', 'smashletter', 'pentagramo', 'cuffed', 'paw2', 'sunnyuhsuperlove', 'transflag', 'streamlive', 'computer', 'you got mail', 'siren0', 'dont look away', 'hopeaspect',
+                  'goldendicegmgolddicegif', 'smashletter', 'pentagramo', 'cuffed', 'paw2', 'sunnyuhsuperlove', 'transflag', 'streamlive', 'computer', 'you got mail',
               ];
 
           case 'memes':
