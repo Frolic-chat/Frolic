@@ -28,6 +28,8 @@ export default class MatchTags extends Vue {
   @Hook('mounted')
   onMounted(): void {
     this.merged = this.match.merged;
+
+    this.match.you.omittedScores.forEach(v => delete this.merged[Number(v)])
     // this.humanized = false;
     // this.furryPreferenceId = TagId.FurryPreference.toString();
     //

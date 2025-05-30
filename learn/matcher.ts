@@ -77,6 +77,8 @@ export interface MatchResultScores {
     [TagId.Kinks]: Score;
 }
 
+export type OmittedScores = TagId[];
+
 export interface MatchScoreDetails {
     totalScoreDimensions: number;
     dimensionsAtScoreLevel: number;
@@ -86,6 +88,7 @@ export interface MatchResult {
     you: Character,
     them: Character,
     scores: MatchResultScores;
+    omittedScores: OmittedScores;
     info: MatchResultCharacterInfo;
     total: number;
 
@@ -425,16 +428,18 @@ export class Matcher {
 
             scores: {
                 [TagId.Orientation]:     this.resolveOrientationScore(),
-                [TagId.Gender]:          this.resolveGenderScore(),
+                [TagId.Gender]:          this.resolveGenderorOrientationScore(),
                 [TagId.Age]:             this.resolveAgeScore(),
                 [TagId.FurryPreference]: this.resolveFurryPairingsScore(),
-                [TagId.Species]:         this.resolveSpeciesScore(),
+                [TagId.Species]:         this.resolveSpeciesOrFurryPreferenceScore(),
                 [TagId.SubDomRole]:      this.resolveSubDomScore(),
                 [TagId.Kinks]:           this.resolveKinkScore(pronoun),
                 [TagId.PostLength]:      this.resolvePostLengthScore(),
                 [TagId.Position]:        this.resolvePositionScore(),
                 [TagId.BodyType]:        this.resolveBodyTypeScore()
             },
+
+            omittedScores: [ TagId.Orientation, TagId.FurryPreference ],
 
             info: {
                 species:     Matcher.species(this.you),
@@ -443,16 +448,17 @@ export class Matcher {
             }
         };
 
-        data.total = Object.values(data.scores)
-                        .reduce((accum: number, s: Score) => accum + s.score, 0);
+
+        data.total = Object.keys(data.scores)
+            .filter(key => !data.omittedScores.includes(Number(key) as TagId))
+            .reduce((accum: number, key: string) => accum + data.scores[Number(key)].score, 0);
 
         return data;
     }
 
     private resolveOrientationScore(): Score {
         return Matcher.scoreOrientationByGender(
-            this.yourAnalysis.gender, this.yourAnalysis.orientation,
-            this.theirAnalysis.gender
+            this.yourAnalysis.gender, this.yourAnalysis.orientation, this.theirAnalysis.gender
         );
     }
 
@@ -619,6 +625,15 @@ export class Matcher {
 
     static getSpeciesName(species: Species): string {
         return speciesNames[species] || `${Species[species].toLowerCase()}s`;
+    }
+
+    private resolveSpeciesOrFurryPreferenceScore(): Score {
+        const speciesScore = this.resolveSpeciesScore();
+
+        if (speciesScore.score === Scoring.NEUTRAL)
+            return this.resolveFurryPairingsScore();
+        else
+            return speciesScore;
     }
 
     private resolveSpeciesScore(): Score {
@@ -919,6 +934,16 @@ export class Matcher {
         //   You or they are 2000 year old cosmic beings;
         //   You have no age and no relevant kinks
         return new Score(Scoring.NEUTRAL);
+    }
+
+    private resolveGenderorOrientationScore(): Score {
+        const genderScore = this.resolveGenderScore();
+
+        if (genderScore.score === Scoring.NEUTRAL)
+            return this.resolveOrientationScore();
+        else
+            return genderScore;
+
     }
 
     private resolveGenderScore(): Score {

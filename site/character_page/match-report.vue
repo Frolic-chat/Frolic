@@ -103,7 +103,9 @@
         }
 
         getScores(result: MatchResult): Score[] {
-            return _.map(result.scores, (s: Score) => (s));
+            return Object.keys(result.scores)
+                    .filter(key => !result.omittedScores.includes(Number(key) as TagId))
+                    .map(key => result.scores[Number(key)]);
         }
 
         getSpeciesStr(m: MatchResult): string {
