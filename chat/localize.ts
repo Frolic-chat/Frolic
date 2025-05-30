@@ -326,7 +326,7 @@ Once this process has started, do not interrupt it or your logs will get corrupt
     'characterChannels.title': 'Channels for ',
     'characterChannels.none': ' is not on any of the channels you are on.',
     'characterPreview.perfect': 'Unicorn',
-    'characterPreview.yearsOld': '{0}-years-old ',
+    'characterPreview.yearsOld': '{0} years old ',
     'characterPreview.memo': 'Memo',
     'characterPreview.status': 'Status',
     'characterPreview.status2': '& Latest Ad',

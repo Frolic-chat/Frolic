@@ -13,22 +13,31 @@
         <h3>{{ getOnlineStatus() }}</h3>
 
         <div class="summary">
-          <span class="uc">
-            <span v-if="age" :class="byScore(TagId.Age)">{{ l('characterPreview.yearsOld', age) }}</span>
-            <span v-if="sexualOrientation" :class="byScore(TagId.Orientation)">{{sexualOrientation}} </span>
-            <span v-if="gender" :class="byScore(TagId.Gender)">{{gender}} </span>
-            <span v-if="species" :class="byScore(TagId.Species)">{{species}} </span>
-          </span>
+          <div class="info-text-block" v-if="age || species || kemonomimi">
+            <span class="uc" v-if="age">{{ l('characterPreview.yearsOld', age) }}</span>
+            <span class="divider" v-if="age && (species || kemonomimi)"> / </span>
+            <span class="uc">
+              <span v-if="species">{{ species }}</span>{{ (species && kemonomimi) ? ' ' : '' }}<span v-if="kemonomimi">{{ kemonomimi }}</span>
+            </span>
+          </div>
 
-          <span v-if="furryPref" :class="byScore(TagId.FurryPreference)"><br /><span class="uc">{{furryPref}}</span></span>
-          <span v-if="subDomRole" :class="byScore(TagId.SubDomRole)"><br /><span class="uc">{{subDomRole}}</span></span>
+          <div class="info-text-block" v-if="sexualOrientation || subDomRole || gender">
+            <span class="uc" v-if="gender">{{ gender }}</span>
+            <span class="divider" v-if="gender && subDomRole"> / </span>
+            <span class="uc" v-if="subDomRole">{{ subDomRole }}</span>
+            <span class="divider" v-if="(gender || subDomRole) && sexualOrientation"> / </span>
+            <span class="uc" v-if="sexualOrientation">{{ sexualOrientation }}</span>
+          </div>
         </div>
 
         <match-tags v-if="match" :match="match"></match-tags>
 
         <div class="filter-matches" v-if="smartFilterIsFiltered">
           <span class="matched-tags">
-            <span v-for="filterName in smartFilterDetails" class="mismatch smart-filter-tag" :class="filterName"><i class="fas fa-solid fa-filter"></i> {{ (smartFilterLabels[filterName] || {}).name }}</span>
+            <span v-for="filterName in smartFilterDetails" class="mismatch smart-filter-tag" :class="filterName">
+              <i class="fas fa-solid fa-filter"></i>
+              {{ (smartFilterLabels[filterName] || {}).name }}
+            </span>
           </span>
         </div>
 
@@ -137,6 +146,7 @@ export default class CharacterPreview extends Vue {
   age?: string;
   sexualOrientation?: string;
   species?: string;
+  kemonomimi?: string;
   gender?: string;
   furryPref?: string;
   subDomRole?: string;
@@ -335,6 +345,7 @@ export default class CharacterPreview extends Vue {
     if (!this.match) {
       this.age = undefined;
       this.species = undefined;
+      this.kemonomimi = undefined;
       this.gender = undefined;
       this.furryPref = undefined;
       this.subDomRole = undefined;
@@ -358,17 +369,19 @@ export default class CharacterPreview extends Vue {
 
     this.age = a.age ? this.readable(`${a.age}`) : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || undefined;
     this.species = a.species ? this.readable(Species[a.species]) : (rawSpecies && rawSpecies.string) || undefined;
+    this.kemonomimi = a.isKemonomimi ? this.readable('kemomimi') : undefined;
     this.gender = (a.gender && a.gender !== Gender.None) ? this.readable(Gender[a.gender]) : undefined;
     this.furryPref = a.furryPreference ? this.readable(furryPreferenceMapping[a.furryPreference]) : undefined;
-    this.subDomRole = a.subDomRole ? this.readable(SubDomRole[a.subDomRole]) : undefined;
+    this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch) ? this.readable(SubDomRole[a.subDomRole]) : undefined;
     this.sexualOrientation = a.orientation ? this.readable(Orientation[a.orientation]) : undefined;
   }
 
   // Hard string replacements are english coded. Do these ever risk appearing in another language?
   readable(s: string): string {
     return s.replace(/([A-Z])/g, ' $1').trim().toLowerCase()
-      .replace(/(always|usually) (submissive|dominant)/, '$2')
-      .replace(/bi (fe)?male preference/, 'bisexual');
+      .replace(/(always|usually) (submissive|dominant|top|bottom)/, '$2')
+      .replace(/bi ((?:fe)?male) preference/, '$1-favoring bi')
+      .replace(/bi curious/, 'bi-curious');
   }
 
   byScore(_tagId: any): string {
@@ -435,6 +448,11 @@ export default class CharacterPreview extends Vue {
 
         &::first-letter {
           text-transform: capitalize;
+        }
+      }
+      .info-text-block {
+        .divider {
+          color: var(--secondary);
         }
       }
 
