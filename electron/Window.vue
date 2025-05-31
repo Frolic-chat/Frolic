@@ -259,10 +259,13 @@
             electron.ipcRenderer.on('show-tab', (_e: Event, id: number) => {
                 this.show(this.tabMap[id]);
             });
-            document.addEventListener('click', () => this.activeTab!.view.webContents.focus());
+            document.addEventListener('click', () => {
+                if (!browserWindow.isMinimized())
+                this.activeTab!.view.webContents.focus();
+            });
             window.addEventListener('focus', () => {
                 if (!browserWindow.isMinimized())
-                    this.activeTab!.view.webContents.focus()
+                    this.activeTab!.view.webContents.focus();
             });
 
             log.debug('init.window.listeners');
