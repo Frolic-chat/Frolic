@@ -134,15 +134,15 @@ export default class EIconSelector extends CustomDialog {
       const category = s.substring(9).trim();
 
       if (category === 'random') {
-        this.results = (store?.random(250) || []).map(e => e.eicon);
+        this.results = (store?.random(49) || []).map(e => e.eicon);
       } else {
         this.results = this.getCategoryResults(category);
       }
     } else {
       if (s.length === 0) {
-        this.results = (store?.random(250) || []).map(e => e.eicon);
+        this.results = (store?.random(49) || []).map(e => e.eicon);
       } else {
-        this.results = _.take(store?.search(s), 250).map(e => e.eicon);
+        this.results = _.take(store?.search(s), 301).map(e => e.eicon);
       }
     }
   }
