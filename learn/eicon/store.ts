@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import * as remote from '@electron/remote';
 import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import * as fs from 'fs';
@@ -18,7 +16,7 @@ export class EIconStore {
 
   async save(): Promise<void> {
     const fn = this.getStoreFilename();
-    const recordArray = _.values(this.lookup);
+    const recordArray = Object.values(this.lookup);
 
     log.info('eicons.save', { records: recordArray.length, asOfTimestamp: this.asOfTimestamp, fn });
 
@@ -41,9 +39,9 @@ export class EIconStore {
 
       // this.records = data?.records || [];
       this.asOfTimestamp = data?.asOfTimestamp || 0;
-      this.lookup = _.fromPairs(_.map(data?.records || [], (r) => [r.eicon, r]));
+      this.lookup = Object.fromEntries((data?.records || []).map((r: EIconRecord) => [r.eicon, r]));
 
-      const recordCount = _.keys(this.lookup).length;
+      const recordCount = Object.keys(this.lookup).length;
 
       log.info('eicons.loaded.local', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
 
@@ -71,9 +69,9 @@ export class EIconStore {
 
     const eicons = await this.updater.fetchAll();
 
-    this.lookup = _.fromPairs(_.map(eicons.records, (r) => [r.eicon, r]));
+    this.lookup = Object.fromEntries(eicons.records.map(r => [r.eicon, r]));
 
-    _.each(eicons.records, (changeRecord) => this.addIcon(changeRecord));
+    Object.values(eicons.records).forEach(changeRecord => this.addIcon(changeRecord));
 
     this.resortList();
 
@@ -87,11 +85,11 @@ export class EIconStore {
 
     const changes = await this.updater.fetchUpdates(this.asOfTimestamp);
 
-    const removals = _.filter(changes.recordUpdates, (changeRecord) => changeRecord.action === '-');
-    const additions = _.filter(changes.recordUpdates, (changeRecord) => changeRecord.action === '+');
+    const removals = changes.recordUpdates.filter(changeRecord => changeRecord.action === '-');
+    const additions = changes.recordUpdates.filter(changeRecord => changeRecord.action === '+');
 
-    _.each(removals, (changeRecord) => this.removeIcon(changeRecord));
-    _.each(additions, (changeRecord) => this.addIcon(changeRecord));
+    removals.forEach(changeRecord => this.removeIcon(changeRecord));
+    additions.forEach(changeRecord => this.addIcon(changeRecord));
 
     this.resortList();
 
@@ -132,7 +130,7 @@ export class EIconStore {
 
   search(searchString: string): EIconRecord[] {
     const lcSearch = searchString.trim().toLowerCase();
-    const found = _.filter(this.lookup, (r) => r.eicon.indexOf(lcSearch) >= 0);
+    const found = Object.values(this.lookup).filter(r => r.eicon.indexOf(lcSearch) >= 0);
 
     return found.sort((a, b) => {
       if ((a.eicon.substring(0, lcSearch.length) === lcSearch) && (b.eicon.substring(0, lcSearch.length) !== lcSearch)) {
@@ -147,8 +145,10 @@ export class EIconStore {
     });
   }
 
-  random(count: number): EIconRecord[] {
-    return _.sampleSize(this.lookup, count);
+  random(count: number = 49): EIconRecord[] {
+    return Object.values(this.lookup)
+                 .sort(() => 0.5 - Math.random())
+                 .slice(0, count);
   }
 
   private static sharedStore: EIconStore | undefined;
