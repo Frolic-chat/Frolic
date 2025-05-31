@@ -1,19 +1,24 @@
 # Contributors
 
-> Want to contribute? Please [continue here](https://github.com/Frolic-chat/Frolic/wiki/Contributions).
+> Want to contribute? Please [continue here](https://frolic-chat.github.io/wiki/development/development.html).
 
 This project contains contributions from:
 
+#### Frolic contributors:
 * [Fire Under the Mountain](https://github.com/FireUnderTheMountain)
+* [FatCatClient](https://github.com/FatCatClient)
+
+#### F-Chat Rising contributors:
 * [Mr Stallion, esq.](https://github.com/hearmeneigh)
 * [twilight-sparkle-irl](https://github.com/twilight-sparkle-irl)
 * [ButterCheezii](https://github.com/ButterCheezii)
-* [FatCatClient](https://github.com/FatCatClient)
 * [WhiteHusky](https://github.com/WhiteHusky)
 * [Abeehiltz](https://github.com/Abeehiltz)
 * [greyhoof](https://github.com/greyhoof)
 * [Nensec](https://github.com/Nensec)
-* [F-List Team](https://github.com/f-list) (original F-Chat 3.0 client)
+
+#### Original client contributors:
+* [F-List Team](https://github.com/f-list)
 
 
 ## Acknowledgements
