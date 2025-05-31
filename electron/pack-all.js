@@ -1,3 +1,5 @@
+/* global process, console, require, __dirname */
+/* eslint-disable @typescript-eslint/no-require-imports */
 process.env.DEBUG = 'electron-windows-installer:main';
 const path = require('path');
 const pkg = require(path.join(__dirname, 'package.json'));
@@ -6,7 +8,7 @@ const child_process = require('child_process');
 const axios = require('axios');
 
 const distDir = path.join(__dirname, 'dist');
-const isBeta = pkg.version.indexOf('beta') !== -1;
+//const isBeta = pkg.version.indexOf('beta') !== -1;
 const modules = path.join(__dirname, 'app', 'node_modules');
 
 // const spellcheckerPath = 'spellchecker/build/Release/spellchecker.node',
@@ -20,7 +22,7 @@ const includedPaths = [
     // 'spellchecker/build/Release/spellchecker.node',
     'throat',
     'node-fetch',
-    'jquery'
+    'jquery',
 ];
 
 includedPaths.forEach(
@@ -54,7 +56,7 @@ require('electron-packager')(
         arch: ['x64', 'arm64'],
     }
 )
-.then(async (appPaths) => {
+.then(async (appPaths) => { /* eslint-disable indent */
     if (process.env.SKIP_INSTALLER)
         return;
 
@@ -119,21 +121,21 @@ require('electron-packager')(
     if (process.platform === 'darwin') {
         console.log('Creating Mac DMG');
 
-        const appArch = null;
-        const macArch = []
+        let appArch = null;
+        const macArch = [];
         for (const appPath of appPaths) {
             if (appPath.endsWith('darwin-x64')) {
-                appArch = x64;
+                appArch = 'x64';
                 macArch[0] = {
                     name: 'Intel',
-                    path: appPath
+                    path: appPath,
                 };
             }
             if (appPath.endsWith('darwin-amd64')) {
-                appArch = x64;
+                appArch = 'x64';
                 macArch[1] = {
                     name: 'M1',
-                    path: appPath
+                    path: appPath,
                 };
             }
         }
@@ -159,12 +161,12 @@ require('electron-packager')(
                         background: path.join(__dirname, 'build', 'dmg.png'),
                         contents: [
                             {x: 555, y: 345, type: 'link', path: '/Applications'},
-                            {x: 555, y: 105, type: 'file', path: appPath}
+                            {x: 555, y: 105, type: 'file', path: appPath},
                         ],
                         'code-sign': process.argv.length > 2
                             ? { 'signing-identity': process.argv[2] }
-                            : undefined
-                    }
+                            : undefined,
+                    },
                 })
                 .on('error', console.error);
 
@@ -190,10 +192,10 @@ require('electron-packager')(
                 fs.writeFileSync(
                     path.join(distDir, 'updates.json'),
                     JSON.stringify({
-                        releases: [
-                            { version: pkg.version, updateTo: {url: 'https://client.f-list.net/darwin/' + zipName} }
-                        ],
-                        currentRelease: pkg.version
+                        releases: [{
+                            version: pkg.version, updateTo: {url: 'https://client.f-list.net/darwin/' + zipName},
+                        }],
+                        currentRelease: pkg.version,
                     })
                 );
             }
@@ -235,7 +237,7 @@ require('electron-packager')(
                     path: result.error?.path,
                     code: result.error?.code,
                     stdout: String(result.stdout),
-                    stderr: String(result.stderr)
+                    stderr: String(result.stderr),
                 }
             );
         }
@@ -246,7 +248,7 @@ require('electron-packager')(
     const appImageBase = path.join(distDir, 'downloaded');
     fs.mkdirSync(appImageBase, {recursive: true});
 
-    const appImagePath = await downloadAppImageTool(appImageBase);
+    await downloadAppImageTool(appImageBase);
 
     for (const appPath of appPaths) {
         console.log('LinuxAppPath', appPath);
@@ -290,7 +292,7 @@ require('electron-packager')(
             appPath,
             path.join(distFinal, `Frolic-${pkg.version}-linux-${appArch}.AppImage`),
             '-u',
-            `gh-releases-zsync|frolic-chat|frolic|latest|Frolic-${pkg.version}-linux-${appArch}.AppImage.zsync`
+            `gh-releases-zsync|frolic-chat|frolic|latest|Frolic-${pkg.version}-linux-${appArch}.AppImage.zsync`,
         ];
 
         if (process.argv.length > 2)
@@ -310,7 +312,7 @@ require('electron-packager')(
             args,
             {
                 cwd: appImageBase,
-                env: {ARCH: appArchLong }
+                env: {ARCH: appArchLong },
             }
         );
 
@@ -326,7 +328,7 @@ require('electron-packager')(
                     path: appRunResult.error?.path,
                     code: appRunResult.error?.code,
                     stdout: String(appRunResult.stdout),
-                    stderr: String(appRunResult.stderr)
+                    stderr: String(appRunResult.stderr),
                 }
             );
         }

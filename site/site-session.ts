@@ -128,17 +128,18 @@ export class SiteSession {
     }
 
 
-    private ensureLogin(): void {
+  // tslint:disable-next-line:prefer-function-over-method
+    private async ensureLogin(): Promise<void> {
         if (this.state !== 'active')
             throw new Error('Site session not active');
     }
 
 
-    private async prepareRequest(   method: string,
-                                    uri: string,
-                                    mustBeLoggedIn: boolean = false,
-                                    config: Partial<request.Options> = {}
-                                ): Promise<request.OptionsWithUri> {
+    private prepareRequest(   method: string,
+                              uri: string,
+                              mustBeLoggedIn: boolean = false,
+                              config: Partial<request.Options> = {}
+                          ): request.OptionsWithUri {
         if (mustBeLoggedIn)
             this.ensureLogin();
 
@@ -156,7 +157,7 @@ export class SiteSession {
              ): Promise<request.RequestPromise<Response>>;
     async get(  uri: string,
                 mustBeLoggedIn?: boolean,
-                config?: Partial<request.Options>,
+                config?: Partial<request.Options>
              ): Promise<request.RequestPromise<Response>>;
     async get(  uri: string,
                 loggedInOrConfig: boolean | Partial<request.Options> = false,
@@ -174,10 +175,13 @@ export class SiteSession {
             conf = loggedInOrConfig;
         }
 
+        // TODO: This can/should be fixed by moving to axios or equivalent.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this.sessionThroat(
-            async() => {
-                const finalConfig = await this.prepareRequest('get', uri, mustBeLoggedIn, conf);
+            async () => {
+                const finalConfig = this.prepareRequest('get', uri, mustBeLoggedIn, conf);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this.request(finalConfig);
             }
         );
@@ -189,11 +193,11 @@ export class SiteSession {
               ): Promise<request.RequestPromise<Response>>;
     async post( uri: string,
                 mustBeLoggedIn: boolean,
-                config?: Partial<request.Options>,
+                config?: Partial<request.Options>
               ): Promise<request.RequestPromise<Response>>;
     async post( uri: string,
                 loggedInOrConfig: boolean | Partial<request.Options> = false,
-                config: Partial<request.Options> = {},
+                config: Partial<request.Options> = {}
               ): Promise<request.RequestPromise<Response>> {
         let mustBeLoggedIn: boolean = true;
         let conf: Partial<request.Options>;
@@ -207,10 +211,13 @@ export class SiteSession {
             conf = loggedInOrConfig;
         }
 
+        // TODO: This can/should be fixed by moving to axios or equivalent.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this.sessionThroat(
-            async() => {
-                const finalConfig = await this.prepareRequest('post', uri, mustBeLoggedIn, conf);
+            async () => {
+                const finalConfig = this.prepareRequest('post', uri, mustBeLoggedIn, conf);
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 return this.request(finalConfig);
             }
         );

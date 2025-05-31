@@ -2,6 +2,7 @@ import { safeStorage } from "electron";
 import settings from 'electron-settings';
 settings.configure({});
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class SecureStore {
   private static getKey(domain: string, account: string): string {
     return `fchat-rising-accounts__${domain}__${account}`.replace(/[^a-zA-Z0-9_]/g, '__');
