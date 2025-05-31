@@ -645,12 +645,14 @@ export class Matcher {
             return new Score(Scoring.NEUTRAL);
 
         const speciesScore = Matcher.getKinkSpeciesPreference(you, theirSpecies);
+        let speciesMatch: Score | undefined;
 
         if (speciesScore !== null) {
             // console.log(this.them.name, speciesScore, theirSpecies);
             const speciesName = Matcher.getSpeciesName(theirSpecies);
 
-            return Matcher.formatKinkScore(speciesScore, speciesName);
+            // Specically don't return yet in case they're kemonomimi.
+            speciesMatch = Matcher.formatKinkScore(speciesScore, speciesName);
         }
 
         // This block bakes into speciesScore once the mapping is fleshed out.
@@ -668,6 +670,9 @@ export class Matcher {
 
             // Fall through to test isAnthro, et al.
         }
+
+        if (speciesMatch) // Okay, they didn't match kemonomimi.
+            return speciesMatch;
 
         if (theirAnalysis.isAnthro) {
             const anthroScore = Matcher.getKinkPreference(you, Kink.AnthroCharacters);
