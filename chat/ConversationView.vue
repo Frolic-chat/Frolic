@@ -200,8 +200,8 @@
                 </span>
             </div>
             <div class="bbcode-editor-controls">
-                <div v-if="isChannel(conversation) || isPrivate(conversation)" style="margin-right:5px">
-                    {{getByteLength(conversation.enteredText)}} / {{conversation.maxMessageLength}}
+                <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)" style="margin-right:5px">
+                    {{ getByteLength(conversation.enteredText) }} / {{ conversation.maxMessageLength }}
                 </div>
                 <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-right:5px">
                     <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
@@ -899,6 +899,16 @@
         @media (max-width: breakpoint-max(xs)) {
             flex-basis: 100%;
         }
+    }
+
+    div.message-length.pm {
+        min-width: 11ch;
+        text-align: right;
+    }
+
+    div.message-length.channel {
+        min-width: 9ch;
+        text-align: right;
     }
 
     .message-time,
