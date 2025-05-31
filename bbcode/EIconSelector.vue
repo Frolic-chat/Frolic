@@ -1,7 +1,7 @@
 <template>
   <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
     <div class="eicon-selector-ui">
-      <div v-if="!store || refreshing" class="d-flex align-items-center loading">
+      <div v-if="!storeLoaded || refreshing" class="d-flex align-items-center loading">
         <strong>{{ l('eicon.loading') }}</strong>
         <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
       </div>
@@ -85,6 +85,8 @@ import core from '../chat/core';
 import modal from '../components/Modal.vue';
 import CustomDialog from '../components/custom_dialog';
 
+let store: EIconStore | undefined;
+
 @Component({
   components: { modal }
 })
@@ -92,7 +94,8 @@ export default class EIconSelector extends CustomDialog {
   @Prop
   readonly onSelect?: (eicon: string, shift: boolean) => void;
 
-  store: EIconStore | undefined;
+  storeLoaded: boolean = false;
+
   results: string[] = [];
 
   search: string = '';
@@ -106,7 +109,8 @@ export default class EIconSelector extends CustomDialog {
   @Hook('mounted')
   async mounted(): Promise<void> {
     try {
-      this.store = await EIconStore.getSharedStore();
+      store = await EIconStore.getSharedStore();
+      this.storeLoaded = true;
       this.runSearch('');
     } catch (err) {
       // don't break the client in case service is down
@@ -130,15 +134,15 @@ export default class EIconSelector extends CustomDialog {
       const category = s.substring(9).trim();
 
       if (category === 'random') {
-        this.results = _.map(this.store?.random(250), (e) => e.eicon);
+        this.results = (store?.random(250) || []).map(e => e.eicon);
       } else {
         this.results = this.getCategoryResults(category);
       }
     } else {
       if (s.length === 0) {
-        this.results = _.map(this.store?.random(250), (e) => e.eicon);
+        this.results = (store?.random(250) || []).map(e => e.eicon);
       } else {
-        this.results = _.map(_.take(this.store?.search(s), 250), (e) => e.eicon);
+        this.results = _.take(store?.search(s), 250).map(e => e.eicon);
       }
     }
   }
@@ -240,7 +244,7 @@ export default class EIconSelector extends CustomDialog {
   async refreshIcons(): Promise<void> {
     this.refreshing = true;
 
-    await this.store?.update();
+    await store?.update();
     await this.runSearch();
 
     this.refreshing = false;
