@@ -227,7 +227,7 @@ export default class EIconSelector extends CustomDialog {
               ];
 
           case 'favorites':
-              return _.keys(core.state.favoriteEIcons);
+              return Object.keys(core.state.favoriteEIcons);
       }
 
       return [];
