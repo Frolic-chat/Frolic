@@ -9,7 +9,7 @@ log.info('init.browser_option');
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 const settings = <GeneralSettings>JSON.parse(params['settings']!);
 
-const logLevel = (process.env.NODE_ENV === 'production') ? 'info' : 'silly';
+const logLevel = 'info';
 
 log.transports.file.level = settings.risingSystemLogLevel || logLevel;
 log.transports.console.level = settings.risingSystemLogLevel || logLevel;

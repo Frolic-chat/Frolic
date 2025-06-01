@@ -10,7 +10,7 @@ log.info('init.window');
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 const settings = <GeneralSettings>JSON.parse(params['settings']!);
 
-const logLevel = (process.env.NODE_ENV === 'production') ? 'info' : 'silly';
+const logLevel = 'info';
 
 ElectronLog.transports.file.level    = settings.risingSystemLogLevel || logLevel;
 ElectronLog.transports.console.level = settings.risingSystemLogLevel || logLevel;

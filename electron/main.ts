@@ -439,7 +439,7 @@ let zoomLevel = 0;
 function onReady(): void {
     let hasCompletedUpgrades = false;
 
-    const logLevel = (process.env.NODE_ENV === 'production') ? 'info' : 'silly';
+    const logLevel = 'info';
 
     ElectronLog.transports.file.level = settings.risingSystemLogLevel || logLevel;
     ElectronLog.transports.console.level = settings.risingSystemLogLevel || logLevel;
