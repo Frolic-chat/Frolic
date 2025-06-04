@@ -136,9 +136,16 @@ export class EIconStore {
   }
 
     random(count: number = 49): EIconRecord[] {
-        return Object.values(this.lookup)
-                     .sort(() => 0.5 - Math.random())
-                     .slice(0, count);
+        const r = Object.values(this.lookup);
+        const len = r.length;
+
+        // Fisher-Yates Shuffle
+        for (let cp = len - 1; len - cp < count; cp--) {
+            const np = Math.floor(Math.random() * (cp + 1));
+            [r[cp], r[np]] = [r[np], r[cp]];
+        }
+
+        return r.slice(-count);
     }
 
     private static sharedStore: EIconStore | undefined;
