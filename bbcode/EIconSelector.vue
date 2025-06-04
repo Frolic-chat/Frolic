@@ -75,7 +75,6 @@
 </template>
 
 <script lang="ts">
-import _ from 'lodash';
 import l from '../chat/localize';
 import { Component, Hook, Prop } from '@f-list/vue-ts';
 // import Vue from 'vue';
@@ -84,6 +83,15 @@ import { EIconStore } from '../learn/eicon/store';
 import core from '../chat/core';
 import modal from '../components/Modal.vue';
 import CustomDialog from '../components/custom_dialog';
+
+// Another func that should be a `utils` file.
+function debounce<T>(func: (this: T, ...args: any) => void, wait: number = 330): () => void {
+    let timer: ReturnType<typeof setTimeout>;
+    return function (this: T, ...args: any) {
+        clearTimeout(timer);
+        timer = setTimeout(() => { func.apply(this, args); }, wait)
+    }
+}
 
 let store: EIconStore | undefined;
 
@@ -104,7 +112,7 @@ export default class EIconSelector extends CustomDialog {
 
   refreshing = false;
 
-  searchUpdateDebounce = _.debounce(() => this.runSearch(), 350, { maxWait: 2000 });
+  searchUpdateDebounce = debounce(() => this.runSearch(), 350);
 
   @Hook('mounted')
   async mounted(): Promise<void> {
@@ -141,7 +149,7 @@ export default class EIconSelector extends CustomDialog {
       if (s.length === 0) {
         this.results = store?.nextPage() || [];
       } else {
-        this.results = _.take(store?.search(s), 301).map(e => e.eicon);
+        this.results = (store?.search(s).slice(0, 301) || []).map(e => e.eicon);
       }
     }
   }
