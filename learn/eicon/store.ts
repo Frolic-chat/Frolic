@@ -71,7 +71,7 @@ export class EIconStore {
                 await this.downloadAll();
             }
             catch (err2) {
-                log.error('eicons.load.failure', { err: err2 });
+                log.error('eicons.load.failure', { initial: err, explicit: err2 });
             }
         }
     }
@@ -100,7 +100,7 @@ export class EIconStore {
     }
 
     async update(): Promise<void> {
-        log.info('eicons.update', { asOf: this.asOfTimestamp });
+        log.verbose('eicons.update', { asOf: this.asOfTimestamp });
 
         const changes = await this.updater.fetchUpdates(this.asOfTimestamp);
 
@@ -112,7 +112,7 @@ export class EIconStore {
 
         this.asOfTimestamp = changes.asOfTimestamp;
 
-        log.info('eicons.update.processed', { removals: removals.length, additions: additions.length, asOf: this.asOfTimestamp });
+        log.verbose('eicons.update.processed', { removals: removals.length, additions: additions.length, asOf: this.asOfTimestamp });
 
         this.updateIndices();
 
@@ -135,29 +135,29 @@ export class EIconStore {
     }
 
   protected removeIcon(record: EIconRecord): void {
-        if (!(record.eicon in this.lookup)) {
+        if (!(record.eicon in this.lookup))
             return;
-        }
 
         delete this.lookup[record.eicon];
     }
 
     search(searchString: string): EIconRecord[] {
-        const lcSearch = searchString.trim().toLowerCase();
-        const found = Object.values(this.lookup).filter(r => r.eicon.indexOf(lcSearch) >= 0);
+        const query = searchString.trim().toLowerCase();
+        const found = Object.values(this.lookup).filter(r => r.eicon.indexOf(query) >= 0);
+        const l = query.length;
 
         return found.sort((a, b) => {
-            if (a.eicon.substring(0, lcSearch.length) === lcSearch
-             && b.eicon.substring(0, lcSearch.length) !== lcSearch)
+            if (a.eicon.substring(0, l) === query
+             && b.eicon.substring(0, l) !== query)
                 return -1;
 
-            if (b.eicon.substring(0, lcSearch.length) === lcSearch
-             && a.eicon.substring(0, lcSearch.length) !== lcSearch)
+            if (b.eicon.substring(0, l) === query
+             && a.eicon.substring(0, l) !== query)
                 return 1;
 
             return a.eicon.localeCompare(b.eicon);
         });
-  }
+    }
 
     private updateIndices(): void {
         this.indices = Object.keys(this.lookup);
