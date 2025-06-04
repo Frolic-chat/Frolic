@@ -1,5 +1,5 @@
 <template>
-  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
+  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" @close="close" dialogClass="eicon-selector big">
     <div class="eicon-selector-ui">
       <div v-if="!storeLoaded || refreshing" class="d-flex align-items-center loading">
         <strong>{{ l('eicon.loading') }}</strong>
@@ -110,6 +110,8 @@ export default class EIconSelector extends CustomDialog {
   async mounted(): Promise<void> {
     try {
       store = await EIconStore.getSharedStore();
+      store.shuffle();
+
       this.storeLoaded = true;
       this.runSearch('');
     } catch (err) {
@@ -134,13 +136,13 @@ export default class EIconSelector extends CustomDialog {
       const category = s.substring(9).trim();
 
       if (category === 'random') {
-        this.results = (store?.random(49) || []).map(e => e.eicon);
+        this.results = store?.nextPage() || [];
       } else {
         this.results = this.getCategoryResults(category);
       }
     } else {
       if (s.length === 0) {
-        this.results = (store?.random(49) || []).map(e => e.eicon);
+        this.results = store?.nextPage() || [];
       } else {
         this.results = _.take(store?.search(s), 301).map(e => e.eicon);
       }
@@ -269,6 +271,10 @@ export default class EIconSelector extends CustomDialog {
     void core.settingsStore.set('favoriteEIcons', core.state.favoriteEIcons);
 
     this.$forceUpdate();
+  }
+
+  close(): void {
+    store?.shuffle();
   }
 }
 </script>

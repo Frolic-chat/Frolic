@@ -5,8 +5,28 @@ import * as path from 'path';
 
 import { EIconRecord, EIconUpdater } from './updater';
 
+const EICON_PAGE_RESULTS_COUNT = 49;
+
+// These funtions are so generic they could be moved to a utils file.
+
+function Rotate<T>(arr: T[], amount: number): T[] {
+    const remove = arr.splice(0, amount);
+
+    arr = arr.concat(remove);
+
+    return remove;
+}
+
+async function FisherYatesShuffle(arr: any[]): Promise<void> {
+    for (let cp = arr.length - 1; cp > 0; cp--) {
+        const np = Math.floor(Math.random() * (cp + 1));
+        [arr[cp], arr[np]] = [arr[np], arr[cp]];
+    }
+}
+
 export class EIconStore {
     protected lookup: Record<string, EIconRecord> = {};
+    protected indices: string[] = [];
 
     protected asOfTimestamp = 0;
 
@@ -74,6 +94,8 @@ export class EIconStore {
 
         this.asOfTimestamp = eicons.asOfTimestamp;
 
+        this.updateIndices();
+
         await this.save();
     }
 
@@ -91,6 +113,8 @@ export class EIconStore {
         this.asOfTimestamp = changes.asOfTimestamp;
 
         log.info('eicons.update.processed', { removals: removals.length, additions: additions.length, asOf: this.asOfTimestamp });
+
+        this.updateIndices();
 
         if (changes.recordUpdates.length > 0)
             await this.save();
@@ -135,17 +159,16 @@ export class EIconStore {
         });
   }
 
-    random(count: number = 49): EIconRecord[] {
-        const r = Object.values(this.lookup);
-        const len = r.length;
+    private updateIndices(): void {
+        this.indices = Object.keys(this.lookup);
+    }
 
-        // Fisher-Yates Shuffle
-        for (let cp = len - 1; len - cp < count; cp--) {
-            const np = Math.floor(Math.random() * (cp + 1));
-            [r[cp], r[np]] = [r[np], r[cp]];
-        }
+    async shuffle(): Promise<void> {
+        await FisherYatesShuffle(this.indices);
+    }
 
-        return r.slice(-count);
+    nextPage(amount: number = 0): string[] {
+        return Rotate(this.indices, amount > 0 ? amount : EICON_PAGE_RESULTS_COUNT);
     }
 
     private static sharedStore: EIconStore | undefined;
