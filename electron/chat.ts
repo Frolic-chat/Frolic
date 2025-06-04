@@ -234,7 +234,7 @@ function onSettings(s: GeneralSettings): void {
     // for(const word of s.customDictionary) spellchecker.add(word);
 }
 
-electron.ipcRenderer.on('settings', (_: Event, s: GeneralSettings) => onSettings(s));
+electron.ipcRenderer.on('settings', (_: Electron.IpcRendererEvent, s: GeneralSettings) => onSettings(s));
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 let settings = <GeneralSettings>JSON.parse(params['settings']!);
