@@ -8,37 +8,37 @@
       <div v-else>
         <div>
           <div class="search-bar">
-            <input type="text" class="form-control search" id="search" v-model="search" ref="search" :placeholder="l('eicon.search')" tabindex="0" @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop />
+            <input type="text" class="form-control search" id="search" v-model="search" ref="search" :placeholder="l('eicon.search')" @input="searchUpdateDebounce()" tabindex="0" @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop />
             <div class="btn-group search-buttons">
-              <div class="btn expressions" @click.prevent.stop="runSearch('category:favorites')" :title="l('eicon.favorites')" role="button" tabindex="0">
+              <div class="btn expressions" @click.prevent.stop="searchWithString('category:favorites')" :title="l('eicon.favorites')" role="button" tabindex="0">
                 <i class="fas fa-thumbtack"></i>
               </div>
 
-              <div class="btn expressions" @click.prevent.stop="runSearch('category:expressions')" :title="l('eicon.expressions')" role="button" tabindex="0">
+              <div class="btn expressions" @click.prevent.stop="searchWithString('category:expressions')" :title="l('eicon.expressions')" role="button" tabindex="0">
                 <i class="fas fa-theater-masks"></i>
               </div>
 
-              <div class="btn soft" @click.prevent.stop="runSearch('category:soft')" :title="l('eicon.soft')" role="button" tabindex="0">
+              <div class="btn soft" @click.prevent.stop="searchWithString('category:soft')" :title="l('eicon.soft')" role="button" tabindex="0">
                 <i class="fas fa-spa"></i>
               </div>
 
-              <div class="btn sexual" @click.prevent.stop="runSearch('category:sexual')" :title="l('eicon.sexual')" role="button" tabindex="0">
+              <div class="btn sexual" @click.prevent.stop="searchWithString('category:sexual')" :title="l('eicon.sexual')" role="button" tabindex="0">
                 <i class="fas fa-heart"></i>
               </div>
 
-              <div class="btn bubbles" @click.prevent.stop="runSearch('category:bubbles')" :title="l('eicon.speech')" role="button" tabindex="0">
+              <div class="btn bubbles" @click.prevent.stop="searchWithString('category:bubbles')" :title="l('eicon.speech')" role="button" tabindex="0">
                 <i class="fas fa-comment"></i>
               </div>
 
-              <div class="btn actions" @click.prevent.stop="runSearch('category:symbols')" :title="l('eicon.symbols')" role="button" tabindex="0">
+              <div class="btn actions" @click.prevent.stop="searchWithString('category:symbols')" :title="l('eicon.symbols')" role="button" tabindex="0">
                 <i class="fas fa-icons"></i>
               </div>
 
-              <div class="btn memes" @click.prevent.stop="runSearch('category:memes')" :title="l('eicon.memes')" role="button" tabindex="0">
+              <div class="btn memes" @click.prevent.stop="searchWithString('category:memes')" :title="l('eicon.memes')" role="button" tabindex="0">
                 <i class="fas fa-poo"></i>
               </div>
 
-              <div class="btn random" @click.prevent.stop="runSearch('category:random')" :title="l('eicon.random')" role="button" tabindex="0">
+              <div class="btn random" @click.prevent.stop="searchWithString('category:random')" :title="l('eicon.random')" role="button" tabindex="0">
                 <i class="fas fa-random"></i>
               </div>
 
@@ -77,7 +77,7 @@
 <script lang="ts">
 import _ from 'lodash';
 import l from '../chat/localize';
-import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from '@f-list/vue-ts';
 // import Vue from 'vue';
 import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import { EIconStore } from '../learn/eicon/store';
@@ -113,23 +113,20 @@ export default class EIconSelector extends CustomDialog {
       store.shuffle();
 
       this.storeLoaded = true;
-      this.runSearch('');
+
+      this.searchWithString('category:favorites');
     } catch (err) {
       // don't break the client in case service is down
       log.error('eiconSelector.load.error', { err })
     }
   }
 
-  @Watch('search')
-  searchUpdate() {
-    this.searchUpdateDebounce();
+  searchWithString(s: string) {
+    this.search = s;
+    this.runSearch();
   }
 
-  runSearch(search?: string) {
-    if (search) {
-      this.search = search;
-    }
-
+  runSearch() {
     const s = this.search.toLowerCase().trim();
 
     if (s.substring(0, 9) === 'category:') {
