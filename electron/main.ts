@@ -277,19 +277,15 @@ function setUpWebContents(webContents: electron.WebContents): void {
 
     webContents.setVisualZoomLevelLimits(1, 5);
 
-    webContents.on(
-        'will-navigate', (e: Event, url: string) => {
-            e.preventDefault();
-            openLinkExternally(url);
-        }
-    );
+    webContents.on('will-navigate', (e: Electron.Event, url: string) => {
+        e.preventDefault();
+        openLinkExternally(url);
+    });
 
-    webContents.setWindowOpenHandler(
-        ({ url }) => {
-            openLinkExternally(url);
-            return { action: 'deny' };
-        }
-    );
+    webContents.setWindowOpenHandler(({ url }) => {
+        openLinkExternally(url);
+        return { action: 'deny' };
+    });
 }
 
 
@@ -347,9 +343,8 @@ function createWindow(): electron.BrowserWindow | undefined {
 
     // This prevents automatic download prompts on certain webview URLs without
     // stopping conversation logs from being downloaded
-    electron.session.defaultSession.on(
-        'will-download',
-        (e: Event, item: electron.DownloadItem) => {
+    electron.session.defaultSession.on('will-download',
+        (e: Electron.Event, item: electron.DownloadItem) => {
             if (!item.getURL().match(/^blob:file:/)) {
                 log.info('download.prevent', { item, event: e });
                 e.preventDefault();
@@ -775,20 +770,20 @@ function onReady(): void {
 
 
     //region SecureStore
-    electron.ipcMain.handle('setPassword', async (_event: Event, domain: string, account: string, password: string) => {
+    electron.ipcMain.handle('setPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string, password: string) => {
         await SecureStore.setPassword(domain, account, password);
     });
 
-    electron.ipcMain.handle('deletePassword', async (_event: Event, domain: string, account: string) => {
+    electron.ipcMain.handle('deletePassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
         await SecureStore.deletePassword(domain, account);
     });
 
-    electron.ipcMain.handle('getPassword', async (_event: Event, domain: string, account: string) => {
+    electron.ipcMain.handle('getPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
         return await SecureStore.getPassword(domain, account);
     });
 
 
-    electron.ipcMain.on('tab-added', (_event: Event, id: number) => {
+    electron.ipcMain.on('tab-added', (_event: Electron.IpcMainEvent, id: number) => {
         const webContents = electron.webContents.fromId(id);
         if (!webContents) {
             log.error('main.tab-added.error', 'Failed to have id when tab added, but still triggered tab-added. This is a weird error!');
@@ -804,34 +799,37 @@ function onReady(): void {
         --tabCount;
         for(const w of windows) w.webContents.send('allow-new-tabs', true);
     });
-    electron.ipcMain.on('save-login', (_event: Event, account: string, host: string) => {
+    electron.ipcMain.on('save-login', (_event: Electron.IpcMainEvent, account: string, host: string) => {
         settings.account = account;
         settings.host = host;
         setGeneralSettings(settings);
     });
-    electron.ipcMain.on('connect', (e: Event & {sender: electron.WebContents}, character: string) => {
+    electron.ipcMain.on('connect', (e: Electron.IpcMainEvent & { returnValue: boolean, sender: electron.WebContents}, character: string) => { //hack
         // This is the "not logged in" check.
         if (characters.indexOf(character) === -1) {
             log.debug('ipcMain.connect.notLoggedIn');
             characters.push(character); // add to "logged in"
-            return e.returnValue = true;
+            e.returnValue = true;
+            return true;
         }
         else {
             log.debug('ipcMain.connect.alreadyLoggedIn');
-            return e.returnValue = false;
+            e.preventDefault();
+            e.returnValue = false;
+            return false;
         }
     });
-    electron.ipcMain.on('dictionary-add', (_event: Event, word: string) => {
+    electron.ipcMain.on('dictionary-add', (_event: Electron.IpcMainEvent, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
         // setGeneralSettings(settings);
         for (const w of windows) w.webContents.session.addWordToSpellCheckerDictionary(word);
     });
-    electron.ipcMain.on('dictionary-remove', (_event: Event /*, word: string*/) => {
+    electron.ipcMain.on('dictionary-remove', (_event: Electron.IpcMainEvent /*, word: string*/) => {
         // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
         // setGeneralSettings(settings);
     });
-    electron.ipcMain.on('disconnect', (_event: Event, character: string) => {
+    electron.ipcMain.on('disconnect', (_event: Electron.IpcMainEvent, character: string) => {
         const index = characters.indexOf(character);
         if (index !== -1) characters.splice(index, 1);
     });
@@ -847,7 +845,7 @@ function onReady(): void {
     );
 
     // Badge windows with alerts
-    electron.ipcMain.on('has-new', (e: Event & {sender: electron.WebContents}, hasNew: boolean) => {
+    electron.ipcMain.on('has-new', (e: Electron.IpcMainEvent & {sender: electron.WebContents}, hasNew: boolean) => {
         if (process.platform === 'darwin')
             app.dock.setBadge(hasNew ? '!' : '');
 
@@ -864,7 +862,7 @@ function onReady(): void {
             w.send('rising-upgrade-complete');
     });
 
-    electron.ipcMain.on('update-zoom', (_e, zl: number) => {
+    electron.ipcMain.on('update-zoom', (_e: Electron.IpcMainEvent, zl: number) => {
         // log.info('MENU ZOOM UPDATE', zoomLevel);
         for (const w of electron.webContents.getAllWebContents())
             w.send('update-zoom', zl);
@@ -902,7 +900,7 @@ function onReady(): void {
         return settings.browserPath;
     });
 
-    electron.ipcMain.on('browser-option-update', (_e, _path: string, _args: string) => {
+    electron.ipcMain.on('browser-option-update', (_e: Electron.IpcMainEvent, _path: string, _args: string) => {
         log.debug('Browser Path settings update:', _path, _args);
 
         settings.browserPath = _path;
@@ -910,7 +908,7 @@ function onReady(): void {
         setGeneralSettings(settings);
     });
 
-    electron.ipcMain.on('open-url-externally', (_e, _url: string) => {
+    electron.ipcMain.on('open-url-externally', (_e: Electron.IpcMainEvent, _url: string) => {
         openURLExternally(_url);
     });
 
