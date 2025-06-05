@@ -137,7 +137,7 @@ export default class EIconSelector extends CustomDialog {
   runSearch() {
     const s = this.search.toLowerCase().trim();
 
-    if (s.substring(0, 9) === 'category:') {
+    if (s.startsWith('category:')) {
       const category = s.substring(9).trim();
 
       if (category === 'random') {
@@ -252,14 +252,14 @@ export default class EIconSelector extends CustomDialog {
     this.refreshing = true;
 
     await store?.update();
-    await this.runSearch();
+    this.runSearch();
 
     this.refreshing = false;
   }
 
   setFocus(): void {
-    (this.$refs['search']  as any).focus();
-    (this.$refs['search']  as any).select();
+    (this.$refs['search'] as any).focus();
+    (this.$refs['search'] as any).select();
   }
 
   isFavorite(eicon: string): boolean {

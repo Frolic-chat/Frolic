@@ -153,15 +153,11 @@ export class EIconStore {
         const query = searchString.trim().toLowerCase();
         const found = this.lookup.filter(e => e.indexOf(query) >= 0);
 
-        const l = query.length;
-
         return found.sort((a, b) => {
-            if (a.substring(0, l) === query
-             && b.substring(0, l) !== query)
+            if (a.startsWith(query) && !b.startsWith(query))
                 return -1;
 
-            if (b.substring(0, l) === query
-             && a.substring(0, l) !== query)
+            if (b.startsWith(query) && !a.startsWith(query))
                 return 1;
 
             return a.localeCompare(b);
