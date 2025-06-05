@@ -149,7 +149,7 @@ export default class EIconSelector extends CustomDialog {
       if (s.length === 0) {
         this.results = store?.nextPage() || [];
       } else {
-        this.results = (store?.search(s).slice(0, 301) || []).map(e => e.eicon);
+        this.results = store?.search(s).slice(0, 301) || [];
       }
     }
   }

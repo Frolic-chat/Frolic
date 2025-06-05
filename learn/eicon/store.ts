@@ -3,7 +3,7 @@ import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { EIconRecord, EIconUpdater } from './updater';
+import { EIconUpdater } from './updater';
 
 const EICON_PAGE_RESULTS_COUNT = 49;
 
@@ -25,7 +25,7 @@ async function FisherYatesShuffle(arr: any[]): Promise<void> {
 }
 
 export class EIconStore {
-    protected lookup: Record<string, EIconRecord> = {};
+    protected lookup:  string[] = [];
     protected indices: string[] = [];
 
     protected asOfTimestamp = 0;
@@ -34,14 +34,13 @@ export class EIconStore {
 
     async save(): Promise<void> {
         const fn = this.getStoreFilename();
-        const recordArray = Object.values(this.lookup);
 
-        log.info('eicons.save', { records: recordArray.length, asOfTimestamp: this.asOfTimestamp, fn });
+        log.info('eicons.save', { records: this.lookup.length, asOfTimestamp: this.asOfTimestamp, fn });
 
-        if (recordArray.length > 0) {
+        if (this.lookup.length > 0) {
             fs.writeFileSync(fn, JSON.stringify({
                 asOfTimestamp: this.asOfTimestamp,
-                records: recordArray
+                records: this.lookup
             }));
         }
 
@@ -56,22 +55,39 @@ export class EIconStore {
             const data = JSON.parse(fs.readFileSync(fn, 'utf-8'));
 
             this.asOfTimestamp = data?.asOfTimestamp || 0;
-            this.lookup = Object.fromEntries((data?.records || []).map((r: EIconRecord) => [r.eicon, r]));
 
-            const recordCount = Object.keys(this.lookup).length;
+            /** Handling the old format is a must. */
+            if (Array.isArray(data?.records) && typeof data.records[0] === 'object') {
+                this.lookup = data.records.map((i: { eicon: string }) => i.eicon);
+            }
+            else if (Array.isArray(data?.records) && typeof data.records[0] === 'string') {
+                this.lookup = data.records;
+            }
+            else {
+                this.lookup = [];
+            }
 
-            log.info('eicons.loaded.local', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
+            this.asOfTimestamp = data?.asOfTimestamp || 0;
+
+            if (!this.lookup.length || !this.asOfTimestamp) {
+              log.warn('eicons.load.failure.disk', { timestamp: data.asOfTimestamp, data: this.lookup.length });
+              throw new Error('Data from disk is strange.');
+            }
+
+            const recordCount = this.lookup.length;
+
+            log.verbose('eicons.loaded.local', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
 
             await this.update();
 
-            log.info('eicons.loaded.update.remote', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
+            log.verbose('eicons.loaded.update.remote', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
         }
         catch (err) {
             try {
                 await this.downloadAll();
             }
             catch (err2) {
-                log.error('eicons.load.failure', { initial: err, explicit: err2 });
+                log.error('eicons.load.failure.download', { initial: err, explicit: err2 });
             }
         }
     }
@@ -86,13 +102,11 @@ export class EIconStore {
     async downloadAll(): Promise<void> {
         log.info('eicons.downloadAll');
 
-        const eicons = await this.updater.fetchAll();
+        const data = await this.updater.fetchAll();
 
-        this.lookup = Object.fromEntries(eicons.records.map(r => [r.eicon, r]));
+        this.lookup = data.eicons;
 
-        Object.values(eicons.records).forEach(changeRecord => this.addIcon(changeRecord));
-
-        this.asOfTimestamp = eicons.asOfTimestamp;
+        this.asOfTimestamp = data.asOfTimestamp;
 
         this.updateIndices();
 
@@ -104,11 +118,17 @@ export class EIconStore {
 
         const changes = await this.updater.fetchUpdates(this.asOfTimestamp);
 
-        const removals = changes.recordUpdates.filter(changeRecord => changeRecord.action === '-');
-        const additions = changes.recordUpdates.filter(changeRecord => changeRecord.action === '+');
+        const removals = changes.recordUpdates
+                .filter(changeRecord => changeRecord.action === '-')
+                .map(i => i.eicon);
 
-        removals.forEach(changeRecord => this.removeIcon(changeRecord));
-        additions.forEach(changeRecord => this.addIcon(changeRecord));
+        this.removeIcons(removals);
+
+        const additions = changes.recordUpdates
+                .filter(changeRecord => changeRecord.action === '+')
+                .map(i => i.eicon);
+
+        this.addIcons(additions);
 
         this.asOfTimestamp = changes.asOfTimestamp;
 
@@ -120,47 +140,38 @@ export class EIconStore {
             await this.save();
     }
 
-    protected addIcon(record: EIconRecord): void {
-        if (record.eicon in this.lookup) {
-            this.lookup[record.eicon].timestamp = record.timestamp;
-            return;
-        }
-
-        const r = {
-            eicon: record.eicon,
-            timestamp: record.timestamp
-        };
-
-        this.lookup[record.eicon] = r;
+    protected addIcons(additions: string[]): void {
+        additions.forEach(e => {
+            if (!this.lookup.includes(e)) this.lookup.push(e);
+        })
     }
 
-  protected removeIcon(record: EIconRecord): void {
-        if (!(record.eicon in this.lookup))
-            return;
-
-        delete this.lookup[record.eicon];
+    protected removeIcons(removals: string[]): void {
+        this.lookup = this.lookup.filter(e => !removals.includes(e));
     }
 
-    search(searchString: string): EIconRecord[] {
+    search(searchString: string): string[] {
         const query = searchString.trim().toLowerCase();
-        const found = Object.values(this.lookup).filter(r => r.eicon.indexOf(query) >= 0);
+        const found = this.lookup.filter(e => e.indexOf(query) >= 0);
+
         const l = query.length;
 
         return found.sort((a, b) => {
-            if (a.eicon.substring(0, l) === query
-             && b.eicon.substring(0, l) !== query)
+            if (a.substring(0, l) === query
+             && b.substring(0, l) !== query)
                 return -1;
 
-            if (b.eicon.substring(0, l) === query
-             && a.eicon.substring(0, l) !== query)
+            if (b.substring(0, l) === query
+             && a.substring(0, l) !== query)
                 return 1;
 
-            return a.eicon.localeCompare(b.eicon);
+            return a.localeCompare(b);
         });
     }
 
     private updateIndices(): void {
-        this.indices = Object.keys(this.lookup);
+        this.indices = this.lookup;
+        this.shuffle();
     }
 
     async shuffle(): Promise<void> {
