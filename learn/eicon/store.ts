@@ -25,8 +25,7 @@ async function FisherYatesShuffle(arr: any[]): Promise<void> {
 }
 
 export class EIconStore {
-    protected lookup:  string[] = [];
-    protected indices: string[] = [];
+    protected lookup: string[] = [];
 
     protected asOfTimestamp = 0;
 
@@ -108,9 +107,9 @@ export class EIconStore {
 
         this.asOfTimestamp = data.asOfTimestamp;
 
-        this.updateIndices();
-
         await this.save();
+
+        this.shuffle();
     }
 
     async update(): Promise<void> {
@@ -134,10 +133,10 @@ export class EIconStore {
 
         log.verbose('eicons.update.processed', { removals: removals.length, additions: additions.length, asOf: this.asOfTimestamp });
 
-        this.updateIndices();
-
         if (changes.recordUpdates.length > 0)
             await this.save();
+
+        this.shuffle();
     }
 
     protected addIcons(additions: string[]): void {
@@ -169,17 +168,12 @@ export class EIconStore {
         });
     }
 
-    private updateIndices(): void {
-        this.indices = this.lookup;
-        this.shuffle();
-    }
-
     async shuffle(): Promise<void> {
-        await FisherYatesShuffle(this.indices);
+        await FisherYatesShuffle(this.lookup);
     }
 
     nextPage(amount: number = 0): string[] {
-        return Rotate(this.indices, amount > 0 ? amount : EICON_PAGE_RESULTS_COUNT);
+        return Rotate(this.lookup, amount > 0 ? amount : EICON_PAGE_RESULTS_COUNT);
     }
 
     private static sharedStore: EIconStore | undefined;
