@@ -5,6 +5,10 @@ import * as path from 'path';
 
 import { EIconUpdater } from './updater';
 
+/**
+ * The eicon UI only shows 7 rows and 7 columns before becoming scrollable,
+ * so a single "page" is 49 results.s
+ */
 const EICON_PAGE_RESULTS_COUNT = 49;
 
 // These funtions are so generic they could be moved to a utils file.
