@@ -81,8 +81,8 @@
     import { CharacterCacheRecord } from '../learn/profile-cache';
     import Bluebird from 'bluebird';
 
-    import electronLog from 'electron-log';
-    const log = electronLog.scope('CharacterSearch');
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('CharacterSearch');
 
     type Options = {
         kinks: SearchKink[],

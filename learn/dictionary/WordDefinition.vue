@@ -20,8 +20,9 @@ import { Component, Hook, Prop } from '@f-list/vue-ts';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
 import anyAscii from 'any-ascii';
-import electronLog from 'electron-log'; //tslint:disable-line:match-default-export-name
-const log = electronLog.scope('WordDefinition');
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('WordDefinition');
 
 // tslint:disable-next-line:ban-ts-ignore
 // @ts-ignore

@@ -9,7 +9,9 @@ import { CharacterImage, SimpleCharacter } from '../interfaces';
 import { Scoring } from './matcher-types';
 import { matchesSmartFilters } from './filter/smart-filter';
 import * as remote from '@electron/remote';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('profile-cache');
 
 export interface MetaRecord {
     images: CharacterImage[] | null;

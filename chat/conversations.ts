@@ -5,14 +5,16 @@ import { AdManager } from './ads/ad-manager';
 import { characterImage, ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
 import { Channel, Character, Conversation as Interfaces } from './interfaces';
+import isChannel = Interfaces.isChannel;
 import l from './localize';
 import {CommandContext, isAction, isCommand, isWarn, parse as parseCommand} from './slash_commands';
 import MessageType = Interfaces.Message.Type;
 import {EventBus} from './preview/event-bus';
 import throat from 'throat';
 import Bluebird from 'bluebird';
-import log from 'electron-log';
-import isChannel = Interfaces.isChannel;
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('chat/conversations');
 
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {

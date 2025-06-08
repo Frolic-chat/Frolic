@@ -2,8 +2,8 @@ import throat from 'throat';
 import Bluebird from 'bluebird';
 import { IpcMainEvent } from 'electron';
 
-import ElectronLog from 'electron-log'; //tslint:disable-line:match-default-export-name
-const log = ElectronLog.scope('ad-host');
+import Logger from 'electron-log/main';
+const log = Logger.scope('AdCoordinatorHost');
 
 const adCoordinatorThroat = throat(1);
 

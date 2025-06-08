@@ -1,7 +1,7 @@
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 
-import ElectronLog from 'electron-log'; //tslint:disable-line:match-default-export-name
-const log = ElectronLog.scope('ad-guest');
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('AdCoordinatorGuest');
 
 import core from '../core';
 

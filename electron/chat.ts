@@ -60,8 +60,9 @@ import Notifications from './notifications';
 import * as SlimcatImporter from './importer';
 import Index from './Index.vue';
 
-import electronLog from 'electron-log';
-const log = electronLog.scope('chat');
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('chat');
+import { LevelOption as LogLevelOption } from 'electron-log';
 
 import { WordPosSearch } from '../learn/dictionary/word-pos-search';
 
@@ -227,8 +228,8 @@ if(process.platform === 'win32') //get the path in DOS (8-character) format as s
 function onSettings(s: GeneralSettings): void {
     settings = s;
 
-    electronLog.transports.file.level = settings.risingSystemLogLevel;
-    electronLog.transports.console.level = settings.risingSystemLogLevel;
+    const logLevel: LogLevelOption = 'warn'
+    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
 
     // spellchecker.setDictionary(s.spellcheckLang, dictDir);
     // for(const word of s.customDictionary) spellchecker.add(word);

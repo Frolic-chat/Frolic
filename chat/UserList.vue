@@ -54,7 +54,10 @@
     import { profileLink } from './common';
 
     import { UserListSorter } from '../learn/matcher';
-    import log from 'electron-log';
+
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('UserList');
+
     import { EventBus, CharacterProfileEvent } from './preview/event-bus';
 
     type StatusSort = {

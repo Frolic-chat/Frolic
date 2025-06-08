@@ -1,5 +1,4 @@
 import _ from 'lodash';
-// import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 
 import { IndexedStore } from '../indexed';
 import { IndexedRequest, ProfileStoreCommand } from './types';

@@ -1,8 +1,10 @@
 import _ from 'lodash';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 
 import { EventBus } from '../../../chat/preview/event-bus';
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('worker/client');
 
 export interface WaiterDef {
   id: string;

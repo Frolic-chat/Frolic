@@ -1,6 +1,9 @@
 import Axios from 'axios';
 import * as electron from 'electron';
-import log from 'electron-log';  //tslint:disable-line:match-default-export-name
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('dictionaries');
+
 import * as fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';

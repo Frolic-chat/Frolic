@@ -49,7 +49,9 @@
     import l from '../chat/localize';
     import {GeneralSettings} from './common';
     import { getSafeLanguages, updateSupportedLanguages } from './language';
-    import log from 'electron-log';
+
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('Window.vue');
 
     const browserWindow = remote.getCurrentWindow();
 
@@ -171,8 +173,7 @@
 
                 this.settings = settings;
 
-                log.transports.file.level    = settings.risingSystemLogLevel;
-                log.transports.console.level = settings.risingSystemLogLevel;
+                Logger.transports.console.level = settings.risingSystemLogLevel;
             });
 
             electron.ipcRenderer.on('rising-upgrade-complete', () => {

@@ -11,11 +11,11 @@ You should have received a copy of the GNU General Public License along with thi
 -->
 <template>
 <div id="body">
-    <div>Levels: {{ electronLog.levels.join(', ') }}.</div>
+    <div>Levels: {{ levels.join(', ') }}.</div>
     <hr />
     <div class="row" v-for="level, scope in scopes" :key="scope">
         <input type="range" v-model="scopes[scope]" :min="0" :max="5" @input="updateLogLevel(scope, level)"  />
-        <div style="flex-grow: 1; margin-left: 13px">{{ electronLog.levels[level] }}</div>
+        <div style="flex-grow: 1; margin-left: 13px">{{ levels[level] }}</div>
         <div style="min-width: 33%">{{ scope }}</div>
     </div>
 </div>
@@ -25,14 +25,11 @@ You should have received a copy of the GNU General Public License along with thi
 import Vue from 'vue';
 import { Component, Hook } from '@f-list/vue-ts';
 
-import electronLog from 'electron-log';
-
-electronLog.levels.push('silent')
+import Logger from 'electron-log/renderer';
 
 @Component
 export default class LogViewer extends Vue {
-electronLog = electronLog;
-levels: string[] = electronLog.levels;
+levels: string[] = Logger.levels;
 scopes: Record<string, number> = { 'CharacterSearch': 0, 'Chat': 0, 'event-bus': 0, 'chat': 0, 'Index': 0, 'blocker': 0, 'cache-manager': 0, 'matcher': 0, 'UserListSorter': 0, 'WordDefinition': 0, 'note-checker': 0, 'site-session': 0 };
 desc: string[] = [];
 logs: { [key: string]: number } = {};

@@ -1,7 +1,8 @@
 import throat from 'throat';
 import * as _ from 'lodash';
 
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('AdCoordinatorGuest');
 
 import core from '../core';
 import { Conversation } from '../interfaces';

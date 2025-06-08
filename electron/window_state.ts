@@ -1,8 +1,8 @@
 import {screen} from 'electron';
 import * as fs from 'fs';
 
-import ElectronLog from 'electron-log';
-const log = ElectronLog.scope('window_state');
+import Logger from 'electron-log/main';
+const log = Logger.scope('window_state');
 
 interface SavedWindowState {
     x?: number

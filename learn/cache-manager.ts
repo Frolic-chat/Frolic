@@ -20,8 +20,9 @@ import { PermanentIndexedStore } from './store/types';
 import * as path from 'path';
 // import * as electron from 'electron';
 
-import electronLog from 'electron-log';
-const log = electronLog.scope('cache-manager');
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('cache-manager');
+
 import { testSmartFilterForPrivateMessage } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 
 

@@ -3,8 +3,10 @@ import { Matcher } from '../matcher';
 import { BodyType, Build, Gender, Kink, Species, TagId } from '../matcher-types';
 import { SmartFilterSelection, SmartFilterSettings } from './types';
 import { Character } from '../../interfaces';
-import log from 'electron-log';
 import core from '../../chat/core';
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('smart-filter');
 
 export interface SmartFilterOpts {
   name: string;

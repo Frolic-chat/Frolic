@@ -3,8 +3,9 @@ import { PermanentIndexedStore, ProfileRecord } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
 
 import { WorkerClient } from './worker/client';
-import ElectronLog from 'electron-log';
-const log = ElectronLog.scope('worker')
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('worker')
 
 
 export class WorkerStore implements PermanentIndexedStore {

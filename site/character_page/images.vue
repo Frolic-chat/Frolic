@@ -21,7 +21,8 @@
 </template>
 
 <script lang="ts">
-    import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('character_page/images');
     import {Component, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
     import {CharacterImage} from '../../interfaces';

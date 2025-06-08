@@ -1,6 +1,7 @@
 import Axios from 'axios';
-import ElectronLog from 'electron-log';
-const log = ElectronLog.scope('updater');
+
+import Logger from 'electron-log/main';
+const log = Logger.scope('updater');
 
 type ReleaseInfo = {
     html_url: string;

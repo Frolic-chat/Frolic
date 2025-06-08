@@ -78,8 +78,10 @@
 import _ from 'lodash';
 import l from '../chat/localize';
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
-// import Vue from 'vue';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('EIconSelector');
+
 import { EIconStore } from '../learn/eicon/store';
 import core from '../chat/core';
 import modal from '../components/Modal.vue';

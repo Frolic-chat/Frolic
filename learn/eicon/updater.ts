@@ -1,6 +1,8 @@
 import Axios, { AxiosError } from 'axios';
 import { EventBus } from '../../chat/preview/event-bus';
-import log from 'electron-log';
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('eicon/updater');
 
 export interface EIconRecord {
   eicon: string;

@@ -35,12 +35,22 @@ import * as path from 'path';
 import * as electron from 'electron';
 const app = electron.app; // Module to control application life.
 
-import ElectronLog from 'electron-log';
-const log = ElectronLog.scope('main');
 
-// ElectronLog.transports.file.resolvePath = () => path.join(
-//     app.getPath('logs'), ElectronLog.transports.file.fileName
-// );
+//#region Logger
+import Logger from 'electron-log/main';
+Logger.initialize();
+
+const log = Logger.scope('main');
+import { LevelOption as LogLevelOption, levels as logLevels, PathVariables, LogMessage } from 'electron-log';
+
+Logger.transports.file.resolvePathFn = (_var: PathVariables, msg: LogMessage | undefined) => {
+    const file = msg?.level === 'warn' || msg?.level === 'error' ? 'error.log' : 'app.log';
+    return path.join(app.getPath('logs'), file);
+};
+
+log.error('debug.electron-log', { fileName: Logger.transports.file.fileName, getFile: Logger.transports.file.getFile().path });
+//#endregion
+
 
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
@@ -56,7 +66,7 @@ import * as FROLIC from '../constants/frolic';
 import checkForGitRelease from './updater';
 
 
-//region Icon
+//#region Icon
 let pngIcon: string,
     winIcon: string;
 
@@ -98,6 +108,7 @@ else {
         log.debug('main.icon.unix.default', pngIcon);
     }
 }
+//#endregion
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -170,14 +181,15 @@ async function toggleDictionary(lang: string): Promise<void> {
 }
 
 function setGeneralSettings(value: GeneralSettings): void {
-    fs.writeFileSync(path.join(settingsDir, 'settings'), JSON.stringify(value));
+    fs.writeFileSync(settingsFile, JSON.stringify(value));
 
     for (const w of electron.webContents.getAllWebContents()) w.send('settings', settings);
 
     shouldImportSettings = false;
 
-    ElectronLog.transports.file.level    = settings.risingSystemLogLevel;
-    ElectronLog.transports.console.level = settings.risingSystemLogLevel;
+    const logLevel: LogLevelOption = 'warn';
+    Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
+    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
 }
 
 async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
@@ -434,11 +446,11 @@ let zoomLevel = 0;
 function onReady(): void {
     let hasCompletedUpgrades = false;
 
-    const logLevel = 'info';
+    const logLevel: LogLevelOption = 'warn';
+    Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
+    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
 
-    ElectronLog.transports.file.level = settings.risingSystemLogLevel || logLevel;
-    ElectronLog.transports.console.level = settings.risingSystemLogLevel || logLevel;
-    ElectronLog.transports.file.maxSize = 5 * 1024 * 1024;
+    Logger.transports.file.maxSize = 5 * 1024 * 1024;
 
     log.info('Starting application.');
 
@@ -525,7 +537,7 @@ function onReady(): void {
         setGeneralSettings(settings);
     };
 
-    const setSystemLogLevel = (logLevel: ElectronLog.LevelOption) => {
+    const setSystemLogLevel = (logLevel: LogLevelOption) => {
         settings.risingSystemLogLevel = logLevel;
         setGeneralSettings(settings);
     };
@@ -631,12 +643,12 @@ function onReady(): void {
                 { type: 'separator' },
                 {
                     label: l('action.logLevel'),
-                    submenu: ['error', 'warn', 'info', 'verbose', 'debug', 'silly']
+                    submenu: logLevels
                         .map((level: string) => (
                             {
                                 checked: settings.risingSystemLogLevel === level,
                                 label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
-                                click: () => setSystemLogLevel(level as ElectronLog.LevelOption),
+                                click: () => setSystemLogLevel(level as LogLevelOption),
                                 type: <'radio'>'radio'
                             }
                         )

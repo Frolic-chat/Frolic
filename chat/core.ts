@@ -12,8 +12,8 @@ import { SiteSession } from '../site/site-session';
 import _ from 'lodash';
 
 import { EventBus } from './preview/event-bus';
-import log from 'electron-log';
-//import { Matcher } from '../learn/matcher';
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('chat/core');
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();

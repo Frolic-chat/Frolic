@@ -77,7 +77,9 @@
 
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
     import Vue from 'vue';
-    import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('character_page');
 
     import {StandardBBCodeParser} from '../../bbcode/standard';
     import {BBCodeView} from '../../bbcode/view';

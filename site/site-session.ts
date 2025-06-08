@@ -1,6 +1,8 @@
 import _ from 'lodash';
-import electronLog from 'electron-log';
-const log = electronLog.scope('site-session');
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('site-session');
+
 import throat from 'throat';
 import { NoteChecker } from './note-checker';
 

@@ -1,10 +1,12 @@
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
 import * as _ from 'lodash';
 
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../../site/character_page/interfaces';
 import { CharacterAnalysis } from '../matcher';
 import { PermanentIndexedStore, ProfileRecord } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('store/indexed');
 
 
 async function promisifyRequest<T>(req: IDBRequest): Promise<T> {

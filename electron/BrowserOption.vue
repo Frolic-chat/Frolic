@@ -83,7 +83,6 @@ import {GeneralSettings} from './common';
 import fs from "fs";
 import path from "path";
 import {ipcRenderer} from "electron";
-import log from "electron-log";
 
 const browserWindow = remote.getCurrentWindow();
 @Component({

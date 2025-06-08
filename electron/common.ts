@@ -3,10 +3,7 @@ import * as path from 'path';
 
 import * as FLIST from '../constants/flist';
 
-import ElectronLog from 'electron-log';
-const log = ElectronLog.scope('electron/common');
-
-log.debug('init.common');
+import { LevelOption as LogLevelOption } from 'electron-log';
 
 function getDefaultLanguage(): string {
     try {
@@ -30,10 +27,8 @@ export class GeneralSettings {
     customDictionary: string[] = [];
     hwAcceleration: boolean = true;
     risingCacheExpiryDays: number = 30;
-    risingSystemLogLevel: ElectronLog.LevelOption = 'info';
+    risingSystemLogLevel: LogLevelOption = 'info';
     risingDisableWindowsHighContrast: boolean =  false;
     browserPath: string = '';
     browserArgs: string = '%s';
 }
-
-log.debug('init.common.done');

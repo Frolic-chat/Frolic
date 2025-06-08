@@ -1,7 +1,10 @@
 import _ from 'lodash';
 
 import * as remote from '@electron/remote';
-import log from 'electron-log'; //tslint:disable-line:match-default-export-name
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('eicon/store');
+
 import * as fs from 'fs';
 import * as path from 'path';
 
