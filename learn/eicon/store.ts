@@ -1,149 +1,236 @@
-import _ from 'lodash';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import * as remote from '@electron/remote';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('eicon/store');
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { EIconUpdater } from './updater';
 
-import { EIconRecord, EIconUpdater } from './updater';
+// The eicon modal displays 7x7 at a time, so this is one page.
+const EICON_PAGE_RESULTS_COUNT = 7 * 7;
+
+const CURRENT_STORE_VERSION = 2.0;
+
+const UPDATE_FREQUENCY = 60 * 60 * 1000;
+
+// Shuffle and rotate are so generic they could be moved to a utils file.
+
+function Rotate<T>(arr: T[], amount: number): T[] {
+    const remove = arr.splice(0, amount);
+
+    arr.push(...remove);
+
+    return remove;
+}
+
+async function FisherYatesShuffle(arr: any[]): Promise<void> {
+    for (let cp = arr.length - 1; cp > 0; cp--) {
+        const np = Math.floor(Math.random() * (cp + 1));
+        [arr[cp], arr[np]] = [arr[np], arr[cp]];
+    }
+}
+
+function isArrayOfStrings(subj: any): subj is string[] {
+    return Array.isArray(subj) && subj.every(item => typeof item === 'string');
+}
+
+function isArrayOfObjects(subj: any): subj is object[] {
+    return Array.isArray(subj) && subj.every(item => typeof item === 'object');
+}
+
+function ExplicitlyVersion2(d: any): boolean {
+    return d?.version === 2 && ImplicitlyVersion2(d);
+}
+
+function ImplicitlyVersion2(d: any): boolean {
+    return isArrayOfStrings(d?.records);
+}
+
+function ImplicitlyVersion1(d: any): boolean {
+    return isArrayOfObjects(d?.records);
+}
 
 export class EIconStore {
-    protected lookup: Record<string, EIconRecord> = {};
+    private lookup: string[] = [];
 
-    protected asOfTimestamp = 0;
+    private asOfTimestamp = 0;
 
-    protected updater = new EIconUpdater();
+    private updater = new EIconUpdater();
 
-    async save(): Promise<void> {
-        const fn = this.getStoreFilename();
-        const recordArray = Object.values(this.lookup);
+    private async save(): Promise<void> {
+        if (this.lookup.length) {
+            log.info(
+                'eicons.save', {
+                    records: this.lookup.length,
+                    asOfTimestamp: this.asOfTimestamp,
+                    file: this.getStoreFilename(),
+                }
+            );
 
-        log.info('eicons.save', { records: recordArray.length, asOfTimestamp: this.asOfTimestamp, fn });
-
-        if (recordArray.length > 0) {
-            fs.writeFileSync(fn, JSON.stringify({
-                asOfTimestamp: this.asOfTimestamp,
-                records: recordArray
-            }));
+            try {
+                fs.writeFileSync(
+                    this.getStoreFilename(),
+                    JSON.stringify({
+                        version: CURRENT_STORE_VERSION,
+                        asOfTimestamp: this.asOfTimestamp,
+                        records: this.lookup,
+                    })
+                );
+            }
+            catch (e) {
+                // This is not a showstopper.
+                log.error('eicons.save.failure', { e });
+            }
         }
 
         remote.ipcMain.emit('eicons.reload', { asOfTimestamp: this.asOfTimestamp });
     }
 
-    async load(): Promise<void> {
-        const fn = this.getStoreFilename();
-        log.info('eicons.load', { fn });
+    private async load(): Promise<void> {
+        log.info('eicons.load', { store: this.getStoreFilename() });
 
         try {
-            const data = JSON.parse(fs.readFileSync(fn, 'utf-8'));
+            const data = JSON.parse(fs.readFileSync(this.getStoreFilename(), 'utf-8'));
+
+            /** Handling old formats is a must.
+             *
+             * Rising: Object = {
+             *    asOfTimestamp: number,
+             *    records: [
+             *      { eicon: string,
+             *        timestamp: number }
+             *    ]
+             * };
+             *
+             * v2: Object = {
+             *    version: number,
+             *    asOfTimestamp: number,
+             *    records: [
+             *      eicon: string
+             *    ]
+             * }
+             *
+             * If you need to add a new version, check FIRST for version number,
+             * but leave structure-based detection as a backup and for the original.
+             */
+            if (ExplicitlyVersion2(data) || ImplicitlyVersion2(data))
+                this.lookup = data.records;
+            else if (ImplicitlyVersion1(data))
+                this.lookup = data.records.map((i: { eicon: string }) => i.eicon);
+            else
+                this.lookup = [];
 
             this.asOfTimestamp = data?.asOfTimestamp || 0;
-            this.lookup = Object.fromEntries((data?.records || []).map((r: EIconRecord) => [r.eicon, r]));
 
-            const recordCount = Object.keys(this.lookup).length;
+            if (!this.lookup.length || !this.asOfTimestamp) {
+                log.warn('eicons.load.failure.disk', { timestamp: data.asOfTimestamp, data: this.lookup.length });
+                throw new Error('Data from disk is strange.');
+            }
 
-            log.info('eicons.loaded.local', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
+            log.verbose('eicons.loaded.local', { records: this.lookup.length, asOfTimestamp: this.asOfTimestamp });
 
-            await this.update();
+            await this.checkForUpdates();
 
-            log.info('eicons.loaded.update.remote', { records: recordCount, asOfTimestamp: this.asOfTimestamp });
+            log.verbose('eicons.loaded.update.remote', { records: this.lookup.length, asOfTimestamp: this.asOfTimestamp });
         }
         catch (err) {
             try {
                 await this.downloadAll();
             }
             catch (err2) {
-                log.error('eicons.load.failure', { err: err2 });
+                log.error('eicons.load.failure.download', { initial: err, explicit: err2 });
             }
         }
     }
 
-    protected getStoreFilename(): string {
+    private getStoreFilename(): string {
         const baseDir = remote.app.getPath('userData');
         const settingsDir = path.join(baseDir, 'data');
 
-        return path.join(settingsDir, 'eicons.json');
+        if (CURRENT_STORE_VERSION)
+            return path.join(settingsDir, `eicons-${CURRENT_STORE_VERSION}.json`);
+        else
+            return path.join(settingsDir, 'eicons.json');
     }
 
-    async downloadAll(): Promise<void> {
+    private async downloadAll(): Promise<void> {
         log.info('eicons.downloadAll');
 
-        const eicons = await this.updater.fetchAll();
+        const data = await this.updater.fetchAll();
 
-        this.lookup = Object.fromEntries(eicons.records.map(r => [r.eicon, r]));
+        this.lookup = data.eicons;
 
-        Object.values(eicons.records).forEach(changeRecord => this.addIcon(changeRecord));
-
-        this.asOfTimestamp = eicons.asOfTimestamp;
+        this.asOfTimestamp = data.asOfTimestamp;
 
         await this.save();
+
+        this.shuffle();
     }
 
-    async update(): Promise<void> {
-        log.info('eicons.update', { asOf: this.asOfTimestamp });
+    async checkForUpdates(force?: boolean): Promise<void> {
+        if (!this.asOfTimestamp || !this.lookup.length || force)
+            await this.downloadAll();
+        else
+            await this.update();
+    }
+
+    private async update(): Promise<void> {
+        log.verbose('eicons.update', { asOf: this.asOfTimestamp });
 
         const changes = await this.updater.fetchUpdates(this.asOfTimestamp);
 
-        const removals = changes.recordUpdates.filter(changeRecord => changeRecord.action === '-');
-        const additions = changes.recordUpdates.filter(changeRecord => changeRecord.action === '+');
+        const removals = changes.recordUpdates
+                .filter(changeRecord => changeRecord.action === '-')
+                .map(i => i.eicon);
 
-        removals.forEach(changeRecord => this.removeIcon(changeRecord));
-        additions.forEach(changeRecord => this.addIcon(changeRecord));
+        this.removeIcons(removals);
+
+        const additions = changes.recordUpdates
+                .filter(changeRecord => changeRecord.action === '+')
+                .map(i => i.eicon);
+
+        this.addIcons(additions);
 
         this.asOfTimestamp = changes.asOfTimestamp;
 
-        log.info('eicons.update.processed', { removals: removals.length, additions: additions.length, asOf: this.asOfTimestamp });
+        log.verbose('eicons.update.processed', { removals: removals.length, additions: additions.length, asOf: this.asOfTimestamp });
 
-        if (changes.recordUpdates.length > 0)
-            await this.save();
+        await this.save();
+
+        this.shuffle();
     }
 
-    protected addIcon(record: EIconRecord): void {
-        if (record.eicon in this.lookup) {
-            this.lookup[record.eicon].timestamp = record.timestamp;
-            return;
-        }
-
-        const r = {
-            eicon: record.eicon,
-            timestamp: record.timestamp
-        };
-
-        this.lookup[record.eicon] = r;
+    private addIcons(additions: string[]): void {
+        this.lookup.push(...additions.filter(e => !this.lookup.includes(e)));
     }
 
-  protected removeIcon(record: EIconRecord): void {
-        if (!(record.eicon in this.lookup)) {
-            return;
-        }
-
-        delete this.lookup[record.eicon];
+    private removeIcons(removals: string[]): void {
+        this.lookup = this.lookup.filter(e => !removals.includes(e));
     }
 
-    search(searchString: string): EIconRecord[] {
-        const lcSearch = searchString.trim().toLowerCase();
-        const found = Object.values(this.lookup).filter(r => r.eicon.indexOf(lcSearch) >= 0);
+    search(searchString: string): string[] {
+        const query = searchString.toLowerCase();
+        const found = this.lookup.filter(e => e.includes(query));
 
         return found.sort((a, b) => {
-            if (a.eicon.substring(0, lcSearch.length) === lcSearch
-             && b.eicon.substring(0, lcSearch.length) !== lcSearch)
+            if (a.startsWith(query) && !b.startsWith(query))
                 return -1;
 
-            if (b.eicon.substring(0, lcSearch.length) === lcSearch
-             && a.eicon.substring(0, lcSearch.length) !== lcSearch)
+            if (b.startsWith(query) && !a.startsWith(query))
                 return 1;
 
-            return a.eicon.localeCompare(b.eicon);
+            return a.localeCompare(b);
         });
-  }
+    }
 
-    random(count: number = 49): EIconRecord[] {
-        return Object.values(this.lookup)
-                     .sort(() => 0.5 - Math.random())
-                     .slice(0, count);
+    async shuffle(): Promise<void> {
+        await FisherYatesShuffle(this.lookup);
+    }
+
+    nextPage(amount: number = 0): string[] {
+        return Rotate(this.lookup, amount || EICON_PAGE_RESULTS_COUNT);
     }
 
     private static sharedStore: EIconStore | undefined;
@@ -154,7 +241,7 @@ export class EIconStore {
 
             await EIconStore.sharedStore.load();
 
-            setInterval(() => EIconStore.sharedStore!.update(), 60 * 60 * 1000);
+            setInterval(() => EIconStore.sharedStore!.checkForUpdates(), UPDATE_FREQUENCY);
         }
 
         return EIconStore.sharedStore;
