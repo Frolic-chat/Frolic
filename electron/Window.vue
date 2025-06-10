@@ -2,7 +2,7 @@
     <div style="display: flex;flex-direction:column;height:100%" :class="getThemeClass()" @auxclick.prevent>
         <div v-html="styling"></div>
         <div style="display:flex;align-items:stretch;border-bottom-width:1px" class="border-bottom" id="window-tabs">
-            <h4 style="padding:2px 0">🌹 Frolic!</h4>
+            <h4 style="padding:2px 0">💮 Frolic!</h4>
             <div class="btn" :class="'btn-' + (hasUpdate ? 'info' : 'light')" @click="openMenu" id="settings">
                 <i :class="hasUpdate ? 'far fa-sun' : 'fa fa-cog'"></i>
             </div>
