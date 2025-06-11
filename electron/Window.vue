@@ -177,8 +177,7 @@
             });
 
             electron.ipcRenderer.on('rising-upgrade-complete', () => {
-              // console.log('RISING COMPLETE RECV');
-              this.hasCompletedUpgrades = true;
+                this.hasCompletedUpgrades = true;
             });
             electron.ipcRenderer.on('allow-new-tabs', (_e: IpcRendererEvent, allow: boolean) => this.canOpenTab = allow);
             electron.ipcRenderer.on('open-tab', () => this.addTab());
@@ -213,7 +212,7 @@
                 const tab = this.tabs.find(tab => tab.user === characterName);
 
                 if (!tab) {
-                  return;
+                    return;
                 }
 
                 Vue.set(tab, 'avatarUrl', url);
