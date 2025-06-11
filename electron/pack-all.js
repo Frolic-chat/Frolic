@@ -263,8 +263,8 @@ require('electron-packager')(
         fs.renameSync(  path.join(appPath,   'Frolic'),   path.join(appPath, 'AppRun'));
         fs.copyFileSync(path.join(buildPath, 'icon.png'), path.join(appPath, 'icon.png'));
 
-        const libSource = path.join(buildPath, 'linux-libs', appArchLong);
-              libDir    = path.join(appPath,   'usr',        'lib'),
+        const libSource = path.join(buildPath, 'linux-libs', appArchLong),
+              libDir    = path.join(appPath,   'usr',        'lib');
 
         fs.mkdirSync(libDir, {recursive: true});
 

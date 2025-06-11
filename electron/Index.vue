@@ -274,19 +274,13 @@
         async startAndUpgradeCache(): Promise<void> {
             log.debug('init.chat.cache.start');
 
-            const spinner = setTimeout(
-                () => {
-                    this.shouldShowSpinner = true;
-                },
-                250
-            );
+            const spinner = setTimeout(() => { this.shouldShowSpinner = true }, 250);
 
             try {
                 await core.cache.start(this.settings, this.hasCompletedUpgrades);
             }
             catch (e) {
                 // This error is already handled deeper, but the handler doesn't capture it correctly.
-                // EventBus.$emit('error', { source: 'chat.cache.start', type: 'IndexedDB', message: e.msg || "IndexedDB" })
             };
 
             log.debug('init.chat.cache.done');
