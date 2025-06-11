@@ -111,7 +111,7 @@ const strings: {[key: string]: string | undefined} = {
     'chat.setStatus': 'Set status',
     'chat.setStatus.status': 'Status',
     'chat.setStatus.message': 'Status message (optional)',
-    'chat.status.history': 'Stasus message history',
+    'chat.status.history': 'Status message history',
     'chat.status.history.none': 'This character has no status message history.',
     'chat.menu': 'Menu',
     'chat.recentConversations': 'Recent Conversations',
