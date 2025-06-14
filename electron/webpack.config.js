@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
-const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@f-list/vue-ts/transform').default;
@@ -38,10 +38,23 @@ const mainConfig = {
     },
     plugins: [
         new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-main.json',
-            ignoreLintWarnings: true,
+            async: process.env.NODE_ENV === 'development', //default
+            // eslint: {
+            //     files: './**/*.{ts,tsx,vue,js,jsx}',
+            //     memoryLimit: 3072,
+            // },
+            typescript: {
+                configFile: './tsconfig-main.json',
+                diagnosticOptions: {
+                    syntactic: false,
+                    semantic: true,
+                    declaration: false,
+                    global: false,
+                },
+                enabled: true,
+                memoryLimit: 3072,
+                mode: 'readonly',
+            },
         })
     ],
     resolve: {
@@ -52,7 +65,8 @@ const mainConfig = {
         moduleIds: 'named',
         chunkIds: 'named',
     },
-  }, rendererConfig = {
+},
+rendererConfig = {
     entry: {
         chat: [path.join(__dirname, 'chat.ts'), path.join(__dirname, 'index.html')],
         window: [path.join(__dirname, 'window.ts'), path.join(__dirname, 'window.html'), path.join(__dirname, 'build', 'tray@2x.png')],
@@ -126,11 +140,27 @@ const mainConfig = {
     },
     plugins: [
         new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-renderer.json',
-            vue: true,
-            ignoreLintWarnings: true,
+            async: process.env.NODE_ENV === 'development', //default
+            // eslint: {
+            //     files: './**/*.{ts,tsx,vue,js,jsx}',
+            //     memoryLimit: 3072,
+            // },
+            typescript: {
+                configFile: './tsconfig-renderer.json',
+                context: __dirname,
+                diagnosticOptions: {
+                    syntactic: false,
+                    semantic: true,
+                    declaration: false,
+                    global: false,
+                },
+                enabled: true,
+                extensions: {
+                    vue: true,
+                },
+                memoryLimit: 3072,
+                mode: 'readonly',
+            },
         }),
         new VueLoaderPlugin(),
         new CopyPlugin(
@@ -166,7 +196,6 @@ const mainConfig = {
         chunkIds: 'named',
     }
 };
-
 
 const storeWorkerEndpointConfig = _.assign(
     _.cloneDeep(mainConfig),
@@ -206,12 +235,28 @@ const storeWorkerEndpointConfig = _.assign(
 
         plugins: [
             new ForkTsCheckerWebpackPlugin({
-                async: false,
-                tslint: path.join(__dirname, '../tslint.json'),
-                tsconfig: './tsconfig-renderer.json',
-                vue: true,
-                ignoreLintWarnings: true,
-            })
+                async: process.env.NODE_ENV === 'development', //default
+                // eslint: {
+                //     files: './**/*.{ts,tsx,vue,js,jsx}',
+                //     memoryLimit: 3072,
+                // },
+                typescript: {
+                    configFile: './tsconfig-renderer.json',
+                    context: __dirname,
+                    diagnosticOptions: {
+                        syntactic: false,
+                        semantic: true,
+                        declaration: false,
+                        global: false,
+                    },
+                    enabled: true,
+                    extensions: {
+                        vue: true,
+                    },
+                    memoryLimit: 3072,
+                    mode: 'readonly',
+                },
+            }),
         ]
     }
 );

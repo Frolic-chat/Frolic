@@ -54,6 +54,7 @@ require('electron-packager')(
         arch: ['x64', 'arm64'],
     }
 )
+///* eslint-disable-next-line @stylistic/indent */
 .then(async (appPaths) => {
     if (process.env.SKIP_INSTALLER)
         return;
