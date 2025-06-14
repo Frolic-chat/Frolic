@@ -36,12 +36,13 @@ function isCancel(value: Error | CanceledError<never>): boolean {
     return value instanceof CanceledError;
 }
 
-//tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isJSONError(error: any): error is AxiosError & { response: AxiosResponse } {
     return error instanceof AxiosError && error.response !== undefined && typeof error.response.data === 'object';
 }
 
-export function ajaxError(error: any, prefix: string, showFlashMessage: boolean = true): void { //tslint:disable-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function ajaxError(error: any, prefix: string, showFlashMessage: boolean = true): void {
     let message: string | undefined;
     if (error instanceof Error) {
         if (isCancel(error))

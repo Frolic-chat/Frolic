@@ -83,7 +83,7 @@ if (process.platform === 'win32') {
         log.debug('main.icon.win32.found', { randomicon: randomIcon, final: winIcon });
     }
     else {
-        // tslint:disable-next-line:no-require-imports
+        /* eslint-ignore @typescript-eslint/no-require-imports */
         winIcon = path.join(__dirname, <string>require('./build/icon.ico').default);
 
         log.debug('main.icon.unix.default', winIcon);
@@ -102,7 +102,7 @@ else {
         log.debug('main.icon.unix.found', { randomicon: randomIcon, final: pngIcon });
     }
     else {
-        // tslint:disable-next-line:no-require-imports
+        /* eslint-ignore @typescript-eslint/no-require-imports */
         pngIcon = path.join(__dirname, <string>require('./build/icon.png').default);
 
         log.debug('main.icon.unix.default', pngIcon);
@@ -394,7 +394,6 @@ function createWindow(): electron.BrowserWindow | undefined {
 }
 
 function showPatchNotes(): void {
-    //tslint:disable-next-line: no-floating-promises
     openURLExternally(FROLIC.ChangelogUrl);
 }
 
