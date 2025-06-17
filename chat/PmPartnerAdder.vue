@@ -3,7 +3,7 @@
         <div>
             <input type="text" :placeholder="l('general.name')"
                 required minlength="2" maxlength="40"
-                v-model="name" id="name" ref="name"
+                v-model="name" id="name" class="form-control" ref="name"
                 @keyup.enter="keyboard_submit"
             />
             <div v-if="error" class="error">{{error}}</div>
