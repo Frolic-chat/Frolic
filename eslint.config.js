@@ -13,7 +13,13 @@ export default [
             '**/node_modules/**',
             '**/dist/**',
             '**/electron/app/**',
-        ]
+            './webpack.js',
+            './electron/webpack.config.js',
+        ],
+    },
+    {
+        files: [ '**/*.js' ],
+        ...tseslint.configs.disableTypeChecked,
     },
     {
         plugins: {
@@ -32,6 +38,11 @@ export default [
     },
     {   // Modifications to default rules.
         rules: {
+            "@typescript-eslint/no-confusing-void-expression": [
+                "error", {
+                    "ignoreVoidReturningFunctions": true
+                }
+            ],
             "@typescript-eslint/restrict-template-expressions": [ "error", {
                 allow: [{ name: ['URL', 'URLSearchParams'], from: 'lib' }],
                 allowAny:       false,
@@ -55,35 +66,24 @@ export default [
             '@stylistic': stylistic,
         },
         rules: {
-            "@typescript-eslint/no-confusing-void-expression": [
-                "error", {
-                    "ignoreVoidReturningFunctions": true
-                }
-            ],
             '@stylistic/indent': ['error', 4],
             '@stylistic/quotes': ['warn', 'single'],
             '@stylistic/semi': ['error', 'always'],
             '@stylistic/brace-style': ['error', 'stroustrup'],
 
-            // 'arrow-spacing': [
-            //     'warn', {
-            //         before: true,
-            //         after: true
-            //     }
-            // ],
-            // 'comma-dangle': [
-            //     'error', {
-            //         arrays: 'only-multiline',
-            //         objects: 'only-multiline',
-            //     }
-            // ],
-            // 'comma-spacing': [
-            //     'warn', {
-            //         before: false,
-            //         after: true
-            //     }
-            // ],
-            //...tseslint.rules
+            'arrow-spacing': [
+                'warn', { before: true, after: true },
+            ],
+            'comma-dangle': [
+                'error', {
+                    arrays:  'only-multiline',
+                    objects: 'only-multiline',
+                    imports: 'only-multiline',
+                }
+            ],
+            'comma-spacing': [
+                'warn', { before: false, after: true },
+            ],
         },
     },
 ]
