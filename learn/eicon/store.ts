@@ -30,6 +30,26 @@ async function FisherYatesShuffle(arr: any[]): Promise<void> {
     }
 }
 
+function isArrayOfStrings(subj: any): subj is string[] {
+    return Array.isArray(subj) && subj.every(item => typeof item === 'string');
+}
+
+function isArrayOfObjects(subj: any): subj is object[] {
+    return Array.isArray(subj) && subj.every(item => typeof item === 'object');
+}
+
+function ExplicitlyVersion2(d: any): boolean {
+    return d?.version === 2 && ImplicitlyVersion2(d);
+}
+
+function ImplicitlyVersion2(d: any): boolean {
+    return isArrayOfStrings(d?.records);
+}
+
+function ImplicitlyVersion1(d: any): boolean {
+    return isArrayOfObjects(d?.records);
+}
+
 export class EIconStore {
     protected lookup: string[] = [];
 
@@ -93,10 +113,6 @@ export class EIconStore {
              * If you need to add a new version, check FIRST for version number,
              * but leave structure-based detection as a backup and for the original.
              */
-            function ExplicitlyVersion2(d: any): boolean { return d?.version === 2; }
-            function ImplicitlyVersion2(d: any): boolean { return Array.isArray(d?.records) && typeof d.records[0] === 'string'; }
-            function ImplicitlyVersion1(d: any): boolean { return Array.isArray(d?.records) && typeof d.records[0] === 'object'; }
-
             if (ExplicitlyVersion2(data) || ImplicitlyVersion2(data))
                 this.lookup = data.records;
             else if (ImplicitlyVersion1(data))
