@@ -5,14 +5,11 @@ import core from '../chat/core';
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('note-checker');
 
-/* tslint:disable:no-unsafe-any */
-
 export interface NoteCheckerCount {
   unreadNotes: number;
   unreadMessages: number;
   onlineUsers: number;
 }
-
 
 export class NoteChecker implements SiteSessionInterface {
   private static readonly CHECK_FREQUENCY = 15 * 60 * 1000;
@@ -20,11 +17,9 @@ export class NoteChecker implements SiteSessionInterface {
   private latestCount: NoteCheckerCount = { unreadNotes: 0, unreadMessages: 0, onlineUsers: 0 };
   private timer?: any;
 
-
   constructor(private session: SiteSession) {
 
   }
-
 
   async start(): Promise<void> {
     try {
@@ -47,7 +42,6 @@ export class NoteChecker implements SiteSessionInterface {
     }
   }
 
-
   async stop(): Promise<void> {
     if (this.timer) {
       clearInterval(this.timer);
@@ -57,14 +51,13 @@ export class NoteChecker implements SiteSessionInterface {
     this.latestCount = { unreadNotes: 0, unreadMessages: 0, onlineUsers: 0 };
   }
 
-
   private async check(): Promise<NoteCheckerCount> {
     log.debug('notechecker.check');
 
     if (!core.state.settings.risingShowUnreadOfflineCount)
       return this.latestCount;
 
-    const res = await this.session.get('/', true);
+    const res = await this.session.get('', true);
     const messagesMatch: RegExpMatchArray | null = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);
     const notesMatch: RegExpMatchArray | null    = res.body.match(/NavigationNotecount.*?([0-9]+?) Notes/);
     const statsMatch: RegExpMatchArray | null    = res.body.match(/Frontpage_Stats.*?([0-9]+?) characters/);
@@ -85,21 +78,17 @@ export class NoteChecker implements SiteSessionInterface {
     return summary;
   }
 
-
   incrementMessages(): void {
     this.latestCount.unreadMessages++;
     EventBus.$emit('note-counts-update', this.latestCount);
   }
-
 
   incrementNotes(): void {
     this.latestCount.unreadNotes++;
     EventBus.$emit('note-counts-update', this.latestCount);
   }
 
-
   getCounts(): NoteCheckerCount {
     return this.latestCount;
   }
-
 }
