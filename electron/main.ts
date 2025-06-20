@@ -307,6 +307,31 @@ function setUpWebContents(webContents: Electron.WebContents): void {
     });
 }
 
+const tabMap: { [key: string]: Electron.WebContents } = {};
+let tray: Electron.Tray;
+
+function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
+    const tabItems: Electron.MenuItemConstructorOptions[] = Object.entries(tabMap)
+        .map(([tabId, webContents]) => ({
+            label: tabId,
+            click: () => {
+                // Example: focus this tab, or any action you want
+                windows.forEach(winow => {
+                    winow.webContents.focus();
+                    winow.show();
+                    winow.webContents.send('show-tab', webContents.id);
+                });
+
+                webContents.focus();
+            }
+         }));
+
+    return [
+        { label: l('title'), enabled: false },
+        ...tabItems,
+        { label: l('action.quit'), click: () => Electron.app.quit() }
+    ];
+}
 
 const windowStatePath = path.join(settingsDir, 'window.json');
 
@@ -386,6 +411,15 @@ function createWindow(): Electron.BrowserWindow | undefined {
         window.show();
         if (lastState.maximized) window.maximize();
     });
+
+    if (!tray) {
+        tray = new Electron.Tray(icon.tray);
+        tray.setToolTip(l('title'));
+        tray.on('click', _e => tray.popUpContextMenu());
+
+        tray.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
+        log.debug('init.window.add.tray');
+    }
 
     return window;
 }
@@ -879,6 +913,20 @@ function onReady(): void {
         }
 
     });
+
+    Electron.ipcMain.on('connect', (e, character: string) => {
+        if (e.sender) {
+        //browserWindows.tabAddHandler(webContents, settings);
+        tabMap[character] = e.sender;
+        tray.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
+        }
+    }
+    );
+    Electron.ipcMain.on('disconnect', (_e, character: string) => {
+        delete tabMap[character];
+        tray.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
+    });
+
     Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);

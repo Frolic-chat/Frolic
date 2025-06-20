@@ -65,16 +65,6 @@
     function destroyTab(tab: Tab): void {
         if(tab.user !== undefined) electron.ipcRenderer.send('disconnect', tab.user);
 
-        console.log(
-            'window.tab.destroy.tray.2', { tab: tab, tray: tab.tray, gone: tab.tray.isDestroyed()  }
-        )
-
-        tab.tray.destroy();
-
-        console.log(
-            'window.tab.destroy.tray.3', { tab: tab, tray: tab.tray, gone: tab.tray.isDestroyed() }
-        )
-
         tab.view.webContents.stop();
         tab.view.webContents.stopPainting();
 
@@ -118,14 +108,12 @@
         user: string | undefined,
         view: Electron.BrowserView
         hasNew: boolean
-        tray: Electron.Tray
         avatarUrl?: string;
     }
 
     // console.log(require('./build/tray.png').default);
 
     //tslint:disable-next-line:no-require-imports no-unsafe-any
-    const trayIcon = path.join(__dirname, <string>require('./build/tray.png').default);
     //path.join(__dirname, <string>require('./build/tray.png').default);
 
     @Component
@@ -202,10 +190,8 @@
             electron.ipcRenderer.on('connect', (_e: IpcRendererEvent, id: number, name: string) => {
                 const tab = this.tabMap[id];
                 tab.user = name;
-                tab.tray.setToolTip(`${ l('title') } - ${tab.user}`);
                 const menu = this.createTrayMenu(tab);
                 menu.unshift({ label: tab.user, enabled: false }, { type: 'separator' });
-                tab.tray.setContextMenu(remote.Menu.buildFromTemplate(menu));
             });
             electron.ipcRenderer.on('update-avatar-url', (_e: IpcRendererEvent, characterName: string, url: string) => {
                 const tab = this.tabs.find(tab => tab.user === characterName);
@@ -228,10 +214,6 @@
                 tab.user = undefined;
 
                 Vue.set(tab, 'avatarUrl', undefined);
-
-                tab.tray.setToolTip(l('title'));
-
-                tab.tray.setContextMenu(remote.Menu.buildFromTemplate(this.createTrayMenu(tab)));
             });
             electron.ipcRenderer.on('has-new', (_e: IpcRendererEvent, id: number, hasNew: boolean) => {
                 const tab = this.tabMap[id];
@@ -396,11 +378,6 @@
             log.debug('init.window.tab.add.start');
 
             if(this.lockTab) return;
-            const tray = new remote.Tray(trayIcon);
-            tray.setToolTip(l('title'));
-            tray.on('click', (_e) => this.trayClicked(tab));
-
-            log.debug('init.window.tab.add.tray');
 
             const view = new remote.BrowserView(
               {
@@ -438,8 +415,7 @@
 
             log.debug('init.window.tab.add.notify');
 
-            const tab = {active: false, view, user: undefined, hasNew: false, tray};
-            tray.setContextMenu(remote.Menu.buildFromTemplate(this.createTrayMenu(tab)));
+            const tab = { active: false, view, user: undefined, hasNew: false };
             this.tabs.push(tab);
             this.tabMap[view.webContents.id] = tab;
 
@@ -480,9 +456,6 @@
         }
 
         remove(tab: Tab, shouldConfirm: boolean = true): void {
-            console.log(
-                'window.tab.destroy.tray.1', { tab: tab, tray: tab.tray, gone: tab.tray.isDestroyed() }
-            )
             if(this.lockTab || shouldConfirm && tab.user !== undefined && !confirm(l('chat.confirmLeave'))) return;
             this.tabs.splice(this.tabs.indexOf(tab), 1);
             electron.ipcRenderer.send('has-new', this.tabs.reduce((cur, t) => cur || t.hasNew, false));
