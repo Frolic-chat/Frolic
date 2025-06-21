@@ -109,5 +109,5 @@ function escapeRegExp(string: string): string {
 }
 
 export function replaceAll(str: string, find: string, replace: string): string {
-  return str.replace(new RegExp(escapeRegExp(find), "g"), replace);
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }

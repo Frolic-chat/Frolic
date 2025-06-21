@@ -2,11 +2,10 @@
 
 import * as _ from 'lodash';
 import { Character, CharacterInfotag, KinkChoice } from '../interfaces';
-import Logger from 'electron-log/renderer'; //tslint:disable-line:match-default-export-name
+import Logger from 'electron-log/renderer';
 const log = Logger.scope('matcher');
 const ulslog = Logger.scope('UserListSorter');
-// tslint:disable-next-line ban-ts-ignore
-// @ts-ignore
+
 import anyAscii from 'any-ascii';
 
 import { Store } from '../site/character_page/data_store';
