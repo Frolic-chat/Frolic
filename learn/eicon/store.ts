@@ -149,7 +149,8 @@ export class EIconStore {
         const baseDir = remote.app.getPath('userData');
         const settingsDir = path.join(baseDir, 'data');
 
-        if (CURRENT_STORE_VERSION)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (CURRENT_STORE_VERSION > 1)
             return path.join(settingsDir, `eicons-${CURRENT_STORE_VERSION}.json`);
         else
             return path.join(settingsDir, 'eicons.json');
