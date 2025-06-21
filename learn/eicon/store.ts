@@ -13,7 +13,9 @@ const EICON_PAGE_RESULTS_COUNT = 7 * 7;
 
 const CURRENT_STORE_VERSION = 2.0;
 
-// These funtions are so generic they could be moved to a utils file.
+const UPDATE_FREQUENCY = 60 * 60 * 1000;
+
+// Shuffle and rotate are so generic they could be moved to a utils file.
 
 function Rotate<T>(arr: T[], amount: number): T[] {
     const remove = arr.splice(0, amount);
@@ -239,7 +241,7 @@ export class EIconStore {
 
             await EIconStore.sharedStore.load();
 
-            setInterval(() => EIconStore.sharedStore!.checkForUpdates(), 60 * 60 * 1000);
+            setInterval(() => EIconStore.sharedStore!.checkForUpdates(), UPDATE_FREQUENCY);
         }
 
         return EIconStore.sharedStore;
