@@ -118,7 +118,7 @@ export class SiteSession {
                         // Implied
                 //     'content-type': 'application/x-www-form-urlencoded'
                 // }
-            },
+            }
         );
 
         if (res.statusCode !== 302)
@@ -156,7 +156,7 @@ export class SiteSession {
              ): Promise<request.RequestPromise<Response>>;
     async get(  uri: string,
                 mustBeLoggedIn?: boolean,
-                config?: Partial<request.Options>,
+                config?: Partial<request.Options>
              ): Promise<request.RequestPromise<Response>>;
     async get(  uri: string,
                 loggedInOrConfig: boolean | Partial<request.Options> = false,
@@ -189,11 +189,11 @@ export class SiteSession {
               ): Promise<request.RequestPromise<Response>>;
     async post( uri: string,
                 mustBeLoggedIn: boolean,
-                config?: Partial<request.Options>,
+                config?: Partial<request.Options>
               ): Promise<request.RequestPromise<Response>>;
     async post( uri: string,
                 loggedInOrConfig: boolean | Partial<request.Options> = false,
-                config: Partial<request.Options> = {},
+                config: Partial<request.Options> = {}
               ): Promise<request.RequestPromise<Response>> {
         let mustBeLoggedIn: boolean = true;
         let conf: Partial<request.Options>;
