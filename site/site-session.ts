@@ -29,7 +29,7 @@ export class SiteSession {
     private password = '';
     private csrf = '';
 
-    private request: request.RequestPromiseAPI = request.defaults({ jar: request.jar() });
+    private request = request.defaults({ jar: request.jar() });
 
 
     setCredentials(account: string, password: string): void {
@@ -82,6 +82,9 @@ export class SiteSession {
 
         if (res.statusCode !== 200)
             throw new Error(`SiteSession.init: Invalid status code: ${res.statusCode}`);
+
+        if (typeof res.body !== 'string')
+            throw new Error(`SiteSession.init: body is type ${typeof res.body}`);
 
         const input = res.body.match(/<input.*?csrf_token.*?>/);
 
