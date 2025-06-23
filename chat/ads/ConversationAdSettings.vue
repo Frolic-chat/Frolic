@@ -63,7 +63,7 @@
         l = l;
         setting = Conversation.Setting;
         ads!: string[];
-        randomOrder! = false;
+        randomOrder = false;
         core = core;
 
         load(): void {
@@ -188,4 +188,3 @@
     margin-bottom: 2rem;
   }
 </style>
-

@@ -58,10 +58,8 @@
         <div class="conversation" v-if="conversation && conversation.length > 0">
           <h4>{{ l('characterPreview.messages') }}</h4>
 
-          <template v-for="message in conversation">
-              <message-view :message="message" :key="message.id">
-              </message-view>
-          </template>
+          <message-view v-for="message in conversation" :message="message" :key="message.id">
+          </message-view>
         </div>
 
         <div class="latest-ad-message" v-if="latestAd && (latestAd.message !== statusMessage)">

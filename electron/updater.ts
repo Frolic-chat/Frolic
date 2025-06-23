@@ -11,9 +11,7 @@ type ReleaseInfo = {
 
 export default async function checkForGitRelease(semVer: string, url: string, beta: boolean): Promise<boolean> {
     try {
-        let releases: ReleaseInfo[] = (
-            await Axios.get<ReleaseInfo[]>(`${url}`)
-        ).data;
+        const releases = (await Axios.get<ReleaseInfo[]>(url)).data;
 
         //The releases we get from the GitHub API are in in descending order from their release date.
         for (const release of releases) {
@@ -34,7 +32,7 @@ export default async function checkForGitRelease(semVer: string, url: string, be
         return false;
     }
     catch (e) {
-        log.error(`Error checking for update: ${e}`);
+        log.error('Error checking for update: ', e);
         return false;
     }
 }

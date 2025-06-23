@@ -3,11 +3,7 @@
         <div class="conversation" v-if="conversation && conversation.length > 0">
           <div class="col-sm-10" style="margin-top:5px">
             <h4>Latest Messages</h4>
-
-            <template v-for="message in conversation">
-                <message-view :message="message" :key="message.id">
-                </message-view>
-            </template>
+            <message-view v-for="message in conversation" :key="message.id" :message="message"></message-view>
           </div>
         </div>
 

@@ -55,6 +55,8 @@ log.error('debug.electron-log', { fileName: Logger.transports.file.fileName, get
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
+import Child from 'child_process';
+
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
@@ -74,8 +76,6 @@ if (process.platform === 'win32') {
     const iconDir = path.join(__dirname, 'icons');
     const icons = fs.readdirSync(iconDir).filter(file => file.endsWith('.ico'));
 
-    //log.debug('main.icon.win32', { icondir: iconDir, icons: icons });
-
     if (icons.length > 0) {
         const randomIcon = icons[Math.floor(Math.random() * icons.length)];
         winIcon = path.join(iconDir, randomIcon);
@@ -92,8 +92,6 @@ if (process.platform === 'win32') {
 else {
     const iconDir = path.join(__dirname, 'icons');
     const icons = fs.readdirSync(iconDir).filter(file => file.endsWith('.png'));
-
-    //log.debug('main.icon.unix', { icondir: iconDir, icons: icons });
 
     if (icons.length > 0) {
         const randomIcon = icons[Math.floor(Math.random() * icons.length)];
@@ -126,13 +124,13 @@ fs.mkdirSync(settingsDir, {recursive: true});
 const settingsFile = path.join(settingsDir, 'settings');
 const settings = new GeneralSettings();
 
-if
-    (!fs.existsSync(settingsFile)) shouldImportSettings = true;
+if (!fs.existsSync(settingsFile))
+    shouldImportSettings = true;
 else
     try {
         Object.assign(settings, <GeneralSettings>JSON.parse(fs.readFileSync(settingsFile, 'utf8')));
     }
-    catch(e) {
+    catch (e) {
         log.error(`Error loading settings: ${e}`);
     }
 
@@ -149,7 +147,6 @@ if (!settings.hwAcceleration) {
 
 
 export function updateSpellCheckerLanguages(langs: string[]): void {
-    // console.log('Language support:', langs);
     electron.session.defaultSession.setSpellCheckerLanguages(langs);
 
     for (const w of windows) {
@@ -163,7 +160,7 @@ async function toggleDictionary(lang: string): Promise<void> {
     const activeLangs = getSafeLanguages(settings.spellcheckLang);
 
     let newLangs: string[] = [];
-    if (activeLangs.indexOf(lang) >= 0) {
+    if (activeLangs.includes(lang)) {
         newLangs = activeLangs.filter(al => al !== lang);
     }
     else {
@@ -174,8 +171,6 @@ async function toggleDictionary(lang: string): Promise<void> {
     settings.spellcheckLang = Array.from(new Set(newLangs));
 
     setGeneralSettings(settings);
-
-    // console.log('NEW LANG', newLangs);
 
     updateSpellCheckerLanguages(newLangs);
 }
@@ -196,14 +191,13 @@ async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
     const selected = getSafeLanguages(settings.spellcheckLang);
     const langs = electron.session.defaultSession.availableSpellCheckerLanguages;
 
-    const sortedLangs = langs.map(lang => (
-        {
+    const sortedLangs = langs
+        .map(lang => ({
             lang, name: (lang in knownLanguageNames)
                 ? `${(knownLanguageNames as {[key: string]: string})[lang]} (${lang})`
                 : lang
-        }
-    ))
-    .sort((a, b) => a.name.localeCompare(b.name));
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
     for (const lang of sortedLangs) {
         menu.append(new electron.MenuItem(
@@ -229,7 +223,7 @@ function openURLExternally(url: string): void {
             fs.accessSync(settings.browserPath, fs.constants.X_OK);
             fileIsExecutable = true;
         }
-        catch (err) {
+        catch {
             log.error(`Selected browser is not executable by user. Path: "${settings.browserPath}"`);
         }
 
@@ -250,20 +244,16 @@ function openURLExternally(url: string): void {
             }
 
             // replace %s in arguments with URL and encapsulate in quotes to prevent issues with spaces and special characters in the path
-            let link = settings.browserArgs.replace('%s', '\"' + url + '\"');
+            const link = settings.browserArgs.replace('%s', '"' + url + '"');
 
-            const execFile = require('child_process').exec;
-
-            if (process.platform === "darwin") {
-                // NOTE: This is seemingly bugged on MacOS when setting Safari as the external browser while using a different default browser.
-                // In that case, this will open the URL in both the selected application AND the default browser.
-                // Other browsers work fine. (Tested with Chrome with Firefox as the default browser.)
-                // https://developer.apple.com/forums/thread/685385
-                execFile(`open -a "${settings.browserPath}" ${link}`);
-            }
-            else {
-                execFile(`"${settings.browserPath}" ${link}`);
-            }
+            // NOTE: This is seemingly bugged on MacOS when setting Safari as the external browser while using a different default browser.
+            // In that case, this will open the URL in both the selected application AND the default browser.
+            // Other browsers work fine. (Tested with Chrome with Firefox as the default browser.)
+            // https://developer.apple.com/forums/thread/685385
+            if (process.platform === "darwin")
+                Child.exec(`open -a "${settings.browserPath}" ${link}`);
+            else
+                Child.exec(`"${settings.browserPath}" ${link}`);
 
             return;
         }
@@ -282,8 +272,9 @@ function setUpWebContents(webContents: electron.WebContents): void {
             webContents.send('open-profile', decodeURIComponent(profileMatch[2]));
             return;
         }
-        else
+        else {
             openURLExternally(url);
+        }
 
     };
 
