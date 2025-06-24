@@ -1253,18 +1253,14 @@ export class Matcher {
     // }
 
     static getAllStandardKinks(c: Character): { [key: number]: KinkChoice } {
-        const kinks = _.pickBy(c.kinks, _.isString);
+        const kinks = Object.fromEntries(Object.entries(c.kinks)
+                .filter(([_, value]) => typeof value === 'string')
+        ) as { [key: number]: KinkChoice };
 
-        // Avoid using _.forEach on c.customs because lodash thinks it is an array
-        for (const custom of Object.values(c.customs)) {
-            if (custom) {
-                const children = (custom as any).children ?? {};
+        Object.values(c.customs)
+                .forEach(custom => custom?.children?.forEach(c => kinks[c] = custom.choice));
 
-                _.each(children, (child) => kinks[child] = custom.choice);
-            }
-        }
-
-        return kinks as any;
+        return kinks;
     }
 
     static findKinkById(c: Character, kinkId: number): KinkChoice | number | undefined {
@@ -1274,11 +1270,8 @@ export class Matcher {
 
         for (const custom of Object.values(c.customs)) {
             if (custom) {
-                const children = (custom as any).children ?? [];
-
-                if (children.includes(kinkId)) {
+                if (custom.children?.includes(kinkId))
                     return custom.choice;
-                }
             }
         }
 
@@ -1349,7 +1342,7 @@ export class Matcher {
         if (!species)
             return false;
 
-        return (mammalSpecies.indexOf(species) >= 0);
+        return mammalSpecies.includes(species);
     }
 
     static isAnthro(c: Character, species: Species | null = null): boolean {
@@ -1364,7 +1357,7 @@ export class Matcher {
         if (!species)
             return false;
 
-        return (nonAnthroSpecies.indexOf(species) < 0);
+        return !nonAnthroSpecies.includes(species);
     }
 
     static isHuman(c: Character, species: Species | null = null): boolean {
@@ -1630,8 +1623,8 @@ export class Matcher {
 
         const ageStr = rawAge.string.toLowerCase().replace(/[,.]/g, '').trim();
 
-        if ((ageStr.indexOf('shota') >= 0) || (ageStr.indexOf('loli') >= 0)
-            || (ageStr.indexOf('lolli') >= 0) || (ageStr.indexOf('pup') >= 0)) {
+        if ((ageStr.includes('shota')) || (ageStr.includes('loli'))
+            || (ageStr.includes('lolli')) || (ageStr.includes('pup'))) {
             return 10;
         }
 
@@ -1684,8 +1677,8 @@ export class Matcher {
             return { min: Math.min(v1, v2), max: Math.max(v1, v2) };
         }
 
-        if ((ageStr.indexOf('shota') >= 0) || (ageStr.indexOf('loli') >= 0)
-            || (ageStr.indexOf('lolli') >= 0) || (ageStr.indexOf('pup') >= 0)) {
+        if ((ageStr.includes('shota')) || (ageStr.includes('loli'))
+            || (ageStr.includes('lolli')) || (ageStr.includes('pup'))) {
             return { min: 10, max: 10 };
         }
 
@@ -1756,8 +1749,8 @@ export class Matcher {
     }
 }
 
-EventBus.$on('core-connected',       Matcher.importSettings);
-EventBus.$on('configuration-update', Matcher.importSettings);
+EventBus.$on('core-connected',       (s: Settings) => Matcher.importSettings(s));
+EventBus.$on('configuration-update', (s: Settings) => Matcher.importSettings(s));
 
 log.debug('init.matcher');
 

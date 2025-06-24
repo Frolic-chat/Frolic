@@ -95,6 +95,7 @@ export interface CustomKink {
     name:        string
     choice:      KinkChoice
     description: string
+    children?:   number[]
 }
 
 export interface KinkGroup {
