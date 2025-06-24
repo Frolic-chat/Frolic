@@ -464,19 +464,19 @@ export class Matcher {
 
 
     static scoreOrientationByGender(yourGender: Gender | null, yourOrientation: Orientation | null, theirGender: Gender | null): Score {
-        function someoneDoesntHaveAGender(): boolean {
-            return yourGender  === null || yourGender  === Gender.None
-                || theirGender === null || theirGender === Gender.None
+        function doesntHaveGender(g: Gender | null): g is null {
+            return g === null
+                || g === Gender.None;
         }
 
-        function youLoveEveryoneEqually(): boolean {
-            return yourOrientation === null
-                || yourOrientation === Orientation.Pansexual
-                || yourOrientation === Orientation.Asexual
-                || yourOrientation === Orientation.Unsure;
+        function lovesEveryone(o: Orientation | null): boolean {
+            return o === null
+                || o === Orientation.Pansexual
+                || o === Orientation.Asexual
+                || o === Orientation.Unsure;
         }
 
-        if (someoneDoesntHaveAGender() || youLoveEveryoneEqually())
+        if (doesntHaveGender(yourGender) || doesntHaveGender(theirGender) || lovesEveryone(yourOrientation))
             return new Score(Scoring.NEUTRAL);
 
 
@@ -509,22 +509,22 @@ export class Matcher {
         else if (this.settings.experimentalOrientationMatching) {
             if (yourOrientation === Orientation.Straight) {
                 // *Very* few people use straight herm to mean attracted to males.
-                if (approximatelyFemale(yourGender!) && theirGender === Gender.Male)
+                if (approximatelyFemale(yourGender) && theirGender === Gender.Male)
                     return new Score(Scoring.MATCH, 'Loves <span>male</span> partners <small>🚧</small>');
 
-                if (approximatelyMale(yourGender!)   && theirGender === Gender.Female)
+                if (approximatelyMale(yourGender)   && theirGender === Gender.Female)
                     return new Score(Scoring.MATCH, 'Loves <span>female</span> partners <small>🚧</small>');
             }
 
             if (yourOrientation === Orientation.BiCurious) {
-                if (approximatelyFemale(yourGender!)) {
+                if (approximatelyFemale(yourGender)) {
                     if (theirGender === Gender.Female)
                         return new Score(Scoring.NEUTRAL);
                     if (theirGender === Gender.Male)
                         return new Score(Scoring.MATCH, 'Loves <span>male</span> partners <small>🚧</small>');
                 }
 
-                if (approximatelyMale(yourGender!)) {
+                if (approximatelyMale(yourGender)) {
                     if (theirGender === Gender.Male)
                         return new Score(Scoring.NEUTRAL);
                     if (theirGender === Gender.Female)
@@ -535,7 +535,7 @@ export class Matcher {
 
         // CIS
         // tslint:disable-next-line curly
-        if (Matcher.isCisGender(yourGender!)) {
+        if (Matcher.isCisGender(yourGender)) {
             if (yourGender === theirGender) {
                 // same sex CIS
                 if (yourOrientation === Orientation.Straight)
@@ -557,7 +557,7 @@ export class Matcher {
                 )
                     return new Score(Scoring.WEAK_MATCH, 'Likes <span>same sex</span> partners');
             }
-            else if (Matcher.isCisGender(theirGender!)) {
+            else if (Matcher.isCisGender(theirGender)) {
                 // straight CIS
                 if (yourOrientation === Orientation.Gay)
                     return new Score(Scoring.MISMATCH, 'No <span>opposite sex</span> partners');
