@@ -78,7 +78,7 @@ require('electron-packager')(
         const distFinal = path.join(distDir, appArch);
         console.log('DistFinal', distFinal);
 
-        fs.unlinkSync(distFinal, { recursive: true });
+        fs.rmSync(distFinal, { recursive: true });
         fs.mkdirSync(distFinal,  { recursive: true });
 
         const setupName = `Frolic-${pkg.version}-win32-${appArch}.exe`;
