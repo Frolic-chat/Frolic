@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "esnext",
     "module": "commonjs",
     "sourceMap": true,
     "allowJs": true,
@@ -13,7 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "lib": [ "dom", "es2023" ],
+    "lib": [ "dom", "esnext" ],
   },
-  "include": [ "./electron/main.ts", "./**/*.d.ts" ]
+  "include": [ "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts", "./electron/browser_option.ts", "./learn/store/worker/store.worker.endpoint.ts", "./**/*.d.ts" ]
 }
