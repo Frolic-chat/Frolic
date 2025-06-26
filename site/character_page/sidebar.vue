@@ -9,23 +9,22 @@
 
             <div v-if="authenticated" class="d-flex justify-content-between flex-wrap character-links-block">
                 <template v-if="character.is_self">
-                    <a :href="editUrl" class="edit-link"><i class="fa fa-fw fa-pencil-alt"></i>Edit</a>
-                    <a @click="showDelete" class="delete-link"><i class="fa fa-fw fa-trash"></i>Delete</a>
-                    <a @click="showDuplicate()" class="duplicate-link"><i class="fa fa-fw fa-copy"></i>Duplicate</a>
+                    <a :href="editUrl" class="edit-link"><i class="fa fa-fw fa-pencil-alt"></i>{{ l('profile.edit') }}</a>
+                    <a @click="showDelete" class="delete-link"><i class="fa fa-fw fa-trash"></i>{{ l('profile.delete') }}</a>
+                    <a @click="showDuplicate()" class="duplicate-link"><i class="fa fa-fw fa-copy"></i>{{ l('profile.duplicate') }}</a>
                 </template>
                 <template v-else>
                     <span v-if="character.self_staff || character.settings.block_bookmarks !== true">
                         <a @click.prevent="toggleBookmark()" href="#" class="btn"
                             :class="{bookmarked: character.bookmarked, unbookmarked: !character.bookmarked}">
-                            <i class="fa fa-fw" :class="{'fa-minus': character.bookmarked, 'fa-plus': !character.bookmarked}"></i>Bookmark
-                        </a>
+                            <i class="fa fa-fw" :class="{'fa-minus': character.bookmarked, 'fa-plus': !character.bookmarked}"></i>{{ l('user.' + (character.bookmarked ? 'unbookmark' : 'bookmark')) }}</a>
                         <span v-if="character.settings.block_bookmarks" class="prevents-bookmarks">!</span>
                     </span>
-                    <a href="#" @click.prevent="showFriends()" class="friend-link btn"><i class="fa fa-fw fa-user"></i>Friend</a>
+                    <a href="#" @click.prevent="showFriends()" class="friend-link btn"><i class="fa fa-fw fa-user"></i>{{ l('profile.addFriend') }}</a>
                     <a href="#" v-if="!oldApi" @click.prevent="showReport()" class="report-link btn">
-                        <i class="fa fa-fw fa-exclamation-triangle"></i>Report</a>
+                        <i class="fa fa-fw fa-exclamation-triangle"></i>{{ l('profile.report') }}</a>
                 </template>
-                <a href="#" @click.prevent="showMemo()" class="memo-link btn"><i class="far fa-sticky-note fa-fw"></i>Memo</a>
+                <a href="#" @click.prevent="showMemo()" class="memo-link btn"><i class="far fa-sticky-note fa-fw"></i>{{ l('chat.memo') }}</a>
             </div>
             <div v-if="character.badges && character.badges.length > 0" class="badges-block">
                 <div v-for="badge in character.badges" class="character-badge px-2 py-1" :class="badgeClass(badge)">
@@ -34,8 +33,8 @@
             </div>
 
             <a v-if="authenticated && !character.is_self" :href="noteUrl" class="character-page-note-link btn" style="padding:0 4px">
-                <i class="far fa-envelope fa-fw"></i>Send Note</a>
-            <div v-if="character.character.online_chat" @click="showInChat()" class="character-page-online-chat">Online In Chat</div>
+                <i class="far fa-envelope fa-fw"></i>{{ l('profile.sendNote') }}</a>
+            <div v-if="character.character.online_chat" @click="showInChat()" class="character-page-online-chat">{{ l('profile.online') }}</div>
 
             <div class="quick-info-block">
                 <!-- <infotag-item v-for="infotag in quickInfoItems" :infotag="infotag" :key="infotag.id" :characterMatch="characterMatch"></infotag-item> -->
@@ -49,26 +48,29 @@
 <!--            </div>-->
 
                 <div class="quick-info">
-                    <span class="quick-info-label">Created</span>
+                    <span class="quick-info-label">{{ l('profile.created') }}</span>
                     <span class="quick-info-value"><date :time="character.character.created_at"></date></span>
                 </div>
                 <div class="quick-info">
-                    <span class="quick-info-label">Last Updated </span>
+                    <span class="quick-info-label">{{ l('profile.updated') }} </span>
                     <span class="quick-info-value"><date :time="character.character.updated_at"></date></span>
                 </div>
                 <div class="quick-info" v-if="character.character.last_online_at">
-                    <span class="quick-info-label">Last Online</span>
+                    <span class="quick-info-label">{{ l('profile.lastOnline') }}</span>
                     <span class="quick-info-value"><date :time="character.character.last_online_at"></date></span>
                 </div>
                 <div class="quick-info">
-                    <span class="quick-info-label">Views</span>
+                    <span class="quick-info-label">{{ l('profile.views') }}</span>
                     <span class="quick-info-value">{{character.character.views}}</span>
                 </div>
                 <div class="quick-info" v-if="character.character.timezone != null">
-                    <span class="quick-info-label">Timezone</span>
-                    <span class="quick-info-value">
-                    UTC{{character.character.timezone > 0 ? '+' : ''}}{{character.character.timezone != 0 ? character.character.timezone : ''}}
-                </span>
+                    <span class="quick-info-label">{{ l('profile.timezone') }}</span>
+                    <span class="quick-info-value">{{
+                        l('profile.timeInUTC',
+                          character.character.timezone > 0 ? '+' : '',
+                          character.character.timezone != 0 ? character.character.timezone : ''
+                        )
+                    }}</span>
                 </div>
             </div>
 
@@ -108,6 +110,7 @@
     import MemoDialog from './memo_dialog.vue';
     import ReportDialog from './report_dialog.vue';
     import core from '../../chat/core';
+    import l from '../../chat/localize';
 
     interface ShowableVueDialog extends Vue {
         show(): void
@@ -143,6 +146,8 @@
         }
     })
     export default class Sidebar extends Vue {
+        l = l;
+
         @Prop({required: true})
         readonly character!: Character;
         @Prop
