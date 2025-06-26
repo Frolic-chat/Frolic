@@ -35,22 +35,14 @@ import * as path from 'path';
 import * as electron from 'electron';
 const app = electron.app; // Module to control application life.
 
+// `InitLogger` runs the electron-log init func, so has to run before any file actually uses electron-log.
+import InitLogger from './logger';
+InitLogger(app.getPath('logs'));
 
-//#region Logger
 import Logger from 'electron-log/main';
-Logger.initialize();
-
 const log = Logger.scope('main');
-import { LevelOption as LogLevelOption, levels as logLevels, PathVariables, LogMessage } from 'electron-log';
 
-Logger.transports.file.resolvePathFn = (_var: PathVariables, msg: LogMessage | undefined) => {
-    const file = msg?.level === 'warn' || msg?.level === 'error' ? 'error.log' : 'app.log';
-    return path.join(app.getPath('logs'), file);
-};
-
-log.error('debug.electron-log', { fileName: Logger.transports.file.fileName, getFile: Logger.transports.file.getFile().path });
-//#endregion
-
+import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log';
 
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
