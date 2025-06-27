@@ -59,46 +59,8 @@ import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
 import checkForGitRelease from './updater';
 
-
-//#region Icon
-let pngIcon: string,
-    winIcon: string;
-
-if (process.platform === 'win32') {
-    const iconDir = path.join(__dirname, 'icons');
-    const icons = fs.readdirSync(iconDir).filter(file => file.endsWith('.ico'));
-
-    if (icons.length > 0) {
-        const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-        winIcon = path.join(iconDir, randomIcon);
-
-        log.debug('main.icon.win32.found', { randomicon: randomIcon, final: winIcon });
-    }
-    else {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        winIcon = path.join(__dirname, <string>require('./build/icon.ico').default);
-
-        log.debug('main.icon.unix.default', winIcon);
-    }
-}
-else {
-    const iconDir = path.join(__dirname, 'icons');
-    const icons = fs.readdirSync(iconDir).filter(file => file.endsWith('.png'));
-
-    if (icons.length > 0) {
-        const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-        pngIcon = path.join(iconDir, randomIcon);
-
-        log.debug('main.icon.unix.found', { randomicon: randomIcon, final: pngIcon });
-    }
-    else {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        pngIcon = path.join(__dirname, <string>require('./build/icon.png').default);
-
-        log.debug('main.icon.unix.default', pngIcon);
-    }
-}
-//#endregion
+import InitIcon from './icon';
+const icon: string = InitIcon(process.platform);
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -295,7 +257,7 @@ function createWindow(): electron.BrowserWindow | undefined {
         ...lastState,
         center: lastState.x === undefined,
         show: false,
-        icon: process.platform === 'win32' ? winIcon : pngIcon,
+        icon: icon,
         webPreferences: {
             webviewTag: true,
             nodeIntegration: true,
@@ -390,7 +352,7 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
     const windowProperties: electron.BrowserWindowConstructorOptions = {
         center: true,
         show: false,
-        icon: process.platform === 'win32' ? winIcon : pngIcon,
+        icon: icon,
         frame: false,
         width: 650,
         height: desiredHeight,
