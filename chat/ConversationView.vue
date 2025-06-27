@@ -89,9 +89,6 @@
                     </dropdown>
 
                     <dropdown :keep-open="false" wrap-class="btn-group ads" link-style="" link-class="btn btn-secondary dropdown-toggle dropdown-toggle-split" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                        <button class="dropdown-item" type="button" @click="toggleAutoPostAds()">
-                            {{conversation.adManager.isActive() ? l('channel.ads.pause') : l('channel.ads.start')}} {{l('channel.ads.posting')}}
-                        </button>
                         <button class="dropdown-item" type="button" @click="showAdSettings()">
                             {{l('channel.ads.edit')}}
                         </button>
@@ -101,9 +98,8 @@
                         </button>
 
                         <template v-slot:split>
-                            <a class="btn btn-secondary" @click="toggleAutoPostAds()">
-                                <i :class="{fas: true, 'fa-pause': conversation.adManager.isActive(), 'fa-play': !conversation.adManager.isActive()}"></i>
-                                {{conversation.adManager.isActive() ? l('channel.ads.pause') : l('channel.ads.start')}} {{l('channel.mode.ads')}}
+                            <a class="btn btn-secondary" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                                {{l('channel.ads.incompatible')}}
                             </a>
                         </template>
                     </dropdown>
