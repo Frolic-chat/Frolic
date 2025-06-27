@@ -1,19 +1,13 @@
 <template>
-    <modal :action="`Ads for ${conversation.name}`" @submit="submit" ref="dialog" @open="load()" dialogClass="w-100"
-        :buttonText="l('conversationSettings.save')">
+    <modal :action="`Ads for ${conversation.name}`" :disabled="true" ref="dialog" @open="load()" dialogClass="w-100" :buttonText="l('channel.ads.save')">
 
         <div class="phased-out-warning">
-          <h4>Prepare to Move</h4>
+          <h4>Deprecated</h4>
 
-          <p>
-            Channel-specific ads are being phased out.
-
-            Use <button class="btn btn-outline-secondary" @click="openAdEditor()">Ad Editor</button>
-            and
-            <button class="btn btn-outline-secondary" @click="openPostAds()">Post Ads</button>
-            instead,
-            always available on the left sidebar.
-          </p>
+          <p>Channel-specific ads are out of service.
+             Use <button class="btn btn-outline-secondary" @click="openAdEditor()">Ad Editor</button>
+             and <button class="btn btn-outline-secondary" @click="openPostAds()">Post Ads</button>
+             instead, always available on the left sidebar.</p>
 
           <p>
             <button class="btn btn-outline-secondary" @click="copyAds()">Copy Channel Ads to Ad Editor</button>
