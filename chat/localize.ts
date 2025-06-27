@@ -319,6 +319,7 @@ Once this process has started, do not interrupt it or your logs will get corrupt
     'channel.mode.chat': 'Chat',
     'channel.mode.both': 'Both',
     'channel.mode.ads.countdown': 'Ads ({0}m{1}s)',
+    'channel.ads.save': 'Disabled',
     'channel.ads.start': 'Start',
     'channel.ads.pause': 'Pause',
     'channel.ads.posting': 'Posting Ads',
