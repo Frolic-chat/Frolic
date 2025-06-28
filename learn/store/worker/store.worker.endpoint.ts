@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { IndexedStore } from '../indexed';
 import { IndexedRequest, ProfileStoreCommand } from './types';
 
@@ -17,7 +15,7 @@ const reply = (req: IndexedRequest, result?: any, err?: string | Error): void =>
 
   if (err) {
     console.error('store.worker.endpoint.error', err);
-    res.msg = _.isString(err) ? err : err.message;
+    res.msg = typeof err === 'string' ? err : err.message;
   }
 
   // log.debug('store.worker.endpoint.reply', { req, res });
@@ -60,7 +58,7 @@ const generateMessageProcessor = () => {
       const result = await messageMapper[req.cmd](req.params);
       reply(req, result);
     } catch(err) {
-      reply(req, undefined, err);
+      reply(req, undefined, <Error | string>err);
     }
   };
 };

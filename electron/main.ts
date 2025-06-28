@@ -64,7 +64,7 @@ import { IncognitoArgFromBrowserPath } from '../constants/general';
 import checkForGitRelease from './updater';
 
 import InitIcon from './icon';
-const icon: string = InitIcon(process.platform);
+const icon: string = InitIcon(platform);
 
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -332,7 +332,7 @@ function createWindow(): electron.BrowserWindow | undefined {
         }
     };
 
-    if (process.platform === 'darwin') {
+    if (platform === 'darwin') {
         windowProperties.titleBarStyle = 'hiddenInset';
         // windowProperties.frame = true;
     }
@@ -662,7 +662,7 @@ function onReady(): void {
                     )
                 },
                 {
-                    visible: process.platform === 'win32',
+                    visible: platform === 'win32',
                     label: l('action.toggleHighContrast'),
                     type: 'checkbox',
                     checked: settings.risingDisableWindowsHighContrast,
@@ -689,7 +689,7 @@ function onReady(): void {
                 {type: 'separator'},
                 {role: 'minimize'},
                 {
-                    accelerator: process.platform === 'darwin' ? 'Cmd+Q' : undefined,
+                    accelerator: platform === 'darwin' ? 'Cmd+Q' : undefined,
                     label: l('action.quit'),
                     click(_m: electron.MenuItem, window: electron.BrowserWindow): void {
                         if (characters.length === 0)
@@ -788,7 +788,7 @@ function onReady(): void {
     );
 
 
-    //region SecureStore
+    //#region SecureStore
     electron.ipcMain.handle('setPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string, password: string) => {
         await SecureStore.setPassword(domain, account, password);
     });
@@ -800,6 +800,7 @@ function onReady(): void {
     electron.ipcMain.handle('getPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
         return await SecureStore.getPassword(domain, account);
     });
+    //#endregion
 
 
     electron.ipcMain.on('tab-added', (_event: Electron.IpcMainEvent, id: number) => {
@@ -823,7 +824,7 @@ function onReady(): void {
         settings.host = host;
         setGeneralSettings(settings);
     });
-    electron.ipcMain.on('connect', (e: Electron.IpcMainEvent & { returnValue: boolean, sender: electron.WebContents}, character: string) => { //hack
+    electron.ipcMain.on('connect', (e: Electron.IpcMainEvent, character: string) => { //hack
         // This is the "not logged in" check.
         if (characters.indexOf(character) === -1) {
             log.debug('ipcMain.connect.notLoggedIn');
@@ -856,23 +857,23 @@ function onReady(): void {
 
     const adCoordinator = new AdCoordinatorHost();
     electron.ipcMain.on('request-send-ad', (event: electron.IpcMainEvent, adId: string) => (adCoordinator.processAdRequest(event, adId)));
-    const emptyBadge = electron.nativeImage.createEmpty();
 
+    const emptyBadge = electron.nativeImage.createEmpty();
     const badge = electron.nativeImage.createFromPath(
-        //tslint:disable-next-line:no-require-imports no-unsafe-any
         path.join(__dirname, <string>require('./build/badge.png').default)
     );
 
     // Badge windows with alerts
-    electron.ipcMain.on('has-new', (e: Electron.IpcMainEvent & {sender: electron.WebContents}, hasNew: boolean) => {
-        if (process.platform === 'darwin')
+    function badgeWindow(e: Electron.IpcMainEvent, hasNew: boolean) {
+        if (platform === 'darwin')
             app.dock.setBadge(hasNew ? '!' : '');
 
         const window = electron.BrowserWindow.fromWebContents(e.sender) as electron.BrowserWindow | undefined;
 
         if (window !== undefined)
             window.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
-    });
+    }
+    electron.ipcMain.on('has-new', badgeWindow);
 
     electron.ipcMain.on('rising-upgrade-complete', () => {
         // console.log('RISING COMPLETE SHARE');
@@ -892,10 +893,10 @@ function onReady(): void {
         console.log('settings.browser.browse', JSON.stringify(settings));
 
         let filters;
-        if (process.platform === "win32") {
+        if (platform === "win32") {
             filters = [{ name: 'Executables', extensions: ['exe'] }];
         }
-        else if (process.platform === "darwin") {
+        else if (platform === "darwin") {
             filters = [{ name: 'Executables', extensions: ['app'] }];
         }
         else {
