@@ -87,7 +87,7 @@ export class IndexedStore implements PermanentIndexedStore {
         data.profileData = data.profileData as ComplexCharacter;
 
         // fix to clean out extra customs that somehow sometimes appear:
-        if (_.isArray(data.profileData.character.customs)) {
+        if (Array.isArray(data.profileData.character.customs)) {
             log.warn('character.customs.strange.indexed.getProfile', {name: data.profileData.character.name, data, customs: data.profileData.character.customs});
             data.profileData.character.customs = {};
             await this.storeProfile(data.profileData);
@@ -104,7 +104,7 @@ export class IndexedStore implements PermanentIndexedStore {
         const ca = new CharacterAnalysis(c.character);
 
         // fix to clean out extra customs that somehow sometimes appear:
-        if (_.isArray(c.character.customs) || !_.isPlainObject(c.character.customs)) {
+        if (Array.isArray(c.character.customs) || !_.isPlainObject(c.character.customs)) {
             // log.debug('character.customs.strange.indexed.prepareProfileData', {name: c.character.name, c, customs: c.character.customs});
             c.character.customs = {};
         }
