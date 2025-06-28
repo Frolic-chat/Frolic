@@ -43,7 +43,7 @@ const webContents = remote.getCurrentWebContents();
 require('@electron/remote/main').enable(webContents);
 
 import Axios from 'axios';
-import {exec, execSync} from 'child_process';
+import { exec } from 'child_process';
 import * as path from 'path';
 import * as qs from 'querystring';
 import {getKey} from '../chat/common';
@@ -96,24 +96,9 @@ if(process.env.NODE_ENV === 'production') {
         console.log(`%c${l('consoleWarning.body')}`, 'font-size: 16pt; color:red');
     });
 }
-let browser: string | undefined;
 
 function openIncognito(url: string): void {
-    if(browser === undefined)
-        try { //tslint:disable-next-line:max-line-length
-            browser = execSync(`FOR /F "skip=2 tokens=3" %A IN ('REG QUERY HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice /v ProgId') DO @(echo %A)`)
-                .toString().trim().toLowerCase();
-        } catch(e) {
-            console.error(e);
-        }
-    const commands = {
-        chrome: 'chrome.exe -incognito', firefox: 'firefox.exe -private-window', vivaldi: 'vivaldi.exe -incognito',
-        opera: 'opera.exe -private'
-    };
-    let start = 'iexplore.exe -private';
-    for(const key in commands)
-        if(browser!.indexOf(key) !== -1) start = commands[<keyof typeof commands>key];
-    exec(`start ${start} ${url}`);
+    electron.ipcRenderer.send('open-url-externally', url, true);
 }
 
 const wordPosSearch = new WordPosSearch();
@@ -163,18 +148,17 @@ webContents.on('context-menu', (_, props) => {
                 EventBus.$emit('imagepreview-toggle-stickyness', {url: props.linkURL});
             }
         });
-        if(process.platform === 'win32')
-            menuTemplate.push({
-                id: 'incognito',
-                label: l('action.incognito'),
-                click: () => openIncognito(props.linkURL)
-            });
+        menuTemplate.push({
+            id: 'incognito',
+            label: l('action.incognito'),
+            click: () => openIncognito(props.linkURL),
+        });
     } else if(hasText)
         menuTemplate.push({
             label: l('action.copyWithoutBBCode'),
             enabled: can('Copy'),
             accelerator: 'CmdOrCtrl+Shift+C',
-            click: () => electron.clipboard.writeText(props.selectionText)
+            click: () => electron.clipboard.writeText(props.selectionText),
         });
     if(props.misspelledWord !== '') {
         const corrections = props.dictionarySuggestions; //spellchecker.getCorrectionsForMisspelling(props.misspelledWord);

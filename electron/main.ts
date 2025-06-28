@@ -31,6 +31,8 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import process from 'node:process';
+const platform = process.platform;
 
 import * as electron from 'electron';
 const app = electron.app; // Module to control application life.
@@ -47,7 +49,8 @@ import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
-import Child from 'child_process';
+import { exec } from 'child_process';
+import { FindExeFileFromName } from '../helpers/utils';
 
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
@@ -57,6 +60,7 @@ import SecureStore from './secure-store';
 import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
+import { IncognitoArgFromBrowserPath } from '../constants/general';
 import checkForGitRelease from './updater';
 
 import InitIcon from './icon';
@@ -165,55 +169,115 @@ async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
     }
 }
 
-function openURLExternally(url: string): void {
-
-    // check if user set a path and whether it exists
-    const pathIsValid = (settings.browserPath !== '' && fs.existsSync(settings.browserPath));
-
-    if (pathIsValid) {
-        // also check if the user can execute whatever is located at the selected path
-        let fileIsExecutable = false;
-        try {
-            fs.accessSync(settings.browserPath, fs.constants.X_OK);
-            fileIsExecutable = true;
+/**
+ * Opens a link; optionally in incognito mode. Incognito is only available if
+ * a browser is set in the "Custom browser" settings.
+ *
+ * This function handles both standard links that pass through {@link openLinkExternally}
+ * and links from the "Open in Incognito mode" right-click menu option.
+ *
+ * Normally, we can fall back to {@link electron.shell.openExternal} when
+ * there's no custom browser. However, when incognito mode is requested, abort
+ * if we aren't able to honor the player's privacy so we don't add anything
+ * spicy to the player's browser history.
+ *
+ * @param url Url of the page to open; no internal validation is performed.
+ * @param incognito True to use incognito mode (and error if we can't).
+ */
+function openURLExternally(url: string, incognito: boolean = false): void {
+    if (!settings.browserPath) {
+        if (!incognito) {
+            // Zero config: Open in system default browser
+            electron.shell.openExternal(url);
+            return;
         }
-        catch {
-            log.error(`Selected browser is not executable by user. Path: "${settings.browserPath}"`);
-        }
-
-        if (fileIsExecutable) {
-            // regular expression that looks for an encoded % symbol followed by two hexadecimal characters
-            // using this expression, we can find parts of the URL that were encoded twice
-            const re = new RegExp('%25([0-9a-f]{2})', 'ig');
-
-            // encode the URL no matter what
-            url = encodeURI(url);
-
-            // eliminate double-encoding using expression above
-            url = url.replace(re, '%$1');
-
-            if (!settings.browserArgs.includes('%s')) {
-                // make-up for user removal of url
-                settings.browserArgs += ' %s';
-            }
-
-            // replace %s in arguments with URL and encapsulate in quotes to prevent issues with spaces and special characters in the path
-            const link = settings.browserArgs.replace('%s', '"' + url + '"');
-
-            // NOTE: This is seemingly bugged on MacOS when setting Safari as the external browser while using a different default browser.
-            // In that case, this will open the URL in both the selected application AND the default browser.
-            // Other browsers work fine. (Tested with Chrome with Firefox as the default browser.)
-            // https://developer.apple.com/forums/thread/685385
-            if (process.platform === "darwin")
-                Child.exec(`open -a "${settings.browserPath}" ${link}`);
-            else
-                Child.exec(`"${settings.browserPath}" ${link}`);
+        else {
+            // TODO: Robust error handler.
+            electron.dialog.showMessageBox({
+                title: 'Frolic - Browser Failure',
+                message: l('chat.noBrowser'),
+                type: 'warning',
+                buttons: [],
+            });
 
             return;
         }
     }
 
-    electron.shell.openExternal(url);
+    // Advanced parsing of user-provided browser.
+    // If it resolves, save it so we don't do this again.
+    try {
+        try {
+            fs.accessSync(settings.browserPath, fs.constants.X_OK);
+        }
+        catch {
+            const stdout = FindExeFileFromName(settings.browserPath);
+
+            log.info(`Unexpected custom browser, but found "${stdout}" - Attemping to use it.`);
+
+            fs.accessSync(stdout, fs.constants.X_OK);
+            settings.browserPath = stdout;
+            setGeneralSettings(settings);
+        }
+    }
+    catch {
+        // TODO: Robust error handler.
+        electron.dialog.showMessageBox({
+            title: 'Frolic - Browser Failure',
+            message: l('chat.brokenBrowser'),
+            type: 'warning',
+            buttons: [],
+        });
+
+        return;
+    }
+
+    if (incognito && !settings.browserIncognitoArg) {
+        // Check against fixed list of known incognito flags
+        const incognitoArg = IncognitoArgFromBrowserPath(settings.browserPath);
+
+        if (incognitoArg) {
+            settings.browserIncognitoArg = incognitoArg;
+            setGeneralSettings(settings);
+        }
+        else {
+            // TODO: Robust error handler.
+            electron.dialog.showMessageBox({
+                title: 'Frolic - Browser Failure',
+                message: l('chat.noBrowser'),
+                type: 'warning',
+                buttons: [],
+            });
+
+            return;
+        }
+    }
+
+    if (!settings.browserArgs) {
+        settings.browserArgs = '%s';
+        setGeneralSettings(settings);
+    }
+    else if (!settings.browserArgs.includes('%s')) {
+        settings.browserArgs += ' %s';
+        setGeneralSettings(settings);
+    }
+
+    // Ensure url is encoded, but not twice.
+    // `%25` is the encoded `%` symbol.
+    url = encodeURI(url);
+    url = url.replace(/%25([0-9a-f]{2})/ig, '%$1');
+
+    // Quote URL to prevent issues with spaces and special characters
+    const args = (incognito ? settings.browserIncognitoArg + ' ': '') + settings.browserArgs.replaceAll('%s', `"${url}"`);
+
+    log.silly(`Opening: ${args} with ${settings.browserPath}`);
+
+    // MacOS bug: If app browser is Safari and OS browser is not, both will open.
+    // https://developer.apple.com/forums/thread/685385
+    if (platform === "darwin")
+        exec(`open -a "${settings.browserPath}" ${args}`);
+    else
+        exec(`"${settings.browserPath}" ${args}`);
 }
 
 function setUpWebContents(webContents: electron.WebContents): void {
@@ -344,9 +408,9 @@ function showPatchNotes(): void {
 }
 
 function openBrowserSettings(): electron.BrowserWindow | undefined {
-    let desiredHeight = 520;
-    if(process.platform === 'darwin') {
-        desiredHeight = 750;
+    let desiredHeight = 664
+    if (platform === 'darwin') {
+        desiredHeight = 664;
     }
 
     const windowProperties: electron.BrowserWindowConstructorOptions = {
@@ -358,9 +422,7 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
         height: desiredHeight,
         minWidth: 650,
         minHeight: desiredHeight,
-        maxWidth: 650,
-        maxHeight: desiredHeight,
-        maximizable: false,
+        maximizable: true,
         webPreferences: {
             webviewTag: true,
             nodeIntegration: true,
@@ -610,7 +672,7 @@ function onReady(): void {
                     }
                 },
                 {
-                    label: l('settings.browserOption'),
+                    label: l('settings.browser'),
                     click: () => {
                         openBrowserSettings();
                     }
@@ -826,8 +888,8 @@ function onReady(): void {
     });
 
     electron.ipcMain.handle('browser-option-browse', async () => {
-        log.debug('settings.browserOption.browse');
-        console.log('settings.browserOption.browse', JSON.stringify(settings));
+        log.debug('settings.browser.browse');
+        console.log('settings.browser.browse', JSON.stringify(settings));
 
         let filters;
         if (process.platform === "win32") {
@@ -853,20 +915,25 @@ function onReady(): void {
         if (dir !== undefined)
             return dir[0];
 
-        // we keep the current path if the user cancels the dialog
-        return settings.browserPath;
+        return '';
     });
 
-    electron.ipcMain.on('browser-option-update', (_e: Electron.IpcMainEvent, _path: string, _args: string) => {
-        log.debug('Browser Path settings update:', _path, _args);
+    function updateBrowserOption(_e: Electron.IpcMainEvent,
+                                 path: string,
+                                 args: string,
+                                 incognito: string) {
+        log.debug('Browser Path settings update:', path, args, incognito);
 
-        settings.browserPath = _path;
-        settings.browserArgs = _args;
+        settings.browserPath = path;
+        settings.browserArgs = args;
+        settings.browserIncognitoArg = incognito;
         setGeneralSettings(settings);
-    });
+    }
 
-    electron.ipcMain.on('open-url-externally', (_e: Electron.IpcMainEvent, _url: string) => {
-        openURLExternally(_url);
+    electron.ipcMain.on('browser-option-update', updateBrowserOption);
+
+    electron.ipcMain.on('open-url-externally', (_e: Electron.IpcMainEvent, url: string, incognito: boolean = false) => {
+        openURLExternally(url, incognito);
     });
 
     createWindow();
