@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { EventBus } from '../../../chat/preview/event-bus';
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
 
@@ -53,7 +51,7 @@ export class WorkerClient {
         return;
       }
 
-      const waiter = _.find(this.waiters, (w) => (w.id === res.id));
+      const waiter = this.waiters.find(w => w.id === res.id);
 
       if (!waiter) {
         log.error('store.worker.client.msg.unknown', { res });
@@ -82,7 +80,7 @@ export class WorkerClient {
 
 
   private clearWaiter(id: string): void {
-    this.waiters = _.filter(this.waiters, (w) => (w.id !== id));
+    this.waiters = this.waiters.filter(w => w.id !== id);
 
     // log.silly('store.worker.waiter.clear', this.waiters.length);
   }
