@@ -8,8 +8,8 @@
         <i class="far fa-window-minimize btn btn-light" @click.stop="minimize()"></i>
         <i class="far btn btn-light" :class="'fa-window-' + (isMaximized ? 'restore' : 'maximize')" @click="maximize()"></i>
         <span class="btn btn-light" @click.stop="close()">
-                    <i class="fa fa-times fa-lg"></i>
-                </span>
+          <i class="fa fa-times fa-lg"></i>
+        </span>
       </div>
     </div>
     <div class="bg-light" style="display:flex; flex-direction: column; height:100%; justify-content: center; margin: 0;">
