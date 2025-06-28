@@ -31,4 +31,5 @@ export class GeneralSettings {
     risingDisableWindowsHighContrast: boolean =  false;
     browserPath: string = '';
     browserArgs: string = '%s';
+    browserIncognitoArg: string = '';
 }
