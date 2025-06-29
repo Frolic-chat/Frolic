@@ -45,7 +45,7 @@
     import * as fs from 'fs';
     import * as path from 'path';
     import * as url from 'url';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import l from '../chat/localize';
     import {GeneralSettings} from './common';
     import { getSafeLanguages, updateSupportedLanguages } from './language';
@@ -215,8 +215,9 @@
                     return;
                 }
 
-                Vue.set(tab, 'avatarUrl', url);
-                // tab.avatarUrl = url;
+                // Vue 2
+                // Vue.set(tab, 'avatarUrl', url);
+                tab.avatarUrl = url;
             });
             electron.ipcRenderer.on('disconnect', (_e: IpcRendererEvent, id: number) => {
                 const tab = this.tabMap[id];
@@ -228,7 +229,9 @@
 
                 tab.user = undefined;
 
-                Vue.set(tab, 'avatarUrl', undefined);
+                // Vue 2
+                // Vue.set(tab, 'avatarUrl', undefined);
+                tab.avatarUrl = undefined;
 
                 tab.tray.setToolTip(l('title'));
 

@@ -43,7 +43,7 @@
 
 <script lang="ts">
     import {Component} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import Tabs from '../components/tabs';
     import core from './core';
     import { Channel, Character, Conversation } from './interfaces';

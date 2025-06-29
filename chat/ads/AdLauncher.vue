@@ -127,16 +127,19 @@ export default class AdLauncherDialog extends CustomDialog {
   }
 
   getWantedTags(): string[] {
-    return _.map(_.filter(this.tags, (t) => t.value), (t) => t.title);
+    return this.tags.filter(t => t.value).map(t => t.title);
+    // return _.map(_.filter(this.tags, (t) => t.value), (t) => t.title);
   }
 
   getWantedChannels(): string[] {
-    return _.map(_.filter(this.channels, (t) => t.value), (t) => t.id);
+    return this.channels.filter(t => t.value).map(t => t.id);
+    // return _.map(_.filter(this.channels, (t) => t.value), (t) => t.id);
   }
 
   openAdEditor(): void {
     this.hide();
-    (<AdCenterDialog>this.$parent.$refs['adCenter'])!.show();
+    //(<AdCenterDialog>this.$parent.$refs['adCenter'])!.show();
+    this.$emit('show-ad-center');
   }
 
   selectAllChannels(e: any): void {
@@ -145,7 +148,7 @@ export default class AdLauncherDialog extends CustomDialog {
     e.preventDefault();
     e.stopPropagation();
 
-    _.each(this.channels, (c) => {
+    this.channels.forEach(c => {
       c.value = newValue
     });
   }

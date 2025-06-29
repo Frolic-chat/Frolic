@@ -51,7 +51,6 @@
     import {Editor} from '../bbcode';
     import core from '../core';
     import { Dialog } from '../../helpers/dialog';
-    import AdCenterDialog from './AdCenter.vue';
     import _ from 'lodash';
 
     @Component({
@@ -116,12 +115,14 @@
 
         openAdEditor() {
           this.hide();
-          (<AdCenterDialog>this.$parent.$parent.$refs['adCenter']).show();
+          //(<AdCenterDialog>this.$parent.$parent.$refs['adCenter']).show();
+          this.$emit('show-ad-center');
         }
 
         openPostAds() {
           this.hide();
-          (<AdCenterDialog>this.$parent.$parent.$refs['adLauncher']).show();
+          //(<AdCenterDialog>this.$parent.$parent.$refs['adLauncher']).show();
+          this.$emit('show-ad-launcher');
         }
 
         async copyAds(): Promise<void> {

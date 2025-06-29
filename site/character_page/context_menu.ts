@@ -1,5 +1,5 @@
 import {Component} from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 
 @Component
 export default abstract class ContextMenu extends Vue {

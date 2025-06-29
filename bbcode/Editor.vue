@@ -53,7 +53,7 @@
 <script lang="ts">
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
     import _ from 'lodash';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import { mixin as clickaway } from 'vue-clickaway';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
@@ -63,6 +63,21 @@
     import {default as IconView} from './IconView.vue';
     import {default as EIconSelector} from './EIconSelector.vue';
     import Modal from '../components/Modal.vue';
+
+    class OnceHandler {
+        private callback?: (...args: any[]) => void;
+
+        register(cb: typeof this.callback): void {
+            this.callback = cb;
+        };
+
+        emit(...args: any[]): void {
+            if (this.callback) {
+                this.callback(...args);
+                delete this.callback;
+            }
+        }
+    }
 
     @Component({
       components: {
@@ -164,7 +179,7 @@
 
         //tslint:enable
 
-        @Hook('destroyed')
+        @Hook('unmounted')
         destroyed(): void {
             // console.log('EDITOR', 'destroyed');
             window.removeEventListener('resize', this.resizeListener);
@@ -310,6 +325,10 @@
         }
 
         applyButtonEffect(button: EditorButton, withArgument?: string, withInject?: string): void {
+            const onceHandler = (startText: string, endText: string) => {
+              this.applyText(startText, endText);
+            }
+
             // Allow emitted variations for custom buttons.
             this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
             // noinspection TypeScriptValidateTypes

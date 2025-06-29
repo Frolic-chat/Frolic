@@ -58,6 +58,7 @@ import {GeneralSettings /*, nativeRequire*/ } from './common';
 import {Logs, SettingsStore} from './filesystem';
 import Notifications from './notifications';
 import * as SlimcatImporter from './importer';
+import { createApp } from 'vue';
 import Index from './Index.vue';
 
 import Logger from 'electron-log/renderer';
@@ -261,13 +262,18 @@ initCore(connection, settings, Logs, SettingsStore, Notifications);
 
 log.debug('init.chat.vue');
 
-//tslint:disable-next-line:no-unused-expression
-new Index({
-    el: '#app',
-    data: {
-        settings,
-        hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
-    }
+// Vue 2
+// new Index({
+//     el: '#app',
+//     data: {
+//         settings,
+//         hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
+//     }
+// });
+const app = createApp(Index, {
+    settings: settings,
+    hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
 });
+app.mount('#app');
 
 log.debug('init.chat.vue.done');

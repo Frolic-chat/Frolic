@@ -13,7 +13,7 @@
 
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {CharacterInfotag, Infotag} from '../../interfaces';
     import {formatContactLink, formatContactValue} from './contact_utils';
     import {methods} from './data_store';

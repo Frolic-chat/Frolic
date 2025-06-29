@@ -1,5 +1,5 @@
 import Raven from 'raven-js';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 
 /*tslint:disable:no-unsafe-any no-any*///hack
 function formatComponentName(vm: any): string {

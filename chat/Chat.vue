@@ -37,7 +37,7 @@
     const log = Logger.scope('Chat');
 
     import {Component, Hook, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import Modal from '../components/Modal.vue';
     import {InlineDisplayMode, SimpleCharacter} from '../interfaces';
     import {Keys} from '../keys';

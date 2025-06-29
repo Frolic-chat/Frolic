@@ -76,7 +76,7 @@
 
 <script lang="ts">
 import { Component, Hook, Prop } from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import core from '../core';
 import { methods } from '../../site/character_page/data_store';
 import {Character as ComplexCharacter} from '../../site/character_page/interfaces';
@@ -187,7 +187,7 @@ export default class CharacterPreview extends Vue {
   }
 
 
-  @Hook('beforeDestroy')
+  @Hook('beforeUnmount')
   beforeDestroy(): void {
       if (this.scoreWatcher) {
           EventBus.$off('character-score', this.scoreWatcher);

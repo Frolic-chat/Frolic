@@ -39,7 +39,7 @@
 <script lang="ts">
     import { Component, Hook, Prop } from '@f-list/vue-ts';
     import * as _ from 'lodash';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import * as Utils from '../utils';
     import { Matcher, MatchReport, MatchResult, Score } from '../../learn/matcher';
     import core from '../../chat/core';

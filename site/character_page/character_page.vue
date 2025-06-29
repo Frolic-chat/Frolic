@@ -76,7 +76,7 @@
     import * as _ from 'lodash';
 
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
 
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('character_page');
@@ -341,15 +341,23 @@
 
 
         memo(memo: {id: number, memo: string | null}): void {
-            Vue.set(this.character!, 'memo', memo);
+            // Vue 2
+            //Vue.set(this.character!, 'memo', memo);
+            if (this.character) {
+                this.character.memo = memo;
 
-            void core.cache.profileCache.register(this.character!);
+                void core.cache.profileCache.register(this.character!);
+            }
         }
 
         bookmarked(state: boolean): void {
-            Vue.set(this.character!, 'bookmarked', state);
+            // Vue 2
+            // Vue.set(this.character!, 'bookmarked', state);
+            if (this.character) {
+                this.character.bookmarked = state;
 
-            void core.cache.profileCache.register(this.character!);
+                void core.cache.profileCache.register(this.character);
+            }
         }
 
         protected async loadSelfCharacter(): Promise<void> {

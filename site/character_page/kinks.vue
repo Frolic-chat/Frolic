@@ -72,7 +72,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
     import {Component, Prop, Watch, Hook} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import core from '../../chat/core';
     import {Kink, KinkChoice, KinkGroup} from '../../interfaces';
     import * as Utils from '../utils';

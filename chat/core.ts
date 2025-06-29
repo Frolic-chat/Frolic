@@ -1,4 +1,4 @@
-import Vue, {WatchHandler} from 'vue';
+import Vue, { WatchCallback, createApp, watch } from 'vue';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
@@ -44,29 +44,51 @@ class State implements StateInterface {
     }
 }
 
+// If there's no function to change data like there was in Vue 2, then these shouldn't be readonly. Return them to readonly if we stop directly assigning the State into them.
 interface VueState {
-    readonly channels: Channel.State
-    readonly characters: Character.State
-    readonly conversations: Conversation.State
-    readonly state: StateInterface
+    channels: Channel.State
+    characters: Character.State
+    conversations: Conversation.State
+    state: StateInterface
 }
 
 const state = new State();
 
-const vue = <Vue & VueState>new Vue({
-    data: {
-        channels:      undefined,
-        characters:    undefined,
-        conversations: undefined,
-        state
+// `Partial` shouldn't be necessary here, but there's an error later on when trying to access `vueState` where most `Vue.App` values are absent.
+const vueState = <VueState & Partial<Vue.App>>createApp({
+    data() {
+        return {
+            channels:       undefined,
+            characters:     undefined,
+            conversations:  undefined,
+            state
+        }
     }
-});
+})
+
+// A good attempt if we just want reactivity. Try this if `createApp` fails.
+// const vue3reactiveStructure = reactive<VueState>({
+//     channels:       undefined,
+//     characters:     undefined,
+//     conversations:  undefined,
+//     state
+// });
+
+// Legacy vue 2.
+// const vue = <Vue & VueState>new Vue({
+//     data: {
+//         channels:      undefined,
+//         characters:    undefined,
+//         conversations: undefined,
+//         state
+//     }
+// });
 
 const data = {
     connection: <Connection | undefined>undefined,
     logs: <Logs | undefined>undefined,
     settingsStore: <Settings.Store | undefined>undefined,
-    state: vue.state,
+    state: vueState.state,
     bbCodeParser: new BBCodeParser(),
     conversations: <Conversation.State | undefined>undefined,
     channels: <Channel.State | undefined>undefined,
@@ -78,11 +100,13 @@ const data = {
     siteSession: <SiteSession | undefined>undefined,
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {
-        Vue.set(vue, module, subState);
+        // Vue 2
+        // Vue.set(vue, module, subState);
+        vueState[module] = subState;
         (<VueState[K]>data[module]) = subState;
     },
     watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void): void {
-        vue.$watch(getter, callback);
+        watch(getter, callback);
     },
     async reloadSettings(): Promise<void> {
         const s = await core.settingsStore.get('settings');
@@ -150,7 +174,7 @@ export interface Core {
     readonly adCenter: AdCenter;
     readonly siteSession: SiteSession;
 
-    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>): void
+    watch<T>(getter: (this: VueState) => T, callback: WatchCallback<T>): void
 }
 
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack

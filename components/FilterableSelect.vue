@@ -24,7 +24,7 @@
 
 <script lang="ts">
     import {Component, Prop, Watch} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import Dropdown from '../components/Dropdown.vue';
 
     @Component({

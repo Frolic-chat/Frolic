@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { h, render, VNode } from 'vue';
 import {BBCodeElement, CoreBBCodeParser, analyzeUrlTag} from '../bbcode/core';
 //tslint:disable-next-line:match-default-export-name
 import BaseEditor from '../bbcode/Editor.vue';
@@ -16,7 +16,8 @@ export class Editor extends BaseEditor {
 }
 
 export default class BBCodeParser extends CoreBBCodeParser {
-    cleanup: Vue[] = [];
+    cleanup: VNode[] = [];
+    trashcan: HTMLElement[] = [];
 
     constructor() {
         super();
@@ -27,8 +28,16 @@ export default class BBCodeParser extends CoreBBCodeParser {
             if(!uregex.test(content)) return;
             const el = parser.createElement('span');
             parent.appendChild(el);
-            const view = new UserView({el, propsData: {character: core.characters.get(content)}});
+            // Vue 2
+            //const view = new UserView({el, propsData: {character: core.characters.get(content)}});
+            const view = h(UserView, {
+                ref: 'userView',
+                props: { character: core.characters.get(content)},
+            });
+            render(view, el);
+
             this.cleanup.push(view);
+            this.trashcan.push(el);
             return el;
         }));
         this.addTag(new BBCodeTextTag('icon', (parser, parent, param, content) => {
@@ -42,9 +51,16 @@ export default class BBCodeParser extends CoreBBCodeParser {
             const el = parser.createElement('span');
             parent.appendChild(root);
             root.appendChild(el);
-            const view = new IconView({ el, propsData: { character: content }});
+            // Vue 2
+            //const view = new IconView({ el, propsData: { character: content }});
+            const view = h(IconView, {
+                ref: 'iconView',
+                props: { character: content },
+            });
+            render(view, el);
 
             this.cleanup.push(view);
+            this.trashcan.push(el);
             return root;
 
             /* const img = parser.createElement('img');
@@ -75,8 +91,16 @@ export default class BBCodeParser extends CoreBBCodeParser {
             const el = parser.createElement('span');
             parent.appendChild(root);
             root.appendChild(el);
-            const view = new ChannelView({el, propsData: {id: content, text: param}});
+            // Vue 2
+            //const view = new ChannelView({el, propsData: {id: content, text: param}});
+            const view = h(ChannelView, {
+                ref: 'channelView',
+                props: { id: content, text: param },
+            });
+            render(view, el);
+
             this.cleanup.push(view);
+            this.trashcan.push(el);
             return root;
         }));
         this.addTag(new BBCodeTextTag('channel', (parser, parent, _, content) => {
@@ -84,8 +108,16 @@ export default class BBCodeParser extends CoreBBCodeParser {
             const el = parser.createElement('span');
             parent.appendChild(root);
             root.appendChild(el);
-            const view = new ChannelView({el, propsData: {id: content, text: content}});
+            // Vue 2
+            //const view = new ChannelView({el, propsData: {id: content, text: content}});
+            const view = h(ChannelView, {
+                ref: 'channelView',
+                props: { id: content, text: content },
+            });
+            render(view, el);
+
             this.cleanup.push(view);
+            this.trashcan.push(el);
             return root;
         }));
 
@@ -104,9 +136,20 @@ export default class BBCodeParser extends CoreBBCodeParser {
                     return;
                 }
 
-                const view = new UrlView({el: root, propsData: {url: tagData.url, text: tagData.textContent, domain: tagData.domain}});
-                this.cleanup.push(view);
+                // Vue 2
+                // const view = new UrlView({el: root, propsData: {url: tagData.url, text: tagData.textContent, domain: tagData.domain}});
+                const view = h(UrlView, {
+                    ref: 'urlView',
+                    props: {
+                        url: tagData.url,
+                        text: tagData.textContent,
+                        domain: tagData.domain,
+                    },
+                });
+                render(view, root);
 
+                this.cleanup.push(view);
+                this.trashcan.push(root);
                 return root;
             }));
     }
@@ -114,10 +157,12 @@ export default class BBCodeParser extends CoreBBCodeParser {
     parseEverything(input: string): BBCodeElement {
         const elm = <BBCodeElement>super.parseEverything(input);
         if(this.cleanup.length > 0)
-            elm.cleanup = ((cleanup: Vue[]) => () => {
-                for(const component of cleanup) component.$destroy();
-            })(this.cleanup);
+            elm.cleanup = ((cleanup: HTMLElement[]) => () => {
+                for (const component of cleanup)
+                    render(null, component);
+            })(this.trashcan);
         this.cleanup = [];
+        this.trashcan = [];
         return elm;
     }
 }

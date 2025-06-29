@@ -11,7 +11,7 @@
 
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {Infotag, InfotagGroup} from '../../interfaces';
     import {Store} from './data_store';
     import InfotagView from './infotag.vue';

@@ -40,7 +40,7 @@
             (<Element>this.$refs['caption']).appendChild(new BBCodeParser().parseEverything(l('chat.report.description')));
         }
 
-        @Hook('beforeDestroy')
+        @Hook('beforeUnmount')
         beforeDestroy(): void {
             (<BBCodeElement>(<Element>this.$refs['caption']).firstChild).cleanup!();
         }

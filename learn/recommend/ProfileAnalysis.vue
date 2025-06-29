@@ -30,7 +30,7 @@
 </template>
 <script lang="ts">
 import { Component } from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import core from '../../chat/core';
 import { ProfileRecommendation, ProfileRecommendationAnalyzer } from './profile-recommendation';
 import { CharacterAnalysis } from '../matcher';

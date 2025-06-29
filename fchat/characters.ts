@@ -3,7 +3,6 @@ import { methods } from '../site/character_page/data_store';
 import {decodeHTML} from './common';
 import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
-import Vue from 'vue';
 import { EventBus } from '../chat/preview/event-bus';
 import l from '../chat/localize';
 
@@ -137,7 +136,9 @@ class State implements Interfaces.State {
     setOverride(name: string, type: keyof CharacterOverrides, value: any): void {
         const char = this.get(name);
 
-        Vue.set(char.overrides, type, value);
+        // Vue 2
+        // Vue.set(char.overrides, type, value);
+        char.overrides[type] = value;
     }
 
     async resolveOwnProfile(): Promise<void> {

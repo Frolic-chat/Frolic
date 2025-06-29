@@ -149,7 +149,7 @@
     import * as qs from 'querystring';
     import Raven from 'raven-js';
     // import {promisify} from 'util';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import Chat from '../chat/Chat.vue';
     import { ipcRenderer } from 'electron';
     import {getKey, Settings} from '../chat/common';
@@ -341,7 +341,10 @@
 
             log.debug('init.chat.keystore.get.done');
 
-            Vue.set(core.state, 'generalSettings', this.settings);
+            // Vue 2:
+            // Vue.set(core.state, 'generalSettings', this.settings);
+            core.state.generalSettings = this.settings;
+
 
             electron.ipcRenderer.on('settings', (_e: Electron.IpcRendererEvent, settings: GeneralSettings) => {
                 log.debug('settings.update.index');

@@ -1,5 +1,6 @@
 import { Component, Hook, Prop } from '@f-list/vue-ts';
-import {CreateElement, default as Vue, VNode, VNodeChildrenArrayContents} from 'vue';
+import Vue from '@f-list/vue-ts';
+import { h, VNode, VNodeChild } from 'vue';
 import {Channel} from '../fchat';
 import { Score } from '../learn/matcher';
 import {BBCodeView} from '../bbcode/view';
@@ -15,11 +16,11 @@ const userPostfix: {[key: number]: string | undefined} = {
     [Conversation.Message.Type.Action]: ''
 };
 @Component({
-    render(this: MessageView, createElement: CreateElement): VNode {
+    render(this: MessageView): VNode {
         const message = this.message;
 
-        const children: VNodeChildrenArrayContents =
-            [createElement('span', {staticClass: 'message-time'}, `${formatTime(message.time)}`)];
+        const children: VNodeChild[] =
+            [h('span', {staticClass: 'message-time'}, `${formatTime(message.time)}`)];
 
         const separators = core.connection.isOpen ? core.state.settings.messageSeparators : false;
 
@@ -41,9 +42,9 @@ const userPostfix: {[key: number]: string | undefined} = {
         if  (message.type !== Conversation.Message.Type.Event) {
             children.push(
                 message.type === Conversation.Message.Type.Action
-                    ? createElement('i', { class: 'message-pre fas fa-star-of-life' })
+                    ? h('i', { class: 'message-pre fas fa-star-of-life' })
                     : '',
-                createElement(UserView, {
+                h(UserView, {
                     props: {
                         avatar: tryRisingPortrait(),
                         character: message.sender,
@@ -51,7 +52,7 @@ const userPostfix: {[key: number]: string | undefined} = {
                     }
                 }),
                 userPostfix[message.type] !== undefined
-                    ? createElement('span', { class: 'message-post' }, userPostfix[message.type])
+                    ? h('span', { class: 'message-post' }, userPostfix[message.type])
                     : ' '
             );
 
@@ -61,7 +62,7 @@ const userPostfix: {[key: number]: string | undefined} = {
         const isAd = message.type === Conversation.Message.Type.Ad && !this.logs;
 
         children.push(
-            createElement(
+            h(
                 BBCodeView(core.bbCodeParser),
                 { props: {
                     unsafeText: message.text,
@@ -86,7 +87,7 @@ const userPostfix: {[key: number]: string | undefined} = {
             )
         );
 
-        const node = createElement('div', {attrs: { class: classes }}, children);
+        const node = h('div', {attrs: { class: classes }}, children);
         node.key = message.id;
 
         return node;
@@ -110,7 +111,7 @@ export default class MessageView extends Vue {
         : null;
 
 
-    @Hook('beforeDestroy')
+    @Hook('beforeUnmount')
     onBeforeDestroy(): void {
         if (this.scoreWatcher) {
             this.scoreWatcher(); // stop watching

@@ -4,8 +4,8 @@
             <img :src="getAvatarUrl()" class="character-avatar" style="width: 100%; height: auto;">
 
             <div v-if="character.character.title" class="character-title">{{ character.character.title }}</div>
-            <character-action-menu :character="character" @rename="showRename()" @delete="showDelete()"
-                @block="showBlock()"></character-action-menu>
+            <!-- <character-action-menu :character="character" @rename="showRename()" @delete="showDelete()"
+                @block="showBlock()"></character-action-menu> -->
 
             <div v-if="authenticated" class="d-flex justify-content-between flex-wrap character-links-block">
                 <template v-if="character.is_self">
@@ -93,12 +93,15 @@
 
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
-    import Vue, {Component as VueComponent, ComponentOptions, CreateElement, VNode} from 'vue';
+    import Vue from '@f-list/vue-ts';
+    // Component as VueComponent,
+    //import {ComponentOptions, h, VNode} from 'vue';
     import DateDisplay from '../../components/date_display.vue';
     import {Infotag} from '../../interfaces';
     import * as Utils from '../utils';
     import ContactMethodView from './contact_method.vue';
-    import {methods, registeredComponents, Store} from './data_store';
+    // registeredComponents,
+    import {methods, Store} from './data_store';
     import DeleteDialog from './delete_dialog.vue';
     import DuplicateDialog from './duplicate_dialog.vue';
     import FriendDialog from './friend_dialog.vue';
@@ -113,22 +116,23 @@
         show(): void
     }
 
-    function resolveComponent(name: string): () => Promise<VueComponent | ComponentOptions<Vue>> {
-        return async(): Promise<VueComponent | ComponentOptions<Vue>> => {
-            if(typeof registeredComponents[name] === 'undefined')
-                return {
-                    render(createElement: CreateElement): VNode {
-                        return createElement('span');
-                    },
-                    name
-                };
-            return registeredComponents[name]!;
-        };
-    }
+    // function resolveComponent(name: string): () => Promise<ReturnType<ReturnType<typeof Component>> | ComponentOptions<Vue>> {
+    //     return async(): Promise<ReturnType<ReturnType<typeof Component>> | ComponentOptions<Vue>> => {
+    //         if(typeof registeredComponents[name] === 'undefined')
+    //             return {
+    //                 render(): VNode {
+    //                     return h('span');
+    //                 },
+    //                 name
+    //             };
+    //         return registeredComponents[name]!;
+    //     };
+    // }
 
-    Vue.component('block-dialog', resolveComponent('block-dialog'));
-    Vue.component('rename-dialog', resolveComponent('rename-dialog'));
-    Vue.component('character-action-menu', resolveComponent('character-action-menu'));
+    // Likely this should be moved into @Component({})
+    // Vue.component('block-dialog', resolveComponent('block-dialog'));
+    // Vue.component('rename-dialog', resolveComponent('rename-dialog'));
+    // Vue.component('character-action-menu', resolveComponent('character-action-menu'));
 
     @Component({
         components: {

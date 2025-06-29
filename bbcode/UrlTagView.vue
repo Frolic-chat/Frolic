@@ -21,7 +21,7 @@
 
 <script lang="ts">
     import {Component, Hook, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {EventBus} from '../chat/preview/event-bus';
     // import core from './core';
 
@@ -38,7 +38,7 @@
 
         readonly type!: 'UrlTagView';
 
-        @Hook('beforeDestroy')
+        @Hook('beforeUnmount')
         beforeDestroy(): void {
             this.dismiss();
         }

@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import {Channel, Character} from '../fchat';
 import { Score } from '../learn/matcher';
 import core from './core';
@@ -136,16 +136,16 @@ export default class UserView extends Vue {
     @Prop({ required: true })
     readonly character!: Character;
 
-    @Prop()
+    @Prop
     readonly channel?: Channel;
 
-    @Prop()
+    @Prop
     readonly showStatus?: boolean = true;
 
     @Prop({default: true})
     readonly bookmark?: boolean = true;
 
-    @Prop()
+    @Prop
     readonly match?: boolean = false;
 
     @Prop({default: true})
@@ -161,7 +161,7 @@ export default class UserView extends Vue {
     statusClass: string | null = null;
     matchClass: string | null = null;
     matchScore: number | string | null = null;
-    avatarUrl: string | null = null;
+    avatarUrl: string = '';
 
     // tslint:disable-next-line no-any
     scoreWatcher: ((event: any) => void) | null = null;
@@ -195,7 +195,7 @@ export default class UserView extends Vue {
         }
     }
 
-    @Hook('beforeDestroy')
+    @Hook('beforeUnmount')
     onBeforeDestroy(): void {
         if (this.scoreWatcher)
             EventBus.$off('character-score', this.scoreWatcher);

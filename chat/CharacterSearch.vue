@@ -316,7 +316,7 @@
         }
 
 
-        @Hook('beforeDestroy')
+        @Hook('beforeUnmount')
         beforeDestroy(): void {
             if (this.scoreWatcher) {
                 log.info('characterSearch.scoreWatcher.exists.beforeDestroy', "This should only fire on logout!!!");

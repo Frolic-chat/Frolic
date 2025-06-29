@@ -227,7 +227,7 @@
         </bbcode-editor>
         <command-help ref="helpDialog"></command-help>
         <settings ref="settingsDialog" :conversation="conversation"></settings>
-        <adSettings ref="adSettingsDialog" :conversation="conversation"></adSettings>
+        <adSettings ref="adSettingsDialog" :conversation="conversation" @show-ad-center="propogateShowAdCenter()" @show-ad-launcher="propogateShowAdLauncher()"></adSettings>
         <logs ref="logsDialog" :conversation="conversation"></logs>
         <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
         <ad-view ref="adViewer" v-if="isPrivate(conversation) && conversation.character" :character="conversation.character"></ad-view>
@@ -240,8 +240,8 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
+    import Vue from '@f-list/vue-ts';
     import {EditorButton, EditorSelection} from '../bbcode/editor';
     import {BBCodeView} from '../bbcode/view';
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
@@ -390,7 +390,7 @@
 
         protected memoUpdateHook: any;
 
-        @Hook('destroyed')
+        @Hook('unmounted')
         destroyed(): void {
             window.removeEventListener('resize', this.resizeHandler);
             window.removeEventListener('keydown', this.keydownHandler);
@@ -602,6 +602,14 @@
 
         showAdSettings(): void {
             (<ConversationAdSettings>this.$refs['adSettingsDialog']).show();
+        }
+
+        propogateShowAdCenter(): void {
+            this.$emit('show-ad-center');
+        }
+
+        propogateShowAdLauncher(): void {
+            this.$emit('show-ad-launcher');
         }
 
         showManage(): void {

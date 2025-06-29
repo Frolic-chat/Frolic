@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import {Component, Hook, Prop} from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import { EventBus } from '../chat/preview/event-bus';
 import * as Utils from '../site/utils';
 import { characterImage } from '../chat/common';
@@ -31,7 +31,7 @@ export default class IconView extends Vue {
     }
 
 
-    @Hook('beforeDestroy')
+    @Hook('beforeUnmount')
     beforeDestroy(): void {
         this.dismiss();
     }

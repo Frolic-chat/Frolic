@@ -71,7 +71,7 @@
 
 <script lang="ts">
 import { Component, Prop } from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
 import CharacterAdView from './character/CharacterAdView.vue';

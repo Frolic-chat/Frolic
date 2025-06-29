@@ -1,5 +1,5 @@
 import Axios from 'axios';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import Editor from '../bbcode/Editor.vue';
 import { BBCodeView } from '../bbcode/view';
 import {InlineDisplayMode} from '../interfaces';
@@ -260,12 +260,13 @@ async function kinksGet(id: number): Promise<CharacterKink[]> {
 export function init(settings: Settings, characters: SimpleCharacter[]): void {
     Utils.setDomains(parserSettings.siteDomain, parserSettings.staticDomain);
 
-    Vue.component('character-select', CharacterSelect);
-    Vue.component('character-link', CharacterLink);
-    Vue.component('date-display', DateDisplay);
-    Vue.component('simple-pager', SimplePager);
-    Vue.component('bbcode', BBCodeView(new StandardBBCodeParser()));
-    Vue.component('bbcode-editor', Editor);
+    // Vue 2
+    // Vue.component('character-select', CharacterSelect);
+    // Vue.component('character-link', CharacterLink);
+    // Vue.component('date-display', DateDisplay);
+    // Vue.component('simple-pager', SimplePager);
+    // Vue.component('bbcode', BBCodeView(new StandardBBCodeParser()));
+    // Vue.component('bbcode-editor', Editor);
     Utils.init(settings, characters);
     core.connection.onEvent('connecting', () => {
         Utils.settings.defaultCharacter = characters.find(x => x.name === core.connection.character)!.id;

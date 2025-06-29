@@ -27,7 +27,7 @@
 
 <script lang="ts">
     import {Component, Hook, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
 
@@ -107,7 +107,7 @@
             this.hide();
         }
 
-        @Hook('beforeDestroy')
+        @Hook('beforeUnmount')
         beforeDestroy(): void {
             if(this.isShown) this.hide();
         }

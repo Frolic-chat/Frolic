@@ -48,7 +48,7 @@
 
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import CharacterLink from '../../components/character_link.vue';
     import DateDisplay from '../../components/date_display.vue';
     import * as Utils from '../utils';
@@ -81,7 +81,9 @@
             try {
                 this.deleting = true;
                 await methods.guestbookPostDelete(this.character.character.id, this.post.id);
-                Vue.set(this.post, 'deleted', true);
+                // Vue 2
+                // Vue.set(this.post, 'deleted', true);
+                this.post.deleted = true;
                 this.$emit('reload');
             } catch(e) {
                 Utils.ajaxError(e, 'Unable to delete guestbook post.');

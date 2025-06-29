@@ -26,7 +26,7 @@
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
     import cloneDeep = require('lodash/cloneDeep'); //tslint:disable-line:no-require-imports
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
 
     type ParamDictionary = {[key: string]: number | undefined};
     interface RouteParams {

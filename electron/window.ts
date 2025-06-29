@@ -5,6 +5,7 @@ const log = Logger.scope('window');
 import { LevelOption as LogLevelOption } from 'electron-log';
 
 import {GeneralSettings} from './common';
+import { createApp } from 'vue';
 import Window from './Window.vue';
 
 log.info('init.window');
@@ -17,10 +18,27 @@ const logLevel: LogLevelOption = 'warn';
 
 log.info('init.window.vue');
 
-//tslint:disable-next-line:no-unused-expression
-export default new Window({
-    el: '#app',
-    data: {settings}
+// Vue 2
+// export default new Window({
+//     el: '#app',
+//     data: {settings}
+// });
+// const app = createApp(
+//     Window,
+//     { settings: settings },
+// );
+// app.mount('#app');
+const app = createApp({
+    components: {
+        Window,
+    },
+    data() {
+        return {
+            settings: settings,
+        };
+    },
+    template: '<Window :settings="settings" />',
 });
+app.mount('#app');
 
 log.debug('init.window.vue.done');

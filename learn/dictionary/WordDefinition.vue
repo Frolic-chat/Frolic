@@ -15,7 +15,7 @@
   </div>
 </template>
 <script lang="ts">
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import { Component, Hook, Prop } from '@f-list/vue-ts';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 

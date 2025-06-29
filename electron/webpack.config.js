@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
-const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const { VueLoaderPlugin } = require('vue-loader');
 const vueTransformer = require('@f-list/vue-ts/transform').default;
 const CopyPlugin = require('copy-webpack-plugin');
 
@@ -38,10 +38,19 @@ const mainConfig = {
     },
     plugins: [
         new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-main.json',
-            ignoreLintWarnings: true,
+            async: process.env.NODE_ENV === 'development', //default
+            typescript: {
+                configFile: './tsconfig-main.json',
+                diagnosticOptions: {
+                    syntactic: false,
+                    semantic: true,
+                    declaration: false,
+                    global: false,
+                },
+                enabled: true,
+                memoryLimit: 3072,
+                mode: 'readonly',
+            },
         })
     ],
     resolve: {
@@ -96,7 +105,7 @@ const mainConfig = {
                 test: /\.vue\.scss/,
                 // loader: ['vue-style-loader', {loader: 'css-loader', options: {esModule: false}},'sass-loader']
                 use: [
-                    'vue-style-loader',
+                    'style-loader',
                     {loader: 'css-loader', options: {esModule: false}},
                     {
                         loader: 'sass-loader',
@@ -113,7 +122,7 @@ const mainConfig = {
                 test: /\.vue\.css/,
                 // loader: ['vue-style-loader', {loader: 'css-loader', options: {esModule: false}}]
                 use: [
-                    'vue-style-loader',
+                    'style-loader',
                     {loader: 'css-loader', options: {esModule: false}}
                 ]
             },
@@ -126,11 +135,26 @@ const mainConfig = {
     },
     plugins: [
         new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-renderer.json',
-            vue: true,
-            ignoreLintWarnings: true,
+            async: process.env.NODE_ENV === 'development', //default
+            typescript: {
+                configFile: './tsconfig-renderer.json',
+                context: __dirname,
+                diagnosticOptions: {
+                    syntactic: false,
+                    semantic: true,
+                    declaration: false,
+                    global: false,
+                },
+                enabled: true,
+                extensions: {
+                    vue: {
+                        enabled: true,
+                        compiler: '@vue/compiler-sfc',
+                    }
+                },
+                memoryLimit: 3072,
+                mode: 'readonly',
+            },
         }),
         new VueLoaderPlugin(),
         new CopyPlugin(
@@ -206,11 +230,26 @@ const storeWorkerEndpointConfig = _.assign(
 
         plugins: [
             new ForkTsCheckerWebpackPlugin({
-                async: false,
-                tslint: path.join(__dirname, '../tslint.json'),
-                tsconfig: './tsconfig-renderer.json',
-                vue: true,
-                ignoreLintWarnings: true,
+                async: process.env.NODE_ENV === 'development', //default
+                typescript: {
+                    configFile: './tsconfig-renderer.json',
+                    context: __dirname,
+                    diagnosticOptions: {
+                        syntactic: false,
+                        semantic: true,
+                        declaration: false,
+                        global: false,
+                    },
+                    enabled: true,
+                    extensions: {
+                        vue: {
+                            enabled: true,
+                            compiler: '@vue/compiler-sfc',
+                        }
+                    },
+                    memoryLimit: 3072,
+                    mode: 'readonly',
+                },
             })
         ]
     }

@@ -146,13 +146,13 @@
                     <div class="name">{{conversation.name}}</div>
                 </a>
             </div>
-            <conversation :reportDialog="$refs['reportDialog']"></conversation>
+            <conversation :reportDialog="$refs['reportDialog']" @show-ad-center="showAdCenter()" @show-ad-launcher="showAdLauncher()"></conversation>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
         <status-switcher ref="statusDialog"></status-switcher>
         <character-search ref="searchDialog"></character-search>
-        <adLauncher ref="adLauncher"></adLauncher>
+        <adLauncher ref="adLauncher" @show-ad-center="showAdCenter()"></adLauncher>
         <adCenter ref="adCenter"></adCenter>
         <settings ref="settingsDialog"></settings>
         <report-dialog ref="reportDialog"></report-dialog>
@@ -163,8 +163,8 @@
         <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
         <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
 
-        <modal :buttons="false" ref="profileAnalysis" dialogClass="profile-analysis" >
-            <profile-analysis></profile-analysis>
+        <modal :buttons="false" ref="profileAnalysisModal" dialogClass="profile-analysis" >
+            <profile-analysis ref="profileAnalysis"></profile-analysis>
             <template slot="title">
                 {{ownCharacter.name}}
                 <a class="btn" @click="showProfileAnalyzer">
@@ -181,7 +181,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
     import Sortable from 'sortablejs';
 
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {Keys} from '../keys';
     import ChannelList from './ChannelList.vue';
     import CharacterSearch from './CharacterSearch.vue';
@@ -324,7 +324,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             void core.adCenter.load();
         }
 
-        @Hook('destroyed')
+        @Hook('unmounted')
         destroyed(): void {
             window.removeEventListener('keydown', this.keydownListener);
             window.removeEventListener('focus', this.focusListener);
@@ -462,8 +462,11 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
 
         showProfileAnalyzer(): void {
-          (this.$refs.profileAnalysis as any).show();
-          void (this.$refs.profileAnalysis as any).$children[0].analyze();
+          (this.$refs.profileAnalysisModal as any).show();
+
+          // Vue 2
+          // void (this.$refs.profileAnalysisModal as any).$children[0].analyze();
+          void (this.$refs.profileAnalysis as any).analyze();
         }
 
         addPmPartnerSwitch: boolean = false;

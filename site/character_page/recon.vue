@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { Component, Hook, Prop } from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {Character} from './interfaces';
     import { Conversation } from '../../chat/interfaces';
     import core from '../../chat/core';

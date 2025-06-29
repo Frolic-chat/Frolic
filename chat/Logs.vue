@@ -136,7 +136,7 @@
             window.addEventListener('resize', this.resizeListener);
         }
 
-        @Hook('beforeDestroy')
+        @Hook('beforeUnmount')
         beforeDestroy(): void {
             window.removeEventListener('resize', this.resizeListener);
         }

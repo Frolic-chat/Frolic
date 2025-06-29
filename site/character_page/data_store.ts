@@ -1,4 +1,5 @@
-import {Component} from 'vue';
+//import {Component} from 'vue';
+import { Component } from '@f-list/vue-ts';
 import {SharedStore, StoreMethods} from './interfaces';
 
 export let Store: SharedStore = {
@@ -6,9 +7,9 @@ export let Store: SharedStore = {
     authenticated: false
 };
 
-export const registeredComponents: {[key: string]: Component | undefined} = {};
+export const registeredComponents: {[key: string]: ReturnType<ReturnType<typeof Component>> | undefined} = {};
 
-export function registerComponent(name: string, component: Component): void {
+export function registerComponent(name: string, component: ReturnType<ReturnType<typeof Component>>): void {
     registeredComponents[name] = component;
 }
 

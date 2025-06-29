@@ -15,7 +15,7 @@
 <script lang="ts">
 import _ from 'lodash';
 import { Component, Hook } from '@f-list/vue-ts';
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import core from '../chat/core';
 import { EventBus } from '../chat/preview/event-bus';
 
@@ -59,7 +59,7 @@ mounted(): void {
 }
 
 
-@Hook('beforeDestroy')
+@Hook('beforeUnmount')
 destroying(): void {
     if (this.callback) EventBus.$off('note-counts-update', this.callback);
 }

@@ -24,7 +24,7 @@
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('character_page/images');
     import {Component, Prop} from '@f-list/vue-ts';
-    import Vue from 'vue';
+    import Vue from '@f-list/vue-ts';
     import {CharacterImage} from '../../interfaces';
     import * as Utils from '../utils';
     import {methods} from './data_store';

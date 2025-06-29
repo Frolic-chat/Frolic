@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License along with thi
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import Vue from '@f-list/vue-ts';
 import { Component, Hook } from '@f-list/vue-ts';
 
 import Logger from 'electron-log/renderer';
