@@ -71,7 +71,7 @@
 
 
         submit(e: Event): void {
-          (<Modal>this.$refs.dialog).submit(e);
+            this.dialog.submit(e);
         }
 
 
