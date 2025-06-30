@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along with thi
 </template>
 
 <script lang="ts">
-import { Component } from '@f-list/vue-ts';
+import { Component } from 'vue-facing-decorator';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
 import Tabs from '../components/tabs';

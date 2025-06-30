@@ -14,8 +14,7 @@
 </template>
 
 <script lang="ts">
-import Vue from '@f-list/vue-ts';
-import { Component } from '@f-list/vue-ts';
+import { Vue, Component } from 'vue-facing-decorator';
 import { ServerCommandKeys, ServerCommandMap } from './api';
 import debug from './connection';
 
