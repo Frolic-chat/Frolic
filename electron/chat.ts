@@ -241,6 +241,7 @@ electron.ipcRenderer.on('settings', (_: Electron.IpcRendererEvent, s: GeneralSet
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 let settings = <GeneralSettings>JSON.parse(params['settings']!);
+log.debug('chat.settings.params', { settings });
 
 // console.log('SETTINGS', settings);
 

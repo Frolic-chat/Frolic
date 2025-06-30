@@ -128,6 +128,7 @@ export function init(this: any,
     data.adCenter = new AdCenter();
     data.siteSession = new SiteSession();
 
+    log.debug('core.settings.params', { settings });
     (data.state as any).generalSettings = settings;
 
     data.register('characters', Characters(connection));
