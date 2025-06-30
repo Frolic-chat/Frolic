@@ -273,7 +273,7 @@ log.debug('init.chat.vue');
 // });
 const app = createApp(Index, {
     settings: settings,
-    hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
+    pendingUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
 });
 app.use(VueClickAway);
 app.mount('#app');

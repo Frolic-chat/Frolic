@@ -3,7 +3,7 @@
         <div v-html="styling"></div>
         <div v-if="!characters" style="display:flex; align-items:center; justify-content:center; height: 100%;">
             <div class="card bg-light" style="width: 400px;">
-                <div class="initializer" :class="{visible: !hasCompletedUpgrades, complete: hasCompletedUpgrades, shouldShow: shouldShowSpinner}">
+                <div class="initializer" :class="{visible: !completedUpgrades, complete: completedUpgrades, shouldShow: shouldShowSpinner}">
                     <div class="title">
                         Getting ready, please wait...
                         <small>You should only experience this delay once per software update</small>
@@ -136,7 +136,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Watch, Prop } from 'vue-facing-decorator';
     import Axios from 'axios';
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
@@ -219,8 +219,10 @@
         l = l;
         @Prop
         settings!: GeneralSettings;
+        // hack; can't modify props in-vue; need to emit to parent and let them change it?
         @Prop({ default: false })
-        hasCompletedUpgrades: boolean = false;
+        pendingUpgrades: boolean = false;
+        completedUpgrades: boolean = false;
         importProgress = 0;
         profileName = '';
         profileStatus = '';
@@ -278,7 +280,7 @@
             const spinner = setTimeout(() => { this.shouldShowSpinner = true }, 250);
 
             try {
-                await core.cache.start(this.settings, this.hasCompletedUpgrades);
+                await core.cache.start(this.settings, this.pendingUpgrades);
             }
             catch (e) {
                 // This error is already handled deeper, but the handler doesn't capture it correctly.
@@ -295,7 +297,7 @@
             parent.send('rising-upgrade-complete');
             electron.ipcRenderer.send('rising-upgrade-complete');
 
-            this.hasCompletedUpgrades = true;
+            this.completedUpgrades = true;
         }
 
 
