@@ -1,4 +1,5 @@
 import { Vue, Component } from 'vue-facing-decorator';
+import { StyleValue } from 'vue';
 
 @Component
 export default class ContextMenu extends Vue {
@@ -86,7 +87,7 @@ export default class ContextMenu extends Vue {
         });
     }
 
-    get positionStyle(): object {
+    get positionStyle(): StyleValue {
         return {left: `${this.position.left}px`, top: `${this.position.top}px;`};
     }
 
