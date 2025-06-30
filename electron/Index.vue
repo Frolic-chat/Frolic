@@ -217,8 +217,10 @@
         error = '';
         defaultCharacter?: number;
         l = l;
+        @Prop
         settings!: GeneralSettings;
-        hasCompletedUpgrades!: boolean;
+        @Prop({ default: false })
+        hasCompletedUpgrades: boolean = false;
         importProgress = 0;
         profileName = '';
         profileStatus = '';
