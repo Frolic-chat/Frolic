@@ -13,8 +13,7 @@
 </template>
 
 <script lang="ts">
-    import Vue from '@f-list/vue-ts';
-    import {Component, Prop, Watch} from '@f-list/vue-ts';
+    import { Vue, Component, Prop, Watch } from 'vue-facing-decorator';
 
     @Component
     export default class Dropdown extends Vue {

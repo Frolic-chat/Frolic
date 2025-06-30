@@ -25,7 +25,7 @@
 
 import * as _ from 'lodash';
 import l from '../localize';
-import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Prop, Watch } from 'vue-facing-decorator';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import { Character } from '../../fchat/interfaces';

@@ -177,11 +177,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Watch } from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Watch } from 'vue-facing-decorator';
 
     import Sortable from 'sortablejs';
 
-    import Vue from '@f-list/vue-ts';
     import {Keys} from '../keys';
     import ChannelList from './ChannelList.vue';
     import CharacterSearch from './CharacterSearch.vue';

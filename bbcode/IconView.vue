@@ -12,8 +12,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Hook, Prop} from '@f-list/vue-ts';
-import Vue from '@f-list/vue-ts';
+import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
 import { EventBus } from '../chat/preview/event-bus';
 import * as Utils from '../site/utils';
 import { characterImage } from '../chat/common';

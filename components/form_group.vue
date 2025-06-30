@@ -14,8 +14,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Prop } from 'vue-facing-decorator';
 
     @Component
     export default class FormGroup extends Vue {

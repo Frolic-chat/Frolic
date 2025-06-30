@@ -1,5 +1,5 @@
 //import {Component} from 'vue';
-import { Component } from '@f-list/vue-ts';
+import { Component } from 'vue-facing-decorator';
 import {SharedStore, StoreMethods} from './interfaces';
 
 export let Store: SharedStore = {

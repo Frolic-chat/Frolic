@@ -1,4 +1,4 @@
-import Vue from '@f-list/vue-ts';
+import Vue from 'vue-facing-decorator';
 import { h, defineComponent, VNode } from 'vue';
 
 //tslint:disable-next-line:variable-name

@@ -75,9 +75,8 @@
 
 <script lang="ts">
 import * as electron from 'electron';
-import {Component, Hook} from '@f-list/vue-ts';
+import { Vue, Component, Hook } from 'vue-facing-decorator';
 import * as remote from '@electron/remote';
-import Vue from '@f-list/vue-ts';
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
 import fs from "fs";

@@ -1,5 +1,4 @@
-import { Component, Hook, Prop } from '@f-list/vue-ts';
-import Vue from '@f-list/vue-ts';
+import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
 import { h, VNode, VNodeChild } from 'vue';
 import {Channel} from '../fchat';
 import { Score } from '../learn/matcher';

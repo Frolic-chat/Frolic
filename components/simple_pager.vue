@@ -24,9 +24,8 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
+    import { Vue, Component, Prop } from 'vue-facing-decorator';
     import cloneDeep = require('lodash/cloneDeep'); //tslint:disable-line:no-require-imports
-    import Vue from '@f-list/vue-ts';
 
     type ParamDictionary = {[key: string]: number | undefined};
     interface RouteParams {

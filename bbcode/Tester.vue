@@ -11,8 +11,7 @@
 
 <script lang="ts">
     import * as _ from 'lodash';
-    import { Component } from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component } from 'vue-facing-decorator';
 
     import { BBCodeView } from './view';
     import { StandardBBCodeParser } from './standard';

@@ -1,4 +1,3 @@
-import Vue from '@f-list/vue-ts';
 import {Keys} from '../keys';
 
 export interface EditorButton {

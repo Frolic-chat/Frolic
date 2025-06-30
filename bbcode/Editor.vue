@@ -51,9 +51,8 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
     import _ from 'lodash';
-    import Vue from '@f-list/vue-ts';
     import { mixin as clickaway } from 'vue-clickaway';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';

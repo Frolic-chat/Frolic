@@ -3,8 +3,7 @@
 
 
 <script lang="ts">
-import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
-import Vue from '@f-list/vue-ts';
+import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
 import {Channel, Character} from '../fchat';
 import { Score } from '../learn/matcher';
 import core from './core';

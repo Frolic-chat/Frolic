@@ -75,8 +75,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
 
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
 
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('character_page');

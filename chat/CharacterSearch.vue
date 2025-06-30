@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Watch } from '@f-list/vue-ts';
+    import { Component, Hook, Watch } from 'vue-facing-decorator';
     import Axios from 'axios';
     import {BBCodeView} from '../bbcode/view';
     import CustomDialog from '../components/custom_dialog';

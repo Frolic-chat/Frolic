@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-    import {Component} from '@f-list/vue-ts';
+    import { Component } from 'vue-facing-decorator';
     import CustomDialog from '../components/custom_dialog';
     import Dropdown from '../components/Dropdown.vue';
     import Modal from '../components/Modal.vue';

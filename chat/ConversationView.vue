@@ -240,8 +240,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
     import {EditorButton, EditorSelection} from '../bbcode/editor';
     import {BBCodeView} from '../bbcode/view';
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';

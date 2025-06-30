@@ -42,8 +42,7 @@
 </template>
 
 <script lang="ts">
-    import {Component} from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component } from 'vue-facing-decorator';
     import Tabs from '../components/tabs';
     import core from './core';
     import { Channel, Character, Conversation } from './interfaces';

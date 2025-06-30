@@ -7,8 +7,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop} from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
     import core from './core';
     import {Channel} from './interfaces';
 

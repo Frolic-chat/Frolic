@@ -1,5 +1,4 @@
-import {Component} from '@f-list/vue-ts';
-import Vue from '@f-list/vue-ts';
+import { Vue, Component } from 'vue-facing-decorator';
 
 @Component
 export default abstract class ContextMenu extends Vue {

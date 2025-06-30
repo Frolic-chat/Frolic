@@ -136,7 +136,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Watch } from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Watch } from 'vue-facing-decorator';
     import Axios from 'axios';
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
@@ -149,7 +149,6 @@
     import * as qs from 'querystring';
     import Raven from 'raven-js';
     // import {promisify} from 'util';
-    import Vue from '@f-list/vue-ts';
     import Chat from '../chat/Chat.vue';
     import { ipcRenderer } from 'electron';
     import {getKey, Settings} from '../chat/common';

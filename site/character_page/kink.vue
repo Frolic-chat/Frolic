@@ -20,8 +20,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Prop, Watch } from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Prop, Watch } from 'vue-facing-decorator';
     import { DisplayKink } from './interfaces';
     import { kinkComparisonSwaps } from '../../learn/matcher-types';
 

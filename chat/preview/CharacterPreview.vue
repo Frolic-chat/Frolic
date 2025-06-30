@@ -75,8 +75,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Prop } from '@f-list/vue-ts';
-import Vue from '@f-list/vue-ts';
+import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
 import core from '../core';
 import { methods } from '../../site/character_page/data_store';
 import {Character as ComplexCharacter} from '../../site/character_page/interfaces';

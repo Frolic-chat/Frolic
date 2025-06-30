@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop } from '@f-list/vue-ts';
+    import { Component, Hook, Prop } from 'vue-facing-decorator';
     import Modal from '../components/Modal.vue';
     import CustomDialog from '../components/custom_dialog';
     import core from './core';

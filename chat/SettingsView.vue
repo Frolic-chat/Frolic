@@ -411,7 +411,7 @@
 <script lang="ts">
     import * as fs from 'fs';
     import * as path from 'path';
-    import {Component} from '@f-list/vue-ts';
+    import { Component } from 'vue-facing-decorator';
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
     import Tabs from '../components/tabs';

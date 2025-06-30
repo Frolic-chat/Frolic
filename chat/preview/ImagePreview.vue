@@ -44,8 +44,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
     import l from '../localize';
-    import {Component, Hook} from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Hook } from 'vue-facing-decorator';
     import core from '../core';
     import { EventBus, EventBusEvent } from './event-bus';
     import {domain} from '../../bbcode/core';

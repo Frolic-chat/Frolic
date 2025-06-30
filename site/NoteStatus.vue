@@ -14,8 +14,7 @@
 
 <script lang="ts">
 import _ from 'lodash';
-import { Component, Hook } from '@f-list/vue-ts';
-import Vue from '@f-list/vue-ts';
+import { Vue, Component, Hook } from 'vue-facing-decorator';
 import core from '../chat/core';
 import { EventBus } from '../chat/preview/event-bus';
 

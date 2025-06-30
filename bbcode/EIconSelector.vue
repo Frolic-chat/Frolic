@@ -76,7 +76,7 @@
 
 <script lang="ts">
 import l from '../chat/localize';
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from 'vue-facing-decorator';
 import { EIconStore } from '../learn/eicon/store';
 import core from '../chat/core';
 import modal from '../components/Modal.vue';

@@ -15,8 +15,7 @@
   </div>
 </template>
 <script lang="ts">
-import Vue from '@f-list/vue-ts';
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
 import anyAscii from 'any-ascii';

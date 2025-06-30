@@ -37,7 +37,7 @@
     import Sortable from 'sortablejs';
     import _ from 'lodash';
 
-    import {Component, Hook} from '@f-list/vue-ts';
+    import { Vue, Component, Hook } from 'vue-facing-decorator';
     import * as electron from 'electron';
     import { IpcRendererEvent } from 'electron';
     import * as remote from '@electron/remote';
@@ -45,7 +45,6 @@
     import * as fs from 'fs';
     import * as path from 'path';
     import * as url from 'url';
-    import Vue from '@f-list/vue-ts';
     import l from '../chat/localize';
     import {GeneralSettings} from './common';
     import { getSafeLanguages, updateSupportedLanguages } from './language';

@@ -37,9 +37,8 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop } from '@f-list/vue-ts';
+    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
     import * as _ from 'lodash';
-    import Vue from '@f-list/vue-ts';
     import * as Utils from '../utils';
     import { Matcher, MatchReport, MatchResult, Score } from '../../learn/matcher';
     import core from '../../chat/core';

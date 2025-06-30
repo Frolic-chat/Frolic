@@ -7,8 +7,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
-    import Vue from '@f-list/vue-ts';
+    import { Vue, Component, Prop } from 'vue-facing-decorator';
     import core from '../../chat/core';
     import {CharacterInfotag, Infotag, ListItem} from '../../interfaces';
     import {formatContactLink, formatContactValue} from './contact_utils';
