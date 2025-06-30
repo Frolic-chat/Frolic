@@ -27,6 +27,7 @@ class State implements StateInterface {
     _settings: Settings | undefined = undefined;
     hiddenUsers: string[] = [];
     favoriteEIcons: Record<string, boolean> = {};
+    generalSettings?: GeneralSettings | undefined;
 
     get settings(): Settings {
         if (this._settings === undefined)
@@ -122,6 +123,7 @@ export function init(this: any,
     data.connection = connection;
     data.logs = new logsClass();
     data.settingsStore = new settingsClass();
+    data.state = vueState.state,
     data.notifications = new notificationsClass();
     data.cache = new CacheManager();
     data.adCoordinator = new AdCoordinatorGuest();
@@ -129,7 +131,7 @@ export function init(this: any,
     data.siteSession = new SiteSession();
 
     log.debug('core.settings.params', { settings });
-    (data.state as any).generalSettings = settings;
+    data.state.generalSettings = settings;
 
     data.register('characters', Characters(connection));
     data.register('channels', Channels(connection, core.characters));

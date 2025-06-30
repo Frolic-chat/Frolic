@@ -6,13 +6,6 @@ import {Message as MessageImpl} from '../chat/common';
 import core from '../chat/core';
 import {Character, Conversation, Logs as Logging, Settings} from '../chat/interfaces';
 import l from '../chat/localize';
-import {GeneralSettings} from './common';
-
-declare module '../chat/interfaces' {
-    interface State {
-        generalSettings?: GeneralSettings
-    }
-}
 
 const dayMs = 86400000;
 const read = promisify(fs.read);

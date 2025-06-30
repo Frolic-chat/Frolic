@@ -200,7 +200,7 @@
 
                 // tslint:disable-next-line:no-floating-promises
                 core.siteSession.onConnectionEstablished();
-                core.cache.start((core.state as any).generalSettings, true);
+                core.cache.start(core.state.generalSettings!, true);
             });
             core.watch(
                 () => core.conversations.hasNew,

@@ -4,6 +4,7 @@ import {Connection} from '../fchat';
 import {Channel, Character} from '../fchat/interfaces';
 import { AdManager } from './ads/ad-manager';
 import { SmartFilterSettings } from '../learn/filter/types';
+import { GeneralSettings } from '../electron/common';
 export {Connection, Channel, Character} from '../fchat/interfaces';
 export const userStatuses: ReadonlyArray<Character.Status> = ['online', 'looking', 'away', 'busy', 'dnd'];
 export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both'];
@@ -271,6 +272,7 @@ export interface Notifications {
 
 export interface State {
     settings: Settings;
+    generalSettings?: GeneralSettings;
     hiddenUsers: string[];
     favoriteEIcons: Record<string, boolean>;
 }
