@@ -1,4 +1,4 @@
-import Vue, { WatchCallback, createApp, watch } from 'vue';
+import { WatchCallback, reactive, watch } from 'vue';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
@@ -54,25 +54,12 @@ interface VueState {
 
 const state = new State();
 
-// `Partial` shouldn't be necessary here, but there's an error later on when trying to access `vueState` where most `Vue.App` values are absent.
-const vueState = <VueState & Partial<Vue.App>>createApp({
-    data() {
-        return {
-            channels:       undefined,
-            characters:     undefined,
-            conversations:  undefined,
-            state
-        }
-    }
-})
-
-// A good attempt if we just want reactivity. Try this if `createApp` fails.
-// const vue3reactiveStructure = reactive<VueState>({
-//     channels:       undefined,
-//     characters:     undefined,
-//     conversations:  undefined,
-//     state
-// });
+const vueState = reactive<Partial<VueState> & { state: StateInterface }>({
+    channels:       undefined,
+    characters:     undefined,
+    conversations:  undefined,
+    state:          state
+});
 
 // Legacy vue 2.
 // const vue = <Vue & VueState>new Vue({

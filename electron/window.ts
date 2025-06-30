@@ -18,27 +18,9 @@ const logLevel: LogLevelOption = 'warn';
 
 log.info('init.window.vue');
 
-// Vue 2
-// export default new Window({
-//     el: '#app',
-//     data: {settings}
-// });
-const app = createApp(
-    Window,
-    { settings: settings },
-);
-app.mount('#app');
-// const app = createApp({
-//     components: {
-//         Window,
-//     },
-//     data() {
-//         return {
-//             settings: settings,
-//         };
-//     },
-//     template: '<Window :settings="settings" />',
-// });
+const app = createApp(Window, {
+    settings: settings
+});
 app.mount('#app');
 
 log.debug('init.window.vue.done');
