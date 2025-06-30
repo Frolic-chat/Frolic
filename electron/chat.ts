@@ -59,6 +59,7 @@ import {Logs, SettingsStore} from './filesystem';
 import Notifications from './notifications';
 import * as SlimcatImporter from './importer';
 import { createApp } from 'vue';
+import VueClickAway from 'vue3-click-away';
 import Index from './Index.vue';
 
 import Logger from 'electron-log/renderer';
@@ -274,6 +275,7 @@ const app = createApp(Index, {
     settings: settings,
     hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
 });
+app.use(VueClickAway);
 app.mount('#app');
 
 log.debug('init.chat.vue.done');

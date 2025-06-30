@@ -8,7 +8,7 @@
         <div class="bbcode-toolbar btn-toolbar" role="toolbar" :disabled="disabled" :style="showToolbar ? {display: 'flex'} : undefined" @mousedown.stop.prevent
             v-if="hasToolbar" style="flex:1 51%; position: relative">
 
-            <div class="popover popover-top color-selector" v-show="colorPopupVisible" v-on-clickaway="dismissColorSelector">
+            <div class="popover popover-top color-selector" v-show="colorPopupVisible" v-click-away="dismissColorSelector">
                 <div class="popover-body">
                   <div class="btn-group" role="group" aria-label="Color">
                     <button v-for="btnCol in buttonColors" type="button" class="btn text-color" :class="btnCol" :title="btnCol" @click.prevent.stop="colorApply(btnCol)" tabindex="0"></button>
@@ -53,7 +53,6 @@
 <script lang="ts">
     import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
     import _ from 'lodash';
-    import { mixin as clickaway } from 'vue-clickaway';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
     import {BBCodeElement, CoreBBCodeParser, urlRegex} from './core';
@@ -82,8 +81,7 @@
       components: {
         'icon': IconView,
         'EIconSelector': EIconSelector
-      },
-      mixins: [ clickaway ]
+      }
     })
     export default class Editor extends Vue {
         @Prop
