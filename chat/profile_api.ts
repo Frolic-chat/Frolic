@@ -1,13 +1,13 @@
 import Axios from 'axios';
-// import Vue from 'vue-facing-decorator';
-// import Editor from '../bbcode/Editor.vue';
-// import { BBCodeView } from '../bbcode/view';
+import { App } from 'vue';
+import Editor from '../bbcode/Editor.vue';
+import { BBCodeView } from '../bbcode/view';
 import {InlineDisplayMode} from '../interfaces';
-// import {StandardBBCodeParser} from '../bbcode/standard';
-// import CharacterLink from '../components/character_link.vue';
-// import CharacterSelect from '../components/character_select.vue';
-// import DateDisplay from '../components/date_display.vue';
-// import SimplePager from '../components/simple_pager.vue';
+import {StandardBBCodeParser} from '../bbcode/standard';
+import CharacterLink from '../components/character_link.vue';
+import CharacterSelect from '../components/character_select.vue';
+import DateDisplay from '../components/date_display.vue';
+import SimplePager from '../components/simple_pager.vue';
 
 import {
     Character as CharacterInfo, SimpleCharacter,
@@ -254,6 +254,15 @@ async function kinksGet(id: number): Promise<CharacterKink[]> {
                 return {id: parseInt(key, 10), choice: <KinkChoice>(choice === 'fave' ? 'favorite' : choice)};
             }
     );
+}
+
+export function registerProfileApiVueComponents(app: App<Element>) {
+    app.component('character-select', CharacterSelect);
+    app.component('character-link', CharacterLink);
+    app.component('date-display', DateDisplay);
+    app.component('simple-pager', SimplePager);
+    app.component('bbcode', BBCodeView(new StandardBBCodeParser()));
+    app.component('bbcode-editor', Editor);
 }
 
 

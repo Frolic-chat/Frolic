@@ -62,6 +62,8 @@ import { createApp } from 'vue';
 import VueClickAway from 'vue3-click-away';
 import Index from './Index.vue';
 
+import { registerProfileApiVueComponents } from '../chat/profile_api';
+
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('chat');
 import { LevelOption as LogLevelOption } from 'electron-log';
@@ -277,6 +279,7 @@ const app = createApp(Index, {
     pendingUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
 });
 app.use(VueClickAway);
+registerProfileApiVueComponents(app);
 app.mount('#app');
 
 log.debug('init.chat.vue.done');
