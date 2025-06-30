@@ -48,7 +48,7 @@
     import Modal from '../../components/Modal.vue';
     import {Conversation} from '../interfaces';
     import l from '../localize';
-    import {Editor} from '../bbcode';
+    import Editor from '../../bbcode/Editor.vue';
     import core from '../core';
     import { Dialog } from '../../helpers/dialog';
     import _ from 'lodash';

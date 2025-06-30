@@ -1,7 +1,6 @@
 import { h, render, VNode } from 'vue';
 import {BBCodeElement, CoreBBCodeParser, analyzeUrlTag} from '../bbcode/core';
 //tslint:disable-next-line:match-default-export-name
-import BaseEditor from '../bbcode/Editor.vue';
 import {BBCodeTextTag} from '../bbcode/parser';
 import ChannelView from './ChannelTagView.vue';
 // import {characterImage} from './common';
@@ -10,10 +9,6 @@ import core from './core';
 import {default as UrlView} from '../bbcode/UrlTagView.vue';
 import {default as IconView} from '../bbcode/IconView.vue';
 import UserView from './UserView.vue';
-
-export class Editor extends BaseEditor {
-    parser = core.bbCodeParser;
-}
 
 export default class BBCodeParser extends CoreBBCodeParser {
     cleanup: VNode[] = [];

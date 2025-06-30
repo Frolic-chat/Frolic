@@ -246,7 +246,7 @@
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
     import {Keys} from '../keys';
     import CharacterAdView from './character/CharacterAdView.vue';
-    import {Editor} from './bbcode';
+    import Editor from '../bbcode/Editor.vue';
     import CommandHelp from './CommandHelp.vue';
     import { characterImage, errorToString, getByteLength, getKey } from './common';
     import ConversationSettings from './ConversationSettings.vue';

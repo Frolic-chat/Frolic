@@ -41,7 +41,7 @@
     import { Component, Prop } from 'vue-facing-decorator';
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
-    import {Editor} from './bbcode';
+    import Editor from '../bbcode/Editor.vue';
     import {getByteLength} from './common';
     import core from './core';
     import {Channel, channelModes} from './interfaces';

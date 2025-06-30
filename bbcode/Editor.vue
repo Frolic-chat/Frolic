@@ -56,6 +56,7 @@
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
     import {BBCodeElement, CoreBBCodeParser, urlRegex} from './core';
+    import core from '../chat/core';
     import {defaultButtons, EditorButton, EditorSelection} from './editor';
     import {BBCodeParser} from './parser';
     import {default as IconView} from './IconView.vue';
@@ -141,7 +142,11 @@
         @Hook('created')
         created(): void {
             // console.log('EDITOR', 'created');
-            this.parser = new CoreBBCodeParser();
+            if (!core.bbCodeParser)
+              this.parser = new CoreBBCodeParser();
+            else
+              this.parser = core.bbCodeParser;
+
             this.resizeListener = () => {
                 const styles = getComputedStyle(this.element);
                 this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
