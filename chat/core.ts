@@ -1,6 +1,7 @@
 import { WatchCallback, reactive, watch } from 'vue';
 import { CacheManager } from '../learn/cache-manager';
-import {Channels, Characters} from '../fchat';
+import { default as Channels } from '../fchat/channels';
+import { default as Characters } from '../fchat/characters';
 import BBCodeParser from './bbcode';
 import {Settings as SettingsImpl} from './common';
 import Conversations from './conversations';
