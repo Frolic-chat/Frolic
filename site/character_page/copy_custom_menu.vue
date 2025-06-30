@@ -18,7 +18,7 @@
     })
     export default class CopyCustomMenu extends ContextMenu {
         @Prop({required: true})
-        readonly propName!: string;
+        readonly declare propName: string;
 
         itemSelected(element: HTMLElement): void {
             const getName = (children: ReadonlyArray<HTMLElement>): string => {

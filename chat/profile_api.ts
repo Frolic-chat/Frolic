@@ -1,13 +1,13 @@
 import Axios from 'axios';
-import Vue from '@f-list/vue-ts';
-import Editor from '../bbcode/Editor.vue';
-import { BBCodeView } from '../bbcode/view';
+// import Vue from 'vue-facing-decorator';
+// import Editor from '../bbcode/Editor.vue';
+// import { BBCodeView } from '../bbcode/view';
 import {InlineDisplayMode} from '../interfaces';
-import {StandardBBCodeParser} from '../bbcode/standard';
-import CharacterLink from '../components/character_link.vue';
-import CharacterSelect from '../components/character_select.vue';
-import DateDisplay from '../components/date_display.vue';
-import SimplePager from '../components/simple_pager.vue';
+// import {StandardBBCodeParser} from '../bbcode/standard';
+// import CharacterLink from '../components/character_link.vue';
+// import CharacterSelect from '../components/character_select.vue';
+// import DateDisplay from '../components/date_display.vue';
+// import SimplePager from '../components/simple_pager.vue';
 
 import {
     Character as CharacterInfo, SimpleCharacter,

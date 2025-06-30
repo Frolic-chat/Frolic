@@ -1,14 +1,14 @@
 import { Vue, Component } from 'vue-facing-decorator';
 
 @Component
-export default abstract class ContextMenu extends Vue {
-    abstract propName: string;
+export default class ContextMenu extends Vue {
+    propName: string = '';
     showMenu = false;
     position = {left: 0, top: 0};
     selectedItem: HTMLElement | undefined;
     touchTimer = 0;
 
-    abstract itemSelected(element: HTMLElement): void;
+    itemSelected(_element: HTMLElement): void {};
 
     shouldShowMenu(_: HTMLElement): boolean {
         return true;

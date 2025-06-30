@@ -324,11 +324,7 @@
         }
 
         applyButtonEffect(button: EditorButton, withArgument?: string, withInject?: string): void {
-            const onceHandler = (startText: string, endText: string) => {
-              this.applyText(startText, endText);
-            }
-
-            // Allow emitted variations for custom buttons.
+          // Allow emitted variations for custom buttons.
             this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
             // noinspection TypeScriptValidateTypes
             if(button.handler !== undefined) {

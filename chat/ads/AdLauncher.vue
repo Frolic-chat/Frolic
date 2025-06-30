@@ -70,7 +70,6 @@ import Modal from '../../components/Modal.vue';
 import core from '../core';
 import _ from 'lodash';
 import l from '../localize';
-import AdCenterDialog from './AdCenter.vue';
 
 @Component({
     components: {modal: Modal}

@@ -9,11 +9,7 @@ import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
 import { MatchReport, MatchResultScores } from '../../learn/matcher';
 import { TagId } from '../../learn/matcher-types';
 
-@Component({
-    components: {
-
-    }
-})
+@Component({ components: {} })
 export default class MatchTags extends Vue {
   @Prop({required: true})
   readonly match!: MatchReport;
