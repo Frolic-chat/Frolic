@@ -9,7 +9,7 @@ export interface EditorButton {
     outerClass?: string;
     startText?: string;
     endText?: string;
-    handler?(vm: Vue): void;
+    handler?(vm: any): void;
 }
 
 export interface EditorSelection {

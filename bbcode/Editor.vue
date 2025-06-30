@@ -323,11 +323,11 @@
 
         applyButtonEffect(button: EditorButton, withArgument?: string, withInject?: string): void {
           // Allow emitted variations for custom buttons.
-            this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
+            //this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
             // noinspection TypeScriptValidateTypes
             if(button.handler !== undefined) {
                 // tslint:ignore-next-line:no-any
-                return button.handler.call(this as any, this);
+                return button.handler(this);
             }
             if(button.startText === undefined || withArgument)
                 button.startText = `[${button.tag}${withArgument ? '=' + withArgument : ''}]`;
