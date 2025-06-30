@@ -63,21 +63,6 @@
     import {default as EIconSelector} from './EIconSelector.vue';
     import Modal from '../components/Modal.vue';
 
-    class OnceHandler {
-        private callback?: (...args: any[]) => void;
-
-        register(cb: typeof this.callback): void {
-            this.callback = cb;
-        };
-
-        emit(...args: any[]): void {
-            if (this.callback) {
-                this.callback(...args);
-                delete this.callback;
-            }
-        }
-    }
-
     @Component({
       components: {
         'icon': IconView,

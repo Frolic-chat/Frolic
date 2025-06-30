@@ -27,7 +27,7 @@
             </label>
         </div>
 
-        <div class="form-group ad-list" v-for="(ad, index) in ads">
+        <div class="form-group ad-list" v-for="(_, index) in ads">
             <label :for="'ad' + conversation.key + '-' + index" class="control-label">Ad #{{(index + 1)}}
                 <a v-if="(index > 0)" @click="moveAdUp(index)" title="Move Up"><i class="fa fa-arrow-up"></i></a>
                 <a v-if="(index < ads.length - 1)" @click="moveAdDown(index)" title="Move Down"><i class="fa fa-arrow-down"></i></a>
