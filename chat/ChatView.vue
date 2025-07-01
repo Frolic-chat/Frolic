@@ -278,8 +278,8 @@
         channelConversations = core.conversations.channelConversations
         privateConversations = core.conversations.privateConversations
 
-        privateCanGlow = !this.channelConversations?.length;
-        channelCanGlow = !this.privateConversations?.length;
+        privateCanGlow!: boolean;
+        channelCanGlow!: boolean;
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -293,6 +293,12 @@
           if (this.conversations.privateConversations?.length) {
             this.privateCanGlow = false;
           }
+        }
+
+        @Hook('created')
+        created(): void {
+            this.privateCanGlow = !this.channelConversations?.length;
+            this.channelCanGlow = !this.privateConversations?.length;
         }
 
         @Hook('mounted')

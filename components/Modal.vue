@@ -48,25 +48,25 @@
     export default class Modal extends Vue {
         @Prop({default: ''})
         readonly action!: string;
-        @Prop
-        readonly dialogClass?: {string: boolean};
+        @Prop({ default: {} })
+        readonly dialogClass!: {string: boolean};
         @Prop({default: true})
         readonly buttons!: boolean;
         @Prop({default: () => ({'btn-primary': true})})
         readonly buttonClass!: {string: boolean};
-        @Prop
-        readonly disabled?: boolean;
-        @Prop({default: true})
+        @Prop({ default: false })
+        readonly disabled!: boolean;
+        @Prop({ default: true })
         readonly showCancel!: boolean;
-        @Prop
-        readonly buttonText?: string;
-        isShown = false;
+        @Prop({ default: '' })
+        readonly buttonText!: string;
 
+        isShown = false;
         keepOpen = false;
         forcedDisabled = false;
 
         get submitText(): string {
-            return this.buttonText !== undefined ? this.buttonText : this.action;
+            return this.buttonText ? this.buttonText : this.action;
         }
 
         forceDisabled(disabled: boolean): void {

@@ -46,9 +46,6 @@
         components: {modal: Modal, editor: Editor, dropdown: Dropdown, 'status-picker': StatusPicker}
     })
     export default class StatusSwitcher extends CustomDialog {
-        selectedStatus: Character.Status | undefined;
-        enteredText: string | undefined;
-        statuses = userStatuses;
         l = l;
         getByteLength = getByteLength;
         getStatusIcon = getStatusIcon;
@@ -56,8 +53,12 @@
         @Ref
         statusPicker!: StatusPicker;
 
+        selectedStatus: Character.Status | null = null;
+        enteredText: string | null = null;
+        statuses = userStatuses;
+
         get status(): Character.Status {
-            return this.selectedStatus !== undefined ? this.selectedStatus : this.character.status;
+            return this.selectedStatus ? this.selectedStatus : this.character.status;
         }
 
         set status(status: Character.Status) {
@@ -65,7 +66,7 @@
         }
 
         get text(): string {
-            return this.enteredText !== undefined ? this.enteredText : this.character.statusText;
+            return this.enteredText ? this.enteredText : this.character.statusText;
         }
 
         set text(text: string) {
@@ -84,8 +85,8 @@
         }
 
         reset(): void {
-            this.selectedStatus = undefined;
-            this.enteredText = undefined;
+            this.selectedStatus = null;
+            this.enteredText = null;
         }
 
         insertStatusMessage(statusMessage: string): void {

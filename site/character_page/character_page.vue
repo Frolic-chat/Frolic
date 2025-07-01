@@ -127,12 +127,16 @@
         }
     })
     export default class CharacterPage extends Vue {
-        @Prop
-        readonly name?: string;
-        @Prop
-        readonly id?: number;
+        @Prop({ default: 'Frolic Chat' })
+        readonly name!: string;
+        @Prop({ default: '5462301' })
+        readonly id!: number;
         @Prop({required: true})
         readonly authenticated!: boolean;
+        @Prop({ default: false })
+        readonly oldApi!: boolean;
+        @Prop({ default: false })
+        readonly imagePreview!: boolean;
 
         @Ref
         'tab0'!: CharacterKinksView;
@@ -166,8 +170,8 @@
         groups: CharacterGroup[] | null = null;
         images: CharacterImage[] | null = null;
 
-        selfCharacter: Character | undefined;
-        characterMatch: MatchReport | undefined;
+        selfCharacter: Character | null = null;
+        characterMatch: MatchReport | null = null;
 
 
         @Hook('beforeMount')

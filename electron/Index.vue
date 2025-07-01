@@ -231,10 +231,10 @@
         saveLogin = false;
         loggingIn = false;
         password = '';
-        character?: string;
-        characters?: SimpleCharacter[];
+        character: string | null = null;
+        characters: SimpleCharacter[] | null = null;
         error = '';
-        defaultCharacter?: number;
+        defaultCharacter: number | null = null;
         l = l;
         @Prop
         settings!: GeneralSettings;
@@ -500,11 +500,11 @@
                     Raven.setUserContext({ username: core.connection.character });
                 });
                 core.connection.onEvent('closed', () => {
-                    if (this.character === undefined)
+                    if (typeof this.character !== 'string')
                         return;
 
                     electron.ipcRenderer.send('disconnect', this.character);
-                    this.character = undefined;
+                    this.character = null;
                     parent.send('disconnect', webContents.id);
                     Raven.setUserContext();
                 });

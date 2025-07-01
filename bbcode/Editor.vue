@@ -70,23 +70,23 @@
       }
     })
     export default class Editor extends Vue {
-        @Prop
-        readonly extras?: EditorButton[];
+        @Prop({ default: null })
+        readonly extras!: EditorButton[] | null;
 
         @Prop({default: 1000})
         readonly maxlength!: number;
 
-        @Prop
-        readonly classes?: string;
+        @Prop({ default: null })
+        readonly classes!: string | null;
 
-        @Prop
-        readonly value?: string | undefined = undefined;
+        @Prop({ default: null })
+        readonly value!: string | null;
 
-        @Prop
-        readonly disabled?: boolean;
+        @Prop({ default: false })
+        readonly disabled!: boolean;
 
-        @Prop
-        readonly placeholder?: string;
+        @Prop({ default: '' })
+        readonly placeholder!: string;
 
         @Prop({default: true})
         readonly hasToolbar!: boolean;
@@ -95,10 +95,11 @@
         readonly invalid!: boolean;
 
         @Prop({default: null})
-        readonly characterName: string | null = null;
+        readonly characterName!: string | null;
 
-        @Prop({default: 'normal'})
-        readonly type: 'normal' | 'big' = 'normal';
+        // Unused but could be useful in the future to show larger input box?
+        // @Prop({default: 'normal'})
+        // readonly type!: 'normal' | 'big';
 
         @Ref
         input!: HTMLTextAreaElement;
@@ -116,7 +117,7 @@
         previewWarnings: ReadonlyArray<string> = [];
         previewResult = '';
         // tslint:disable-next-line: no-unnecessary-type-assertion
-        text: string = (this.value !== undefined ? this.value : '') as string;
+        text!: string;
         element!: HTMLTextAreaElement;
 
         maxHeight!: number;
@@ -135,6 +136,8 @@
 
         @Hook('created')
         created(): void {
+            this.text = this.value ? this.value : '';
+
             // console.log('EDITOR', 'created');
             if (!core.bbCodeParser)
               this.parser = new CoreBBCodeParser();
@@ -181,7 +184,7 @@
             window.removeEventListener('resize', this.resizeListener);
         }
 
-        get finalClasses(): string | undefined {
+        get finalClasses(): string | null {
             let classes = this.classes;
             if(this.invalid)
                 classes += ' is-invalid';
@@ -191,7 +194,7 @@
         get buttons(): EditorButton[] {
             const buttons = this.defaultButtons.slice();
 
-            if(this.extras !== undefined)
+            if(this.extras)
                 for(let i = 0, l = this.extras.length; i < l; i++)
                     buttons.push(this.extras[i]);
 

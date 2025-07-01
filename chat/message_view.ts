@@ -95,12 +95,12 @@ const userPostfix: {[key: number]: string | undefined} = {
 export default class MessageView extends Vue {
     @Prop({ required: true })
     readonly message!: Conversation.Message;
-    @Prop
-    readonly classes?: string;
-    @Prop
-    readonly channel?: Channel;
-    @Prop
-    readonly logs?: true;
+    @Prop({ default: '' })
+    readonly classes!: string;
+    @Prop({ default: null })
+    readonly channel!: Channel | null;
+    @Prop({ default: false })
+    readonly logs!: boolean;
 
     scoreClasses = this.getMessageScoreClasses(this.message);
     filterClasses = this.getMessageFilterClasses(this.message);

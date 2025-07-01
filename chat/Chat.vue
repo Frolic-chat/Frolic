@@ -93,10 +93,14 @@
         components: {chat: ChatView, modal: Modal, logs: Logs}
     })
     export default class Chat extends Vue {
-        @Prop({required: true})
+        l = l;
+
+        @Prop({ required: true })
         readonly ownCharacters!: SimpleCharacter[];
-        @Prop({required: true})
+        @Prop({ required: true })
         readonly defaultCharacter!: number;
+        @Prop({ default: null })
+        readonly version!: string | null;
 
         @Ref
         reconnecting!: Modal;
@@ -106,14 +110,16 @@
         chatview!: ChatView;
 
         //tslint:disable-next-line:strict-boolean-expressions
-        selectedCharacter = this.ownCharacters.find((x) => x.id === this.defaultCharacter) || this.ownCharacters[0];
-        @Prop
-        readonly version?: string;
+        selectedCharacter!: SimpleCharacter;
         error = '';
         connecting = false;
         connected = false;
-        l = l;
         copyPlain = false;
+
+        @Hook('created')
+        created() {
+            this.selectedCharacter = this.ownCharacters.find((x) => x.id === this.defaultCharacter) || this.ownCharacters[0];
+        }
 
         @Hook('mounted')
         mounted(): void {
