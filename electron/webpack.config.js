@@ -81,7 +81,8 @@ const mainConfig = {
                 loader: 'vue-loader',
                 options: {
                     compilerOptions: {
-                        preserveWhitespace: false
+                        preserveWhitespace: false,
+                        isCustomElement: tag => tag === 'webview',
                     }
                 }
             },
