@@ -1,5 +1,5 @@
 <template>
-    <div class="character-kinks-block" @contextmenu="contextMenu" @touchstart="contextMenu" @touchend="contextMenu">
+    <div class="character-kinks-block" @contextmenu="contextMenuEvent" @touchstart="contextMenuEvent" @touchend="contextMenuEvent">
         <div class="compare-highlight-block d-flex justify-content-between">
             <div class="expand-custom-kinks-block form-inline">
                 <button class="btn btn-primary" @click="toggleExpandedCustomKinks" :disabled="loading">{{(expandedCustoms ? 'Collapse' : 'Expand')}} Custom Kinks</button>
@@ -29,7 +29,7 @@
                     </div>
                     <div class="card-body">
                         <kink v-for="kink in groupedKinks['favorite']" :kink="kink" :key="kink.key" :highlights="highlighting" :expandedCustom="expandedCustoms"
-                            :comparisons="comparison"></kink>
+                            :comparisons="comparison" @expanded-customs-change="toggleExpandedCustomKinks"></kink>
                     </div>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                     </div>
                     <div class="card-body">
                         <kink v-for="kink in groupedKinks['yes']" :kink="kink" :key="kink.key" :highlights="highlighting" :expandedCustom="expandedCustoms"
-                            :comparisons="comparison"></kink>
+                            :comparisons="comparison" @expanded-customs-change="toggleExpandedCustomKinks"></kink>
                     </div>
                 </div>
             </div>
@@ -51,7 +51,7 @@
                     </div>
                     <div class="card-body">
                         <kink v-for="kink in groupedKinks['maybe']" :kink="kink" :key="kink.key" :highlights="highlighting" :expandedCustom="expandedCustoms"
-                            :comparisons="comparison"></kink>
+                            :comparisons="comparison" @expanded-customs-change="toggleExpandedCustomKinks"></kink>
                     </div>
                 </div>
             </div>
@@ -62,18 +62,18 @@
                     </div>
                     <div class="card-body">
                         <kink v-for="kink in groupedKinks['no']" :kink="kink" :key="kink.key" :highlights="highlighting" :expandedCustom="expandedCustoms"
-                            :comparisons="comparison"></kink>
+                            :comparisons="comparison" @expanded-customs-change="toggleExpandedCustomKinks"></kink>
                     </div>
                 </div>
             </div>
         </div>
-        <context-menu v-if="shared.authenticated && !oldApi" prop-name="custom" ref="context-menu"></context-menu>
+        <context-menu v-if="shared.authenticated && !oldApi" prop-name="custom" ref="contextMenu"></context-menu>
     </div>
 </template>
 
 <script lang="ts">
     import * as _ from 'lodash';
-    import { Vue, Component, Prop, Watch, Hook } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Hook, Ref } from 'vue-facing-decorator';
     import core from '../../chat/core';
     import {Kink, KinkChoice, KinkGroup} from '../../interfaces';
     import * as Utils from '../utils';
@@ -88,10 +88,13 @@
     export default class CharacterKinksView extends Vue {
         @Prop({required: true})
         readonly character!: Character;
-        @Prop
-        readonly oldApi?: true;
+        @Prop({ default: false })
+        readonly oldApi!: boolean;
         @Prop({required: true})
         readonly autoExpandCustoms!: boolean;
+
+        @Ref
+        contextMenu!: CopyCustomMenu;
 
         shared = Store;
         characterToCompare = Utils.settings.defaultCharacter;
@@ -304,8 +307,8 @@
             return <{[key in KinkChoice]: DisplayKink[]}>outputKinks;
         }
 
-        contextMenu(event: TouchEvent | MouseEvent): void {
-            if(this.shared.authenticated && !this.oldApi) (<CopyCustomMenu>this.$refs['context-menu']).outerClick(event);
+        contextMenuEvent(event: TouchEvent | MouseEvent): void {
+            if(this.shared.authenticated && !this.oldApi) this.contextMenu.outerClick(event);
         }
     }
 </script>

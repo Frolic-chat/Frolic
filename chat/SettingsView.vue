@@ -91,10 +91,10 @@
             </div>
             <div class="form-group"><hr></div>
             <div class="form-group">
-                <label class="control-label" :for="notifyFriendSignIn">
+                <label class="control-label" for="notifyFriendSignIn">
                     {{l('settings.friendSignIn')}}
                 </label>
-                <select class="form-control" :id="notifyFriendSignIn" v-model="notifyFriendSignIn">
+                <select class="form-control" id="notifyFriendSignIn" v-model="notifyFriendSignIn">
                     <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
                     <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
                     <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
@@ -102,10 +102,10 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="control-label" :for="notifyOnFriendMessage">
+                <label class="control-label" for="notifyOnFriendMessage">
                     {{l('settings.friendMessageNotification')}}
                 </label>
-                <select class="form-control" :id="notifyOnFriendMessage" v-model="notifyOnFriendMessage">
+                <select class="form-control" id="notifyOnFriendMessage" v-model="notifyOnFriendMessage">
                     <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
                     <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
                     <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
@@ -479,7 +479,7 @@
         risingFilter: SmartFilterSettings = {} as any;
 
         risingAvailableThemes: ReadonlyArray<string> = [];
-        risingCharacterTheme!: string | undefined;
+        risingCharacterTheme: string | null = null;
 
         smartFilterTypes = smartFilterTypesOrigin;
 
@@ -535,7 +535,7 @@
             this.risingFilter = settings.risingFilter;
 
             this.risingAvailableThemes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.slice(-4) === '.css').map((x) => x.slice(0, -4));
-            this.risingCharacterTheme = settings.risingCharacterTheme;
+            this.risingCharacterTheme = settings.risingCharacterTheme ?? null;
         }
 
         async doImport(): Promise<void> {
@@ -614,7 +614,7 @@
                     maxAge: (minAge !== null && maxAge !== null) ? Math.max(minAge, maxAge) : maxAge
                 },
 
-                risingCharacterTheme: this.risingCharacterTheme != "undefined" ? this.risingCharacterTheme : undefined
+                risingCharacterTheme: this.risingCharacterTheme ? this.risingCharacterTheme : undefined
             };
 
             console.log('SETTINGS', minAge, maxAge, core.state.settings);

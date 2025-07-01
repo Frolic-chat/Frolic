@@ -33,8 +33,8 @@
     export default class MemoDialog extends CustomDialog {
         @Prop({required: true})
         readonly character!: {id: number, name: string};
-        @Prop
-        readonly memo?: Memo;
+        @Prop({ default: null })
+        readonly memo!: Memo | null;
         message: string | null = null;
         editing: boolean = false;
         saving: boolean = false;
@@ -50,7 +50,7 @@
 
         @Watch('memo')
         setMemo(): void {
-            if(this.memo !== undefined)
+            if(this.memo)
                 this.message = this.memo.memo;
         }
 

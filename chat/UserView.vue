@@ -135,23 +135,23 @@ export default class UserView extends Vue {
     @Prop({ required: true })
     readonly character!: Character;
 
-    @Prop
-    readonly channel?: Channel;
+    @Prop({ default: null })
+    readonly channel!: Channel | null;
 
-    @Prop
-    readonly showStatus?: boolean = true;
+    @Prop({ default: true })
+    readonly showStatus!: boolean;
 
-    @Prop({default: true})
-    readonly bookmark?: boolean = true;
+    @Prop({ default: true })
+    readonly bookmark!: boolean;
 
-    @Prop
-    readonly match?: boolean = false;
+    @Prop({ default: false })
+    readonly match!: boolean;
 
-    @Prop({default: true})
-    readonly preview: boolean = true;
+    @Prop({ default: true })
+    readonly preview!: boolean;
 
-    @Prop({default: false})
-    readonly avatar: boolean = false;
+    @Prop({ default: false })
+    readonly avatar!: boolean;
 
     userClass = '';
 
@@ -225,7 +225,7 @@ export default class UserView extends Vue {
     update(): void {
         // console.log('user.view.update', this.character.name);
 
-        const res = getStatusClasses(this.character, this.channel, !!this.showStatus, !!this.bookmark, !!this.match);
+        const res = getStatusClasses(this.character, this.channel ?? undefined, !!this.showStatus, !!this.bookmark, !!this.match);
 
         this.rankIcon        = res.rankIcon;
         this.smartFilterIcon = res.smartFilterIcon;

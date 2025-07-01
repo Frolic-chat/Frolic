@@ -4,12 +4,12 @@
             style="position: fixed; display: block;" :style="positionStyle" ref="menu" v-show="showMenu">
             <li><a class="dropdown-item" href="#">Copy Custom</a></li>
         </ul>
-        <copy-dialog ref="copy-dialog"></copy-dialog>
+        <copy-dialog ref="copyDialog"></copy-dialog>
     </div>
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Component, Hook, Prop, Ref } from 'vue-facing-decorator';
     import ContextMenu from './context_menu';
     import CopyCustomDialog from './copy_custom_dialog.vue';
 
@@ -20,6 +20,9 @@
         @Prop({required: true})
         readonly declare propName: string;
 
+        @Ref
+        copyDialog!: CopyCustomDialog;
+
         itemSelected(element: HTMLElement): void {
             const getName = (children: ReadonlyArray<HTMLElement>): string => {
                 for(const child of children)
@@ -29,7 +32,7 @@
             };
             const name = getName(<any>element.children); //tslint:disable-line:no-any
             const description = element.title;
-            (<CopyCustomDialog>this.$refs['copy-dialog']).showDialog(name, description);
+            this.copyDialog.showDialog(name, description);
         }
 
         @Hook('mounted')

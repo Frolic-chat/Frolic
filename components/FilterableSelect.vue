@@ -23,36 +23,41 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Hook } from 'vue-facing-decorator';
     import Dropdown from '../components/Dropdown.vue';
 
     @Component({
         components: {dropdown: Dropdown}
     })
     export default class FilterableSelect extends Vue {
-        @Prop
-        readonly placeholder?: string;
+        @Prop({ default: '' })
+        readonly placeholder!: string;
         @Prop({required: true})
         readonly options!: object[];
         @Prop({default: () => ((filter: RegExp, value: string) => filter.test(value))})
         readonly filterFunc!: (filter: RegExp, value: object) => boolean;
-        @Prop
-        readonly multiple?: true = undefined;
-        @Prop
-        readonly value?: object | object[] = undefined;
-        @Prop
-        readonly title?: string;
+        @Prop({ default: false })
+        readonly multiple!: boolean;
+        @Prop({ default: null })
+        readonly value!: object | object[] | null;
+        @Prop({ default: '' })
+        readonly title!: string;
         filter = '';
         // noinspection TypeScriptValidateTypes
-        selected: object | object[] | undefined = this.value !== undefined ? this.value : (this.multiple !== undefined ? [] : undefined);
+        selected: object | object[] | null = null;
 
         @Watch('value')
         watchValue(newValue: object | object[] | undefined): void {
-            this.selected = newValue;
+            this.selected = newValue ?? null;
+        }
+
+        @Hook('created')
+        created(): void {
+            this.selected = this.value ? this.value : (this.multiple ? [] : null);
         }
 
         select(item: object): void {
-            if(this.multiple !== undefined) {
+            if(this.multiple) {
                 const selected = <object[]>this.selected;
                 const index = selected.indexOf(item);
                 if(index === -1) selected.push(item);
@@ -63,7 +68,7 @@
         }
 
         isSelected(option: object): boolean {
-            return (<object[]>this.selected).indexOf(option) !== -1;
+            return (<object[]>this.selected).includes(option);
         }
 
         get filtered(): object[] {
@@ -72,8 +77,8 @@
         }
 
         get label(): string | undefined {
-            return this.multiple !== undefined ? `${this.title} - ${(<object[]>this.selected).length}` :
-                (this.selected !== undefined ? this.selected.toString() : this.title);
+            return this.multiple ? `${this.title} - ${(<object[]>this.selected).length}` :
+                (this.selected ? this.selected.toString() : this.title);
         }
 
         get filterRegex(): RegExp {

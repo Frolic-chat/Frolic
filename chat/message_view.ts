@@ -102,13 +102,19 @@ export default class MessageView extends Vue {
     @Prop({ default: false })
     readonly logs!: boolean;
 
-    scoreClasses = this.getMessageScoreClasses(this.message);
-    filterClasses = this.getMessageFilterClasses(this.message);
+    scoreClasses!: string;
+    filterClasses!: string;
 
     scoreWatcher: (() => void) | null = (this.message.type === Conversation.Message.Type.Ad && this.message.score === 0)
         ? this.$watch('message.score', () => this.scoreUpdate())
         : null;
 
+
+    @Hook('created')
+    created(): void {
+        this.scoreClasses = this.getMessageScoreClasses(this.message);
+        this.filterClasses = this.getMessageFilterClasses(this.message);
+    }
 
     @Hook('beforeUnmount')
     onBeforeDestroy(): void {

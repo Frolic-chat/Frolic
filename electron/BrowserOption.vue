@@ -74,8 +74,7 @@
 </template>
 
 <script lang="ts">
-import * as electron from 'electron';
-import { Vue, Component, Hook } from 'vue-facing-decorator';
+import { Vue, Component, Hook, Inject } from 'vue-facing-decorator';
 import * as remote from '@electron/remote';
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
@@ -88,7 +87,9 @@ const browserWindow = remote.getCurrentWindow();
   components: {}
 })
 export default class BrowserOption extends Vue {
-  settings!: GeneralSettings;
+  @Inject
+  settings!: GeneralSettings
+
   isMaximized = false;
   l = l;
   platform = process.platform;

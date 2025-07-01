@@ -80,19 +80,19 @@
             </div>
         </div>
         <template>
-            <memo-dialog :character="character.character" :memo="character.memo" ref="memo-dialog" @memo="memo"></memo-dialog>
-            <delete-dialog :character="character" ref="delete-dialog"></delete-dialog>
-            <rename-dialog :character="character" ref="rename-dialog"></rename-dialog>
-            <duplicate-dialog :character="character" ref="duplicate-dialog"></duplicate-dialog>
-            <report-dialog v-if="!oldApi && authenticated && !character.is_self" :character="character" ref="report-dialog"></report-dialog>
-            <friend-dialog :character="character" ref="friend-dialog"></friend-dialog>
-            <block-dialog :character="character" ref="block-dialog"></block-dialog>
+            <memo-dialog :character="character.character" :memo="character.memo" ref="memoDialog" @memo="memo"></memo-dialog>
+            <delete-dialog :character="character" ref="deleteDialog"></delete-dialog>
+            <!-- <rename-dialog :character="character" ref="renameDialog"></rename-dialog> -->
+            <duplicate-dialog :character="character" ref="duplicateDialog"></duplicate-dialog>
+            <report-dialog v-if="!oldApi && authenticated && !character.is_self" :character="character" ref="reportDialog"></report-dialog>
+            <friend-dialog :character="character" ref="friendDialog"></friend-dialog>
+            <!-- <block-dialog :character="character" ref="blockDialog"></block-dialog> -->
         </template>
     </div>
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Ref } from 'vue-facing-decorator';
     // Component as VueComponent,
     //import {ComponentOptions, h, VNode} from 'vue';
     import DateDisplay from '../../components/date_display.vue';
@@ -111,9 +111,9 @@
     import ReportDialog from './report_dialog.vue';
     import core from '../../chat/core';
 
-    interface ShowableVueDialog extends Vue {
-        show(): void
-    }
+    // interface ShowableVueDialog extends Vue {
+    //     show(): void
+    // }
 
     // function resolveComponent(name: string): () => Promise<ReturnType<ReturnType<typeof Component>> | ComponentOptions<Vue>> {
     //     return async(): Promise<ReturnType<ReturnType<typeof Component>> | ComponentOptions<Vue>> => {
@@ -148,10 +148,25 @@
     export default class Sidebar extends Vue {
         @Prop({required: true})
         readonly character!: Character;
-        @Prop
-        readonly oldApi?: true;
+        @Prop({ default: false })
+        readonly oldApi!: boolean;
         @Prop({required: true})
         readonly characterMatch!: MatchReport;
+
+        @Ref
+        memoDialog!: MemoDialog;
+        @Ref
+        deleteDialog!: DeleteDialog;
+        // @Ref
+        // renameDialog!: any;
+        @Ref
+        duplicateDialog!: DuplicateDialog;
+        @Ref
+        reportDialog!: ReportDialog;
+        @Ref
+        friendDialog!: FriendDialog;
+        // @Ref
+        // blockDialog!: any;
 
         readonly shared: SharedStore = Store;
         readonly quickInfoIds: ReadonlyArray<number> = [1, 3, 2, 49, 9, 29, 15, 41, 25]; // Do not sort these.
@@ -198,32 +213,32 @@
             return badgeName in badgeMap ? badgeMap[badgeName] : badgeName;
         }
 
-        showBlock(): void {
-            (<ShowableVueDialog>this.$refs['block-dialog']).show();
-        }
+        // showBlock(): void {
+        //     this.blockDialog.show();
+        // }
 
-        showRename(): void {
-            (<ShowableVueDialog>this.$refs['rename-dialog']).show();
-        }
+        // showRename(): void {
+        //     this.renameDialog.show();
+        // }
 
         showDelete(): void {
-            (<ShowableVueDialog>this.$refs['delete-dialog']).show();
+            this.deleteDialog.show();
         }
 
         showDuplicate(): void {
-            (<ShowableVueDialog>this.$refs['duplicate-dialog']).show();
+            this.duplicateDialog.show();
         }
 
         showMemo(): void {
-            (<ShowableVueDialog>this.$refs['memo-dialog']).show();
+            this.memoDialog.show();
         }
 
         showReport(): void {
-            (<ShowableVueDialog>this.$refs['report-dialog']).show();
+            this.reportDialog.show();
         }
 
         showFriends(): void {
-            (<ShowableVueDialog>this.$refs['friend-dialog']).show();
+            this.friendDialog.show();
         }
 
         showInChat(): void {

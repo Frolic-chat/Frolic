@@ -117,22 +117,22 @@ interface CustomKinkWithScore extends CustomKink {
     }
 })
 export default class CharacterPreview extends Vue {
-  @Prop
-  readonly id?: number;
+  @Prop({ default: null })
+  readonly id!: number | null;
 
-  characterName?: string;
-  character?: ComplexCharacter;
-  match?: MatchReport;
-  ownCharacter?: ComplexCharacter;
-  onlineCharacter?: CharacterStatus;
-  statusClasses?: StatusClasses;
-  latestAd?: AdCachedPosting;
-  statusMessage?: string;
+  characterName: string | null = null;
+  character: ComplexCharacter | null = null;
+  match: MatchReport | null = null;
+  ownCharacter: ComplexCharacter | null = null;
+  onlineCharacter: CharacterStatus | null = null;
+  statusClasses: StatusClasses | null = null;
+  latestAd: AdCachedPosting | null = null;
+  statusMessage: string | null = null;
   memo: string | null = null;
   l = l;
 
-  smartFilterIsFiltered?: boolean;
-  smartFilterDetails?: string[];
+  smartFilterIsFiltered: boolean = false;
+  smartFilterDetails: string[] | null = null;
 
   smartFilterLabels: Record<string, { name: string }> = {
     ...smartFilterTypes,
@@ -140,13 +140,13 @@ export default class CharacterPreview extends Vue {
     ageMax: { name: 'Max age' }
   };
 
-  age?: string;
-  sexualOrientation?: string;
-  species?: string;
-  kemonomimi?: string;
-  gender?: string;
-  furryPref?: string;
-  subDomRole?: string;
+  age: string | null = null;
+  sexualOrientation: string | null = null;
+  species: string | null = null;
+  kemonomimi: string | null = null;
+  gender: string | null = null;
+  furryPref: string | null = null;
+  subDomRole: string | null = null;
 
   formatTime = formatTime;
   // readonly avatarUrl = Utils.avatarURL;
@@ -155,9 +155,9 @@ export default class CharacterPreview extends Vue {
   Score = Score;
 
   scoreWatcher: ((event: any) => void) | null = null;
-  customs?: CustomKinkWithScore[];
+  customs: CustomKinkWithScore[] | null = null;
 
-  conversation?: Conversation.Message[];
+  conversation: Conversation.Message[] | null = null;
 
   getAvatarUrl(): string {
     if (this.onlineCharacter && this.onlineCharacter.overrides.avatarUrl) {
@@ -212,13 +212,13 @@ export default class CharacterPreview extends Vue {
 
     this.characterName = characterName;
 
-    this.match = undefined;
-    this.character = undefined;
-    this.customs = undefined;
+    this.match = null;
+    this.character = null;
+    this.customs = null;
     this.memo = null;
     this.ownCharacter = core.characters.ownProfile;
 
-    this.conversation = undefined;
+    this.conversation = null;
 
     this.smartFilterIsFiltered = false;
     this.smartFilterDetails = [];
@@ -288,7 +288,7 @@ export default class CharacterPreview extends Vue {
     this.onlineCharacter = core.characters.get(this.characterName!);
 
     if (!this.onlineCharacter) {
-      this.statusClasses = undefined;
+      this.statusClasses = null;
       return;
     }
 
@@ -304,7 +304,7 @@ export default class CharacterPreview extends Vue {
       || (cache.posts.length === 0)
       || (Date.now() - cache.posts[cache.posts.length - 1].datePosted.getTime() > (45 * 60 * 1000))
     ) {
-      this.latestAd = undefined;
+      this.latestAd = null;
       return;
     }
 
@@ -340,13 +340,13 @@ export default class CharacterPreview extends Vue {
 
   updateDetails(): void {
     if (!this.match) {
-      this.age = undefined;
-      this.species = undefined;
-      this.kemonomimi = undefined;
-      this.gender = undefined;
-      this.furryPref = undefined;
-      this.subDomRole = undefined;
-      this.sexualOrientation = undefined;
+      this.age = null;
+      this.species = null;
+      this.kemonomimi = null;
+      this.gender = null;
+      this.furryPref = null;
+      this.subDomRole = null;
+      this.sexualOrientation = null;
       return;
     }
 
@@ -364,13 +364,13 @@ export default class CharacterPreview extends Vue {
       console.error('Missing Orientation', a.orientation, c.name);
     }
 
-    this.age = a.age ? this.readable(`${a.age}`) : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || undefined;
-    this.species = a.species ? this.readable(Species[a.species]) : (rawSpecies && rawSpecies.string) || undefined;
-    this.kemonomimi = a.isKemonomimi ? this.readable('kemomimi') : undefined;
-    this.gender = (a.gender && a.gender !== Gender.None) ? this.readable(Gender[a.gender]) : undefined;
-    this.furryPref = a.furryPreference ? this.readable(furryPreferenceMapping[a.furryPreference]) : undefined;
-    this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch) ? this.readable(SubDomRole[a.subDomRole]) : undefined;
-    this.sexualOrientation = a.orientation ? this.readable(Orientation[a.orientation]) : undefined;
+    this.age = a.age ? this.readable(`${a.age}`) : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || null;
+    this.species = a.species ? this.readable(Species[a.species]) : (rawSpecies && rawSpecies.string) || null;
+    this.kemonomimi = a.isKemonomimi ? this.readable('kemomimi') : null;
+    this.gender = (a.gender && a.gender !== Gender.None) ? this.readable(Gender[a.gender]) : null;
+    this.furryPref = a.furryPreference ? this.readable(furryPreferenceMapping[a.furryPreference]) : null;
+    this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch) ? this.readable(SubDomRole[a.subDomRole]) : null;
+    this.sexualOrientation = a.orientation ? this.readable(Orientation[a.orientation]) : null;
   }
 
   // Hard string replacements are english coded. Do these ever risk appearing in another language?
@@ -417,7 +417,7 @@ export default class CharacterPreview extends Vue {
         return cache.character;
       }
 
-      return methods.characterData(characterName, this.id, false);
+      return methods.characterData(characterName, this.id ?? undefined, false);
   }
 }
 </script>

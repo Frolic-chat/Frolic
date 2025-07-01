@@ -1,4 +1,6 @@
 import * as qs from 'querystring';
+import { createApp } from 'vue';
+
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('browser_option');
 import { LevelOption as LogLevelOption } from 'electron-log';
@@ -16,9 +18,8 @@ Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
 
 log.info('init.browser_option.vue');
 
-new BrowserOption({
-    el: '#browserOption',
-    data: {settings}
-});
+const app = createApp(BrowserOption, {});
+app.provide('settings', settings);
+app.mount('#browserOption');
 
 log.debug('init.browser_option.vue.done');

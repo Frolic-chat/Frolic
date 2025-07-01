@@ -2,7 +2,7 @@
     <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="logs-dialog">
         <template slot="title">
             {{l('logs.title')}}
-            <div class="logs-fab btn btn-secondary" slot="title" @click="showFilters = !showFilters">
+            <div class="logs-fab btn btn-secondary" @click="showFilters = !showFilters">
                 <span class="fas" :class="'fa-chevron-' + (showFilters ? 'up' : 'down')"></span>
             </div>
         </template>
@@ -114,7 +114,7 @@
 
         filter = '';
         messages: ReadonlyArray<Conversation.Message> = [];
-        keyDownListener?: (e: KeyboardEvent) => void;
+        keyDownListener: ((e: KeyboardEvent) => void) | null = null;
         resizeListener = async() => this.onMessagesScroll();
         characters: ReadonlyArray<string> = [];
         selectedCharacter = core.connection.character;

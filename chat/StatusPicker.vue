@@ -42,7 +42,7 @@
         readonly callback!: (statusMessage: string) => void;
 
         @Prop({required: true})
-        readonly curStatus!: string | undefined;
+        readonly curStatus!: string | null;
 
         history: string[] = [];
 

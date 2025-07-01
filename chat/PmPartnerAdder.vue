@@ -27,7 +27,7 @@ export default class PmPartnerAdder extends CustomDialog {
     error = '';
     l = l;
 
-    @Prop
+    @Prop({ default: false })
     readonly switch!: boolean;
 
     @Ref

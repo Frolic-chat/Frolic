@@ -34,7 +34,7 @@
         @Ref
         caption!: HTMLDivElement;
 
-        character: Character | undefined;
+        character: Character | null = null;
         text = '';
         error = '';
         submitting = false;
@@ -57,7 +57,7 @@
             this.error = '';
             this.text = '';
             const current = core.conversations.selectedConversation;
-            this.character = character !== undefined ? character : Conversation.isPrivate(current) ? current.character : undefined;
+            this.character = character ? character : Conversation.isPrivate(current) ? current.character : null;
             this.show();
         }
 
@@ -67,7 +67,7 @@
             const log = conversation.reportMessages.map((x) => messageToString(x));
             const tab = (Conversation.isChannel(conversation) ? `${conversation.name} (${conversation.channel.id})`
                 : Conversation.isPrivate(conversation) ? l('chat.report.convoWith', conversation.name) : l('general.console'));
-            const text = (this.character !== undefined ? l('chat.report.reportingWho', this.character.name) : '') + this.text;
+            const text = (this.character ? l('chat.report.reportingWho', this.character.name) : '') + this.text;
             const data = {
                 character: core.connection.character,
                 reportText: this.text,
@@ -76,7 +76,7 @@
                 text: true,
                 reportUser: <string | undefined>undefined
             };
-            if(this.character !== undefined) data.reportUser = this.character.name;
+            if(this.character) data.reportUser = this.character.name;
             try {
                 this.submitting = true;
                 const report = (await core.connection.queryApi<{log_id?: number}>('report-submit.php', data));

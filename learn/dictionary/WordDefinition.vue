@@ -38,8 +38,8 @@ const scripts: Record<string, string> = {
 export default class WordDefinition extends Vue {
   mode: 'dictionary' | 'thesaurus' | 'urbandictionary' | 'wikipedia' = 'dictionary';
 
-  @Prop
-  readonly expression?: string;
+  @Prop({ default: null })
+  readonly expression!: string | null;
 
   @Ref
   definitionPreview!: Electron.WebviewTag;

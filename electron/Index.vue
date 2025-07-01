@@ -717,16 +717,12 @@
 
         async openWordDefinitionInBrowser(): Promise<void> {
             electron.ipcRenderer.send('open-url-externally', this.wordDefinitionLookup.getWebUrl());
-            //await remote.shell.openExternal((this.$refs.wordDefinitionLookup as any).getWebUrl());
-
-            // tslint:disable-next-line: no-any no-unsafe-any
             this.wordDefinitionViewer.hide();
         }
 
 
         unpinUrlPreview(e: Event): void {
             const imagePreview = this.chat?.getChatView()?.getImagePreview();
-
             // const imagePreview = this.$refs['imagePreview'] as ImagePreview;
 
             if (imagePreview && imagePreview.isVisible() && imagePreview.sticky) {
@@ -741,7 +737,7 @@
 </script>
 
 <style lang="scss">
-    html, body, #page {
+    html, body, #app, #page {
         height: 100%;
     }
 

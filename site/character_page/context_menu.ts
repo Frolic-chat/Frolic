@@ -6,7 +6,7 @@ export default class ContextMenu extends Vue {
     propName: string = '';
     showMenu = false;
     position = {left: 0, top: 0};
-    selectedItem: HTMLElement | undefined;
+    selectedItem: HTMLElement | null = null;
     touchTimer = 0;
 
     itemSelected(_element: HTMLElement): void {};
@@ -17,7 +17,7 @@ export default class ContextMenu extends Vue {
 
     hideMenu(): void {
         this.showMenu = false;
-        this.selectedItem = undefined;
+        this.selectedItem = null;
     }
 
     bindOffclick(): void {

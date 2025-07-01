@@ -1,5 +1,5 @@
 <template>
-    <span class="localizable-date" :title="secondary">{{primary}}</span>
+    <span class="localizable-date" :title="secondary ?? undefined">{{primary}}</span>
 </template>
 
 <script lang="ts">
@@ -11,8 +11,8 @@
     export default class DateDisplay extends Vue {
         @Prop({required: true})
         readonly time!: string | null | number;
-        primary: string | undefined;
-        secondary: string | undefined;
+        primary: string | null = null;
+        secondary: string | null = null;
 
         @Hook('mounted')
         @Watch('time')

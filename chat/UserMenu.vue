@@ -3,7 +3,7 @@
         <div id="userMenu" class="list-group" v-show="showContextMenu" :style="position" v-if="character"
             style="position:fixed;padding:10px 10px 5px;display:block;width:220px;z-index:1100" ref="menu">
             <div style="min-height: 65px;padding:5px;overflow:auto" class="list-group-item" @click.stop>
-                <img :src="characterImage" style="width:60px;height:60px;margin-right:5px;float:left" v-if="showAvatars"/>
+                <img :src="characterImage ?? undefined" style="width:60px;height:60px;margin-right:5px;float:left" v-if="showAvatars"/>
                 <h5 style="margin:0;line-height:1">{{character.name}}</h5>
                 {{l('status.' + character.status)}}
             </div>
@@ -104,16 +104,16 @@ import { MemoManager } from './character/memo';
         adViewDialog!: CharacterAdView;
 
         showContextMenu = false;
-        character: Character | undefined;
+        character: Character | null = null;
         position = {left: '', top: ''};
-        characterImage: string | undefined;
-        touchedElement: HTMLElement | undefined;
-        channel: Channel | undefined;
+        characterImage: string | null = null;
+        touchedElement: HTMLElement | null = null;
+        channel: Channel | null = null;
         memo: string | null = '';
         // memoId = 0;
         memoLoading = false;
         match: MatchReport | null = null;
-        memoManager?: MemoManager;
+        memoManager: MemoManager | null = null;
 
         openConversation(jump: boolean): void {
             const conversation = core.conversations.getPrivate(this.character!);
@@ -192,7 +192,7 @@ import { MemoManager } from './character/memo';
         }
 
         get isChannelMod(): boolean {
-            if(this.channel === undefined) return false;
+            if(!this.channel) return false;
             if(core.characters.ownCharacter.isChatOp) return true;
             const member = this.channel.members[core.connection.character];
             return member !== undefined && member.rank > Channel.Rank.Member;
@@ -231,7 +231,7 @@ import { MemoManager } from './character/memo';
                 if(node.dataset['character'] !== undefined) node.character = core.characters.get(node.dataset['character']!);
                 else {
                     this.showContextMenu = false;
-                    this.touchedElement = undefined;
+                    this.touchedElement = null;
                     return;
                 }
             switch(e.type) {
@@ -261,9 +261,9 @@ import { MemoManager } from './character/memo';
 
 
         private async openMenu(touch: MouseEvent | Touch, character: Character, channel: Channel | undefined): Promise<void> {
-            this.channel = channel;
+            this.channel = channel ?? null;
             this.character = character;
-            this.characterImage = undefined;
+            this.characterImage = null;
             this.showContextMenu = true;
             this.position = {left: `${touch.clientX}px`, top: `${touch.clientY}px`};
             this.match = null;

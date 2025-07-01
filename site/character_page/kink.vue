@@ -33,9 +33,8 @@
         @Prop({required: true})
         readonly comparisons!: {[key: number]: string | undefined};
 
-        @Prop({required: false})
-        // tslint:disable-next-line: vue-props
-        expandedCustom = false;
+        @Prop({default: false})
+        readonly expandedCustom!: boolean;
 
         listClosed = true;
         initialListClosedState = true;
@@ -52,7 +51,7 @@
         }
 
         toggleExpandedCustoms(): void {
-            this.expandedCustom = !this.expandedCustom;
+            this.$emit('expanded-customs-change');
         }
 
         toggleSubkinks(): void {

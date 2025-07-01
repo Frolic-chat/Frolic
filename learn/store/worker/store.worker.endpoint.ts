@@ -60,7 +60,7 @@ const generateMessageProcessor = () => {
       const result = await messageMapper[req.cmd](req.params);
       reply(req, result);
     } catch(err) {
-      reply(req, undefined, err);
+      reply(req, undefined, err as Error);
     }
   };
 };

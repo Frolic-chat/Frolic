@@ -45,7 +45,7 @@ reports: ReportState[] = [
     }
 ];
 
-callback?: () => void;
+callback!: () => void;
 
 
 @Hook('mounted')

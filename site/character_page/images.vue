@@ -36,10 +36,10 @@
     export default class ImagesView extends Vue {
         @Prop({required: true})
         private readonly character!: Character;
-        @Prop
-        private readonly usePreview?: boolean;
-        @Prop
-        private readonly injectedImages?: CharacterImage[] | null;
+        @Prop({ default: false })
+        private readonly usePreview!: boolean;
+        @Prop({ default: null })
+        private readonly injectedImages!: CharacterImage[] | null;
 
         private shown = false;
         previewImage = '';

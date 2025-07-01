@@ -110,7 +110,7 @@
         // localPreviewStyle: Record<string, any> = {};
 
         url: string | null = null;
-        domain: string | undefined;
+        domain: string | null = null;
 
         sticky = false;
         runJs = true;
@@ -473,7 +473,7 @@
             const due = ((url === this.exitUrl) && (this.exitInterval)) ? 0 : 200;
 
             this.url = url;
-            this.domain = domain(url);
+            this.domain = domain(url) ?? null;
 
             this.cancelExitTimer();
             this.cancelTimer();
@@ -485,7 +485,7 @@
                 () => {
                     this.debugLog('ImagePreview: show.timeout', this.url);
 
-                    const helper = this.previewManager.show(this.url || undefined, this.domain);
+                    const helper = this.previewManager.show(this.url || undefined, this.domain ?? undefined);
 
                     this.interval = null;
                     this.visible = true;
@@ -644,7 +644,7 @@
             );
 
             this.url = null;
-            this.domain = undefined;
+            this.domain = null;
 
             this.sticky = false;
             this.runJs = true;

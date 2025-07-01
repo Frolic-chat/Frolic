@@ -136,7 +136,7 @@
         l = l;
 
         tabs: Tab[] = [];
-        activeTab: Tab | undefined;
+        activeTab: Tab | null = null;
         tabMap: {[key: number]: Tab} = {};
         isMaximized = false;
         canOpenTab = true;
@@ -246,12 +246,12 @@
             });
             browserWindow.on('maximize', () => {
                 this.isMaximized = true;
-                if (this.activeTab !== undefined)
+                if (this.activeTab)
                     this.activeTab.view.setBounds(getWindowBounds());
             });
             browserWindow.on('unmaximize', () => {
                 this.isMaximized = false;
-                if (this.activeTab !== undefined)
+                if (this.activeTab)
                     this.activeTab.view.setBounds(getWindowBounds());
             });
             electron.ipcRenderer.on('switch-tab', (_e: IpcRendererEvent) => {

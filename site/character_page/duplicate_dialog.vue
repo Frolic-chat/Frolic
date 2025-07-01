@@ -54,7 +54,7 @@
                 this.valid = false;
                 this.errors = {};
                 if(Utils.isJSONError(e))
-                    this.errors['name]'] = <string>e.response.data.error;
+                    this.errors['name'] = <string>e.response.data.error;
                 return false;
             } finally {
                 this.checking = false;

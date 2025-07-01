@@ -154,7 +154,7 @@
         'tab6'!: ReconView;
 
         shared: SharedStore = Store;
-        character: Character | undefined;
+        character: Character | null = null;
         loading = true;
         refreshing = false;
         error = '';
@@ -402,7 +402,7 @@
         private async _getCharacter(skipCache: boolean = false): Promise<void> {
             log.debug('profile.getCharacter', { name: this.name } );
 
-            this.character = undefined;
+            this.character = null;
             this.friends = null;
             this.groups = null;
             this.guestbook = null;

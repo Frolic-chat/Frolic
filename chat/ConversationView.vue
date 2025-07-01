@@ -157,8 +157,8 @@
         </div>
         <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messageviews"
              @scroll="onMessagesScroll" style="flex:1;overflow:auto;margin-top:2px">
-            <template v-for="message in messages">
-                <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id"
+            <template v-for="message in messages" :key="message.id">
+                <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined"
                     :classes="message == conversation.lastRead ? 'last-read' : ''">
                 </message-view>
                 <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
@@ -320,7 +320,7 @@
         modes = channelModes;
         descriptionExpanded = false;
         extraButtons: EditorButton[] = [];
-        tabOptions: string[] | undefined;
+        tabOptions: string[] | null = null;
         tabOptionsIndex!: number;
         tabOptionSelection!: EditorSelection;
         showSearch = false;
@@ -346,9 +346,9 @@
 
         userMemo: string | null = null;
         editorMemo: string = '';
-        memoManager?: MemoManager;
+        memoManager: MemoManager | null = null;
 
-        ownName?: string;
+        ownName: string | null = null;
 
         @Hook('beforeMount')
         async onBeforeMount(): Promise<void> {
@@ -433,7 +433,8 @@
         }
 
         updateOwnName(): void {
-            this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter?.name : undefined;
+            // This is probably fine.
+            this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter?.name : null;
         }
 
         get conversation(): Conversation {
@@ -542,7 +543,7 @@
                     this.tabOptionsIndex = 0;
                     this.tabOptionSelection = selection;
                 }
-                if(this.tabOptions.length > 0) {
+                if(this.tabOptions && this.tabOptions.length > 0) {
                     const selection = editor.getSelection();
                     if(selection.end !== this.tabOptionSelection.end) return;
                     if(this.tabOptionsIndex >= this.tabOptions.length) this.tabOptionsIndex = 0;
@@ -554,7 +555,7 @@
                     ++this.tabOptionsIndex;
                 }
             } else {
-                if(this.tabOptions !== undefined) this.tabOptions = undefined;
+                if(this.tabOptions) this.tabOptions = null;
                 if(getKey(e) === Keys.ArrowUp && this.conversation.enteredText.length === 0
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey)
                     this.conversation.loadLastSent();
@@ -567,6 +568,7 @@
         }
 
         setMode(mode: Channel.Mode): void {
+            // Fix this
             const conv = (<Conversation.ChannelConversation>this.conversation);
             if(conv.channel.mode === 'both') conv.mode = mode;
         }

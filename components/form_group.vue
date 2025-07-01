@@ -22,14 +22,14 @@
         readonly field!: string;
         @Prop({required: true})
         readonly errors!: {[key: string]: ReadonlyArray<string> | undefined};
-        @Prop
-        readonly label?: string;
-        @Prop
-        readonly id?: string;
+        @Prop({ default: null })
+        readonly label!: string | null;
+        @Prop({ default: null })
+        readonly id!: string | null;
         @Prop({default: false})
         readonly valid!: boolean;
-        @Prop
-        readonly helptext?: string;
+        @Prop({ default: null })
+        readonly helptext!: string | null;
 
         get hasErrors(): boolean {
             return typeof this.errors[this.field] !== 'undefined';

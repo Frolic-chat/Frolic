@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar-wrapper" :class="{open: expanded}">
         <div :class="'sidebar sidebar-' + (right ? 'right' : 'left')">
-            <button @click="expanded = !expanded" class="btn btn-secondary btn-xs expander" :aria-label="label">
+            <button @click="expanded = !expanded" class="btn btn-secondary btn-xs expander" :aria-label="label ?? undefined">
                 <span :class="'fa fa-fw fa-rotate-270 ' + icon" v-if="right"></span>
                 <span class="fa" :class="{'fa-chevron-down': !expanded, 'fa-chevron-up': expanded}"></span>
                 <span :class="'fa fa-fw fa-rotate-90 ' + icon" v-if="!right"></span>
@@ -19,10 +19,10 @@
 
     @Component
     export default class Sidebar extends Vue {
-        @Prop
-        readonly right?: true;
-        @Prop
-        readonly label?: string;
+        @Prop({ default: false })
+        readonly right!: boolean;
+        @Prop({ default: null })
+        readonly label!: string | null;
         @Prop({required: true})
         readonly icon!: string;
         @Prop({default: false})
