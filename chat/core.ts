@@ -123,7 +123,6 @@ export function init(this: any,
     data.connection = connection;
     data.logs = new logsClass();
     data.settingsStore = new settingsClass();
-    data.state = vueState.state,
     data.notifications = new notificationsClass();
     data.cache = new CacheManager();
     data.adCoordinator = new AdCoordinatorGuest();
