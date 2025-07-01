@@ -286,6 +286,11 @@
         }
     })
     export default class ConversationView extends Vue {
+        l = l;
+        getByteLength = getByteLength;
+        isChannel = Conversation.isChannel;
+        isPrivate = Conversation.isPrivate;
+
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
 
@@ -314,9 +319,7 @@
 
         modes = channelModes;
         descriptionExpanded = false;
-        l = l;
         extraButtons: EditorButton[] = [];
-        getByteLength = getByteLength;
         tabOptions: string[] | undefined;
         tabOptionsIndex!: number;
         tabOptionSelection!: EditorSelection;
@@ -339,8 +342,6 @@
         adAutoPostUpdate: string | null = null;
         adAutoPostNextAd: string | null = null;
         adsRequireSetup = false;
-        isChannel = Conversation.isChannel;
-        isPrivate = Conversation.isPrivate;
         showNonMatchingAds = true;
 
         userMemo: string | null = null;

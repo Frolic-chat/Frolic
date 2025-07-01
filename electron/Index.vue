@@ -250,7 +250,6 @@
         fixCharacter = '';
         wordDefinition = '';
         shouldShowSpinner = false;
-
         profileNameHistory: string[] = [];
         profilePointer = 0;
 
@@ -365,7 +364,7 @@
             // Vue 2:
             // Vue.set(core.state, 'generalSettings', this.settings);
             core.state.generalSettings = this.settings;
-
+            log.debug('init.chat.created.settings', { settings: this.settings }); // Works
 
             electron.ipcRenderer.on('settings', (_e: Electron.IpcRendererEvent, settings: GeneralSettings) => {
                 log.debug('settings.update.index');
@@ -454,7 +453,10 @@
 
                 const data = <{ticket?: string, error: string, characters: {[key: string]: number}, default_character: number}>
                     (await Axios.post('https://www.f-list.net/json/getApiTicket.php', qs.stringify({
-                        account: this.settings.account, password: this.password, no_friends: true, no_bookmarks: true,
+                        account: this.settings.account,
+                        password: this.password,
+                        no_friends: true,
+                        no_bookmarks: true,
                         new_character_list: true
                     }))).data;
 
@@ -511,11 +513,23 @@
 
                 core.connection.setCredentials(this.settings.account, this.password);
 
+                log.debug('login.pre-characters', {
+                    chars: this.characters,
+                    default: this.defaultCharacter,
+                    web: data,
+                });
+
                 this.characters = Object.keys(data.characters)
                         .map(name => ({ name, id: data.characters[name], deleted: false }))
                         .sort((x, y) => x.name.localeCompare(y.name));
 
                 this.defaultCharacter = data.default_character;
+
+                log.debug('login.post-characters', {
+                    chars: this.characters,
+                    default: this.defaultCharacter,
+                    web: data,
+                });
             }
             catch (e) {
                 this.error = l('login.error');

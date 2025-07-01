@@ -98,6 +98,9 @@
         components: {modal: Modal, 'message-view': MessageView, 'filterable-select': FilterableSelect}
     })
     export default class Logs extends CustomDialog {
+        l = l;
+        formatDate = formatDate;
+
         @Prop({ default: null })
         readonly conversation!: Conversation | null;
 
@@ -111,8 +114,8 @@
 
         filter = '';
         messages: ReadonlyArray<Conversation.Message> = [];
-        formatDate = formatDate;
         keyDownListener?: (e: KeyboardEvent) => void;
+        resizeListener = async() => this.onMessagesScroll();
         characters: ReadonlyArray<string> = [];
         selectedCharacter = core.connection.character;
         showFilters = true;
@@ -120,7 +123,6 @@
         dateOffset = -1;
         windowStart = 0;
         windowEnd = 0;
-        resizeListener = async() => this.onMessagesScroll();
 
         get displayedMessages(): ReadonlyArray<Conversation.Message> {
             if(this.selectedDate) return this.filteredMessages;

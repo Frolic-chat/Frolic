@@ -97,17 +97,17 @@ let store: EIconStore | undefined;
 @Component({ components: { modal } })
 export default class EIconSelector extends CustomDialog {
     l = l;
+    searchUpdateDebounce = debounce(() => this.runSearch(), 350);
+
     @Prop
     readonly onSelect?: (eicon: string, shift: boolean) => void;
 
     @Ref
     searchInput!: HTMLInputElement;
 
-    results: string[] = [];
     search: string = '';
+    results: string[] = [];
     refreshing: boolean = true;
-
-    searchUpdateDebounce = debounce(() => this.runSearch(), 350);
 
     @Hook('mounted')
     async mounted(): Promise<void> {

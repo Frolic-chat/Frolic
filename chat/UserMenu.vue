@@ -89,6 +89,8 @@ import { MemoManager } from './character/memo';
     })
     export default class UserMenu extends Vue {
         l = l;
+        getByteLength = getByteLength;
+
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
 
@@ -102,7 +104,6 @@ import { MemoManager } from './character/memo';
         adViewDialog!: CharacterAdView;
 
         showContextMenu = false;
-        getByteLength = getByteLength;
         character: Character | undefined;
         position = {left: '', top: ''};
         characterImage: string | undefined;

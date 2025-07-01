@@ -29,12 +29,13 @@
         components: {modal: Modal}
     })
     export default class ReportDialog extends CustomDialog {
+        l = l;
+
         @Ref
         caption!: HTMLDivElement;
 
         character: Character | undefined;
         text = '';
-        l = l;
         error = '';
         submitting = false;
 

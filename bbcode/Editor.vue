@@ -61,7 +61,6 @@
     import {BBCodeParser} from './parser';
     import {default as IconView} from './IconView.vue';
     import {default as EIconSelector} from './EIconSelector.vue';
-    import Modal from '../components/Modal.vue';
 
     @Component({
       components: {
@@ -327,7 +326,7 @@
           // Allow emitted variations for custom buttons.
             //this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
             // noinspection TypeScriptValidateTypes
-            if(button.handler !== undefined) {
+            if(button.handler) {
                 // tslint:ignore-next-line:no-any
                 return button.handler(this);
             }

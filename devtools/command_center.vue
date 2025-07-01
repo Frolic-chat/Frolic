@@ -13,7 +13,7 @@ You should have received a copy of the GNU General Public License along with thi
     <modal :action="tab === '0' ? 'Spoof!' : 'Logs'" ref="dialog" dialogClass="" @submit="handle" buttonText="Submit">
         <tabs style="flex-shrink:0" :tabs="{ 0: 'Spoof!', 1: 'Logs' }" v-model="tab"></tabs>
         <spoof v-show="tab === '0'" ref="0" id="spoof"></spoof>
-        <logs  v-show="tab === '1'" ref="1" id="logs" ></logs>
+        <logs  v-show="tab === '1'" ref="1" id="logs"  ></logs>
     </modal>
 </template>
 

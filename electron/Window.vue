@@ -132,12 +132,14 @@
     export default class Window extends Vue {
         @Prop
         settings!: GeneralSettings;
+
+        l = l;
+
         tabs: Tab[] = [];
         activeTab: Tab | undefined;
         tabMap: {[key: number]: Tab} = {};
         isMaximized = false;
         canOpenTab = true;
-        l = l;
         hasUpdate = false;
         platform = process.platform;
         lockTab = false;

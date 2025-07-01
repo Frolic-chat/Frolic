@@ -217,9 +217,16 @@
 
     @Component({
         components: {
-            'user-list': UserList, channels: ChannelList, 'status-switcher': StatusSwitcher, 'character-search': CharacterSearch,
-            settings: SettingsView, conversation: ConversationView, 'report-dialog': ReportDialog, sidebar: Sidebar,
-            'user-menu': UserMenu, 'recent-conversations': RecentConversations,
+            'user-list': UserList,
+            channels: ChannelList,
+            'status-switcher': StatusSwitcher,
+            'character-search': CharacterSearch,
+            settings: SettingsView,
+            conversation: ConversationView,
+            'report-dialog': ReportDialog,
+            sidebar: Sidebar,
+            'user-menu': UserMenu,
+            'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
             'note-status': NoteStatus,
