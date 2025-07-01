@@ -22,6 +22,9 @@
                     </a>
                 </h3>
                 <div class="card-body">
+                    <!-- <div ref="testTextDiv">
+                        <a @click.prevent="testFunc">{{ characterz.testfield }}</a>
+                    </div> -->
                     <div class="alert alert-danger" v-show="error">
                         {{error}}
                     </div>
@@ -234,6 +237,22 @@
         wordDefinitionLookup!: WordDefinition;
         @Ref
         logsDialog!: Logs;
+
+        // @Ref
+        // testTextDiv!: HTMLDivElement;
+        // characterz = core.characters;
+        // testFunc(v: any): void {
+        //     log.debug('reactivity.testFunc.pre', {
+        //         cctestfield: core.characters.testfield,
+        //         localtestText: this.characterz.testfield,
+        //     });
+        //     if (this.characterz.testfield === 'test') core.characters.testfield = 'secondary';
+        //     else                                      core.characters.testfield = 'test';
+        //     log.debug('reactivity.testFunc.post', {
+        //         cctestfield: core.characters.testfield,
+        //         localtestText: this.characterz.testfield,
+        //     });
+        // }
 
         showAdvanced = false;
         saveLogin = false;

@@ -48,20 +48,13 @@ class State implements StateInterface {
 
 // If there's no function to change data like there was in Vue 2, then these shouldn't be readonly. Return them to readonly if we stop directly assigning the State into them.
 interface VueState {
-    channels: Channel.State
-    characters: Character.State
-    conversations: Conversation.State
-    state: StateInterface
+    readonly channels: Channel.State;
+    readonly characters: Character.State;
+    readonly conversations: Conversation.State;
+    readonly state: StateInterface;
 }
 
 const state = new State();
-
-const vueState = reactive<Partial<VueState> & { state: StateInterface }>({
-    channels:       undefined,
-    characters:     undefined,
-    conversations:  undefined,
-    state:          state
-});
 
 // Legacy vue 2.
 // const vue = <Vue & VueState>new Vue({
@@ -77,7 +70,7 @@ const data = {
     connection: <Connection | undefined>undefined,
     logs: <Logs | undefined>undefined,
     settingsStore: <Settings.Store | undefined>undefined,
-    state: vueState.state,
+    state: reactive(state),
     bbCodeParser: new BBCodeParser(),
     conversations: <Conversation.State | undefined>undefined,
     channels: <Channel.State | undefined>undefined,
@@ -89,10 +82,7 @@ const data = {
     siteSession: <SiteSession | undefined>undefined,
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {
-        // Vue 2
-        // Vue.set(vue, module, subState);
-        vueState[module] = subState;
-        (<VueState[K]>data[module]) = subState;
+        data[module] = reactive(subState) as any;
     },
     watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void): void {
         watch(getter, callback);
