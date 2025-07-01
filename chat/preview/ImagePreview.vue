@@ -44,7 +44,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
     import l from '../localize';
-    import { Vue, Component, Hook } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Ref } from 'vue-facing-decorator';
     import core from '../core';
     import { EventBus, EventBusEvent } from './event-bus';
     import {domain} from '../../bbcode/core';
@@ -84,11 +84,15 @@
         }
     })
     export default class ImagePreview extends Vue {
-        private readonly MinTimePreviewVisible = 100;
-
-        visible = false;
-
         l = l;
+
+        @Ref
+        imagePreviewExt!: Electron.WebviewTag;
+        @Ref
+        characterPreview!: CharacterPreview;
+
+        private readonly MinTimePreviewVisible = 100;
+        visible = false;
 
         previewManager = new PreviewManager(
           this,
@@ -619,12 +623,12 @@
 
 
         getWebview(): Electron.WebviewTag {
-            return this.$refs.imagePreviewExt as Electron.WebviewTag;
+            return this.imagePreviewExt;
         }
 
 
         getCharacterPreview(): CharacterPreview {
-          return this.$refs.characterPreview as CharacterPreview;
+          return this.characterPreview;
         }
 
 

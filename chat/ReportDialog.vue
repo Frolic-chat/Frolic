@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook } from 'vue-facing-decorator';
+    import { Component, Hook, Ref } from 'vue-facing-decorator';
     import {BBCodeElement} from '../bbcode/core';
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
@@ -29,6 +29,9 @@
         components: {modal: Modal}
     })
     export default class ReportDialog extends CustomDialog {
+        @Ref
+        caption!: HTMLDivElement;
+
         character: Character | undefined;
         text = '';
         l = l;
@@ -37,12 +40,12 @@
 
         @Hook('mounted')
         mounted(): void {
-            (<Element>this.$refs['caption']).appendChild(new BBCodeParser().parseEverything(l('chat.report.description')));
+            this.caption.appendChild(new BBCodeParser().parseEverything(l('chat.report.description')));
         }
 
         @Hook('beforeUnmount')
         beforeDestroy(): void {
-            (<BBCodeElement>(<Element>this.$refs['caption']).firstChild).cleanup!();
+            (<BBCodeElement>this.caption.firstChild).cleanup!();
         }
 
         get conversation(): string {

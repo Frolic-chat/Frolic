@@ -75,7 +75,7 @@
                     {{l('chat.pms')}}
                 </a>
 
-                <div class="list-group conversation-nav" ref="privateConversations">
+                <div class="list-group conversation-nav" ref="privateConversationList">
                     <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
                         :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
                         class="list-group-item list-group-item-action item-private" :key="conversation.key"
@@ -107,7 +107,7 @@
                     {{l('chat.channels')}}
                 </a>
 
-                <div class="list-group conversation-nav" ref="channelConversations">
+                <div class="list-group conversation-nav" ref="channelConversationList">
                     <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
                         :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" :key="conversation.key"
                         @click.middle.prevent.stop="conversation.close()">
@@ -146,7 +146,7 @@
                     <div class="name">{{conversation.name}}</div>
                 </a>
             </div>
-            <conversation :reportDialog="$refs['reportDialog']" @show-ad-center="showAdCenter()" @show-ad-launcher="showAdLauncher()"></conversation>
+            <conversation :reportDialog="reportDialog" @show-ad-center="showAdCenter()" @show-ad-launcher="showAdLauncher()"></conversation>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
@@ -156,7 +156,7 @@
         <adCenter ref="adCenter"></adCenter>
         <settings ref="settingsDialog"></settings>
         <report-dialog ref="reportDialog"></report-dialog>
-        <user-menu ref="userMenu" :reportDialog="$refs['reportDialog']"></user-menu>
+        <user-menu ref="userMenu" :reportDialog="reportDialog"></user-menu>
         <recent-conversations ref="recentDialog"></recent-conversations>
         <dev-tools ref="devTools"></dev-tools>
         <image-preview ref="imagePreview"></image-preview>
@@ -177,7 +177,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Watch, Ref } from 'vue-facing-decorator';
 
     import Sortable from 'sortablejs';
 
@@ -242,6 +242,39 @@
         focusListener!: () => void;
         blurListener!: () => void;
 
+        @Ref
+        reportDialog!: ReportDialog;
+        @Ref
+        privateConversationList!: HTMLDivElement;
+        @Ref
+        channelConversationList!: HTMLDivElement;
+        @Ref
+        settingsDialog!: SettingsView;
+        @Ref
+        searchDialog!: CharacterSearch;
+        @Ref
+        recentDialog!: RecentConversations;
+        @Ref
+        channelsDialog!: ChannelList;
+        @Ref
+        statusDialog!: StatusSwitcher;
+        @Ref
+        adCenter!: AdCenterDialog;
+        @Ref
+        adLauncher!: AdLauncherDialog;
+        @Ref
+        devTools!: any;
+        @Ref
+        profileAnalysisModal!: Modal;
+        @Ref
+        profileAnalysis!: ProfileAnalysis;
+        @Ref
+        addPmPartnerDialog!: PmPartnerAdder;
+        @Ref
+        userMenu!: UserMenu;
+        @Ref
+        imagePreview!: ImagePreview;
+
         channelConversations = core.conversations.channelConversations
         privateConversations = core.conversations.privateConversations
 
@@ -267,7 +300,7 @@
             this.keydownListener = (e: KeyboardEvent) => this.onKeyDown(e);
             window.addEventListener('keydown', this.keydownListener);
             this.setFontSize(core.state.settings.fontSize);
-            Sortable.create(<HTMLElement>this.$refs['privateConversations'], {
+            Sortable.create(this.privateConversationList, {
                 animation: 50,
                 fallbackTolerance: 5,
                 onEnd: async(e) => {
@@ -275,7 +308,7 @@
                     return core.conversations.privateConversations[e.oldIndex!].sort(e.newIndex!);
                 }
             });
-            Sortable.create(<HTMLElement>this.$refs['channelConversations'], {
+            Sortable.create(this.channelConversationList, {
                 animation: 50,
                 fallbackTolerance: 5,
                 onEnd: async(e) => {
@@ -427,55 +460,52 @@
         }
 
         showSettings(): void {
-            (<SettingsView>this.$refs['settingsDialog']).show();
+            this.settingsDialog.show();
         }
 
         showSearch(): void {
-            (<CharacterSearch>this.$refs['searchDialog']).show();
+            this.searchDialog.show();
         }
 
         showRecent(): void {
-            (<RecentConversations>this.$refs['recentDialog']).show();
+            this.recentDialog.show();
         }
 
         showChannels(): void {
-            (<ChannelList>this.$refs['channelsDialog']).show();
+            this.channelsDialog.show();
         }
 
         showStatus(): void {
-            (<StatusSwitcher>this.$refs['statusDialog']).show();
+            this.statusDialog.show();
         }
 
         showAdCenter(): void {
-          (<AdCenterDialog>this.$refs['adCenter']).show();
+          this.adCenter.show();
         }
 
         showAdLauncher(): void {
-          (<AdLauncherDialog>this.$refs['adLauncher']).show();
+          this.adLauncher.show();
         }
 
         showDevTools(): void {
             if (this.env === 'development') {
-                (this.$refs.devTools as any).show();
+                this.devTools.show();
             }
         }
 
         showProfileAnalyzer(): void {
-          (this.$refs.profileAnalysisModal as any).show();
-
-          // Vue 2
-          // void (this.$refs.profileAnalysisModal as any).$children[0].analyze();
-          void (this.$refs.profileAnalysis as any).analyze();
+          this.profileAnalysisModal.show();
+          void this.profileAnalysis.analyze();
         }
 
         addPmPartnerSwitch: boolean = false;
         showAddPmPartner(): void {
             this.addPmPartnerSwitch = !this.addPmPartnerSwitch;
-            (<PmPartnerAdder>this.$refs['addPmPartnerDialog']).show();
+            this.addPmPartnerDialog.show();
         }
 
         userMenuHandle(e: MouseEvent | TouchEvent): void {
-            (<UserMenu>this.$refs['userMenu']).handleEvent(e);
+            this.userMenu.handleEvent(e);
         }
 
         get showAvatars(): boolean {
@@ -499,7 +529,7 @@
         }
 
         getImagePreview(): ImagePreview | undefined {
-          return this.$refs['imagePreview'] as ImagePreview;
+          return this.imagePreview;
         }
 
         adsAreRunning(): boolean {

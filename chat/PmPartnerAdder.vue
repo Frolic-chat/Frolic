@@ -3,7 +3,7 @@
         <div>
             <input type="text" :placeholder="l('general.name')"
                 required minlength="2" maxlength="40"
-                v-model="name" id="name" ref="name"
+                v-model="name" id="name" ref="nameInput"
                 @keyup.enter="keyboard_submit"
             />
             <div v-if="error" class="error">{{error}}</div>
@@ -13,7 +13,7 @@
 
 
 <script lang="ts">
-import { Component, Prop, Watch } from 'vue-facing-decorator';
+import { Component, Prop, Watch, Ref } from 'vue-facing-decorator';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
 import core from './core';
@@ -30,10 +30,13 @@ export default class PmPartnerAdder extends CustomDialog {
     @Prop
     readonly switch!: boolean;
 
+    @Ref
+    nameInput!: HTMLInputElement;
+
     @Watch('switch')
     open(): void {
         this.$nextTick(() => {
-            (this.$refs.name as HTMLInputElement).focus();
+            this.nameInput.focus();
         });
 
         this.error = '';

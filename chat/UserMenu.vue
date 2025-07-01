@@ -61,7 +61,7 @@
                 {{l('user.chatKick')}}
             </a>
         </div>
-        <modal :action="l('user.memo.action')" ref="memo" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
+        <modal :action="l('user.memo.action')" ref="memoModal" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
             <div style="float:right;text-align:right;">{{memo ? getByteLength(memo) : 0}} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
         </modal>
@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-facing-decorator';
+import { Vue, Component, Prop, Ref } from 'vue-facing-decorator';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
 import CharacterAdView from './character/CharacterAdView.vue';
@@ -88,9 +88,19 @@ import { MemoManager } from './character/memo';
         components: {'match-tags': MatchTags, bbcode: BBCodeView(core.bbCodeParser), modal: Modal, 'ad-view': CharacterAdView}
     })
     export default class UserMenu extends Vue {
+        l = l;
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
-        l = l;
+
+        @Ref
+        menu!: HTMLDivElement;
+
+        @Ref
+        memoModal!: Modal;
+
+        @Ref
+        adViewDialog!: CharacterAdView;
+
         showContextMenu = false;
         getByteLength = getByteLength;
         character: Character | undefined;
@@ -141,7 +151,7 @@ import { MemoManager } from './character/memo';
             this.memo = '';
             this.memoManager = new MemoManager(this.character!.name);
 
-            (<Modal>this.$refs['memo']).show();
+            this.memoModal.show();
 
             try {
               await this.memoManager.load();
@@ -162,7 +172,7 @@ import { MemoManager } from './character/memo';
                 return;
             }
 
-            (<CharacterAdView>this.$refs['adViewDialog']).show();
+            this.adViewDialog.show();
         }
 
 
@@ -211,7 +221,7 @@ import { MemoManager } from './character/memo';
             const touch = e.type === 'touchstart' ? (<TouchEvent>e).changedTouches[0] : <MouseEvent>e;
             let node = <HTMLElement & {character?: Character, channel?: Channel, touched?: boolean}>touch.target;
             while(node !== document.body) {
-                if(e.type !== 'click' && node === this.$refs['menu'] || node.id === 'userMenuStatus') return;
+                if(e.type !== 'click' && node === this.menu || node.id === 'userMenuStatus') return;
                 if(node.character !== undefined || node.dataset['character'] !== undefined || node.parentNode === null) break;
                 node = node.parentElement!;
             }
@@ -271,7 +281,7 @@ import { MemoManager } from './character/memo';
             }
 
             this.$nextTick(() => {
-                const menu = <HTMLElement>this.$refs['menu'];
+                const menu = this.menu;
                 this.characterImage = characterImage(character.name);
                 if((parseInt(this.position.left, 10) + menu.offsetWidth) > window.innerWidth)
                     this.position.left = `${window.innerWidth - menu.offsetWidth - 1}px`;

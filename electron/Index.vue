@@ -120,9 +120,9 @@
             </div>
         </modal>
         <modal :buttons="false" ref="wordDefinitionViewer" dialogClass="word-definition-viewer">
-            <word-definition :expression="wordDefinitionLookup" ref="wordDefinitionLookup"></word-definition>
+            <word-definition :expression="wordDefinition" ref="wordDefinitionLookup"></word-definition>
             <template slot="title">
-                {{wordDefinitionLookup}}
+                {{wordDefinition}}
                 <a class="btn wordDefBtn dictionary" @click="openDefinitionWithDictionary"><i>D</i></a>
                 <a class="btn wordDefBtn thesaurus" @click="openDefinitionWithThesaurus"><i>T</i></a>
                 <a class="btn wordDefBtn urbandictionary" @click="openDefinitionWithUrbanDictionary"><i>UD</i></a>
@@ -136,7 +136,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Watch, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Watch, Prop, Ref, Inject } from 'vue-facing-decorator';
     import Axios from 'axios';
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
@@ -208,6 +208,25 @@
         }
     })
     export default class Index extends Vue {
+        @Ref
+        chat: Chat | null = null;
+        @Ref
+        linkPreview!: HTMLDivElement;
+        @Ref
+        importModal!: Modal;
+        @Ref
+        profileViewer!: Modal;
+        @Ref
+        characterPage!: CharacterPage;
+        @Ref
+        fixLogsModal!: Modal;
+        @Ref
+        wordDefinitionViewer!: Modal;
+        @Ref
+        wordDefinitionLookup!: WordDefinition;
+        @Ref
+        logsDialog!: Logs;
+
         showAdvanced = false;
         saveLogin = false;
         loggingIn = false;
@@ -229,8 +248,7 @@
         adName = '';
         fixCharacters: ReadonlyArray<string> = [];
         fixCharacter = '';
-        wordDefinitionLookup = '';
-
+        wordDefinition = '';
         shouldShowSpinner = false;
 
         profileNameHistory: string[] = [];
@@ -322,10 +340,10 @@
 
             EventBus.$on(
                 'word-definition', (data: any) => {
-                    this.wordDefinitionLookup = data.lookupWord;
+                    this.wordDefinition = data.lookupWord;
 
                     if (!!data.lookupWord) {
-                        (<Modal>this.$refs.wordDefinitionViewer).show();
+                        this.wordDefinitionViewer.show();
                     }
                 }
             );
@@ -355,7 +373,7 @@
             });
 
             electron.ipcRenderer.on('open-profile', (_e: Electron.IpcRendererEvent, name: string) => {
-                const profileViewer = <Modal>this.$refs['profileViewer'];
+                const profileViewer = this.profileViewer;
 
                 this.openProfile(name);
 
@@ -367,7 +385,7 @@
                  && this.profilePointer < this.profileNameHistory.length
                  && this.profilePointer >= 0) {
                     const name = this.profileNameHistory[this.profilePointer];
-                    const profileViewer = <Modal>this.$refs['profileViewer'];
+                    const profileViewer = this.profileViewer;
 
                     if (this.profileName === name && profileViewer.isShown) {
                         profileViewer.hide();
@@ -382,7 +400,7 @@
             electron.ipcRenderer.on('fix-logs', async() => {
                 this.fixCharacters = await core.settingsStore.getAvailableCharacters();
                 this.fixCharacter = this.fixCharacters[0];
-                (<Modal>this.$refs['fixLogsModal']).show();
+                this.fixLogsModal.show();
             });
 
             electron.ipcRenderer.on('update-zoom', (_e, zoomLevel) => {
@@ -466,11 +484,11 @@
                         if (!confirm(l('importer.importGeneral')))
                             return core.settingsStore.set('settings', new Settings());
 
-                        (<Modal>this.$refs['importModal']).show(true);
+                        this.importModal.show(true);
 
                         await SlimcatImporter.importCharacter(core.connection.character, (progress) => this.importProgress = progress);
 
-                        (<Modal>this.$refs['importModal']).hide();
+                        this.importModal.hide();
                     }
                 });
                 core.connection.onEvent('connected', () => {
@@ -532,7 +550,7 @@
         }
 
         onMouseOver(e: MouseEvent): void {
-            const preview = (<HTMLDivElement>this.$refs.linkPreview);
+            const preview = this.linkPreview;
             if ((<HTMLElement>e.target).tagName === 'A') {
                 const target = <HTMLAnchorElement>e.target;
                 if (target.hostname !== '') {
@@ -552,7 +570,7 @@
             electron.ipcRenderer.send('open-url-externally', `https://www.f-list.net/c/${this.profileName}`);
 
             // tslint:disable-next-line: no-any no-unsafe-any
-            (this.$refs.profileViewer as any).hide();
+            this.profileViewer.hide();
         }
 
         openConversation(): void {
@@ -562,12 +580,12 @@
             conversation.show();
 
             // tslint:disable-next-line: no-any no-unsafe-any
-            (this.$refs.profileViewer as any).hide();
+            this.profileViewer.hide();
         }
 
 
         isRefreshingProfile(): boolean {
-          const cp = this.$refs.characterPage as CharacterPage;
+          const cp = this.characterPage;
 
           return cp && cp.refreshing;
         }
@@ -575,7 +593,7 @@
 
         reloadCharacter(): void {
             // tslint:disable-next-line: no-any no-unsafe-any
-            (this.$refs.characterPage as any).reload();
+            this.characterPage.reload();
         }
 
 
@@ -657,41 +675,41 @@
         }
 
         showLogs(): void {
-            (<Logs>this.$refs['logsDialog']).show();
+            this.logsDialog.show();
         }
 
 
         async openDefinitionWithDictionary(): Promise<void> {
-            (this.$refs.wordDefinitionLookup as any).setMode('dictionary');
+            this.wordDefinitionLookup.setMode('dictionary');
         }
 
 
         async openDefinitionWithThesaurus(): Promise<void> {
-            (this.$refs.wordDefinitionLookup as any).setMode('thesaurus');
+            this.wordDefinitionLookup.setMode('thesaurus');
         }
 
 
         async openDefinitionWithUrbanDictionary(): Promise<void> {
-            (this.$refs.wordDefinitionLookup as any).setMode('urbandictionary');
+            this.wordDefinitionLookup.setMode('urbandictionary');
         }
 
 
         async openDefinitionWithWikipedia(): Promise<void> {
-            (this.$refs.wordDefinitionLookup as any).setMode('wikipedia');
+            this.wordDefinitionLookup.setMode('wikipedia');
         }
 
 
         async openWordDefinitionInBrowser(): Promise<void> {
-            electron.ipcRenderer.send('open-url-externally', (this.$refs.wordDefinitionLookup as any).getWebUrl());
+            electron.ipcRenderer.send('open-url-externally', this.wordDefinitionLookup.getWebUrl());
             //await remote.shell.openExternal((this.$refs.wordDefinitionLookup as any).getWebUrl());
 
             // tslint:disable-next-line: no-any no-unsafe-any
-            (this.$refs.wordDefinitionViewer as any).hide();
+            this.wordDefinitionViewer.hide();
         }
 
 
         unpinUrlPreview(e: Event): void {
-            const imagePreview = (this.$refs['chat'] as Chat)?.getChatView()?.getImagePreview();
+            const imagePreview = this.chat?.getChatView()?.getImagePreview();
 
             // const imagePreview = this.$refs['imagePreview'] as ImagePreview;
 

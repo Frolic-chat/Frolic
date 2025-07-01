@@ -51,7 +51,7 @@
                 </button>
             </div>
         </div>
-        <div class="messages messages-both" style="overflow:auto;overscroll-behavior:none;" ref="messages" tabindex="-1"
+        <div class="messages messages-both" style="overflow:auto;overscroll-behavior:none;" ref="messageviews" tabindex="-1"
              @scroll="onMessagesScroll">
             <message-view v-for="message in displayedMessages" :message="message" :key="message.id" :logs="true"></message-view>
         </div>
@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+    import { Component, Hook, Prop, Watch, Ref } from 'vue-facing-decorator';
     import {format} from 'date-fns';
     import CustomDialog from '../components/custom_dialog';
     import FilterableSelect from '../components/FilterableSelect.vue';
@@ -100,6 +100,10 @@
     export default class Logs extends CustomDialog {
         @Prop
         readonly conversation?: Conversation;
+
+        @Ref
+        messageviews!: HTMLDivElement;
+
         conversations: LogInterface.Conversation[] = [];
         selectedConversation: LogInterface.Conversation | undefined;
         dates: ReadonlyArray<Date> = [];
@@ -250,7 +254,7 @@
                     selection.removeAllRanges();
                     if(this.messages.length > 0) {
                         const range = document.createRange();
-                        const messages = this.$refs['messages'] as Node;
+                        const messages = this.messageviews;
                         range.setStartBefore(messages.firstChild!);
                         range.setEndAfter(messages.lastChild!);
                         selection.addRange(range);
@@ -284,7 +288,7 @@
         lastScroll = -1;
 
         async onMessagesScroll(ev?: Event): Promise<void> {
-            const list = <HTMLElement | undefined>this.$refs['messages'];
+            const list = this.messageviews;
             if(this.lockScroll) return;
             if(list === undefined || ev !== undefined && Math.abs(list.scrollTop - this.lastScroll) < 50) return;
             this.lockScroll = true;

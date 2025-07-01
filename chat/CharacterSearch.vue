@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Watch } from 'vue-facing-decorator';
+    import { Component, Hook, Watch, Ref } from 'vue-facing-decorator';
     import Axios from 'axios';
     import {BBCodeView} from '../bbcode/view';
     import CustomDialog from '../components/custom_dialog';
@@ -143,11 +143,15 @@
     })
     export default class CharacterSearch extends CustomDialog {
         l = l;
+        characterImage = characterImage;
+
+        @Ref
+        searchHistory!: CharacterSearchHistory;
+
         kinksFilter = '';
         error = '';
         results: SearchResult[] = [];
         resultsPending = 0;
-        characterImage = characterImage;
         options!: ExtendedSearchData;
         shouldShowMatch = true;
         state = 'search';
@@ -546,7 +550,7 @@
 
 
         showHistory(): void {
-          (<CharacterSearchHistory>this.$refs.searchHistory).show();
+          this.searchHistory.show();
         }
 
 

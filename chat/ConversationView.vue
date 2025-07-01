@@ -155,7 +155,7 @@
                 {{l('admgr.setup')}}
             </a>
         </div>
-        <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messages"
+        <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messageviews"
              @scroll="onMessagesScroll" style="flex:1;overflow:auto;margin-top:2px">
             <template v-for="message in messages">
                 <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id"
@@ -240,7 +240,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Prop, Watch, Ref } from 'vue-facing-decorator';
     import {EditorButton, EditorSelection} from '../bbcode/editor';
     import {BBCodeView} from '../bbcode/view';
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
@@ -288,6 +288,30 @@
     export default class ConversationView extends Vue {
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
+
+        @Ref
+        helpDialog!: CommandHelp;
+        @Ref
+        textBox!: Editor;
+        @Ref
+        searchField!: HTMLInputElement;
+        @Ref
+        messageviews!: HTMLDivElement;
+        @Ref
+        logsDialog!: Logs;
+        @Ref
+        settingsDialog!: ConversationSettings;
+        @Ref
+        adSettingsDialog!: ConversationAdSettings;
+        @Ref
+        manageDialog!: ManageChannel;
+        @Ref
+        adViewer!: CharacterAdView;
+        @Ref
+        channelList!: CharacterChannelList;
+        @Ref
+        userMemoEditor!: Modal;
+
         modes = channelModes;
         descriptionExpanded = false;
         l = l;
@@ -341,26 +365,26 @@
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
                 tag: '?',
                 icon: 'fa-question',
-                handler: () => (<CommandHelp>this.$refs['helpDialog']).show()
+                handler: () => this.helpDialog.show()
             }];
             window.addEventListener('resize', this.resizeHandler = () => this.keepScroll());
             window.addEventListener('keypress', this.keypressHandler = () => {
                 const selection = document.getSelection();
                 if((selection === null || selection.isCollapsed) && !anyDialogsShown &&
                     (document.activeElement === document.body || document.activeElement === null || document.activeElement.tagName === 'A'))
-                    (<Editor>this.$refs['textBox']).focus();
+                    this.textBox.focus();
             });
             window.addEventListener('keydown', this.keydownHandler = ((e: KeyboardEvent) => {
                 if(getKey(e) === Keys.KeyF && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
                     this.showSearch = true;
-                    this.$nextTick(() => (<HTMLElement>this.$refs['searchField']).focus());
+                    this.$nextTick(() => this.searchField.focus());
                 }
             }) as EventListener);
             this.searchTimer = window.setInterval(() => {
                 if(Date.now() - this.lastSearchInput > 500 && this.search !== this.searchInput)
                     this.search = this.searchInput;
             }, 500);
-            this.messageView = <HTMLElement>this.$refs['messages'];
+            this.messageView = this.messageviews;
             this.$watch('conversation.nextAd', (value: number) => {
                 const setAdCountdown = () => {
                     const diff = ((<Conversation.ChannelConversation>this.conversation).nextAd - Date.now()) / 1000;
@@ -429,7 +453,7 @@
         async conversationChanged(): Promise<void> {
             this.updateOwnName();
 
-            if(!anyDialogsShown) (<Editor>this.$refs['textBox']).focus();
+            if(!anyDialogsShown) this.textBox.focus();
             this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
             this.scrolledDown = true;
             this.refreshAutoPostingTimer();
@@ -494,7 +518,7 @@
         }
 
         async onKeyDown(e: KeyboardEvent): Promise<void> {
-            const editor = <Editor>this.$refs['textBox'];
+            const editor = this.textBox;
             if(getKey(e) === Keys.Tab) {
                 if(e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
                 e.preventDefault();
@@ -587,20 +611,20 @@
             const conv = (<Conversation.ChannelConversation>this.conversation);
             if(conv.channel.mode === 'both') {
                 conv.isSendingAds = is;
-                (<Editor>this.$refs['textBox']).focus();
+                this.textBox.focus();
             }
         }
 
         showLogs(): void {
-            (<Logs>this.$refs['logsDialog']).show();
+            this.logsDialog.show();
         }
 
         showSettings(): void {
-            (<ConversationSettings>this.$refs['settingsDialog']).show();
+            this.settingsDialog.show();
         }
 
         showAdSettings(): void {
-            (<ConversationAdSettings>this.$refs['adSettingsDialog']).show();
+            this.adSettingsDialog.show();
         }
 
         propogateShowAdCenter(): void {
@@ -612,15 +636,15 @@
         }
 
         showManage(): void {
-            (<ManageChannel>this.$refs['manageDialog']).show();
+            this.manageDialog.show();
         }
 
         showAds(): void {
-            (<CharacterAdView>this.$refs['adViewer']).show();
+            this.adViewer.show();
         }
 
         showChannels(): void {
-            (<CharacterChannelList>this.$refs['channelList']).show();
+            this.channelList.show();
         }
 
 
@@ -721,7 +745,7 @@
 
             this.editorMemo = '';
 
-            (<Modal>this.$refs['userMemoEditor']).show();
+            this.userMemoEditor.show();
 
             try {
               this.memoManager = new MemoManager(c.name);

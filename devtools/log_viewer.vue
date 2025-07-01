@@ -34,9 +34,11 @@ desc: string[] = [];
 logs: { [key: string]: number } = {};
 
 @Hook('created')
-created() {}
+    created(): void {}
 
-updateLogLevel(_scope: string, _level: number) {}
+    handle(): void {}
+
+    updateLogLevel(_scope: string, _level: number) {}
 }
 </script>
 

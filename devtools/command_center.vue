@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License along with thi
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-facing-decorator';
+import { Component, Ref } from 'vue-facing-decorator';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
 import Tabs from '../components/tabs';
@@ -30,9 +30,14 @@ import LogViewer from './log_viewer.vue';
                     spoof: Spoof, logs: LogViewer }
 })
 export default class DevTools extends CustomDialog {
-tab = '0';
+    @Ref
+    '0'!: Spoof;
+    @Ref
+    '1'!: LogViewer;
 
-handle() { (this.$refs[this.tab] as any).handle(); }
+    tab: '0' | '1' = '0';
+
+    handle() { this[this.tab].handle(); }
 }
 </script>
 

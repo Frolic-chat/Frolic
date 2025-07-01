@@ -44,14 +44,14 @@
                         <li v-for="warning in previewWarnings">{{warning}}</li>
                     </div>
                 </div>
-                <div class="bbcode" ref="preview-element"></div>
+                <div class="bbcode" ref="previewElement"></div>
             </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Prop, Watch, Ref } from 'vue-facing-decorator';
     import _ from 'lodash';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
@@ -100,6 +100,15 @@
         @Prop({default: 'normal'})
         readonly type: 'normal' | 'big' = 'normal';
 
+        @Ref
+        input!: HTMLTextAreaElement;
+        @Ref
+        sizer!: HTMLTextAreaElement;
+        @Ref
+        eIconSelector!: EIconSelector;
+        @Ref
+        previewElement!: HTMLDivElement;
+
         buttonColors = ['red', 'orange', 'yellow', 'green', 'cyan', 'purple', 'blue', 'pink', 'black', 'brown', 'white', 'gray'];
         colorPopupVisible = false;
 
@@ -109,7 +118,7 @@
         // tslint:disable-next-line: no-unnecessary-type-assertion
         text: string = (this.value !== undefined ? this.value : '') as string;
         element!: HTMLTextAreaElement;
-        sizer!: HTMLTextAreaElement;
+
         maxHeight!: number;
         minHeight!: number;
         showToolbar = false;
@@ -142,7 +151,7 @@
         @Hook('mounted')
         mounted(): void {
             // console.log('EDITOR', 'mounted');
-            this.element = <HTMLTextAreaElement>this.$refs['input'];
+            this.element = this.input;
             const styles = getComputedStyle(this.element);
             this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
             this.minHeight = parseInt(styles.minHeight, 10) || 60;
@@ -152,7 +161,7 @@
                     this.undoStack.unshift(this.text);
                 }
             }, 500);
-            this.sizer = <HTMLTextAreaElement>this.$refs['sizer'];
+            this.sizer = this.sizer;
             this.sizer.style.cssText = styles.cssText;
             this.sizer.style.height = '0';
             this.sizer.style.minHeight = '0';
@@ -274,12 +283,12 @@
         }
 
         dismissEIconSelector(): void {
-          (this.$refs['eIconSelector'] as Modal).hide();
+          this.eIconSelector.hide();
         }
 
         showEIconSelector(): void {
-          (this.$refs['eIconSelector'] as Modal).show();
-          setTimeout(() => (this.$refs['eIconSelector'] as any).setFocus(), 50);
+          this.eIconSelector.show();
+          setTimeout(() => this.eIconSelector.setFocus(), 50);
         }
 
         onSelectEIcon(eiconId: string, shift: boolean): void {
@@ -418,14 +427,14 @@
         }
 
         protected doPreview(): void {
-            const targetElement = <HTMLElement>this.$refs['preview-element'];
+            const targetElement = this.previewElement;
             if(this.preview) {
                 this.preview = false;
                 this.previewWarnings = [];
                 this.previewResult = '';
-                const previewElement = (<BBCodeElement>targetElement.firstChild);
+                const previewElement = <BBCodeElement | null>targetElement.firstChild;
                 // noinspection TypeScriptValidateTypes
-                if(previewElement.cleanup !== undefined) previewElement.cleanup();
+                if(previewElement?.cleanup) previewElement.cleanup();
                 if(targetElement.firstChild !== null) targetElement.removeChild(targetElement.firstChild);
             } else {
                 this.preview = true;

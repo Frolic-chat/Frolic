@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-    import { Component } from 'vue-facing-decorator';
+    import { Component, Ref } from 'vue-facing-decorator';
     import CustomDialog from '../components/custom_dialog';
     import Dropdown from '../components/Dropdown.vue';
     import Modal from '../components/Modal.vue';
@@ -52,6 +52,9 @@
         l = l;
         getByteLength = getByteLength;
         getStatusIcon = getStatusIcon;
+
+        @Ref
+        statusPicker!: StatusPicker;
 
         get status(): Character.Status {
             return this.selectedStatus !== undefined ? this.selectedStatus : this.character.status;
@@ -104,7 +107,7 @@
         }
 
         showStatusPicker(): void {
-          (<StatusPicker>this.$refs['statusPicker']).show();
+          this.statusPicker.show();
         }
     }
 </script>

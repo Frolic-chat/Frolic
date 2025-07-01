@@ -115,13 +115,11 @@
 
         openAdEditor() {
           this.hide();
-          //(<AdCenterDialog>this.$parent.$parent.$refs['adCenter']).show();
           this.$emit('show-ad-center');
         }
 
         openPostAds() {
           this.hide();
-          //(<AdCenterDialog>this.$parent.$parent.$refs['adLauncher']).show();
           this.$emit('show-ad-launcher');
         }
 

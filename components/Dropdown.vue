@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Ref } from 'vue-facing-decorator';
 
     @Component
     export default class Dropdown extends Vue {
@@ -31,9 +31,12 @@
         @Prop({default: 'width:100%;text-align:left;align-items:center'})
         readonly linkStyle!: string;
 
+        @Ref
+        menu!: HTMLDivElement;
+
         @Watch('isOpen')
         onToggle(): void {
-            const menu = this.$refs['menu'] as HTMLElement;
+            const menu = this.menu;
             if(!this.isOpen) {
                 menu.style.cssText = '';
                 return;
@@ -49,7 +52,7 @@
         blur(event: FocusEvent): void {
             let elm = <HTMLElement | null>event.relatedTarget;
             while(elm) {
-                if(elm === this.$refs['menu']) return;
+                if(elm === this.menu) return;
                 elm = elm.parentElement;
             }
             this.isOpen = false;

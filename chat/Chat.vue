@@ -36,7 +36,7 @@
     import Logger from 'electron-log/renderer'; //tslint:disable-line:match-default-export-name
     const log = Logger.scope('Chat');
 
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Prop, Ref } from 'vue-facing-decorator';
     import Modal from '../components/Modal.vue';
     import {InlineDisplayMode, SimpleCharacter} from '../interfaces';
     import {Keys} from '../keys';
@@ -97,6 +97,14 @@
         readonly ownCharacters!: SimpleCharacter[];
         @Prop({required: true})
         readonly defaultCharacter!: number;
+
+        @Ref
+        reconnecting!: Modal;
+        @Ref
+        logsDialog!: Logs;
+        @Ref
+        chatview!: ChatView;
+
         //tslint:disable-next-line:strict-boolean-expressions
         selectedCharacter = this.ownCharacters.find((x) => x.id === this.defaultCharacter) || this.ownCharacters[0];
         @Prop
@@ -147,7 +155,7 @@
                   }
                 );
 
-                if(isReconnect) (<Modal>this.$refs['reconnecting']).show(true);
+                if(isReconnect) this.reconnecting.show(true);
                 if(this.connected) core.notifications.playSound('logout');
                 this.connected = false;
                 this.connecting = false;
@@ -191,7 +199,7 @@
                     }
                 );
 
-                (<Modal>this.$refs['reconnecting']).hide();
+                this.reconnecting.hide();
                 this.error = '';
                 this.connecting = false;
                 this.connected = true;
@@ -226,11 +234,11 @@
 
         cancelReconnect(): void {
             core.connection.close();
-            (<Modal>this.$refs['reconnecting']).hide();
+            this.reconnecting.hide();
         }
 
         showLogs(): void {
-            (<Logs>this.$refs['logsDialog']).show();
+            this.logsDialog.show();
         }
 
         async connect(): Promise<void> {
@@ -243,7 +251,7 @@
         }
 
         getChatView(): ChatView | undefined {
-          return this.$refs['chatview'] as ChatView;
+          return this.chatview;
         }
     }
 </script>

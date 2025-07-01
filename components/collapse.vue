@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Ref } from 'vue-facing-decorator';
 
     @Component
     export default class Collapse extends Vue {
@@ -20,6 +20,10 @@
         readonly title!: string;
         @Prop
         readonly headerClass?: string;
+
+        @Ref
+        content!: HTMLDivElement;
+
         collapsed = true;
         timeout = 0;
         style = {height: <string | undefined>'0', transition: 'height .2s'};
@@ -30,13 +34,13 @@
             this.$emit(this.collapsed ? 'close' : 'open');
             if(this.collapsed) {
                 this.style.transition = 'initial';
-                this.style.height = `${(<HTMLElement>this.$refs['content']).scrollHeight}px`;
+                this.style.height = `${this.content.scrollHeight}px`;
                 setTimeout(() => {
                     this.style.transition = 'height .2s';
                     this.style.height = '0';
                 }, 0);
             } else {
-                this.style.height = `${(<HTMLElement>this.$refs['content']).scrollHeight}px`;
+                this.style.height = `${this.content.scrollHeight}px`;
                 this.timeout = window.setTimeout(() => this.style.height = undefined, 200);
             }
         }

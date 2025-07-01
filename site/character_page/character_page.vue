@@ -75,7 +75,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
 
-    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Prop, Ref, Watch } from 'vue-facing-decorator';
 
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('character_page');
@@ -133,17 +133,28 @@
         readonly id?: number;
         @Prop({required: true})
         readonly authenticated!: boolean;
-        @Prop
-        readonly oldApi?: true;
-        @Prop
-        readonly imagePreview?: true;
+
+        @Ref
+        'tab0'!: CharacterKinksView;
+        @Ref
+        'tab1'!: InfotagsView;
+        @Ref
+        'tab2'!: GroupsView;
+        @Ref
+        'tab3'!: ImagesView;
+        @Ref
+        'tab4'!: GuestbookView;
+        @Ref
+        'tab5'!: FriendsView;
+        @Ref
+        'tab6'!: ReconView;
 
         shared: SharedStore = Store;
         character: Character | undefined;
         loading = true;
         refreshing = false;
         error = '';
-        tab = '0';
+        tab: '0' | '1' | '2' | '3' | '4' | '5' | '6' = '0';
         autoExpandCustoms = false;
 
         /* guestbookPostCount: number | null = null;
@@ -175,7 +186,9 @@
 
         @Watch('tab')
         switchTabHook(): void {
-            const target = <ShowableVueTab>this.$refs[`tab${this.tab}`];
+            /** Cast to `ShowableVueTab` so it can have `.show()` */
+            const target = <ShowableVueTab>(this[`tab${this.tab}`] as unknown);
+
             //tslint:disable-next-line:no-unbound-method
             if(typeof target.show === 'function') target.show();
         }
@@ -211,7 +224,8 @@
         async reload(): Promise<void> {
             await this.load(true, true);
 
-            const target = <ShowableVueTab>this.$refs[`tab${this.tab}`];
+            /** Cast to `ShowableVueTab` so it can have `.show()` */
+            const target = <ShowableVueTab>(this[`tab${this.tab}`] as unknown);
 
             //tslint:disable-next-line:no-unbound-method
             if(typeof target.show === 'function') target.show();

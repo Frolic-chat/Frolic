@@ -6,9 +6,7 @@ import Modal from './Modal.vue';
 })
 export default class CustomDialog extends Vue {
     protected get dialog(): Modal {
-        return this.dialog;
-        //return <Modal>this.$children[0];
-        //return <Modal>this.$refs.dialog;
+        return <Modal>this.$refs.dialog;
     }
 
     show(keepOpen?: boolean): void {

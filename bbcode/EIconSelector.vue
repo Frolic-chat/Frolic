@@ -76,7 +76,7 @@
 
 <script lang="ts">
 import l from '../chat/localize';
-import { Component, Hook, Prop } from 'vue-facing-decorator';
+import { Component, Hook, Prop, Ref } from 'vue-facing-decorator';
 import { EIconStore } from '../learn/eicon/store';
 import core from '../chat/core';
 import modal from '../components/Modal.vue';
@@ -96,10 +96,12 @@ let store: EIconStore | undefined;
 
 @Component({ components: { modal } })
 export default class EIconSelector extends CustomDialog {
+    l = l;
     @Prop
     readonly onSelect?: (eicon: string, shift: boolean) => void;
 
-    l = l;
+    @Ref
+    searchInput!: HTMLInputElement;
 
     results: string[] = [];
     search: string = '';
@@ -241,8 +243,8 @@ export default class EIconSelector extends CustomDialog {
     }
 
     setFocus(): void {
-        (this.$refs['search'] as HTMLInputElement).focus();
-        (this.$refs['search'] as HTMLInputElement).select();
+        this.searchInput.focus();
+        this.searchInput.select();
     }
 
     isFavorite(eicon: string): boolean {

@@ -15,7 +15,7 @@
   </div>
 </template>
 <script lang="ts">
-import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+import { Vue, Component, Hook, Prop, Ref } from 'vue-facing-decorator';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
 import anyAscii from 'any-ascii';
@@ -40,6 +40,9 @@ export default class WordDefinition extends Vue {
 
   @Prop
   readonly expression?: string;
+
+  @Ref
+  definitionPreview!: Electron.WebviewTag;
 
   @Hook('mounted')
   async mounted(): Promise<void> {
@@ -94,7 +97,7 @@ export default class WordDefinition extends Vue {
 
 
   protected getWebview(): Electron.WebviewTag {
-      return this.$refs.definitionPreview as Electron.WebviewTag;
+      return this.definitionPreview;
   }
 
 
