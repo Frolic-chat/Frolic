@@ -29,7 +29,6 @@
     import { Component } from 'vue-facing-decorator';
     import CustomDialog from '../../components/custom_dialog';
     import Modal from '../../components/Modal.vue';
-    import {Conversation} from '../interfaces';
     import l from '../localize';
     import Editor from '../../bbcode/Editor.vue';
     import core from '../core';
@@ -43,7 +42,6 @@
     })
     export default class AdCenterDialog extends CustomDialog {
         l = l;
-        setting = Conversation.Setting;
         ads!: Ad[];
         core = core;
 

@@ -1,5 +1,5 @@
 <template>
-    <span>
+    <span ref="root">
         <i class="fa fa-link"></i>
         <!-- No prevent for @click on purpose -->
         <a
@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Prop, Ref } from 'vue-facing-decorator';
     import {EventBus} from '../chat/preview/event-bus';
     // import core from './core';
 
@@ -35,6 +35,9 @@
         @Prop({required: true})
         readonly domain!: string;
 
+        @Ref
+        root!: HTMLSpanElement;
+
         readonly type!: 'UrlTagView';
 
         @Hook('beforeUnmount')
@@ -44,8 +47,10 @@
 
         @Hook('mounted')
         mounted(): void {
-          (this.$el as any).bbcodeTag = 'url';
-          (this.$el as any).bbcodeParam = this.url;
+        //   (this.$el as any).bbcodeTag = 'url';
+        //   (this.$el as any).bbcodeParam = this.url;
+          (this.root as any).bbcodeTag = 'url';
+          (this.root as any).bbcodeParam = this.url;
         }
 
         @Hook('deactivated')

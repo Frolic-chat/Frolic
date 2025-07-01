@@ -45,7 +45,7 @@
         readonly callback!: (searchData: ExtendedSearchData) => void;
 
         @Prop({required: true})
-        readonly curSearch!: ExtendedSearchData | undefined;
+        readonly curSearch!: ExtendedSearchData;
 
         history: (ExtendedSearchData | SearchData)[] = [];
 
