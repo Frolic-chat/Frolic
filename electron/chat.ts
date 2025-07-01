@@ -275,10 +275,10 @@ log.debug('init.chat.vue');
 //     }
 // });
 const app = createApp(Index, {
-    settings: settings,
     pendingUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
 });
 app.use(VueClickAway);
+app.provide('settings', settings);
 registerProfileApiVueComponents(app);
 app.mount('#app');
 

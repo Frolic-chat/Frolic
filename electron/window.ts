@@ -18,9 +18,8 @@ const logLevel: LogLevelOption = 'warn';
 
 log.info('init.window.vue');
 
-const app = createApp(Window, {
-    settings: settings
-});
+const app = createApp(Window, {});
+app.provide('settings', settings);
 app.mount('#app');
 
 log.debug('init.window.vue.done');

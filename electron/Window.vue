@@ -37,7 +37,7 @@
     import Sortable from 'sortablejs';
     import _ from 'lodash';
 
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Hook, Inject } from 'vue-facing-decorator';
     import * as electron from 'electron';
     import { IpcRendererEvent } from 'electron';
     import * as remote from '@electron/remote';
@@ -130,7 +130,7 @@
 
     @Component
     export default class Window extends Vue {
-        @Prop
+        @Inject
         settings!: GeneralSettings;
 
         l = l;

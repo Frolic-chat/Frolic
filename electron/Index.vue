@@ -208,6 +208,14 @@
         }
     })
     export default class Index extends Vue {
+        @Inject
+        settings!: GeneralSettings;
+
+        l = l;
+
+        @Prop({ default: false })
+        readonly pendingUpgrades!: boolean;
+
         @Ref
         chat: Chat | null = null;
         @Ref
@@ -235,12 +243,6 @@
         characters: SimpleCharacter[] | null = null;
         error = '';
         defaultCharacter: number | null = null;
-        l = l;
-        @Prop
-        settings!: GeneralSettings;
-        // hack; can't modify props in-vue; need to emit to parent and let them change it?
-        @Prop({ default: false })
-        pendingUpgrades: boolean = false;
         completedUpgrades: boolean = false;
         importProgress = 0;
         profileName = '';
