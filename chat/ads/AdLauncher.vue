@@ -1,5 +1,5 @@
 <template>
-  <modal :action="l('ads.post.title')" @submit="submit" ref="dialog" @reopen="load" @open="load" dialogClass="w-100" class="adLauncher" :buttonText="l('ads.post.start')">
+<modal :action="l('ads.post.title')" @submit="submit" ref="dialog" @reopen="load" @open="load" dialogClass="w-100" class="adLauncher" :buttonText="l('ads.post.start')">
     <div v-if="hasAds()">
         <h4>{{ l('ads.post.tagTitle') }}</h4>
         <div class="form-group">
@@ -43,24 +43,22 @@
         <h4>{{ l('ads.post.campaign') }}</h4>
         <div class="form-group">
             <label class="control-label" for="timeoutMinutes">
-              {{ l('ads.post.timeout') }}
+            {{ l('ads.post.timeout') }}
             </label>
 
             <select class="form-control" v-model="timeoutMinutes" id="timeoutMinutes">
-              <option v-for="timeout in timeoutOptions" :value="timeout.value">{{timeout.title}}</option>
+            <option v-for="timeout in timeoutOptions" :value="timeout.value">{{timeout.title}}</option>
             </select>
         </div>
 
-        <p class="matches">
-          <b>{{matchCount}}</b>{{ l('ads.post.used') }}
-        </p>
+        <p class="matches"><b>{{matchCount}}</b>{{ l('ads.post.used') }}</p>
     </div>
     <div v-else>
-      <h4>{{ l('ads.post.noAds') }}</h4>
+    <h4>{{ l('ads.post.noAds') }}</h4>
 
-      <p>{{ l('ads.post.create1') }}<button class="btn btn-outline-secondary" @click="openAdEditor()">{{ l('ads.post.adEditor') }}</button>{{ l('ads.post.create2') }}</p>
+    <p>{{ l('ads.post.create1') }}<button class="btn btn-outline-secondary" @click="openAdEditor()">{{ l('ads.post.adEditor') }}</button>{{ l('ads.post.create2') }}</p>
     </div>
-  </modal>
+</modal>
 </template>
 
 <script lang="ts">
@@ -72,147 +70,143 @@ import _ from 'lodash';
 import l from '../localize';
 import AdCenterDialog from './AdCenter.vue';
 
-@Component({
-    components: {modal: Modal}
-})
+@Component({ components: { modal: Modal } })
 export default class AdLauncherDialog extends CustomDialog {
-  l = l;
+    l = l;
 
-  adOrder: 'random' | 'ad-center' = 'random';
+    adOrder: 'random' | 'ad-center' = 'random';
 
-  matchCount = 0;
+    matchCount = 0;
 
-  timeoutMinutes = 180;
+    timeoutMinutes = 180;
 
-  tags: { value: boolean, title: string }[] = [];
+    tags: { value: boolean, title: string }[] = [];
 
-  channels: { value: boolean, title: string, id: string }[] = [];
+    channels: { value: boolean, title: string, id: string }[] = [];
 
-  timeoutOptions = [
-    { value: 30, title: '30 '+l('ads.post.minutes') },
-    { value: 60, title: '1 '+l('ads.post.hour') },
-    { value: 120, title: '2 '+l('ads.post.hours') },
-    { value: 180, title: '3 '+l('ads.post.hours') }
-  ]
+    timeoutOptions = [
+        { value:  30, title: '30 '+l('ads.post.minutes') },
+        { value:  60, title: '1 '+l('ads.post.hour') },
+        { value: 120, title: '2 '+l('ads.post.hours') },
+        { value: 180, title: '3 '+l('ads.post.hours') }
+    ]
 
-  load() {
-    this.channels = _.map(_.filter(core.channels.joinedChannels, (c) => (c.mode === 'ads' || c.mode === 'both')),
-        (c) => ({ value: false, title: c.name, id: c.id }));
+    load() {
+        this.channels = core.channels.joinedChannels
+                .filter(c => c.mode === 'ads' || c.mode === 'both')
+                .map(c => ({ value: false, title: c.name, id: c.id }));
 
-    this.tags = _.map(core.adCenter.getActiveTags(), (t) => ({ value: false, title: t }));
+        this.tags = core.adCenter.getActiveTags()
+                .map(t => ({ value: false, title: t }));
 
-    this.checkCanSubmit();
-  }
-
-  hasAds(): boolean {
-    return core.adCenter.getActiveAds().length > 0;
-  }
-
-  @Watch('tags', { deep: true })
-  updateTags(): void {
-    this.matchCount = core.adCenter.getMatchingAds(this.getWantedTags()).length;
-    this.checkCanSubmit();
-  }
-
-  @Watch('channels', { deep: true })
-  updateChannels(): void {
-    this.checkCanSubmit();
-  }
-
-  checkCanSubmit() {
-    const channelCount = _.filter(this.channels, (channel) => channel.value).length;
-    const tagCount = _.filter(this.tags, (tag) => tag.value).length;
-
-    this.dialog.forceDisabled(tagCount === 0 || channelCount === 0);
-  }
-
-  getWantedTags(): string[] {
-    return _.map(_.filter(this.tags, (t) => t.value), (t) => t.title);
-  }
-
-  getWantedChannels(): string[] {
-    return _.map(_.filter(this.channels, (t) => t.value), (t) => t.id);
-  }
-
-  openAdEditor(): void {
-    this.hide();
-    (<AdCenterDialog>this.$parent.$refs['adCenter'])!.show();
-  }
-
-  selectAllChannels(e: any): void {
-    const newValue = e.target.checked;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    _.each(this.channels, (c) => {
-      c.value = newValue
-    });
-  }
-
-  submit(e: Event) {
-    const tags = this.getWantedTags();
-    const channelIds = this.getWantedChannels();
-
-    if (tags.length === 0) {
-      e.preventDefault();
-      alert(l('ads.post.alert.tag'));
-      return;
+        this.checkCanSubmit();
     }
 
-    if (channelIds.length === 0) {
-      e.preventDefault();
-      alert(l('ads.post.alert.channel'));
-      return;
+    hasAds(): boolean {
+        return core.adCenter.getActiveAds().length > 0;
     }
 
-    if (!_.every(channelIds, (channelId) => {
-      if (core.adCenter.isSafeToOverride(channelId)) {
-        return true;
-      }
-
-      const chan = core.channels.getChannel(channelId);
-
-      if (!chan) {
-        return true;
-      }
-
-      return confirm(l('ads.post.warn', chan.name));
-    })) {
-      e.preventDefault();
-      return;
+    @Watch('tags', { deep: true })
+    updateTags(): void {
+        this.matchCount = core.adCenter.getMatchingAds(this.getWantedTags()).length;
+        this.checkCanSubmit();
     }
 
-    core.adCenter.schedule(
-        tags,
-        channelIds,
-        this.adOrder,
-        this.timeoutMinutes
-    );
+    @Watch('channels', { deep: true })
+    updateChannels(): void {
+        this.checkCanSubmit();
+    }
 
-    this.hide();
-  }
+    checkCanSubmit() {
+        const channelCount = this.channels.filter(channel => channel.value).length;
+        const tagCount = this.tags.filter(tag => tag.value).length;
+
+        this.dialog.forceDisabled(tagCount === 0 || channelCount === 0);
+    }
+
+    getWantedTags(): string[] {
+        return this.tags.filter(t => t.value).map(t => t.title);
+    }
+
+    getWantedChannels(): string[] {
+        return this.channels.filter(t => t.value).map(t => t.id);
+    }
+
+    openAdEditor(): void {
+        this.hide();
+        (<AdCenterDialog>this.$parent.$refs['adCenter'])!.show();
+    }
+
+    selectAllChannels(e: any): void {
+        const newValue = e.target.checked;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.channels.forEach(c => c.value = newValue);
+    }
+
+    submit(e: Event) {
+        const tags = this.getWantedTags();
+        const channelIds = this.getWantedChannels();
+
+        if (tags.length === 0) {
+            e.preventDefault();
+            alert(l('ads.post.alert.tag'));
+            return;
+        }
+
+        if (channelIds.length === 0) {
+            e.preventDefault();
+            alert(l('ads.post.alert.channel'));
+            return;
+        }
+
+        if (!channelIds.every(id => {
+            if (core.adCenter.isSafeToOverride(id))
+                return true;
+
+            const chan = core.channels.getChannel(id);
+
+            if (!chan)
+                return true;
+
+            return confirm(l('ads.post.warn', chan.name));
+        })) {
+            e.preventDefault();
+            return;
+        }
+
+        core.adCenter.schedule(
+            tags,
+            channelIds,
+            this.adOrder,
+            this.timeoutMinutes
+        );
+
+        this.hide();
+    }
 }
 </script>
 
 <style lang="scss">
 .adLauncher {
-  label {
-      display: block;
-      margin-left: 0.75rem;
-      color: var(--gray-dark);
-  }
+    label {
+        display: block;
+        margin-left: 0.75rem;
+        color: var(--gray-dark);
+    }
 
-  select {
-    margin-left: 0.75rem;
-    width: auto;
-    padding-right: 1.5rem;
-  }
+    select {
+        margin-left: 0.75rem;
+        width: auto;
+        padding-right: 1.5rem;
+    }
 
-  .matches {
-    margin: 0;
-    margin-top: 2rem;
-    color: var(--gray);
-  }
+    .matches {
+        margin: 0;
+        margin-top: 2rem;
+        color: var(--gray);
+    }
 }
 </style>
