@@ -17,22 +17,23 @@
 
     @Component
     export default class Dropdown extends Vue {
-        isOpen = false;
+        @Prop({ default: null })
+        readonly title!: string | null;
+        @Prop({ default: false })
+        readonly keepOpen!: boolean;
         @Prop({default: 'btn btn-secondary dropdown-toggle'})
         readonly linkClass!: string;
         @Prop({default: 'dropdown'})
         readonly wrapClass!: string;
         @Prop({ default: null })
         readonly iconClass!: string | null;
-        @Prop({ default: false })
-        readonly keepOpen!: boolean;
-        @Prop({ default: null })
-        readonly title!: string | null;
         @Prop({default: 'width:100%;text-align:left;align-items:center'})
         readonly linkStyle!: string;
 
         @Ref
         menu!: HTMLDivElement;
+
+        isOpen = false;
 
         @Watch('isOpen')
         onToggle(): void {

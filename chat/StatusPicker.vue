@@ -1,5 +1,5 @@
 <template>
-    <modal ref="dialog" :action="l('chat.status.history')" :buttonText="l('general.select')" @open="onMounted()" @submit="selectStatus" dialogClass="w-100 modal-lg">
+    <modal ref="dialog" :action="l('chat.status.history')" :buttonText="l('general.select')" @open="mounted()" @submit="selectStatus" dialogClass="w-100 modal-lg">
         <form class="status-picker" v-if="history.length > 0">
             <div class="form-row" v-for="(historicStatus, index) in history" :class="{ 'selected-row': (index === selectedStatus)}">
                 <div class="form-col radio-col">
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Component, Prop } from 'vue-facing-decorator';
     import Modal from '../components/Modal.vue';
     import CustomDialog from '../components/custom_dialog';
     import core from './core';
@@ -50,8 +50,8 @@
 
         selectedStatus: number | null = null;
 
-        @Hook('mounted')
-        async onMounted(): Promise<void> {
+        //@Hook('mounted')
+        async mounted(): Promise<void> {
             this.history = (await core.settingsStore.get('statusHistory')) || [];
             this.selectedStatus = null;
 

@@ -1,12 +1,12 @@
 <template>
-    <select :value="value" @change="emit">
+    <select :value="value" @change="input">
         <option v-for="character in characters" :value="character.id">{{character.name}}</option>
         <slot></slot>
     </select>
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Emit } from 'vue-facing-decorator';
     import {SimpleCharacter} from '../interfaces';
     import * as Utils from '../site/utils';
 
@@ -19,8 +19,9 @@
             return Utils.characters;
         }
 
-        emit(evt: Event): void {
-            this.$emit('input', parseInt((<HTMLSelectElement>evt.target).value, 10));
+        @Emit
+        input(evt: Event): number {
+            return parseInt((<HTMLSelectElement>evt.target).value, 10);
         }
     }
 </script>

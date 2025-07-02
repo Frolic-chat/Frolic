@@ -22,9 +22,9 @@
                     </a>
                 </h3>
                 <div class="card-body">
-                    <!-- <div ref="testTextDiv">
+                    <div ref="testTextDiv">
                         <a @click.prevent="testFunc">{{ characterz.testfield }}</a>
-                    </div> -->
+                    </div>
                     <div class="alert alert-danger" v-show="error">
                         {{error}}
                     </div>
@@ -97,7 +97,7 @@
         </modal>
         <modal :buttons="false" ref="profileViewer" dialogClass="profile-viewer" >
             <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
-            <template slot="title">
+            <template v-slot:title>
                 {{profileName}}
                 <a class="btn" @click="openProfileInBrowser"><i class="fa fa-external-link-alt"></i></a>
                 <a class="btn" @click="openConversation"><i class="fa fa-comment"></i></a>
@@ -124,7 +124,7 @@
         </modal>
         <modal :buttons="false" ref="wordDefinitionViewer" dialogClass="word-definition-viewer">
             <word-definition :expression="wordDefinition" ref="wordDefinitionLookup"></word-definition>
-            <template slot="title">
+            <template v-slot:title>
                 {{wordDefinition}}
                 <a class="btn wordDefBtn dictionary" @click="openDefinitionWithDictionary"><i>D</i></a>
                 <a class="btn wordDefBtn thesaurus" @click="openDefinitionWithThesaurus"><i>T</i></a>
@@ -139,12 +139,12 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Watch, Prop, Ref, Inject } from 'vue-facing-decorator';
+    import { Vue, Component, Emit, Inject, Prop, Ref, Watch } from 'vue-facing-decorator';
     import Axios from 'axios';
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
 
-    import electronLog from 'electron-log';
+    import electronLog from 'electron-log/renderer';
     const log = electronLog.scope('Index');
 
     import * as fs from 'fs';
@@ -238,21 +238,22 @@
         @Ref
         logsDialog!: Logs;
 
-        // @Ref
-        // testTextDiv!: HTMLDivElement;
-        // characterz = core.characters;
-        // testFunc(v: any): void {
-        //     log.debug('reactivity.testFunc.pre', {
-        //         cctestfield: core.characters.testfield,
-        //         localtestText: this.characterz.testfield,
-        //     });
-        //     if (this.characterz.testfield === 'test') core.characters.testfield = 'secondary';
-        //     else                                      core.characters.testfield = 'test';
-        //     log.debug('reactivity.testFunc.post', {
-        //         cctestfield: core.characters.testfield,
-        //         localtestText: this.characterz.testfield,
-        //     });
-        // }
+        @Ref
+        testTextDiv!: HTMLDivElement;
+        characterz = core.characters;
+        testFunc(_v: any): void {
+            log.debug('reactivity.testFunc.pre', {
+                cctestfield: core.characters.testfield,
+                localtestText: this.characterz.testfield,
+            });
+            if (this.characterz.testfield === 'test') core.characters.testfield = 'secondary';
+            else                                      core.characters.testfield = 'test';
+            log.debug('reactivity.testFunc.post', {
+                cctestfield: core.characters.testfield,
+                localtestText: this.characterz.testfield,
+            });
+        }
+        st = setTimeout;
 
         showAdvanced = false;
         saveLogin = false;
@@ -353,10 +354,25 @@
             }
         }
 
-
-        @Hook('mounted')
-        onMounted(): void {
+        //@Hook('mounted')
+        mounted(): void {
             log.debug('init.chat.mounted');
+
+            // setInterval(() => {
+            //     log.debug('reactivity.interval.pre', {
+            //         cctestfield: core.characters.testfield,
+            //         //localtestText: this.characterz.testfield,
+            //     });
+
+            //     if (this.characterz.testfield === '1automated') core.characters.testfield = '2auto';
+            //     else                                            core.characters.testfield = '1automated';
+
+            //     log.debug('reactivity.interval.post', {
+            //         cctestfield: core.characters.testfield,
+            //         //localtestText: this.characterz.testfield,
+            //     });
+            // },
+            // 1500);
 
             EventBus.$on(
                 'word-definition', (data: any) => {
@@ -370,7 +386,7 @@
         }
 
 
-        @Hook('created')
+        //@Hook('created')
         async created(): Promise<void> {
             EventBus.$on('error', this.errSetter);
 
@@ -739,6 +755,8 @@
             this.wordDefinitionViewer.hide();
         }
 
+        @Emit('imagepreview-toggle-stickyness')
+        toggleStickiness() { return { force: true } };
 
         unpinUrlPreview(e: Event): void {
             const imagePreview = this.chat?.getChatView()?.getImagePreview();
@@ -747,8 +765,7 @@
             if (imagePreview && imagePreview.isVisible() && imagePreview.sticky) {
                 e.stopPropagation();
                 e.preventDefault();
-
-                EventBus.$emit('imagepreview-toggle-stickyness', {force: true});
+                this.toggleStickiness();
             }
         }
 

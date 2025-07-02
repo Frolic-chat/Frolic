@@ -46,7 +46,6 @@ class State implements StateInterface {
     }
 }
 
-// If there's no function to change data like there was in Vue 2, then these shouldn't be readonly. Return them to readonly if we stop directly assigning the State into them.
 interface VueState {
     readonly channels: Channel.State;
     readonly characters: Character.State;
@@ -55,16 +54,6 @@ interface VueState {
 }
 
 const state = new State();
-
-// Legacy vue 2.
-// const vue = <Vue & VueState>new Vue({
-//     data: {
-//         channels:      undefined,
-//         characters:    undefined,
-//         conversations: undefined,
-//         state
-//     }
-// });
 
 const data = {
     connection: <Connection | undefined>undefined,
@@ -82,9 +71,11 @@ const data = {
     siteSession: <SiteSession | undefined>undefined,
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {
+        // This is probably https://github.com/vuejs/core/issues/2981
+        // "Unwrapping breaks classes with private fields."
         data[module] = reactive(subState) as any;
     },
-    watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void): void {
+    watch<T>(getter: (this: VueState) => T, callback: (n: T, o: T) => void): void {
         watch(getter, callback);
     },
     async reloadSettings(): Promise<void> {
@@ -97,10 +88,10 @@ const data = {
         });
 
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
-        state.hiddenUsers = hiddenUsers !== undefined ? hiddenUsers : [];
+        state.hiddenUsers = hiddenUsers ?? [];
 
         const favoriteEIcons = await core.settingsStore.get('favoriteEIcons');
-        state.favoriteEIcons = favoriteEIcons !== undefined ? favoriteEIcons : {};
+        state.favoriteEIcons = favoriteEIcons ?? {};
     }
 };
 
@@ -127,7 +118,7 @@ export function init(this: any,
     data.register('conversations', Conversations());
 
     data.watch(() => state.hiddenUsers, async (newValue) => {
-        if (data.settingsStore !== undefined)
+        if (data.settingsStore)
             await data.settingsStore.set('hiddenUsers', newValue);
     });
 

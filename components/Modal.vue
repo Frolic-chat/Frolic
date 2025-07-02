@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Emit } from 'vue-facing-decorator';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
 
@@ -77,26 +77,38 @@
           return this.disabled || this.forcedDisabled;
         }
 
+        @Emit('submit')
+        submitEvent(e: Event) { return e };
+
+        @Emit
+        open(): void {};
+
+        @Emit
+        reopen(): void {};
+
+        @Emit
+        close(): void {};
+
         submit(e: Event): void {
-            this.$emit('submit', e);
+            this.submitEvent(e);
             if(!e.defaultPrevented) this.hideWithCheck();
         }
 
         show(keepOpen: boolean = false): void {
             this.keepOpen = keepOpen;
             if(this.isShown) {
-              this.$emit('reopen');
+              this.reopen();
               return;
             }
             this.isShown = true;
             dialogStack.push(this);
-            this.$emit('open');
+            this.open();
             isShowing = true;
         }
 
         hide(): void {
             this.isShown = false;
-            this.$emit('close');
+            this.close();
             dialogStack.pop();
             if(dialogStack.length === 0) isShowing = false;
         }
@@ -106,8 +118,8 @@
             this.hide();
         }
 
-        @Hook('beforeUnmount')
-        beforeDestroy(): void {
+        //@Hook('beforeUnmount')
+        beforeUnmount(): void {
             if(this.isShown) this.hide();
         }
     }

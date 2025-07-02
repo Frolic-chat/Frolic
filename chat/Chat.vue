@@ -36,7 +36,7 @@
     import Logger from 'electron-log/renderer'; //tslint:disable-line:match-default-export-name
     const log = Logger.scope('Chat');
 
-    import { Vue, Component, Hook, Prop, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Ref } from 'vue-facing-decorator';
     import Modal from '../components/Modal.vue';
     import {InlineDisplayMode, SimpleCharacter} from '../interfaces';
     import {Keys} from '../keys';
@@ -116,12 +116,12 @@
         connected = false;
         copyPlain = false;
 
-        @Hook('created')
+        //@Hook('created')
         created() {
             this.selectedCharacter = this.ownCharacters.find((x) => x.id === this.defaultCharacter) || this.ownCharacters[0];
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             document.title = l('title', core.connection.character);
             document.addEventListener('copy', ((e: ClipboardEvent) => {

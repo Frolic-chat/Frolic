@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Hook, Inject } from 'vue-facing-decorator';
+import { Vue, Component, Inject } from 'vue-facing-decorator';
 import * as remote from '@electron/remote';
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
@@ -110,7 +110,7 @@ export default class BrowserOption extends Vue {
     }
   }
 
-  @Hook('mounted')
+  //@Hook('mounted')
   async mounted(): Promise<void> {
     this.browserPath = this.settings.browserPath;
     this.browserArgs = this.settings.browserArgs;

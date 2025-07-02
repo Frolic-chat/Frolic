@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Ref } from 'vue-facing-decorator';
     import {EventBus} from '../chat/preview/event-bus';
     // import core from './core';
 
@@ -40,12 +40,12 @@
 
         readonly type!: 'UrlTagView';
 
-        @Hook('beforeUnmount')
-        beforeDestroy(): void {
+        //@Hook('beforeUnmount')
+        beforeUnmount(): void {
             this.dismiss();
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
         //   (this.$el as any).bbcodeTag = 'url';
         //   (this.$el as any).bbcodeParam = this.url;
@@ -53,8 +53,8 @@
           (this.root as any).bbcodeParam = this.url;
         }
 
-        @Hook('deactivated')
-        deactivate(): void {
+        //@Hook('deactivated')
+        deactivated(): void {
             this.dismiss();
         }
 

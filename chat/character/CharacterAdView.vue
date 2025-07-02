@@ -1,6 +1,6 @@
 <template>
    <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="ads-dialog">
-        <template slot="title">
+        <template v-slot:title>
             {{ l('characterAds.none') }}<user :character="character">{{character.name}}</user>
         </template>
 
@@ -25,7 +25,7 @@
 
 import * as _ from 'lodash';
 import l from '../localize';
-import { Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+import { Component, Prop, Watch } from 'vue-facing-decorator';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import { Character } from '../../fchat/interfaces';
@@ -53,8 +53,8 @@ export default class CharacterAdView extends CustomDialog {
     }
 
 
-    @Hook('mounted')
-    onMounted(): void {
+    //@Hook('mounted')
+    mounted(): void {
         this.update();
     }
 

@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Ref, Emit } from 'vue-facing-decorator';
     // Component as VueComponent,
     //import {ComponentOptions, h, VNode} from 'vue';
     import DateDisplay from '../../components/date_display.vue';
@@ -276,8 +276,7 @@
             return Store.authenticated;
         }
 
-        memo(memo: object): void {
-            this.$emit('memo', memo);
-        }
+        @Emit
+        memo(memo: object): object { return memo };
     }
 </script>

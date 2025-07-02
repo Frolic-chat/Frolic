@@ -3,10 +3,10 @@
         <div class="form-group" id="statusSelector">
             <label class="control-label">{{l('chat.setStatus.status')}}</label>
             <dropdown linkClass="custom-select">
-                <span slot="title">
+                <template v-slot:title>
                     <span class="fa fa-fw" :class="getStatusIcon(status)"></span>
                     {{l('status.' + status)}}
-                </span>
+                </template>
                 <a href="#" class="dropdown-item" v-for="item in statuses" @click.prevent="status = item">
                     <span class="fa fa-fw" :class="getStatusIcon(item)"></span>{{l('status.' + item)}}
                 </a>
@@ -46,6 +46,9 @@
         components: {modal: Modal, editor: Editor, dropdown: Dropdown, 'status-picker': StatusPicker}
     })
     export default class StatusSwitcher extends CustomDialog {
+        selectedStatus: Character.Status | undefined;
+        enteredText: string | undefined;
+        statuses = userStatuses;
         l = l;
         getByteLength = getByteLength;
         getStatusIcon = getStatusIcon;
@@ -53,12 +56,8 @@
         @Ref
         statusPicker!: StatusPicker;
 
-        selectedStatus: Character.Status | null = null;
-        enteredText: string | null = null;
-        statuses = userStatuses;
-
         get status(): Character.Status {
-            return this.selectedStatus ? this.selectedStatus : this.character.status;
+            return this.selectedStatus !== undefined ? this.selectedStatus : this.character.status;
         }
 
         set status(status: Character.Status) {
@@ -66,7 +65,7 @@
         }
 
         get text(): string {
-            return this.enteredText ? this.enteredText : this.character.statusText;
+            return this.enteredText !== undefined ? this.enteredText : this.character.statusText;
         }
 
         set text(text: string) {
@@ -85,8 +84,8 @@
         }
 
         reset(): void {
-            this.selectedStatus = null;
-            this.enteredText = null;
+            this.selectedStatus = undefined;
+            this.enteredText = undefined;
         }
 
         insertStatusMessage(statusMessage: string): void {

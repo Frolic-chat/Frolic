@@ -174,6 +174,8 @@ export namespace Character {
     }
 
     export interface State {
+        testfield: string;
+
         readonly ownCharacter: Character
         readonly friends: ReadonlyArray<Character>
         readonly bookmarks: ReadonlyArray<Character>

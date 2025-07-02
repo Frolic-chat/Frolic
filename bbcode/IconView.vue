@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+import { Vue, Component, Prop } from 'vue-facing-decorator';
 import { EventBus } from '../chat/preview/event-bus';
 import * as Utils from '../site/utils';
 import { characterImage } from '../chat/common';
@@ -24,19 +24,19 @@ export default class IconView extends Vue {
     @Prop({required: true})
     readonly character!: string;
 
-    @Hook('mounted')
+    //@Hook('mounted')
     mounted(): void {
       // do nothing
     }
 
 
-    @Hook('beforeUnmount')
-    beforeDestroy(): void {
+    //@Hook('beforeUnmount')
+    beforeUnmount(): void {
         this.dismiss();
     }
 
-    @Hook('deactivated')
-    deactivate(): void {
+    //@Hook('deactivated')
+    deactivated(): void {
         this.dismiss();
     }
 

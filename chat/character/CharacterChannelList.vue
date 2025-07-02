@@ -1,6 +1,6 @@
 <template>
    <modal :buttons="false" ref="dialog" style="width:98%" dialogClass="">
-        <template slot="title">
+        <template v-slot:title>
             {{ l('characterChannels.title') }}<user :character="character">{{character.name}}</user>
         </template>
 
@@ -22,7 +22,7 @@
 
 import * as _ from 'lodash';
 import l from '../localize';
-import { Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+import { Component, Prop, Watch } from 'vue-facing-decorator';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import { Character } from '../../fchat/interfaces';
@@ -48,8 +48,8 @@ export default class CharacterChannelList extends CustomDialog {
     }
 
 
-    @Hook('mounted')
-    onMounted(): void {
+    //@Hook('mounted')
+    mounted(): void {
         this.update();
     }
 

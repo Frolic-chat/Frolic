@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Prop, Watch } from 'vue-facing-decorator';
+    import { Component, Prop, Watch, Emit } from 'vue-facing-decorator';
     import CustomDialog from '../../components/custom_dialog';
     import Modal from '../../components/Modal.vue';
     import {SimpleCharacter} from '../../interfaces';
@@ -58,6 +58,9 @@
             this.editing = false;
         }
 
+        @Emit('memo')
+        emitMemo(m: ReturnType<MemoManager['get']>) { return m };
+
         async save(): Promise<void> {
             if (!this.editing) return;
 
@@ -70,7 +73,7 @@
                 const memoManager = new MemoManager(this.character.name);
                 await memoManager.set(this.message);
 
-                this.$emit('memo', memoManager.get());
+                this.emitMemo(memoManager.get());
                 this.hide();
             } catch(e) {
                 Utils.ajaxError(e, 'Unable to set memo.');

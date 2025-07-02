@@ -165,7 +165,7 @@
 
         <modal :buttons="false" ref="profileAnalysisModal" dialogClass="profile-analysis" >
             <profile-analysis ref="profileAnalysis"></profile-analysis>
-            <template slot="title">
+            <template v-slot:title>
                 {{ownCharacter.name}}
                 <a class="btn" @click="showProfileAnalyzer">
                     <i class="fa fa-sync"></i>
@@ -177,7 +177,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Watch, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Watch, Ref } from 'vue-facing-decorator';
 
     import Sortable from 'sortablejs';
 
@@ -242,9 +242,9 @@
         env = process.env.NODE_ENV;
         sidebarExpanded = false;
         characterImage = characterImage;
-        conversations = core.conversations;
         getStatusIcon = getStatusIcon;
-        coreState = core.state;
+        readonly conversations = core.conversations;
+        readonly coreState = core.state;
         keydownListener!: (e: KeyboardEvent) => void;
         focusListener!: () => void;
         blurListener!: () => void;
@@ -282,9 +282,6 @@
         @Ref
         imagePreview!: ImagePreview;
 
-        channelConversations = core.conversations.channelConversations
-        privateConversations = core.conversations.privateConversations
-
         privateCanGlow!: boolean;
         channelCanGlow!: boolean;
 
@@ -302,13 +299,13 @@
           }
         }
 
-        @Hook('created')
+        //@Hook('created')
         created(): void {
-            this.privateCanGlow = !this.channelConversations?.length;
-            this.channelCanGlow = !this.privateConversations?.length;
+            this.privateCanGlow = !this.conversations.channelConversations.length;
+            this.channelCanGlow = !this.conversations.privateConversations.length;
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             this.keydownListener = (e: KeyboardEvent) => this.onKeyDown(e);
             window.addEventListener('keydown', this.keydownListener);
@@ -369,8 +366,8 @@
             void core.adCenter.load();
         }
 
-        @Hook('unmounted')
-        destroyed(): void {
+        //@Hook('unmounted')
+        unmounted(): void {
             window.removeEventListener('keydown', this.keydownListener);
             window.removeEventListener('focus', this.focusListener);
             window.removeEventListener('blur', this.blurListener);
@@ -460,10 +457,7 @@
 
             const cls = { [styling[status].color]: true };
 
-            _.forEach(
-                styling[status].icon,
-                (name: string) => cls[name] = true
-            );
+            styling[status].icon.forEach((name: string) => cls[name] = true);
 
             return cls;
         }

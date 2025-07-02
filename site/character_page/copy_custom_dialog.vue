@@ -1,12 +1,12 @@
 <template>
     <modal id="copyCustomDialog" action="Copy Custom Kink" :disabled="!valid || submitting" @submit.prevent="copyCustom()">
-        <form-group v-slot="props" field="name" :errors="formErrors" label="Name" id="copyCustomName">
+        <form-group v-slot:default="props" field="name" :errors="formErrors" label="Name" id="copyCustomName">
             <input type="text" class="form-control" maxlength="30" required v-model="name" id="copyCustomName" :class="props.cls"/>
         </form-group>
-        <form-group v-slot="props" field="description" :errors="formErrors" label="Description" id="copyCustomDescription">
+        <form-group v-slot:default="props" field="description" :errors="formErrors" label="Description" id="copyCustomDescription">
             <input type="text" class="form-control" max-length="250" v-model="description" required id="copyCustomDescription" :class="props.cls"/>
         </form-group>
-        <form-group v-slot="props" field="choice" :errors="formErrors" label="Choice" id="copyCustomChoice">
+        <form-group v-slot:default="props" field="choice" :errors="formErrors" label="Choice" id="copyCustomChoice">
             <select v-model="choice" class="form-control" :class="props.cls" id="copyCustomChoice">
                 <option value="favorite">Favorite</option>
                 <option value="yes">Yes</option>
@@ -14,7 +14,7 @@
                 <option value="no">No</option>
             </select>
         </form-group>
-        <form-group v-slot="props" field="target" :errors="formErrors" label="Target Character" id="copyCustomTarget">
+        <form-group v-slot:default="props" field="target" :errors="formErrors" label="Target Character" id="copyCustomTarget">
             <character-select v-model="target" :class="props.cls" id="copyCustomTarget"></character-select>
         </form-group>
     </modal>

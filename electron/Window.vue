@@ -6,7 +6,7 @@
             <div class="btn" :class="'btn-' + (hasUpdate ? 'info' : 'light')" @click="openMenu" id="settings">
                 <i :class="hasUpdate ? 'far fa-sun' : 'fa fa-cog'"></i>
             </div>
-            <ul class="nav nav-tabs" style="border-bottom:0;margin-bottom:-1px;margin-top:1px" ref="tabs">
+            <ul class="nav nav-tabs" style="border-bottom:0;margin-bottom:-1px;margin-top:1px" ref="tabBar">
                 <li v-for="(tab,index) in tabs" :key="'tab-' + index" class="nav-item" @click.middle="remove(tab)">
                     <a href="#" @click.prevent="show(tab)" class="nav-link tab"
                         :class="{active: tab === activeTab, hasNew: tab.hasNew && tab !== activeTab}">
@@ -34,10 +34,11 @@
 </template>
 
 <script lang="ts">
+    import Draggable from 'vuedraggable/src/vuedraggable';
     import Sortable from 'sortablejs';
     import _ from 'lodash';
 
-    import { Vue, Component, Hook, Inject } from 'vue-facing-decorator';
+    import { Vue, Component, Inject, Ref } from 'vue-facing-decorator';
     import * as electron from 'electron';
     import { IpcRendererEvent } from 'electron';
     import * as remote from '@electron/remote';
@@ -128,12 +129,17 @@
     const trayIcon = path.join(__dirname, <string>require('./build/tray.png').default);
     //path.join(__dirname, <string>require('./build/tray.png').default);
 
-    @Component
+    @Component({ components: {
+        draggable: Draggable,
+    }})
     export default class Window extends Vue {
         @Inject
         settings!: GeneralSettings;
 
         l = l;
+
+        @Ref
+        tabBar!: HTMLUListElement;
 
         tabs: Tab[] = [];
         activeTab: Tab | null = null;
@@ -146,7 +152,7 @@
         hasCompletedUpgrades = false;
 
 
-        @Hook('mounted')
+        //@Hook('mounted')
         async mounted(): Promise<void> {
             log.debug('init.window.mounting');
 
@@ -217,8 +223,6 @@
                     return;
                 }
 
-                // Vue 2
-                // Vue.set(tab, 'avatarUrl', url);
                 tab.avatarUrl = url;
             });
             electron.ipcRenderer.on('disconnect', (_e: IpcRendererEvent, id: number) => {
@@ -231,8 +235,6 @@
 
                 tab.user = undefined;
 
-                // Vue 2
-                // Vue.set(tab, 'avatarUrl', undefined);
                 tab.avatarUrl = undefined;
 
                 tab.tray.setToolTip(l('title'));
@@ -267,7 +269,7 @@
             });
             document.addEventListener('click', () => {
                 if (!browserWindow.isMinimized())
-                this.activeTab!.view.webContents.focus();
+                    this.activeTab!.view.webContents.focus();
             });
             window.addEventListener('focus', () => {
                 if (!browserWindow.isMinimized())
@@ -283,7 +285,7 @@
 
             // console.log('SORTABLE', Sortable);
 
-            Sortable.create(<HTMLElement>this.$refs['tabs'], {
+            Sortable.create(<HTMLElement>this.tabBar, {
                 animation: 50,
                 onEnd: e => {
                     // log.debug('ONEND', e);

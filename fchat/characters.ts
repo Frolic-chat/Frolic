@@ -27,6 +27,8 @@ export interface CharacterOverrides {
 }
 
 class State implements Interfaces.State {
+    testfield: string = 'initial';
+
     characters: {[key: string]: Character | undefined} = {};
 
     ownCharacter: Character = <any>undefined; /*tslint:disable-line:no-any*///hack

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch } from 'vue-facing-decorator';
     import {formatDistanceToNow, format} from 'date-fns';
     import {settings} from '../site/utils';
 
@@ -14,9 +14,9 @@
         primary: string | null = null;
         secondary: string | null = null;
 
-        @Hook('mounted')
+        //@Hook('mounted')
         @Watch('time')
-        update(): void {
+        mounted(): void {
             if(this.time === null || this.time === 0)
                 return;
             const date = isNaN(+this.time) ? new Date(`${this.time}+00:00`) : new Date(+this.time * 1000);

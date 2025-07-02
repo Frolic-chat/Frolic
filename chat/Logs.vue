@@ -1,7 +1,7 @@
 <template>
     <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="logs-dialog">
-        <template slot="title">
-            {{l('logs.title')}}
+        <template v-slot:title>
+            {{ l('logs.title') }}
             <div class="logs-fab btn btn-secondary" @click="showFilters = !showFilters">
                 <span class="fas" :class="'fa-chevron-' + (showFilters ? 'up' : 'down')"></span>
             </div>
@@ -10,12 +10,12 @@
             <label for="character" class="col-sm-2 col-form-label">{{l('logs.character')}}</label>
             <div :class="canZip ? 'col-sm-8 col-10 col-xl-9' : 'col-sm-10'">
                 <select class="form-control" v-model="selectedCharacter" id="character" @change="loadCharacter">
-                    <option value="">{{l('logs.selectCharacter')}}</option>
-                    <option v-for="character in characters">{{character}}</option>
+                    <option :value="undefined">{{l('logs.selectCharacter')}}</option>
+                    <option v-for="character in characters" :key="character">{{character}}</option>
                 </select>
             </div>
             <div class="col-2 col-xl-1" v-if="canZip">
-                <button @click="downloadCharacter" class="btn btn-secondary form-control" :disabled="!selectedCharacter"><span
+                <button @click="downloadCharacter(selectedCharacter)" class="btn btn-secondary form-control" :disabled="!selectedCharacter"><span
                     class="fa fa-download"></span></button>
             </div>
         </div>
@@ -24,15 +24,15 @@
                 {{l('logs.conversation')}}
             </label>
             <div :class="canZip ? 'col-sm-8 col-10 col-xl-9' : 'col-sm-10'">
-                <filterable-select v-model="selectedConversation" :options="conversations" :filterFunc="filterConversation"
-                                   :placeholder="l('general.filter')">
-                    <template v-slot="s">
+                <filterable-select :options="conversations" :filterFunc="filterConversation"
+                                   :placeholder="l('general.filter')" @input="updateSelectedConversation" ref="conversationDropdown">
+                    <template v-slot:default="s">
                         {{s.option && ((s.option.key[0] == '#' ? '#' : '') + s.option.name) || l('logs.selectConversation')}}
                     </template>
                 </filterable-select>
             </div>
             <div class="col-2 col-xl-1" v-if="canZip">
-                <button @click="downloadConversation" class="btn btn-secondary form-control" :disabled="!selectedConversation">
+                <button @click="downloadConversation(selectedCharacter, selectedConversation)" class="btn btn-secondary form-control" :disabled="!selectedConversation">
                     <span class="fa fa-download"></span>
                 </button>
             </div>
@@ -42,11 +42,11 @@
             <div class="col-sm-8 col-10 col-xl-9">
                 <select class="form-control" v-model="selectedDate" id="date" @change="loadMessages">
                     <option :value="undefined">{{l('logs.allDates')}}</option>
-                    <option v-for="date in dates" :value="date.getTime()">{{formatDate(date)}}</option>
+                    <option v-for="date in dates" :key="date.toString()" :value="date.getTime()">{{formatDate(date)}}</option>
                 </select>
             </div>
             <div class="col-2 col-xl-1">
-                <button @click="downloadDay" class="btn btn-secondary form-control" :disabled="!selectedDate">
+                <button @click="downloadDay(selectedCharacter, selectedConversation, selectedDate, messages)" class="btn btn-secondary form-control" :disabled="!selectedDate">
                     <span class="fa fa-download"></span>
                 </button>
             </div>
@@ -55,17 +55,17 @@
              @scroll="onMessagesScroll">
             <message-view v-for="message in displayedMessages" :message="message" :key="message.id" :logs="true"></message-view>
         </div>
-        <div class="input-group" style="flex-shrink:0">
+        <div class="input-group" v-show="messages.length > 0" style="flex-shrink:0">
             <div class="input-group-prepend">
                 <div class="input-group-text"><span class="fas fa-search"></span></div>
             </div>
-            <input class="form-control" v-model="filter" :placeholder="l('general.filter')" v-show="messages" type="text"/>
+            <input class="form-control" v-model="filter" :placeholder="l('general.filter')" type="text"/>
         </div>
     </modal>
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop, Watch, Ref } from 'vue-facing-decorator';
+    import { Component, Prop, Watch, Ref, Model } from 'vue-facing-decorator';
     import {format} from 'date-fns';
     import CustomDialog from '../components/custom_dialog';
     import FilterableSelect from '../components/FilterableSelect.vue';
@@ -78,6 +78,9 @@
     import MessageView from './message_view';
     import Zip from './zip';
     import { Dialog } from '../helpers/dialog';
+
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('Logs');
 
     function formatDate(this: void, date: Date): string {
         return format(date, 'yyyy-MM-dd');
@@ -106,18 +109,28 @@
 
         @Ref
         messageviews!: HTMLDivElement;
+        @Ref
+        conversationDropdown!: FilterableSelect;
+
+        /**
+         * Initializers on these models don't really matter as their initial
+         * value is going to be set to; they pick up the `undefined` from their
+         * HTMLElement immediately.
+         */
+        @Model
+        selectedCharacter: string | undefined = core.connection.character;
+        @Model
+        selectedDate!: string | undefined;
+        @Model
+        filter!: string | undefined;
 
         conversations: LogInterface.Conversation[] = [];
         selectedConversation: LogInterface.Conversation | null = null;
         dates: ReadonlyArray<Date> = [];
-        selectedDate: string | null = null;
-
-        filter = '';
         messages: ReadonlyArray<Conversation.Message> = [];
         keyDownListener: ((e: KeyboardEvent) => void) | null = null;
         resizeListener = async() => this.onMessagesScroll();
         characters: ReadonlyArray<string> = [];
-        selectedCharacter = core.connection.character;
         showFilters = true;
         canZip = core.logs.canZip;
         dateOffset = -1;
@@ -125,25 +138,38 @@
         windowEnd = 0;
 
         get displayedMessages(): ReadonlyArray<Conversation.Message> {
-            if(this.selectedDate) return this.filteredMessages;
-            return this.filteredMessages.slice(this.windowStart, this.windowEnd);
+            if (this.selectedDate)
+                return this.filteredMessages;
+            else
+                return this.filteredMessages.slice(this.windowStart, this.windowEnd);
         }
 
         get filteredMessages(): ReadonlyArray<Conversation.Message> {
-            if(this.filter.length === 0) return this.messages;
+            log.debug('filteredMessages.filter', { filter: this.filter });
+            if(!this.filter) return this.messages;
             const filter = new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
             return this.messages.filter(
-                (x) => filter.test(x.text) || x.type !== Conversation.Message.Type.Event && filter.test(x.sender.name));
+                x => filter.test(x.text) || x.type !== Conversation.Message.Type.Event && filter.test(x.sender.name)
+            );
         }
 
-        @Hook('mounted')
+        //@Hook('created')
+        created(): void {
+            log.debug('created.models', {
+                selectedCharacter: this.selectedCharacter,
+                selectedDate:      this.selectedDate,
+                filter:            this.filter,
+            });
+        }
+
+        //@Hook('mounted')
         async mounted(): Promise<void> {
             this.characters = await core.logs.getAvailableCharacters();
             window.addEventListener('resize', this.resizeListener);
         }
 
-        @Hook('beforeUnmount')
-        beforeDestroy(): void {
+        //@Hook('beforeUnmount')
+        beforeUnmount(): void {
             window.removeEventListener('resize', this.resizeListener);
         }
 
@@ -153,25 +179,43 @@
         }
 
         async loadConversations(): Promise<void> {
-            if(this.selectedCharacter === '') return;
-            this.conversations = (await core.logs.getConversations(this.selectedCharacter)).slice();
-            this.conversations.sort((x, y) => (x.name < y.name ? -1 : (x.name > y.name ? 1 : 0)));
+            if (this.selectedCharacter) {
+                this.conversations = (await core.logs.getConversations(this.selectedCharacter)).slice();
+                this.conversations.sort((x, y) => (x.name < y.name ? -1 : (x.name > y.name ? 1 : 0)));
+            }
         }
 
         async loadDates(): Promise<void> {
-            this.dates = !this.selectedConversation ? [] :
-                (await core.logs.getLogDates(this.selectedCharacter, this.selectedConversation.key)).slice().reverse();
+            this.dates = !this.selectedConversation || !this.selectedCharacter
+                ? []
+                : (await core.logs.getLogDates(this.selectedCharacter, this.selectedConversation.key)).slice().reverse();
         }
 
         filterConversation(filter: RegExp, conversation: LogInterface.Conversation): boolean {
             return filter.test(conversation.name);
         }
 
+        async updateSelectedConversation(newValue: Conversation | undefined): Promise<void> {
+            const oldValue = this.selectedConversation;
+            if (newValue === oldValue)
+                return;
+
+            this.selectedConversation = newValue ?? null;
+
+            await this.loadDates();
+            this.selectedDate = '';
+            this.dateOffset = -1;
+            this.filter = '';
+            await this.loadMessages();
+        }
+
         @Watch('selectedConversation')
         async conversationSelected(oldValue: Conversation | undefined, newValue: Conversation | undefined): Promise<void> {
-            if(oldValue !== undefined && newValue !== undefined && oldValue.key === newValue.key) return;
+            if(oldValue && newValue && oldValue.key === newValue.key)
+                return;
+
             await this.loadDates();
-            this.selectedDate = null;
+            this.selectedDate = '';
             this.dateOffset = -1;
             this.filter = '';
             await this.loadMessages();
@@ -204,44 +248,70 @@
             });
         }
 
-        downloadDay(): void {
-            if(!this.selectedConversation || !this.selectedDate || this.messages.length === 0) return;
-            const html = Dialog.confirmDialog(l('logs.html'));
-            const name = `${this.selectedConversation.name}-${formatDate(new Date(this.selectedDate))}.${html ? 'html' : 'txt'}`;
-            this.download(name, `data:${encodeURIComponent(name)},${encodeURIComponent(getLogs(this.messages, html))}`);
-        }
+        downloadDay(char: string | undefined, conv: LogInterface.Conversation | null, day: string | undefined, msgs: readonly Conversation.Message[]): void {
+            if (char && conv && day && msgs.length > 0) {
+                const html = Dialog.confirmDialog(l('logs.html'));
+                const name = `${conv.name}-${formatDate(new Date(day))}.${html ? 'html' : 'txt'}`;
 
-        async downloadConversation(): Promise<void> {
-            if(!this.selectedConversation) return;
-            const zip = new Zip();
-            const html = Dialog.confirmDialog(l('logs.html'));
-            for(const date of this.dates) {
-                const messages = await core.logs.getLogs(this.selectedCharacter, this.selectedConversation.key, date);
-                zip.addFile(`${formatDate(date)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
+                this.download(name, `data:${encodeURIComponent(name)},${encodeURIComponent(getLogs(msgs, html))}`);
             }
-            this.download(`${this.selectedConversation.name}.zip`, URL.createObjectURL(zip.build()));
         }
 
-        async downloadCharacter(): Promise<void> {
-            if(this.selectedCharacter === '' || !Dialog.confirmDialog(l('logs.confirmExport', this.selectedCharacter))) return;
+        async downloadConversation(char: string | undefined, conv: LogInterface.Conversation | null): Promise<void> {
+            if (char && conv) {
+                const zip = new Zip();
+                const html = Dialog.confirmDialog(l('logs.html'));
+
+                this.dates.forEach(
+                    async d => {
+                        const messages = await core.logs.getLogs(char, conv.key, d);
+                        zip.addFile(`${formatDate(d)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
+                    }
+                );
+
+                this.download(`${conv.name}.zip`, URL.createObjectURL(zip.build()));
+            }
+        }
+
+        async downloadCharacter(char: string | undefined): Promise<void> {
+            if (!char
+            ||  !Dialog.confirmDialog(l('logs.confirmExport', char))) {
+                return;
+            }
+
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'));
-            for(const conv of this.conversations) {
-                zip.addFile(`${conv.name}/`, '');
-                const dates = await core.logs.getLogDates(this.selectedCharacter, conv.key);
-                for(const date of dates) {
-                    const messages = await core.logs.getLogs(this.selectedCharacter, conv.key, date);
-                    zip.addFile(`${conv.name}/${formatDate(date)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
+
+            this.conversations.forEach(
+                async c => {
+                    zip.addFile(`${c.name}/`, '');
+                    const dates = await core.logs.getLogDates(char, c.key);
+                    dates.forEach(
+                        async d => {
+                            const messages = await core.logs.getLogs(char, c.key, d);
+                            zip.addFile(`${c.name}/${formatDate(d)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
+                        }
+                    )
                 }
-            }
-            this.download(`${this.selectedCharacter}.zip`, URL.createObjectURL(zip.build()));
+            )
+
+            this.download(`${char}.zip`, URL.createObjectURL(zip.build()));
         }
 
         async onOpen(): Promise<void> {
-            if(this.selectedCharacter !== '') {
+            setTimeout(
+                () => log.debug('open.models', {
+                selectedCharacter: this.selectedCharacter,
+                selectedDate:      this.selectedDate,
+                filter:            this.filter,
+            }),
+            100);
+
+
+            if (this.selectedCharacter) {
                 await this.loadConversations();
-                if(this.conversation !== undefined)
-                    this.selectedConversation = this.conversations.filter((x) => x.key === this.conversation!.key)[0];
+                if (this.conversation)
+                    this.selectedConversation = this.conversations.filter(x => x.key === this.conversation!.key)[0];
                 else {
                     await this.loadDates();
                     await this.loadMessages();
@@ -252,7 +322,7 @@
                     if((<HTMLElement>e.target).tagName.toLowerCase() === 'input') return;
                     e.preventDefault();
                     const selection = document.getSelection();
-                    if(selection === null) return;
+                    if (!selection) return;
                     selection.removeAllRanges();
                     if(this.messages.length > 0) {
                         const range = document.createRange();
@@ -271,11 +341,14 @@
         }
 
         async loadMessages(): Promise<void> {
-            if(!this.selectedConversation) this.messages = [];
-            else if(this.selectedDate) {
+            if (!this.selectedCharacter || !this.selectedConversation) {
+                this.messages = [];
+            }
+            else if (this.selectedDate) {
                 this.dateOffset = -1;
                 this.messages = await core.logs.getLogs(this.selectedCharacter, this.selectedConversation.key, new Date(this.selectedDate));
-            } else if(this.dateOffset === -1) {
+            }
+            else if (this.dateOffset === -1) {
                 this.messages = [];
                 this.dateOffset = 0;
                 this.windowStart = 0;
@@ -283,7 +356,10 @@
                 this.lastScroll = -1;
                 this.lockScroll = false;
                 this.$nextTick(async() => this.onMessagesScroll());
-            } else return this.onMessagesScroll();
+            }
+            else {
+                return this.onMessagesScroll();
+            }
         }
 
         lockScroll = false;
@@ -299,7 +375,7 @@
                 return (<HTMLElement>list!.children[index]).offsetTop;
             }
 
-            while(this.selectedConversation && !this.selectedDate && this.dialog.isShown) {
+            while(this.selectedCharacter && this.selectedConversation && !this.selectedDate && this.dialog.isShown) {
                 const oldHeight = list.scrollHeight, oldTop = list.scrollTop;
                 const oldFirst = this.displayedMessages[0];
                 const oldEnd = this.windowEnd;
@@ -317,6 +393,9 @@
                 if(this.windowStart <= 0 && this.dateOffset < this.dates.length) {
                     const messages = await core.logs.getLogs(this.selectedCharacter, this.selectedConversation.key,
                         this.dates[this.dateOffset++]);
+
+                    log.debug('onMessagesScroll.message', { messages });
+
                     this.messages = messages.concat(this.messages);
                     const addedTotal = this.filteredMessages.length - oldTotal;
                     this.windowStart += addedTotal;

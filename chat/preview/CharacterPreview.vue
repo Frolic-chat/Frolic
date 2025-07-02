@@ -75,7 +75,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+import { Vue, Component, Prop } from 'vue-facing-decorator';
 import core from '../core';
 import { methods } from '../../site/character_page/data_store';
 import {Character as ComplexCharacter} from '../../site/character_page/interfaces';
@@ -167,7 +167,7 @@ export default class CharacterPreview extends Vue {
     return Utils.avatarURL(this.characterName || this.character?.character.name || '');
   }
 
-  @Hook('mounted')
+  //@Hook('mounted')
   mounted(): void {
     // tslint:disable-next-line no-unsafe-any no-any
     this.scoreWatcher = (event: {character: Character, score: number}): void => {
@@ -186,8 +186,8 @@ export default class CharacterPreview extends Vue {
   }
 
 
-  @Hook('beforeUnmount')
-  beforeDestroy(): void {
+  //@Hook('beforeUnmount')
+  beforeUnmount(): void {
       if (this.scoreWatcher) {
           EventBus.$off('character-score', this.scoreWatcher);
 

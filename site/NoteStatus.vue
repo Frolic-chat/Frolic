@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import _ from 'lodash';
-import { Vue, Component, Hook } from 'vue-facing-decorator';
+import { Vue, Component } from 'vue-facing-decorator';
 import core from '../chat/core';
 import { EventBus } from '../chat/preview/event-bus';
 
@@ -48,7 +48,7 @@ reports: ReportState[] = [
 callback!: () => void;
 
 
-@Hook('mounted')
+//@Hook('mounted')
 mounted(): void {
     this.updateCounts();
 
@@ -58,8 +58,8 @@ mounted(): void {
 }
 
 
-@Hook('beforeUnmount')
-destroying(): void {
+//@Hook('beforeUnmount')
+beforeUnmount(): void {
     if (this.callback) EventBus.$off('note-counts-update', this.callback);
 }
 

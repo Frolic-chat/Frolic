@@ -2,17 +2,11 @@ import { h, defineComponent, VNode, ref } from 'vue';
 
 const Tabs = defineComponent({
     props: {
-        value: {
-            type: String,
-            required: true,
-        },
-        tabs: {
-            type: Object as () => { [key: string]: string },
-            required: true,
-        },
+        value: { type: String, required: true },
+        tabs: { type: Object as () => { [key: string]: string }, required: true },
     },
     setup(props, ctx) {
-        const _v = ref<string | undefined>(props.value);
+        const _v       = ref<string | undefined>(props.value);
         const selected = ref<string | undefined>(props.value);
 
         let children: { [key: string]: string | VNode | undefined } = {};

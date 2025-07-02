@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Emit } from 'vue-facing-decorator';
     import cloneDeep = require('lodash/cloneDeep'); //tslint:disable-line:no-require-imports
 
     type ParamDictionary = {[key: string]: number | undefined};
@@ -50,16 +50,18 @@
         @Prop({default: 'page'})
         readonly paramName!: string;
 
+        @Emit('previous')
+        emitPrevious(): void {};
+
+        @Emit('next')
+        emitNext(): void {};
+
         nextPage(): void {
-            if(!this.next)
-                return;
-            this.$emit('next');
+            if (this.next) this.emitNext();
         }
 
         previousPage(): void {
-            if(!this.prev)
-                return;
-            this.$emit('prev');
+            if (this.prev) this.emitPrevious();
         }
 
         get prevRoute(): RouteParams {

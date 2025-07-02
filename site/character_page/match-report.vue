@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop } from 'vue-facing-decorator';
     import * as _ from 'lodash';
     import * as Utils from '../utils';
     import { Matcher, MatchReport, MatchResult, Score } from '../../learn/matcher';
@@ -60,7 +60,7 @@
         isMinimized = false;
 
 
-        @Hook('beforeMount')
+        //@Hook('beforeMount')
         async beforeMount(): Promise<void> {
           this.isMinimized = !!await core.settingsStore.get('hideProfileComparisonSummary');
         }

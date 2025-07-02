@@ -1,7 +1,11 @@
 <template>
-    <dropdown class="filterable-select" linkClass="custom-select" :keepOpen="true">
-        <template slot="title" v-if="multiple">{{label}}</template>
-        <slot v-else slot="title" :option="selected">{{label}}</slot>
+    <dropdown class="filterable-select" linkClass="custom-select" :keepOpen="multiple">
+        <!-- It works like this:
+                - Multi-select: Fill in the title slot of `dropdown` with `get label()`.
+                - Single-select: Offer a slot to the parent to fill in (default: `get label()`).
+         -->
+        <template v-if="multiple" v-slot:title>{{label}}</template>
+        <template v-else v-slot:title><slot name="title">{{label}}</slot></template>
 
         <div style="padding:10px;">
             <input v-model="filter" class="form-control" :placeholder="placeholder" @mousedown.stop/>
@@ -23,8 +27,11 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop, Watch, Hook } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Emit } from 'vue-facing-decorator';
     import Dropdown from '../components/Dropdown.vue';
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('FilterableSelect');
+
 
     @Component({
         components: {dropdown: Dropdown}
@@ -47,24 +54,29 @@
         selected: object | object[] | null = null;
 
         @Watch('value')
-        watchValue(newValue: object | object[] | undefined): void {
-            this.selected = newValue ?? null;
+        watchValue(newValue: object | object[] | null, _oldValue: object | object[] | null): void {
+            this.selected = newValue;
         }
 
-        @Hook('created')
+        //@Hook('created')
         created(): void {
-            this.selected = this.value ? this.value : (this.multiple ? [] : null);
+            this.selected = this.value ?? this.multiple ? [] : null;
         }
 
-        select(item: object): void {
+        @Emit('input')
+        select(item: object): object | object[] | null {
             if(this.multiple) {
                 const selected = <object[]>this.selected;
                 const index = selected.indexOf(item);
-                if(index === -1) selected.push(item);
+                if (index === -1) selected.push(item);
                 else selected.splice(index, 1);
-            } else
+            }
+            else {
                 this.selected = item;
-            this.$emit('input', this.selected);
+            }
+
+            log.debug('select.result', { selected: this.selected, type: typeof this.selected });
+            return this.selected;
         }
 
         isSelected(option: object): boolean {
@@ -77,8 +89,9 @@
         }
 
         get label(): string | undefined {
-            return this.multiple ? `${this.title} - ${(<object[]>this.selected).length}` :
-                (this.selected ? this.selected.toString() : this.title);
+            return this.multiple
+                ? `${this.title} - ${(<object[]>this.selected).length}`
+                :this.selected ? this.selected.toString() ?? this.title : this.title;
         }
 
         get filterRegex(): RegExp {

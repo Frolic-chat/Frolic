@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop } from 'vue-facing-decorator';
     import core from './core';
     import {Channel} from './interfaces';
 
@@ -18,16 +18,17 @@
         @Prop({required: true})
         readonly text!: string;
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             core.channels.requestChannelsIfNeeded(300000);
         }
 
         joinChannel(): void {
-            if(this.channel === undefined || !this.channel.isJoined)
-                core.channels.join(this.id);
+            if (!this.channel?.isJoined) core.channels.join(this.id);
+
             const channel = core.conversations.byKey(`#${this.id}`);
-            if(channel !== undefined) channel.show();
+
+            if (channel) channel.show();
         }
 
         get channel(): Channel.ListItem | undefined {

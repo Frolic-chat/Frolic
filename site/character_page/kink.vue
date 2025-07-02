@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Prop, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Emit } from 'vue-facing-decorator';
     import { DisplayKink } from './interfaces';
     import { kinkComparisonSwaps } from '../../learn/matcher-types';
 
@@ -50,9 +50,8 @@
             }
         }
 
-        toggleExpandedCustoms(): void {
-            this.$emit('expanded-customs-change');
-        }
+        @Emit('expanded-customs-change')
+        toggleExpandedCustoms(): void {};
 
         toggleSubkinks(): void {
             if(!this.kink.hasSubkinks)

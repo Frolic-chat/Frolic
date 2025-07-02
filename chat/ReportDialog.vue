@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Ref } from 'vue-facing-decorator';
+    import { Component, Ref } from 'vue-facing-decorator';
     import {BBCodeElement} from '../bbcode/core';
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
@@ -39,13 +39,13 @@
         error = '';
         submitting = false;
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             this.caption.appendChild(new BBCodeParser().parseEverything(l('chat.report.description')));
         }
 
-        @Hook('beforeUnmount')
-        beforeDestroy(): void {
+        //@Hook('beforeUnmount')
+        beforeUnmount(): void {
             (<BBCodeElement>this.caption.firstChild).cleanup!();
         }
 

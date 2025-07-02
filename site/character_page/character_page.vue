@@ -75,7 +75,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
 
-    import { Vue, Component, Hook, Prop, Ref, Watch } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Ref, Watch } from 'vue-facing-decorator';
 
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('character_page');
@@ -174,14 +174,14 @@
         characterMatch: MatchReport | null = null;
 
 
-        @Hook('beforeMount')
+        //@Hook('beforeMount')
         beforeMount(): void {
             this.shared.authenticated = this.authenticated;
 
             // console.log('Beforemount');
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         async mounted(): Promise<void> {
             await this.load(false);
 

@@ -76,7 +76,7 @@
 
 <script lang="ts">
 import l from '../chat/localize';
-import { Component, Hook, Prop, Ref } from 'vue-facing-decorator';
+import { Component, Prop, Ref } from 'vue-facing-decorator';
 import { EIconStore } from '../learn/eicon/store';
 import core from '../chat/core';
 import modal from '../components/Modal.vue';
@@ -109,7 +109,7 @@ export default class EIconSelector extends CustomDialog {
     results: string[] = [];
     refreshing: boolean = true;
 
-    @Hook('mounted')
+    //@Hook('mounted')
     async mounted(): Promise<void> {
         store = await EIconStore.getSharedStore();
         this.refreshing = false;

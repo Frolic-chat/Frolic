@@ -22,18 +22,18 @@ You should have received a copy of the GNU General Public License along with thi
 </template>
 
 <script lang="ts">
-import { Vue, Component, Hook } from 'vue-facing-decorator';
+import { Vue, Component } from 'vue-facing-decorator';
 
 import Logger from 'electron-log/renderer';
 
 @Component
 export default class LogViewer extends Vue {
-levels: string[] = Logger.levels;
-scopes: Record<string, number> = { 'CharacterSearch': 0, 'Chat': 0, 'event-bus': 0, 'chat': 0, 'Index': 0, 'blocker': 0, 'cache-manager': 0, 'matcher': 0, 'UserListSorter': 0, 'WordDefinition': 0, 'note-checker': 0, 'site-session': 0 };
-desc: string[] = [];
-logs: { [key: string]: number } = {};
+    levels: string[] = Logger.levels;
+    scopes: Record<string, number> = { 'CharacterSearch': 0, 'Chat': 0, 'event-bus': 0, 'chat': 0, 'Index': 0, 'blocker': 0, 'cache-manager': 0, 'matcher': 0, 'UserListSorter': 0, 'WordDefinition': 0, 'note-checker': 0, 'site-session': 0 };
+    desc: string[] = [];
+    logs: { [key: string]: number } = {};
 
-@Hook('created')
+    //@Hook('created')
     created(): void {}
 
     handle(): void {}

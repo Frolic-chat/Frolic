@@ -34,8 +34,8 @@
             <button type="button" class="close" aria-label="Close" style="margin-left:10px" @click="showToolbar = false">&times;</button>
         </div>
         <div class="bbcode-editor-text-area" style="order:100;width:100%;">
-            <textarea ref="input" v-model="text" @input="onInput" v-show="!preview" :maxlength="maxlength" :placeholder="placeholder"
-                :class="finalClasses" @keyup="onKeyUp" :disabled="disabled" @paste="onPaste" @keypress="$emit('keypress', $event)"
+            <textarea ref="inputField" v-model="text" @input="onInput" v-show="!preview" :maxlength="maxlength" :placeholder="placeholder"
+                :class="finalClasses" @keyup="onKeyUp" :disabled="disabled" @paste="onPaste" @keypress="keypress"
                 :style="hasToolbar ? {'border-top-left-radius': 0} : undefined" @keydown="onKeyDown"></textarea>
             <textarea ref="sizer"></textarea>
             <div class="bbcode-preview" v-show="preview">
@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop, Watch, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Ref, Emit } from 'vue-facing-decorator';
     import _ from 'lodash';
     import {getKey} from '../chat/common';
     import {Keys} from '../keys';
@@ -101,7 +101,7 @@
         // readonly type!: 'normal' | 'big';
 
         @Ref
-        input!: HTMLTextAreaElement;
+        inputField!: HTMLTextAreaElement;
         @Ref
         sizer!: HTMLTextAreaElement;
         @Ref
@@ -133,7 +133,7 @@
         //tslint:disable:strict-boolean-expressions
         private resizeListener!: () => void;
 
-        @Hook('created')
+        //@Hook('created')
         created(): void {
             this.text = this.value ? this.value : '';
 
@@ -150,10 +150,10 @@
             };
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             // console.log('EDITOR', 'mounted');
-            this.element = this.input;
+            this.element = this.inputField;
             const styles = getComputedStyle(this.element);
             this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
             this.minHeight = parseInt(styles.minHeight, 10) || 60;
@@ -177,8 +177,8 @@
 
         //tslint:enable
 
-        @Hook('unmounted')
-        destroyed(): void {
+        //@Hook('unmounted')
+        unmounted(): void {
             // console.log('EDITOR', 'destroyed');
             window.removeEventListener('resize', this.resizeListener);
         }
@@ -248,7 +248,7 @@
         }
 
         setSelection(start: number, end?: number): void {
-            if(end === undefined)
+            if(typeof end !== 'number')
                 end = start;
             this.element.focus();
             this.element.setSelectionRange(start, end);
@@ -269,7 +269,7 @@
 
                 this.$nextTick(() => this.setSelection(selectionPoint));
             }
-            this.$emit('input', this.text);
+            this.input(this.text);
         }
 
         dismissColorSelector(): void {
@@ -343,12 +343,24 @@
             this.lastInput = Date.now();
         }
 
+        @Emit
+        keydown(e: KeyboardEvent): KeyboardEvent { return e };
+
+        @Emit
+        keyup(e: KeyboardEvent): KeyboardEvent { return e };
+
+        @Emit
+        keypress(e: KeyboardEvent): KeyboardEvent { return e };
+
+        @Emit
+        input(s: string): string { return s };
+
         onInput(): void {
             if(this.undoIndex > 0) {
                 this.undoStack = this.undoStack.slice(this.undoIndex);
                 this.undoIndex = 0;
             }
-            this.$emit('input', this.text);
+            this.input(this.text);
             this.lastInput = Date.now();
         }
 
@@ -360,14 +372,14 @@
                     if(this.undoIndex === 0 && this.undoStack[0] !== this.text) this.undoStack.unshift(this.text);
                     if(this.undoStack.length > this.undoIndex + 1) {
                         this.text = this.undoStack[++this.undoIndex];
-                        this.$emit('input', this.text);
+                        this.input(this.text);
                         this.lastInput = Date.now();
                     }
                 } else if(key === Keys.KeyY) {
                     e.preventDefault();
                     if(this.undoIndex > 0) {
                         this.text = this.undoStack[--this.undoIndex];
-                        this.$emit('input', this.text);
+                        this.input(this.text);
                         this.lastInput = Date.now();
                     }
                 }
@@ -379,12 +391,12 @@
                         break;
                     }
             } else if(e.shiftKey) this.isShiftPressed = true;
-            this.$emit('keydown', e);
+            this.keydown(e);
         }
 
         onKeyUp(e: KeyboardEvent): void {
             if(!e.shiftKey) this.isShiftPressed = false;
-            this.$emit('keyup', e);
+            this.keyup(e);
         }
 
         /** All this just to set the height of the editor box...

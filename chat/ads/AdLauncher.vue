@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from 'vue-facing-decorator';
+import { Component, Watch, Emit } from 'vue-facing-decorator';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import core from '../core';
@@ -135,9 +135,12 @@ export default class AdLauncherDialog extends CustomDialog {
     // return _.map(_.filter(this.channels, (t) => t.value), (t) => t.id);
   }
 
+  @Emit('show-ad-center')
+  showAdEditor(): void {};
+
   openAdEditor(): void {
     this.hide();
-    this.$emit('show-ad-center');
+    this.showAdEditor();
   }
 
   selectAllChannels(e: any): void {

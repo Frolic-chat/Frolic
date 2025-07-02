@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+import { Vue, Component, Prop } from 'vue-facing-decorator';
 import { MatchReport, MatchResultScores } from '../../learn/matcher';
 import { TagId } from '../../learn/matcher-types';
 
@@ -20,8 +20,8 @@ export default class MatchTags extends Vue {
   //
   // protected furryPreferenceId: string = '';
 
-  @Hook('mounted')
-  onMounted(): void {
+  //@Hook('mounted')
+  mounted(): void {
     this.merged = this.match.merged;
 
     this.match.you.omittedScores.forEach(v => delete this.merged[Number(v)])

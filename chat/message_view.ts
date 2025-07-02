@@ -1,4 +1,4 @@
-import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+import { Vue, Component, Prop } from 'vue-facing-decorator';
 import { h, VNode, VNodeChild } from 'vue';
 import {Channel} from '../fchat';
 import { Score } from '../learn/matcher';
@@ -105,21 +105,21 @@ export default class MessageView extends Vue {
     scoreClasses!: string;
     filterClasses!: string;
 
-    scoreWatcher: (() => void) | null = (this.message.type === Conversation.Message.Type.Ad && this.message.score === 0)
+    scoreWatcher = (this.message.type === Conversation.Message.Type.Ad && this.message.score === 0)
         ? this.$watch('message.score', () => this.scoreUpdate())
         : null;
 
 
-    @Hook('created')
+    //@Hook('created')
     created(): void {
         this.scoreClasses = this.getMessageScoreClasses(this.message);
         this.filterClasses = this.getMessageFilterClasses(this.message);
     }
 
-    @Hook('beforeUnmount')
-    onBeforeDestroy(): void {
+    //@Hook('beforeUnmount')
+    beforeUnmount(): void {
         if (this.scoreWatcher) {
-            this.scoreWatcher(); // stop watching
+            this.scoreWatcher(); // invoke watch stopper
             this.scoreWatcher = null;
         }
     }

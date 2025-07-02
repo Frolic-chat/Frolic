@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Vue, Component, Prop } from 'vue-facing-decorator';
     import {Character} from './interfaces';
     import { Conversation } from '../../chat/interfaces';
     import core from '../../chat/core';
@@ -53,7 +53,7 @@
 
       formatTime = formatTime;
 
-      @Hook('mounted')
+      //@Hook('mounted')
       async mounted(): Promise<void> {
           await this.load();
       }

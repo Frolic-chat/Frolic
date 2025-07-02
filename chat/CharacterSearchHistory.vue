@@ -1,5 +1,5 @@
 <template>
-    <modal ref="dialog" :action="l('characterSearch.searchHistory')" :buttonText="l('characterSearch.select')" @open="onMounted()" @submit="selectStatus" dialogClass="w-100 modal-lg">
+    <modal ref="dialog" :action="l('characterSearch.searchHistory')" :buttonText="l('characterSearch.select')" @open="mounted()" @submit="selectStatus" dialogClass="w-100 modal-lg">
         <form class="search-history" v-if="history.length > 0">
             <div class="form-row" v-for="(search, index) in history" :class="{ 'selected-row': (index === selectedSearch)}">
                 <div class="form-col radio-col">
@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop } from 'vue-facing-decorator';
+    import { Component, Prop } from 'vue-facing-decorator';
     import Modal from '../components/Modal.vue';
     import Dropdown from '../components/Dropdown.vue';
     import CustomDialog from '../components/custom_dialog';
@@ -51,8 +51,8 @@
 
         selectedSearch: number | null = null;
 
-        @Hook('mounted')
-        async onMounted(): Promise<void> {
+        //@Hook('mounted')
+        async mounted(): Promise<void> {
             this.history = (await core.settingsStore.get('searchHistory')) || [];
             this.selectedSearch = null;
 

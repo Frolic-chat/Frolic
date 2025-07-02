@@ -240,7 +240,7 @@
 </template>
 
 <script lang="ts">
-    import { Vue, Component, Hook, Prop, Watch, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Ref, Emit } from 'vue-facing-decorator';
     import {EditorButton, EditorSelection} from '../bbcode/editor';
     import {BBCodeView} from '../bbcode/view';
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
@@ -350,15 +350,18 @@
 
         ownName: string | null = null;
 
-        @Hook('beforeMount')
-        async onBeforeMount(): Promise<void> {
+        protected configUpdateHook!: () => void;
+        protected memoUpdateHook!: (e: { character: string; memo: CharacterMemo }) => void;
+
+        //@Hook('beforeMount')
+        async beforeMount(): Promise<void> {
           this.updateOwnName();
 
           this.showNonMatchingAds = !await core.settingsStore.get('hideNonMatchingAds');
         }
 
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             this.updateOwnName();
 
@@ -406,16 +409,12 @@
             this.configUpdateHook = () => this.updateOwnName();
             EventBus.$on('configuration-update', this.configUpdateHook);
 
-            this.memoUpdateHook = (e: any) => this.refreshMemo(e);
+            this.memoUpdateHook = (e: { character: string; memo: CharacterMemo }) => this.refreshMemo(e);
             EventBus.$on('character-memo', this.memoUpdateHook);
         }
 
-        protected configUpdateHook: any;
-
-        protected memoUpdateHook: any;
-
-        @Hook('unmounted')
-        destroyed(): void {
+        //@Hook('unmounted')
+        unmounted(): void {
             window.removeEventListener('resize', this.resizeHandler);
             window.removeEventListener('keydown', this.keydownHandler);
             window.removeEventListener('keypress', this.keypressHandler);
@@ -630,13 +629,11 @@
             this.adSettingsDialog.show();
         }
 
-        propogateShowAdCenter(): void {
-            this.$emit('show-ad-center');
-        }
+        @Emit('show-ad-center')
+        propogateShowAdCenter(): void {};
 
-        propogateShowAdLauncher(): void {
-            this.$emit('show-ad-launcher');
-        }
+        @Emit('show-ad-launcher')
+        propogateShowAdLauncher(): void {};
 
         showManage(): void {
             this.manageDialog.show();

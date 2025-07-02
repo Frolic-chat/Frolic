@@ -73,7 +73,7 @@
 
 <script lang="ts">
     import * as _ from 'lodash';
-    import { Vue, Component, Prop, Watch, Hook, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Prop, Watch, Ref } from 'vue-facing-decorator';
     import core from '../../chat/core';
     import {Kink, KinkChoice, KinkGroup} from '../../interfaces';
     import * as Utils from '../utils';
@@ -195,7 +195,7 @@
             this.highlighting = toAssign;
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         async mounted(): Promise<void> {
             if ((this.character) && (this.character.is_self))
                 return;

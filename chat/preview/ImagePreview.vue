@@ -44,7 +44,7 @@
 <script lang="ts">
     import * as _ from 'lodash';
     import l from '../localize';
-    import { Vue, Component, Hook, Ref } from 'vue-facing-decorator';
+    import { Vue, Component, Ref } from 'vue-facing-decorator';
     import core from '../core';
     import { EventBus, EventBusEvent } from './event-bus';
     import {domain} from '../../bbcode/core';
@@ -135,8 +135,8 @@
         previewStyles: Record<string, RenderStyle> = {};
 
 
-        @Hook('mounted')
-        async onMounted(): Promise<void> {
+        //@Hook('mounted')
+        async mounted(): Promise<void> {
             console.info('Mounted ImagePreview');
 
             // tslint:disable-next-line:no-floating-promises

@@ -5,7 +5,7 @@
             <div v-show="error" class="alert alert-danger">{{error}}</div>
             <filterable-select v-model="data.kinks" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.kinks')" :filterFunc="filterKink" :options="options.kinks">
-                <template v-slot="s">{{s.option.name}}</template>
+                <template v-slot:default="s">{{s.option.name}}</template>
             </filterable-select>
             <filterable-select v-for="item in listItems" :multiple="true"
                 v-model="data[item]" :placeholder="l('general.filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
@@ -13,7 +13,7 @@
 
             <filterable-select class="species-filter" v-model="data.species" :filterFunc="filterSpecies" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.species')" :options="options.species">
-                <template v-slot="s">{{s.option.shortName}} <small>{{s.option.details}}</small></template>
+                <template v-slot:default="s">{{s.option.shortName}} <small>{{s.option.details}}</small></template>
             </filterable-select>
 
             <div v-if="searchString" class="search-string">
@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Watch, Ref } from 'vue-facing-decorator';
+    import { Component, Watch, Ref } from 'vue-facing-decorator';
     import Axios from 'axios';
     import {BBCodeView} from '../bbcode/view';
     import CustomDialog from '../components/custom_dialog';
@@ -190,11 +190,14 @@
         // tslint:disable-next-line no-any
         scoreWatcher: ((event: any) => void) | null = null;
 
-        @Hook('created')
+        //('created')
         async created(): Promise<void> {
-            if(options === undefined)
+            if(!options)
                 options = <Options | undefined>(await Axios.get('https://www.f-list.net/json/api/mapping-list.php')).data;
-            if(options === undefined) return;
+
+            if(!options)
+              return;
+
             this.options = Object.freeze({
                 kinks: options.kinks.sort((x, y) => (x.name < y.name ? -1 : (x.name > y.name ? 1 : 0))),
                 genders: options.listitems.filter((x) => x.name === 'gender').map((x) => x.value),
@@ -256,7 +259,7 @@
           console.log('Done!');
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             core.connection.onMessage('ERR', (data) => {
                 this.state = 'search';
@@ -320,8 +323,8 @@
         }
 
 
-        @Hook('beforeUnmount')
-        beforeDestroy(): void {
+        //@Hook('beforeUnmount')
+        beforeUnmount(): void {
             if (this.scoreWatcher) {
                 log.info('characterSearch.scoreWatcher.exists.beforeDestroy', "This should only fire on logout!!!");
                 EventBus.$off('character-score', this.scoreWatcher);

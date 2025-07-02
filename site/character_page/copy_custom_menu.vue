@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop, Ref } from 'vue-facing-decorator';
+    import { Component, Prop, Ref } from 'vue-facing-decorator';
     import ContextMenu from './context_menu';
     import CopyCustomDialog from './copy_custom_dialog.vue';
 
@@ -35,7 +35,7 @@
             this.copyDialog.showDialog(name, description);
         }
 
-        @Hook('mounted')
+        //@Hook('mounted')
         mounted(): void {
             this.bindOffclick();
         }

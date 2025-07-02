@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Prop } from 'vue-facing-decorator';
+    import { Component, Prop, Emit } from 'vue-facing-decorator';
     import CustomDialog from '../../components/custom_dialog';
     import Modal from '../../components/Modal.vue';
     import {Conversation} from '../interfaces';
@@ -113,14 +113,20 @@
             this.ads.splice(index + 1, 0, ad[0]);
         }
 
+        @Emit('show-ad-center')
+        showAdCenter(): void {};
+
+        @Emit('show-ad-launcher')
+        showAdLauncher(): void {};
+
         openAdEditor() {
           this.hide();
-          this.$emit('show-ad-center');
+          this.showAdCenter();
         }
 
         openPostAds() {
           this.hide();
-          this.$emit('show-ad-launcher');
+          this.showAdLauncher();
         }
 
         async copyAds(): Promise<void> {
