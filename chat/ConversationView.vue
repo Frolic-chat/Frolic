@@ -70,41 +70,21 @@
                     </a>
                 </div>
 
-<!--                <ul class="nav nav-pills mode-switcher">-->
-<!--                    <li v-for="mode in modes" class="nav-item">-->
-<!--                        <a :class="isChannel(conversation) ? {active: conversation.mode == mode, disabled: conversation.channel.mode != 'both'} : undefined"-->
-<!--                            class="nav-link" href="#" @click.prevent="setMode(mode)">{{l('channel.mode.' + mode)}}</a>-->
-<!--                    </li>-->
-<!--                    <li>-->
-<!--                        <a @click.prevent="toggleNonMatchingAds()" :class="{active: showNonMatchingAds}" v-show="(conversation.mode == 'both' || conversation.mode == 'ads')"-->
-<!--                            class="nav-link" href="#">Non-Matching</a>-->
-<!--                    </li>-->
-<!--                </ul>-->
-
                 <div class="btn-toolbar">
-                    <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both')">
-                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)">
-                            {{l('channel.mode.' + mode)}}
-                        </button>
-                    </dropdown>
-
-                    <dropdown :keep-open="false" wrap-class="btn-group ads" link-style="" link-class="btn btn-secondary dropdown-toggle dropdown-toggle-split" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                        <button class="dropdown-item" type="button" @click="showAdSettings()">
-                            {{l('channel.ads.edit')}}
-                        </button>
-                        <div class="dropdown-divider"></div>
+                    <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
+                            <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                                {{l('channel.mode.' + mode)}}
+                            </button>
+                            <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
                         <button class="dropdown-item" :class="{ selected: showNonMatchingAds }" type="button" @click="toggleNonMatchingAds()">
                             {{l('channel.ads.incompatible')}}
                         </button>
-
-                        <template v-slot:split>
-                            <a class="btn btn-secondary" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                                {{l('channel.ads.incompatible')}}
-                            </a>
-                        </template>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" type="button" @click="showAdSettings()">
+                            {{l('channel.ads.edit')}}
+                        </button>
                     </dropdown>
                 </div>
-
             </div>
             <div style="z-index:5;position:absolute;left:0;right:0;max-height:60%;overflow:auto"
                 :style="{display: descriptionExpanded ? 'block' : 'none'}" class="bg-solid-text border-bottom">
@@ -212,9 +192,6 @@
                             {{adsMode}}
                         </a>
                     </li>
-<!--                    <li class="nav-item">-->
-<!--                        <a href="#" :class="{active: conversation.adManager.isActive()}" class="nav-link toggle-autopost" @click="toggleAutoPostAds()">{{l('admgr.toggleAutoPost')}}</a>-->
-<!--                    </li>-->
                 </ul>
                 <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton">
                     {{l('chat.send')}}
