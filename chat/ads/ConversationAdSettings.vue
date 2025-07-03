@@ -1,27 +1,21 @@
 <template>
-    <modal :action="`Ads for ${conversation.name}`" :disabled="true" ref="dialog" @open="load()" dialogClass="w-100" :buttonText="l('channel.ads.save')">
+    <modal :action="`Ads for ${conversation.name}`" :disabled="true" ref="dialog" @open="load()" dialogClass="w-100" :buttonText="l('channel.ads.start')">
 
         <div class="phased-out-warning">
           <h4>Deprecated</h4>
-
-          <p>Channel-specific ads are out of service.
-             Use <button class="btn btn-outline-secondary" @click="openAdEditor()">Ad Editor</button>
-             and <button class="btn btn-outline-secondary" @click="openPostAds()">Post Ads</button>
-             instead, always available on the left sidebar.</p>
+          <h5>Channel-specific ads are out of service.</h5>
+          <p>
+            Use <button class="btn btn-outline-secondary" @click="openAdEditor()">Ad Editor</button>
+            and <button class="btn btn-outline-secondary" @click="openPostAds()">Post Ads</button>
+            instead, available on the left sidebar.
+          </p>
 
           <p>
-            <button class="btn btn-outline-secondary" @click="copyAds()">Copy Channel Ads to Ad Editor</button>
+            <button v-if="ads.length > 0" class="btn btn-secondary" @click="copyAds()">Copy Channel Ads to Ad Editor</button>
           </p>
         </div>
 
-        <div class="form-group">
-            <label class="control-label" for="randomOrder">
-                <input type="checkbox" v-model="randomOrder" id="randomOrder" />
-                Serve ads in random order
-            </label>
-        </div>
-
-        <div class="form-group ad-list" v-for="(ad, index) in ads">
+        <div class="form-group ad-list" v-for="(_ad, index) in ads">
             <label :for="'ad' + conversation.key + '-' + index" class="control-label">Ad #{{(index + 1)}}
                 <a v-if="(index > 0)" @click="moveAdUp(index)" title="Move Up"><i class="fa fa-arrow-up"></i></a>
                 <a v-if="(index < ads.length - 1)" @click="moveAdDown(index)" title="Move Down"><i class="fa fa-arrow-down"></i></a>
@@ -31,8 +25,6 @@
             <editor :id="'ad' + conversation.key + '-' + index" v-model="ads[index]" :hasToolbar="true" class="form-control" :maxlength="core.connection.vars.lfrp_max">
             </editor>
         </div>
-        <button class="btn btn-outline-secondary" @click="addAd()">Add Another</button>
-
     </modal>
 </template>
 
@@ -56,7 +48,7 @@
         readonly conversation!: Conversation;
         l = l;
         setting = Conversation.Setting;
-        ads!: string[];
+        ads: string[] = [];
         randomOrder = false;
         core = core;
 
@@ -65,10 +57,6 @@
 
             this.ads = settings.adSettings.ads.slice(0);
             this.randomOrder = !!settings.adSettings.randomOrder;
-
-            if (this.ads.length === 0) {
-                this.ads.push('');
-            }
         }
 
         submit(): void {
@@ -119,12 +107,10 @@
         }
 
         async copyAds(): Promise<void> {
-          await Promise.all(_.map(
-            this.ads,
-            async (ad) => {
-              if (core.adCenter.isMissingFromAdCenter(ad)) {
+          await Promise.all(this.ads.map(
+            async ad => {
+              if (core.adCenter.isMissingFromAdCenter(ad))
                 await core.adCenter.add(ad);
-              }
             }
           ));
 
