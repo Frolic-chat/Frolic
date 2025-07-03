@@ -931,7 +931,7 @@
 
     .character-card-header {
         position: sticky;
-        top: -1rem;
+        top: -1.01rem;
         z-index: 10000;
         background: var(--headerBackgroundMaskColor) !important;
     }
