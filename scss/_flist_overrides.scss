@@ -13,6 +13,7 @@ hr {
 
 .nav-tabs-scroll {
   overflow-x: auto;
+  overflow-y: hidden;
 
   .nav-tabs {
     flex-wrap: nowrap;
