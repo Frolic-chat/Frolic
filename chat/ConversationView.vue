@@ -80,7 +80,7 @@
                             {{l('channel.ads.incompatible')}}
                         </button>
                         <div class="dropdown-divider"></div>
-                        <button class="dropdown-item" type="button" @click="showAdSettings()">
+                        <button v-show="conversation.settings.adSettings.ads.length > 0" class="dropdown-item" type="button" @click="showAdSettings()">
                             {{l('channel.ads.edit')}}
                         </button>
                     </dropdown>
