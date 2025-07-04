@@ -379,7 +379,10 @@
             <h5>{{l('rising.header.typeMatch')}}</h5>
             <div class="form-group filters" >
                 <label class="control-label" :for="'risingFilter.smartFilters.' + key" v-for="(value, key) in smartFilterTypes">
-                    <input type="checkbox" :id="'risingFilter.smartFilters.' + key" v-bind:checked="getSmartFilter(key)" @change="v => setSmartFilter(key, v)"/>
+                    <!-- @vue-expect-error v is `Event` but the old TS version doesn't allow types in templates -->
+                    <input type="checkbox" :id="'risingFilter.smartFilters.' + key"
+                            v-bind:checked="getSmartFilter(key)"
+                            @change="v => setSmartFilter(key, v)"/>
                     {{value.name}}
                 </label>
             </div>

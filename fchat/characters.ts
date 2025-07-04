@@ -105,13 +105,13 @@ class State implements Interfaces.State {
         const key = name.toLowerCase();
         let char = this.characters[key];
 
-        if (char === undefined) {
+        if (!char) {
             char = new Character(name);
 
-            char.isFriend     = this.friendList.indexOf(name)   !== -1;
-            char.isBookmarked = this.bookmarkList.indexOf(name) !== -1;
-            char.isChatOp     = this.opList.indexOf(name)       !== -1;
-            char.isIgnored    = this.ignoreList.indexOf(key)    !== -1;
+            char.isFriend     = this.friendList.includes(name);
+            char.isBookmarked = this.bookmarkList.includes(name);
+            char.isChatOp     = this.opList.includes(name);
+            char.isIgnored    = this.ignoreList.includes(key);
 
             this.characters[key] = char;
         }

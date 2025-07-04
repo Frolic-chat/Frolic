@@ -21,6 +21,7 @@
                         This character has been blocked and is not visible to the public. Reason:
                         <br/> {{ character.block_reason }}
                     </div>
+                    <!-- Legacy style a && a.b because no ts in templates :) -->
                     <div v-if="character.memo && character.memo.memo" id="headerCharacterMemo" class="alert alert-info">Memo: {{ character.memo.memo }}</div>
                     <div class="card bg-light">
                         <div class="card-header character-card-header">
@@ -52,7 +53,7 @@
                                     <character-groups :character="character" ref="tab2"></character-groups>
                                 </div>
                                 <div role="tabpanel" v-show="tab === '3'">
-                                    <character-images :character="character" ref="tab3" :use-preview="imagePreview" :injected-images="images"></character-images>
+                                    <character-images :character="character" ref="tab3" :usePreview="imagePreview" :injectedImages="images"></character-images>
                                 </div>
                                 <div v-if="character.settings.guestbook" role="tabpanel" v-show="tab === '4'" id="guestbook">
                                     <character-guestbook :character="character" :oldApi="oldApi" ref="tab4"></character-guestbook>
@@ -955,5 +956,4 @@
         }
       }
     }
-
 </style>

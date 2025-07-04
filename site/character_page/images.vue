@@ -20,8 +20,6 @@
 </template>
 
 <script lang="ts">
-    import Logger from 'electron-log/renderer';
-    const log = Logger.scope('character_page/images');
     import {Component, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
     import {CharacterImage} from '../../interfaces';
@@ -30,6 +28,9 @@
     import {Character} from './interfaces';
     import core from '../../chat/core';
     import _ from 'lodash';
+
+    import Logger from 'electron-log/renderer';
+    const log = Logger.scope('character_page/images');
 
 
     @Component
@@ -52,77 +53,86 @@
 
 
         show(): void {
-          log.debug('profile.images.show', { shown: this.shown, loading: this.loading });
+            log.debug('profile.images.show', { shown: this.shown, loading: this.loading });
 
-          if (this.shown) {
-            return;
-          }
+            if (this.shown)
+                return;
 
-          this.images = this.resolveImages();
+            this.images = this.resolveImages();
 
-          // this promise is intentionally not part of a chain
-          this.showAsync().catch((err) => log.error('profile.images.error', { err }));
+            // this promise is intentionally not part of a chain
+            this.showAsync().catch(err => log.error('profile.images.error', { err }));
         }
 
 
         async showAsync(): Promise<void> {
             log.debug('profile.images.show.async', { shown: this.shown, loading: this.loading });
 
-            if(this.shown) return;
+            if (this.shown)
+                return;
+
             try {
                 this.error = '';
                 this.shown = true;
                 this.loading = true;
+
                 this.images = await this.resolveImagesAsync();
-            } catch(err) {
+            }
+            catch (err) {
                 this.shown = false;
-                if(Utils.isJSONError(err))
+
+                if (Utils.isJSONError(err))
                     this.error = <string>err.response.data.error;
+
                 Utils.ajaxError(err, 'Unable to refresh images.');
                 log.error('profile.images.show.async.error', { err });
             }
+
             this.loading = false;
         }
 
         async resolveImagesAsync(): Promise<CharacterImage[]> {
-            log.debug('profile.images.async.injected', { count: this.injectedImages ? this.injectedImages.length : 0 });
+            log.debug('profile.images.async.injected', {
+                count: this.injectedImages?.length ?? 0,
+            });
 
-            if ((this.injectedImages) && (this.injectedImages.length)) {
+            if (this.injectedImages?.length)
                 return this.injectedImages;
-            }
 
             const c = await core.cache.profileCache.get(this.character.character.name);
 
-            log.debug('profile.images.async.cache', { count: _.get(c, 'meta.images.length') });
+            log.debug('profile.images.async.cache', {
+                count: c?.meta?.images?.length,
+            });
 
-            if ((c) && (c.meta) && (c.meta.images)) {
+            if (c?.meta?.images)
                 return c.meta.images;
-            }
 
             const images = await methods.imagesGet(this.character.character.id);
 
-            log.debug('profile.images.async.api', { count: images.length });
+            log.debug('profile.images.async.api', {
+                count: images.length,
+            });
 
             return images;
         }
 
 
         resolveImages(): CharacterImage[] {
-          log.debug('profile.images.sync.injected', { count: this.injectedImages ? this.injectedImages.length : 0 });
+            log.debug('profile.images.sync.injected', {
+                count: this.injectedImages?.length ?? 0,
+            });
 
-          if ((this.injectedImages) && (this.injectedImages.length)) {
-              return this.injectedImages;
-          }
+            if (this.injectedImages?.length)
+                return this.injectedImages;
 
-          const c = core.cache.profileCache.getSync(this.character.character.name);
+            const c = core.cache.profileCache.getSync(this.character.character.name);
 
-          log.debug('profile.images.sync.cache', { count: _.get(c, 'meta.images.length') });
+            log.debug('profile.images.sync.cache', {
+                count: c?.meta?.images?.length,
+            });
 
-          if ((c) && (c.meta) && (c.meta.images)) {
-              return c.meta.images;
-          }
-
-          return [];
+            return c?.meta?.images ?? [];
         }
 
 

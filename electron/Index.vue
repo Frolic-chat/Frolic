@@ -93,7 +93,7 @@
             </div>
         </modal>
         <modal :buttons="false" ref="profileViewer" dialogClass="profile-viewer" >
-            <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
+            <character-page :authenticated="true" :oldApi="true" :name="profileName" :imagePreview="true" ref="characterPage"></character-page>
             <template slot="title">
                 {{profileName}}
                 <a class="btn" @click="openProfileInBrowser"><i class="fa fa-external-link-alt"></i></a>
