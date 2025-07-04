@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Watch} from '@f-list/vue-ts';
+    import { Component, Prop, Watch, Hook } from '@f-list/vue-ts';
     import Vue from 'vue';
     import Dropdown from '../components/Dropdown.vue';
 
@@ -44,8 +44,7 @@
         @Prop
         readonly title?: string;
         filter = '';
-        // noinspection TypeScriptValidateTypes
-        selected: object | object[] | undefined = this.value !== undefined ? this.value : (this.multiple !== undefined ? [] : undefined);
+        selected?: object | object[] | undefined;
 
         @Watch('value')
         watchValue(newValue: object | object[] | undefined): void {
@@ -79,6 +78,11 @@
 
         get filterRegex(): RegExp {
             return new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
+        }
+
+        @Hook('created')
+        created(): void {
+            this.selected = this.value ?? (this.multiple ? [] : undefined);
         }
     }
 </script>
