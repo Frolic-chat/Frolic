@@ -36,7 +36,7 @@
                 {{l('userlist.profile')}}
             </a>
 
-            <character-page :authenticated="true" :oldApi="true" :name="profileName" :image-preview="true" ref="characterPage"></character-page>
+            <character-page :authenticated="true" :oldApi="true" :name="profileName" :imagePreview="true" ref="characterPage"></character-page>
         </div>
     </sidebar>
 </template>
