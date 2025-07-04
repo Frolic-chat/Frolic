@@ -1,5 +1,5 @@
 <template>
-    <dropdown class="filterable-select" linkClass="custom-select" :keepOpen="true">
+    <dropdown class="filterable-select" linkClass="custom-select" :keepOpen="multiple ? true : false">
         <template slot="title" v-if="multiple">{{label}}</template>
         <slot v-else slot="title" :option="selected">{{label}}</slot>
 
