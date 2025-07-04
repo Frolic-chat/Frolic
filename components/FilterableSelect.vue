@@ -37,7 +37,10 @@
         readonly placeholder?: string;
         @Prop({required: true})
         readonly options!: object[];
-        @Prop({default: () => ((filter: RegExp, value: string) => filter.test(value))})
+        @Prop({ default:
+            // The bad typing here is definitely jank.
+            () => ((filter: RegExp, value: string) => filter.test(value))
+        })
         readonly filterFunc!: (filter: RegExp, value: object) => boolean;
         @Prop({ default: false })
         readonly multiple: boolean = false;
@@ -56,29 +59,40 @@
             this.selected = newValue;
         }
 
+        /**
+         * `select` pushes the value up to the parent vue and is the primary way the parent should be aware of changes to this object.
+         *
+         * It eliminates the need for the parent to have their own detector.
+         */
         select(item: object): void {
-            if(this.multiple !== undefined) {
+            if (this.multiple) {
                 const selected = <object[]>this.selected;
                 const index = selected.indexOf(item);
-                if(index === -1) selected.push(item);
+                if (index === -1) selected.push(item);
                 else selected.splice(index, 1);
-            } else
+            } else {
                 this.selected = item;
+            }
             this.$emit('input', this.selected);
         }
 
+        // This is only called from a place where `this.selected` is guaranteed
+        // to be an object[], but casting leaves a bad feeling.
         isSelected(option: object): boolean {
-            return (<object[]>this.selected).indexOf(option) !== -1;
+            if (Array.isArray(this.selected))
+                return this.selected.includes(option);
+            else
+                return this.selected === option;
         }
 
         get filtered(): object[] {
-            // tslint:disable-next-line:no-unsafe-any
-            return this.options.filter((x) => this.filterFunc(this.filterRegex, x));
+            return this.options.filter(x => this.filterFunc(this.filterRegex, x));
         }
 
         get label(): string | undefined {
-            return this.multiple !== undefined ? `${this.title} - ${(<object[]>this.selected).length}` :
-                (this.selected !== undefined ? this.selected.toString() : this.title);
+            return this.multiple
+                ? `${this.title} - ${(<object[]>this.selected).length}`
+                : (this.selected ? this.selected.toString() : this.title);
         }
 
         get filterRegex(): RegExp {
