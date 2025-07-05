@@ -200,7 +200,7 @@
         </bbcode-editor>
         <command-help ref="helpDialog"></command-help>
         <settings ref="settingsDialog" :conversation="conversation"></settings>
-        <adSettings ref="adSettingsDialog" :conversation="conversation"></adSettings>
+        <channelAdSettings ref="channelAdSettingsDialog" :conversation="conversation"></channelAdSettings>
         <logs ref="logsDialog" :conversation="conversation"></logs>
         <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
         <ad-view ref="adViewer" v-if="isPrivate(conversation) && conversation.character" :character="conversation.character"></ad-view>
@@ -255,7 +255,7 @@
             'ad-view': CharacterAdView,
             'channel-list': CharacterChannelList,
             dropdown: Dropdown,
-            adSettings: ConversationAdSettings,
+            channelAdSettings: ConversationAdSettings,
             modal: Modal
         }
     })
@@ -574,7 +574,7 @@
         }
 
         showAdSettings(): void {
-            (<ConversationAdSettings>this.$refs['adSettingsDialog']).show();
+            (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show();
         }
 
         showManage(): void {
