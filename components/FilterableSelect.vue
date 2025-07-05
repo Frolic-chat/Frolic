@@ -65,14 +65,16 @@
          * It eliminates the need for the parent to have their own detector.
          */
         select(item: object): void {
-            if (this.multiple) {
-                const selected = <object[]>this.selected;
-                const index = selected.indexOf(item);
-                if (index === -1) selected.push(item);
-                else selected.splice(index, 1);
-            } else {
+            if (Array.isArray(this.selected)) {
+                const i = this.selected.indexOf(item);
+
+                if (i === -1) this.selected.push(item);
+                else          this.selected.splice(i, 1);
+            }
+            else {
                 this.selected = item;
             }
+
             this.$emit('input', this.selected);
         }
 
@@ -90,9 +92,10 @@
         }
 
         get label(): string | undefined {
-            return this.multiple
-                ? `${this.title} - ${(<object[]>this.selected).length}`
-                : (this.selected ? this.selected.toString() : this.title);
+            if (Array.isArray(this.selected))
+                return `${this.title} - ${this.selected.length}`;
+            else
+                return this.selected?.toString() ?? this.title;
         }
 
         get filterRegex(): RegExp {
