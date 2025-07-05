@@ -23,6 +23,8 @@
 </template>
 
 <script lang="ts">
+    type Multiselect<M extends boolean> = M extends true ? object[] : object;
+
     import { Component, Prop, Watch, Hook } from '@f-list/vue-ts';
     import Vue from 'vue';
     import Dropdown from '../components/Dropdown.vue';
@@ -40,14 +42,15 @@
             () => ((filter: RegExp, value: string) => filter.test(value))
         })
         readonly filterFunc!: (filter: RegExp, value: object) => boolean;
+        @Prop({ default: false })
+        readonly multiple: boolean = false;
         @Prop
-        readonly multiple?: true = undefined;
-        @Prop
-        readonly value?: object | object[] = undefined;
+        readonly value?: Multiselect<typeof this.multiple>;
         @Prop
         readonly title?: string;
+
         filter = '';
-        selected?: object | object[] | undefined;
+        selected?: Multiselect<typeof this.multiple>;
 
         @Watch('value')
         watchValue(newValue: object | object[] | undefined): void {
