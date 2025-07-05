@@ -1,5 +1,9 @@
 import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 import {InlineDisplayMode, Settings, SimpleCharacter} from '../interfaces';
+import { dialog } from 'electron';
+
+import Logger from 'electron-log/renderer';
+const log = Logger.scope('site utils');
 
 type FlashMessageType = 'info' | 'success' | 'warning' | 'danger';
 type FlashMessageImpl = (type: FlashMessageType, message: string) => void;
@@ -33,12 +37,29 @@ export function characterURL(name: string): string {
  * as AxiosError has message, causing typescript to flip its lid.
  */
 function isCancel(value: Error | CanceledError<never>): boolean {
-    return value instanceof CanceledError;
+    if (value instanceof CanceledError) {
+        if (process.env.NODE_ENV === 'development') {
+            log.error('Canceled a request.', { value });
+            dialog.showErrorBox("isCancel error!", "check log.");
+        }
+
+        return true;
+    }
+    return false;
 }
 
 //tslint:disable-next-line:no-any
 export function isJSONError(error: any): error is AxiosError & { response: AxiosResponse } {
-    return error instanceof AxiosError && error.response !== undefined && typeof error.response.data === 'object';
+    const err = error instanceof AxiosError && error.response !== undefined && typeof error.response.data === 'object';
+
+    if (err) {
+        log.warn('isJSONError.error', { error });
+
+        if (process.env.NODE_ENV === 'development')
+            dialog.showErrorBox("isJSONError error!", "check log.");
+    }
+
+    return err;
 }
 
 export function ajaxError(error: any, prefix: string, showFlashMessage: boolean = true): void { //tslint:disable-line:no-any
