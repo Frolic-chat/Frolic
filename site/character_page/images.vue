@@ -93,7 +93,8 @@
 
         async resolveImagesAsync(): Promise<CharacterImage[]> {
             log.debug('profile.images.async.injected', {
-                count: this.injectedImages?.length ?? 0,
+                count: this.injectedImages?.length,
+                desc: this.injectedImages && this.injectedImages.map(i => i.description),
             });
 
             if (this.injectedImages?.length)
@@ -103,6 +104,7 @@
 
             log.debug('profile.images.async.cache', {
                 count: c?.meta?.images?.length,
+                desc: c?.meta?.images && c.meta.images.map(i => i.description),
             });
 
             if (c?.meta?.images)
@@ -112,6 +114,7 @@
 
             log.debug('profile.images.async.api', {
                 count: images.length,
+                desc: images && images.map(i => i.description),
             });
 
             return images;
@@ -120,7 +123,8 @@
 
         resolveImages(): CharacterImage[] {
             log.debug('profile.images.sync.injected', {
-                count: this.injectedImages?.length ?? 0,
+                count: this.injectedImages?.length,
+                desc: this.injectedImages && this.injectedImages.map(i => i.description),
             });
 
             if (this.injectedImages?.length)
@@ -130,6 +134,7 @@
 
             log.debug('profile.images.sync.cache', {
                 count: c?.meta?.images?.length,
+                desc: c?.meta?.images && c.meta.images.map(i => i.description),
             });
 
             return c?.meta?.images ?? [];
