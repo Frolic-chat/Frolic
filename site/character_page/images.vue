@@ -1,6 +1,6 @@
 <template>
 <!--    <div class="character-images row">-->
-    <div class="character-images">
+    <div class="character-images" :class="forcedColumnCount()">
         <div v-show="((loading) && (images.length === 0))" class="alert alert-info">Loading images.</div>
         <template v-if="!loading" v-for="image in images">
             <div :key="image.id" class="character-image-wrapper">
@@ -149,6 +149,26 @@
             else if (e.button !== 0) {
                 // This never fires for some reason. Something to do with the way the click is consumed.
                 log.debug('handleImageClick', { button: e.button });
+            }
+        }
+
+        /**
+         * You are explicity forbidden from relying on this. It's poorly implemented and
+         * will interfere with future designs. Rewrite or destroy it as you see necessary
+         * and can account for.
+         */
+        forcedColumnCount(): string {
+            if (this.images.length <= 5) {
+                return 'two-image-columns';
+            }
+            else if (this.images.length <= 7) {
+                return 'three-image-columns';
+            }
+            else if (this.images.length <= 9) {
+                return 'four-image-columns';
+            }
+            else {
+                return ''
             }
         }
     }

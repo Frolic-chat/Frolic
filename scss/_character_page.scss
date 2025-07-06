@@ -134,6 +134,53 @@
 }
 
 // Character Images
+/* xs; default on bootstrap 4 */
+/*@media (min-width: breakpoint-min(sm)) {
+    .character-images {
+        column-count: 2;
+    }
+}*/
+@media (min-width: breakpoint-min(sm)) {
+    .character-images {
+        column-count: 2;
+    }
+}
+@media (min-width: breakpoint-min(md)) {
+    .character-images {
+        column-count: 3;
+    }
+
+    .character-images.two-image-columns {
+        column-count: 2;
+    }
+}
+@media (min-width: breakpoint-min(lg)) {
+    .character-images {
+        column-count: 4;
+    }
+
+    .character-images.two-image-columns {
+        column-count: 2;
+    }
+    .character-images.three-image-columns {
+        column-count: 3;
+    }
+}
+@media (min-width: breakpoint-min(xl)) {
+    .character-images {
+        column-count: 5;
+    }
+
+    .character-images.two-image-columns {
+        column-count: 2;
+    }
+    .character-images.three-image-columns {
+        column-count: 3;
+    }
+    .character-images.four-image-columns {
+        column-count: 4;
+    }
+}
 .character-images {
   .character-image {
     @extend .img-thumbnail;
@@ -142,7 +189,6 @@
     display: inline-block;
     background: transparent;
     text-align: center;
-
   }
 }
 

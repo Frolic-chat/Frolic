@@ -693,8 +693,9 @@
 
     .character-images {
         column-width: auto;
-        column-count: 2;
         column-gap: 0.5rem;
+        column-count: 1;
+        column-fill: balance;
 
         .character-image-wrapper {
             display: inline-block;
@@ -723,6 +724,7 @@
                 padding-bottom: 5px;
                 padding-left: 10px;
                 padding-right: 10px;
+                word-break: break-word;
             }
         }
     }
