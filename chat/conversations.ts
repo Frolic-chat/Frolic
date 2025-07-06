@@ -438,7 +438,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                 this.addModeMessage('ads', message);
             }
             else if (message.type !== MessageType.Bcast) {
-                if (core.state.settings.logMessages)
+                if (core.state.settings.logMessages && core.state.settings.logChannels)
                     await core.logs.logMessage(this, message);
 
                 if (user_should_know(this) && this.unread === Interfaces.UnreadState.None)
