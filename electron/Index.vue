@@ -730,7 +730,7 @@
             .status-text {
                 font-size: 12pt;
                 display: block;
-                max-height: 3em;
+                max-height: 3.13em;
                 overflow: auto;
             }
         }
