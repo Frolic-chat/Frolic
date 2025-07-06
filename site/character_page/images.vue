@@ -1,21 +1,23 @@
 <template>
-<!--    <div class="character-images row">-->
-    <div class="character-images" :class="forcedColumnCount()">
-        <div v-show="((loading) && (images.length === 0))" class="alert alert-info">Loading images.</div>
-        <template v-if="!loading" v-for="image in images">
-            <div :key="image.id" class="character-image-wrapper">
-                <!-- @vue-expect-error e is `Event` but the old TS version doesn't allow types in templates -->
-                <a :href="imageUrl(image)" @="" @click="e => handleImageClick(e, image)" target="_blank">
-                    <img :src="imageUrl(image)" class="character-image">
-                </a>
-                <div class="image-description" v-if="!!image.description">{{image.description}}</div>
+    <div>
+        <div v-show="loading" class="alert alert-info">Loading images...</div>
+        <div class="character-images" :class="forcedColumnCount()">
+            <div v-if="!loading && !images.length" class="alert alert-info">No images.</div>
+            <template v-if="images.length" v-for="image in images">
+                <div :key="image.id" class="character-image-wrapper">
+                    <!-- @vue-expect-error e is `MouseEvent` but the old TS version doesn't allow types in templates -->
+                    <a :href="imageUrl(image)" @click="e => handleImageClick(e, image)" target="_blank">
+                        <img :src="imageUrl(image)" class="character-image">
+                    </a>
+                    <div class="image-description" v-if="!!image.description">{{image.description}}</div>
+                </div>
+            </template>
+            <div class="image-preview" v-show="previewImage" @click="previewImage = ''">
+                <img :src="previewImage"/>
+                <div class="modal-backdrop show"></div>
             </div>
-        </template>
-        <div v-if="!loading && !images.length" class="alert alert-info">No images.</div>
-        <div class="image-preview" v-show="previewImage" @click="previewImage = ''">
-            <img :src="previewImage"/>
-            <div class="modal-backdrop show"></div>
         </div>
+        <div v-if="error" class="alert alert-info">{{ error }}</div>
     </div>
 </template>
 
