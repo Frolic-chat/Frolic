@@ -185,6 +185,8 @@
 
 .image-preview {
   position: fixed;
+  /* Just has to be above the tab-bar */
+  z-index: 1010;
   top: 0;
   bottom: 0;
   right: 0;
@@ -195,7 +197,8 @@
   img {
     padding: 5px;
     background: white;
-    z-index: 1100;
+    /* `.modal-backdrop` is `z-index: 1040` */
+    z-index: 1041;
     max-height: 100%;
     max-width: 100%;
   }
