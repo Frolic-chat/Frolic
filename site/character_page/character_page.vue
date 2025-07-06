@@ -932,7 +932,8 @@
     .character-card-header {
         position: sticky;
         top: -1rem;
-        z-index: 10000;
+        /* Lowered from 10000 - Choosing 1001 to be *just* above .minimize-btn's 1000. */
+        z-index: 1001;
         background: var(--headerBackgroundMaskColor) !important;
     }
 

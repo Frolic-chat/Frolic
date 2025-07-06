@@ -97,8 +97,8 @@ if(process.env.NODE_ENV === 'production') {
     });
 }
 
-function openIncognito(url: string): void {
-    electron.ipcRenderer.send('open-url-externally', url, true);
+function openWebBrowser(url: string, incognito: boolean = false): void {
+    electron.ipcRenderer.send('open-url-externally', url, incognito);
 }
 
 const wordPosSearch = new WordPosSearch();
@@ -130,7 +130,18 @@ webContents.on('context-menu', (_, props) => {
             accelerator: 'CmdOrCtrl+V',
             enabled: props.editFlags.canPaste
         });
-    else if(props.linkURL.length > 0 && props.mediaType === 'none' && props.linkURL.substring(0, props.pageURL.length) !== props.pageURL) {
+    else if (props.linkURL.length > 0
+    &&       props.linkURL.substring(0, props.pageURL.length) !== props.pageURL
+    &&       props.mediaType !== 'plugin' && props.mediaType !== 'canvas') {
+        menuTemplate.push({
+            id: 'open',
+            label: l('action.browserOpen'),
+            click: () => openWebBrowser(props.linkURL),
+        }, {
+            id: 'incognito',
+            label: l('action.incognito'),
+            click: () => openWebBrowser(props.linkURL, true),
+        });
         menuTemplate.push({
             id: 'copyLink',
             label: l('action.copyLink'),
@@ -143,15 +154,10 @@ webContents.on('context-menu', (_, props) => {
         });
         menuTemplate.push({
             id: 'toggleStickyness',
-            label: 'Toggle Sticky Preview',
+            label: l('action.toggleStickyPreview'),
             click(): void {
                 EventBus.$emit('imagepreview-toggle-stickyness', {url: props.linkURL});
             }
-        });
-        menuTemplate.push({
-            id: 'incognito',
-            label: l('action.incognito'),
-            click: () => openIncognito(props.linkURL),
         });
     } else if(hasText)
         menuTemplate.push({
@@ -195,10 +201,13 @@ webContents.on('context-menu', (_, props) => {
 
     if(menuTemplate.length > 0) remote.Menu.buildFromTemplate(menuTemplate).popup({});
 
-    log.debug(
-        'context.text',
-        { linkText: props.linkText, misspelledWord: props.misspelledWord, selectionText: props.selectionText, titleText: props.titleText }
-    );
+    log.debug('context.text', {
+        linkText: props.linkText,
+        link: props.linkURL,
+        misspelledWord: props.misspelledWord,
+        selectionText: props.selectionText,
+        titleText: props.titleText
+    });
 });
 
 let dictDir = path.join(remote.app.getPath('userData'), 'spellchecker');
