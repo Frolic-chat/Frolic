@@ -60,6 +60,12 @@
                 </label>
             </div>
             <div class="form-group">
+                <label v-show="logMessages" class="control-label" for="logChannels">
+                    <input type="checkbox" id="logChannels" v-model="logChannels"/>
+                    {{l('settings.logChannels')}}
+                </label>
+            </div>
+            <div class="form-group">
                 <label class="control-label" for="logAds">
                     <input type="checkbox" id="logAds" v-model="logAds"/>
                     {{l('settings.logAds')}}
@@ -450,7 +456,8 @@
         eventMessages!: boolean;
         joinMessages!: boolean;
         alwaysNotify!: boolean;
-        logMessages!: boolean;
+        logMessages!: boolean; // All messages
+        logChannels!: boolean;
         logAds!: boolean;
         fontSize!: string;
         showNeedsReply!: boolean;
@@ -503,6 +510,7 @@
             this.alwaysNotify = settings.alwaysNotify;
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
             this.logMessages = settings.logMessages;
+            this.logChannels = settings.logChannels;
             this.logAds = settings.logAds;
             this.fontSize = settings.fontSize.toString();
             this.showNeedsReply = settings.showNeedsReply;
@@ -582,6 +590,7 @@
                 joinMessages: this.joinMessages,
                 alwaysNotify: this.alwaysNotify,
                 logMessages: this.logMessages,
+                logChannels: this.logChannels,
                 logAds: this.logAds,
                 fontSize: isNaN(fontSize) ? 14 : fontSize < 10 ? 10 : fontSize > 24 ? 24 : fontSize,
                 showNeedsReply: this.showNeedsReply,

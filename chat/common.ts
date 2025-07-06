@@ -46,7 +46,8 @@ export class Settings implements ISettings {
     eventMessages = true;
     joinMessages = false;
     alwaysNotify = false;
-    logMessages = true;
+    logMessages = true; // All messages
+    logChannels = false;
     logAds = false;
     fontSize = 14;
     showNeedsReply = false;
