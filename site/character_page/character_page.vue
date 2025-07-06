@@ -693,8 +693,8 @@
 
     .character-images {
         column-width: auto;
-        column-count: 2;
         column-gap: 0.5rem;
+        column-count: 1;
 
         .character-image-wrapper {
             display: inline-block;

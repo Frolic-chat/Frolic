@@ -135,6 +135,23 @@
 
 // Character Images
 .character-images {
+    /* xs; default on bootstrap 4 */
+    /*@media (min-width: breakpoint-min(sm)) {
+        column-count: 2;
+    }*/
+    @media (min-width: breakpoint-min(sm)) {
+        column-count: 2;
+    }
+    @media (min-width: breakpoint-min(md)) {
+        column-count: 3;
+    }
+    @media (min-width: breakpoint-min(lg)) {
+        column-count: 4;
+    }
+    @media (min-width: breakpoint-min(xl)) {
+        column-count: 5;
+    }
+
   .character-image {
     @extend .img-thumbnail;
     vertical-align: middle;
