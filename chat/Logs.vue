@@ -116,7 +116,7 @@
         dateOffset = -1;
         windowStart = 0;
         windowEnd = 0;
-        resizeListener = async() => this.onMessagesScroll();
+        resizeListener!: () => void;
 
         get displayedMessages(): ReadonlyArray<Conversation.Message> {
             if(this.selectedDate !== undefined) return this.filteredMessages;
@@ -133,6 +133,7 @@
         @Hook('mounted')
         async mounted(): Promise<void> {
             this.characters = await core.logs.getAvailableCharacters();
+            this.resizeListener = async () => this.onMessagesScroll();
             window.addEventListener('resize', this.resizeListener);
         }
 
