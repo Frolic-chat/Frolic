@@ -228,7 +228,8 @@ export namespace Settings {
         readonly eventMessages: boolean;
         readonly joinMessages: boolean;
         readonly alwaysNotify: boolean;
-        readonly logMessages: boolean;
+        readonly logMessages: boolean; // All messages
+        readonly logChannels: boolean;
         readonly logAds: boolean;
         readonly fontSize: number;
         readonly showNeedsReply: boolean;

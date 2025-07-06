@@ -260,7 +260,8 @@ No files will be moved. If you click Yes here, Frolic will shut down. If you wou
 
 Current log location: {1}`,
     'settings.logDir.inAppDir': 'Please set your log directory to a location outside of the Frolic installation directory, as it would otherwise be overwritten during an update.',
-    'settings.logMessages': 'Log messages',
+    'settings.logMessages': 'Log conversations',
+    'settings.logChannels': 'Log conversations in channels',
     'settings.logAds': 'Log ads',
     'settings.fontSize': 'Font size',
     'settings.showNeedsReply': 'Show indicator on PM tabs with unanswered messages',
