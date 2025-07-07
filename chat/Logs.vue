@@ -119,12 +119,12 @@
         resizeListener!: () => void;
 
         get displayedMessages(): ReadonlyArray<Conversation.Message> {
-            if(this.selectedDate !== undefined) return this.filteredMessages;
+            if(this.selectedDate) return this.filteredMessages;
             return this.filteredMessages.slice(this.windowStart, this.windowEnd);
         }
 
         get filteredMessages(): ReadonlyArray<Conversation.Message> {
-            if(this.filter.length === 0) return this.messages;
+            if(!this.filter.length) return this.messages;
             const filter = new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
             return this.messages.filter(
                 (x) => filter.test(x.text) || x.type !== Conversation.Message.Type.Event && filter.test(x.sender.name));
@@ -148,13 +148,13 @@
         }
 
         async loadConversations(): Promise<void> {
-            if(this.selectedCharacter === '') return;
+            if(!this.selectedCharacter) return;
             this.conversations = (await core.logs.getConversations(this.selectedCharacter)).slice();
             this.conversations.sort((x, y) => (x.name < y.name ? -1 : (x.name > y.name ? 1 : 0)));
         }
 
         async loadDates(): Promise<void> {
-            this.dates = this.selectedConversation === undefined ? [] :
+            this.dates = !this.selectedConversation ? [] :
                 (await core.logs.getLogDates(this.selectedCharacter, this.selectedConversation.key)).slice().reverse();
         }
 
@@ -164,7 +164,7 @@
 
         @Watch('selectedConversation')
         async conversationSelected(oldValue: Conversation | undefined, newValue: Conversation | undefined): Promise<void> {
-            if(oldValue !== undefined && newValue !== undefined && oldValue.key === newValue.key) return;
+            if(oldValue && newValue && oldValue.key === newValue.key) return;
             await this.loadDates();
             this.selectedDate = undefined;
             this.dateOffset = -1;
@@ -174,7 +174,7 @@
 
         @Watch('filter')
         onFilterChanged(): void {
-            if(this.selectedDate === undefined) {
+            if(!this.selectedDate) {
                 this.windowEnd = this.filteredMessages.length;
                 this.windowStart = this.windowEnd - 50;
             }
@@ -200,14 +200,14 @@
         }
 
         downloadDay(): void {
-            if(this.selectedConversation === undefined || this.selectedDate === undefined || this.messages.length === 0) return;
+            if(!this.selectedConversation || !this.selectedDate || !this.messages.length) return;
             const html = Dialog.confirmDialog(l('logs.html'));
             const name = `${this.selectedConversation.name}-${formatDate(new Date(this.selectedDate))}.${html ? 'html' : 'txt'}`;
             this.download(name, `data:${encodeURIComponent(name)},${encodeURIComponent(getLogs(this.messages, html))}`);
         }
 
         async downloadConversation(): Promise<void> {
-            if(this.selectedConversation === undefined) return;
+            if(!this.selectedConversation) return;
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'));
             for(const date of this.dates) {
@@ -218,7 +218,7 @@
         }
 
         async downloadCharacter(): Promise<void> {
-            if(this.selectedCharacter === '' || !Dialog.confirmDialog(l('logs.confirmExport', this.selectedCharacter))) return;
+            if(!this.selectedCharacter || !Dialog.confirmDialog(l('logs.confirmExport', this.selectedCharacter))) return;
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'));
             for(const conv of this.conversations) {
@@ -233,9 +233,9 @@
         }
 
         async onOpen(): Promise<void> {
-            if(this.selectedCharacter !== '') {
+            if(this.selectedCharacter) {
                 await this.loadConversations();
-                if(this.conversation !== undefined)
+                if(this.conversation)
                     this.selectedConversation = this.conversations.filter((x) => x.key === this.conversation!.key)[0];
                 else {
                     await this.loadDates();
@@ -247,7 +247,7 @@
                     if((<HTMLElement>e.target).tagName.toLowerCase() === 'input') return;
                     e.preventDefault();
                     const selection = document.getSelection();
-                    if(selection === null) return;
+                    if(!selection) return;
                     selection.removeAllRanges();
                     if(this.messages.length > 0) {
                         const range = document.createRange();
@@ -266,8 +266,8 @@
         }
 
         async loadMessages(): Promise<void> {
-            if(this.selectedConversation === undefined) this.messages = [];
-            else if(this.selectedDate !== undefined) {
+            if(!this.selectedConversation) this.messages = [];
+            else if(this.selectedDate) {
                 this.dateOffset = -1;
                 this.messages = await core.logs.getLogs(this.selectedCharacter, this.selectedConversation.key, new Date(this.selectedDate));
             } else if(this.dateOffset === -1) {
@@ -287,14 +287,14 @@
         async onMessagesScroll(ev?: Event): Promise<void> {
             const list = <HTMLElement | undefined>this.$refs['messages'];
             if(this.lockScroll) return;
-            if(list === undefined || ev !== undefined && Math.abs(list.scrollTop - this.lastScroll) < 50) return;
+            if(!list || ev && Math.abs(list.scrollTop - this.lastScroll) < 50) return;
             this.lockScroll = true;
 
             function getTop(index: number): number {
                 return (<HTMLElement>list!.children[index]).offsetTop;
             }
 
-            while(this.selectedConversation !== undefined && this.selectedDate === undefined && this.dialog.isShown) {
+            while(this.selectedConversation && !this.selectedDate && this.dialog.isShown) {
                 const oldHeight = list.scrollHeight, oldTop = list.scrollTop;
                 const oldFirst = this.displayedMessages[0];
                 const oldEnd = this.windowEnd;
