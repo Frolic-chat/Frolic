@@ -26,27 +26,27 @@ export function parse(this: void | never, input: string, context: CommandContext
     const commandEnd = input.indexOf(' ');
     const name = input.substring(1, commandEnd !== -1 ? commandEnd : undefined).toLowerCase();
     const command = commands[name];
-    if(command === undefined) return l('commands.unknown');
+    if(!command) return l('commands.unknown');
     const args = `${commandEnd !== -1 ? input.substring(commandEnd + 1) : ''}`;
-    if(command.context !== undefined && (command.context & context) === 0) return l('commands.badContext');
+    if(command.context && !(command.context & context)) return l('commands.badContext');
 
     let index = 0;
     const values: (string | number)[] = [];
 
-    if(command.params !== undefined)
+    if(command.params)
         for(let i = 0; i < command.params.length; ++i) {
             while(args[index] === ' ') ++index;
             const param = command.params[i];
             if(index === -1) {
-                if(param.optional !== undefined) continue;
+                if(param.optional) continue;
                 return l('commands.tooFewParams');
             }
-            let delimiter = param.delimiter !== undefined ? param.delimiter : defaultDelimiters[param.type];
-            if(delimiter === undefined) delimiter = ' ';
+            let delimiter = param.delimiter ?? defaultDelimiters[param.type];
+            if(!delimiter) delimiter = ' ';
             const endIndex = delimiter.length > 0 ? args.indexOf(delimiter, index) : args.length;
             const value = args.substring(index, endIndex !== -1 ? endIndex : undefined);
-            if(value.length === 0) {
-                if(param.optional !== undefined) continue;
+            if(!value.length) {
+                if(param.optional) continue;
                 return l('commands.tooFewParams');
             }
             values[i] = value;
@@ -56,13 +56,13 @@ export function parse(this: void | never, input: string, context: CommandContext
                     break;
                 case ParamType.Enum:
                     // For status command, do case-insensitive matching
-                    if (name === 'status' && i === 0) {
-                        const options = param.options !== undefined ? param.options : [];
+                    if (name === 'status' && !i) {
+                        const options = param.options ?? [];
                         const matchedOption = options.find(opt => opt.toLowerCase() === value.toLowerCase());
                         if (matchedOption) values[i] = matchedOption;
                         else return l('commands.invalidParam', l(`commands.${name}.param${i}`));
                     }
-                    else if ((param.options !== undefined ? param.options : []).indexOf(value) === -1)
+                    else if (!(param.options ?? []).includes(value))
                         return l('commands.invalidParam', l(`commands.${name}.param${i}`));
                     break;
                 case ParamType.Number:
