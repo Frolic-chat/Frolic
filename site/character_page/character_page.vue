@@ -305,20 +305,25 @@
 
         async updateImages(): Promise<void> {
             try {
-                if (!this.character) {
-                    this.images = null;
-                    return;
+                if (this.character) {
+                    log.debug('updateImages.start', this.character);
+                    this.images = await methods.imagesGet(this.character.character.id);
+                    log.debug('updateImages.finish', this.character);
                 }
-
-                this.images = await methods.imagesGet(this.character.character.id);
+                else {
+                    log.debug('updateImages.noCharacters');
+                    this.images = null;
+                }
             } catch (err) {
-                console.error('Update images', err);
+                console.error('updateImages.error', err);
                 this.images = null;
             }
         }
 
 
         async updateMeta(name: string): Promise<void> {
+            log.debug('updateMeta.start', name);
+
             await Promise.all(
                 [
                     this.updateImages(),
@@ -327,6 +332,8 @@
                     this.updateGroups()
                 ]
             );
+
+            log.debug('updateMeta.updatesFinished', name);
 
             await core.cache.profileCache.registerMeta(
                 name,
@@ -338,6 +345,8 @@
                     images: this.images
                 }
             );
+
+            log.debug('updateMeta.registerMetaFinished', name);
         }
 
 
@@ -385,6 +394,7 @@
             this.images = null;
 
             if (!this.name) {
+                log.debug('profile.getCharacter.noName');
                 return;
             }
 
@@ -410,12 +420,17 @@
                 && (Date.now() - cache.meta.lastMetaFetched.getTime() < CHARACTER_META_CACHE_EXPIRE)
             ) {
               // do nothing
+              // Shouldn't this be where we decide to `refreshCharacter`?
             } else {
-                log.debug('profile.updateMeta', { timestamp: cache?.meta?.lastMetaFetched, diff: Date.now() - (cache?.meta?.lastMetaFetched?.getTime() || 0) });
+                log.debug('profile._getCharacter', {
+                    timestamp: cache?.meta?.lastMetaFetched,
+                    diff: Date.now() - (cache?.meta?.lastMetaFetched?.getTime() || 0)
+                });
 
                 // No await on purpose:
                 // tslint:disable-next-line no-floating-promises
-                this.updateMeta(this.name).catch(err => console.error('profile.updateMeta', err));
+                this.updateMeta(this.name)
+                    .catch(err => log.error('profile._getCharacter.updateMeta.error', err));
             }
 
             // console.log('LoadChar', this.name, this.character);
@@ -425,9 +440,24 @@
             // old profile cache, let's refresh
             if ((cache) && (cache.lastFetched)) {
                 if (Date.now() - cache.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
+                    log.debug('_getCharacter.refreshCharacter.pre', {
+                        character: this.character,
+                        friends: this.friends,
+                        groups: this.groups,
+                        guestbook: this.guestbook,
+                        images: this.images,
+                    });
                     // No await on purpose:
                     // tslint:disable-next-line no-floating-promises
                     this.refreshCharacter();
+
+                    log.debug('_getCharacter.refreshCharacter.post', {
+                        character: this.character,
+                        friends: this.friends,
+                        groups: this.groups,
+                        guestbook: this.guestbook,
+                        images: this.images,
+                    });
                 }
             }
         }
@@ -436,8 +466,17 @@
         private async refreshCharacter(): Promise<void> {
             this.refreshing = true;
 
+            log.debug('refreshCharacter.start', {
+                name: this.name,
+                id: this.id,
+            });
+
             try {
                 const character = await methods.characterData(this.name, this.id, false);
+
+                log.debug('refreshCharacter.characterData.fetched', {
+                    character
+                });
 
                 if ((!this.refreshing) || (this.name !== character.character.name)) {
                   return;
