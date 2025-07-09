@@ -61,6 +61,7 @@
                 {{l('user.chatKick')}}
             </a>
         </div>
+        <div class="modal-backdrop show usermenu-backdrop" v-show="showContextMenu" v-if="character"></div>
         <modal :action="l('user.memo.action')" ref="memo" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
             <div style="float:right;text-align:right;">{{memo ? getByteLength(memo) : 0}} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
@@ -291,5 +292,9 @@ import { MemoManager } from './character/memo';
     #userMenu .list-group-item-action {
         border-top-width: 0;
         z-index: -1;
+    }
+
+    .usermenu-backdrop.modal-backdrop.show {
+        opacity: 0;
     }
 </style>
