@@ -1,7 +1,7 @@
 <template>
    <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="ads-dialog">
         <template slot="title">
-            {{ l('characterAds.none') }}<user :character="character">{{character.name}}</user>
+            {{ l('characterAds.title') }}<user :character="character">{{character.name}}</user>
         </template>
 
        <div class="row ad-viewer" ref="pageBody" v-if="messages.length > 0">
