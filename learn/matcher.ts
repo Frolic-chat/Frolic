@@ -1609,16 +1609,39 @@ export class Matcher {
     static age(c: Character): number | null {
         const rawAge = Matcher.getTagValue(TagId.Age, c);
 
-        if (!rawAge || !rawAge.string) {
+        if (!rawAge?.string)
             return null;
+
+        /**
+         * There are strings/emoji that give no hint to a number, but are still
+         * very useful for matching, so they should be used even inefficiently.
+         */
+
+        function commonString(ageStr: string): boolean {
+            return ageStr.includes('shota') || ageStr.includes('loli')
+                || ageStr.includes('cub') || ageStr.includes('pup')
+        }
+
+        function isBaby(ageStr: string): boolean {
+            return ageStr.includes('👶')
+                || ageStr.includes('🍼')
+                || ageStr.includes('🚼');
+        }
+
+        function genericMatch(ageStr: string): boolean {
+            return ageStr.includes('🔞');
         }
 
         const ageStr = rawAge.string.toLowerCase().replace(/[,.]/g, '').trim();
 
-        if ((ageStr.includes('shota')) || (ageStr.includes('loli'))
-            || (ageStr.includes('lolli')) || (ageStr.includes('pup'))) {
+        if (isBaby(ageStr))
+            return 7;
+
+        if (commonString(ageStr))
             return 10;
-        }
+
+        if (genericMatch(ageStr))
+            return 13;
 
         let age: number | null = null;
 
