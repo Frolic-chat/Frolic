@@ -1,10 +1,10 @@
 import throat from 'throat';
-import * as _ from 'lodash';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('AdCoordinatorGuest');
 
 import core from '../core';
+import { FisherYatesShuffle } from '../../helpers/utils';
 import { Conversation } from '../interfaces';
 import Timer = NodeJS.Timeout;
 import ChannelConversation = Conversation.ChannelConversation;
@@ -97,7 +97,7 @@ export class AdManager {
             return AdManager.POST_DELAY;
         }
 
-        const n = _.toNumber(match[1]);
+        const n = Number(match[1]);
         let mul = 1000; // seconds
 
         if (match[2].substring(0, 1) === 'h') {
@@ -151,9 +151,11 @@ export class AdManager {
      */
     generateAdMap(): number[] {
         const ads = this.getAds();
-        const idx = _.range(ads.length);
+        const idx = Array.from(ads, (_, i) => i);
 
-        return this.shouldUseRandomOrder() ? _.shuffle(idx) : idx;
+        if (this.shouldUseRandomOrder()) FisherYatesShuffle(idx)
+
+        return idx;
     }
 
     shouldUseRandomOrder(): boolean {
@@ -266,27 +268,25 @@ export class AdManager {
 
 
     static onConnectionClosed(): void {
-        AdManager.recoverableCharacter = _.get(core, 'characters.ownCharacter.name', '');
+        AdManager.recoverableCharacter = core?.characters?.ownCharacter?.name ?? '';
 
-        AdManager.recoverableAds = _.map(
-            _.filter(core.conversations.channelConversations, (c) => ((c.adManager) && (c.adManager.isActive()))),
-            (chanConv): RecoverableAd => {
-                const adManager = chanConv.adManager;
+        const activeAdChannels = core.conversations.channelConversations
+                    .filter(c => c.adManager && c.adManager.isActive())
 
-                return {
-                    channel     : chanConv.name,
-                    index       : adManager.adIndex,
-                    nextPostDue : adManager.nextPostDue,
-                    firstPost   : adManager.firstPost,
-                    expireDue   : adManager.expireDue
-                };
-            }
-        );
+        AdManager.recoverableAds = activeAdChannels
+                    .map(c => {
+                        const adManager = c.adManager;
 
-        _.each(
-            _.filter(core.conversations.channelConversations, (c) => ((c.adManager) && (c.adManager.isActive()))),
-          (c) => c.adManager.stop()
-        );
+                        return {
+                            channel     : c.name,
+                            index       : adManager.adIndex,
+                            nextPostDue : adManager.nextPostDue,
+                            firstPost   : adManager.firstPost,
+                            expireDue   : adManager.expireDue
+                        };
+                    });
+
+        activeAdChannels.forEach(c => c.adManager.stop());
     }
 
 
@@ -298,11 +298,10 @@ export class AdManager {
             return;
         }
 
-        const ra = _.find(AdManager.recoverableAds, (r) => (r.channel === channel.name));
+        const ra = AdManager.recoverableAds.find(r => r.channel === channel.name);
 
-        if (!ra) {
+        if (!ra)
             return;
-        }
 
         const adManager = channel.adManager;
 
@@ -318,6 +317,6 @@ export class AdManager {
             Math.max(0, adManager.nextPostDue.getTime() - Date.now())
         );
 
-        AdManager.recoverableAds = _.filter(AdManager.recoverableAds, (r) => (r.channel !== ra.channel));
+        AdManager.recoverableAds = AdManager.recoverableAds.filter(r => r.channel !== ra.channel);
     }
 }
