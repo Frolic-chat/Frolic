@@ -71,7 +71,7 @@
             <div style="float:right;text-align:right;">{{ memoLength }} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
         </modal>
-        <ad-view ref="adViewDialog" :character="character" v-if="character"></ad-view>
+        <relation-view ref="relationViewDialog" :character="character" v-if="character"></relation-view>
     </div>
 </template>
 
@@ -94,7 +94,12 @@ import NewLogger from '../helpers/log';
 const log = NewLogger('UserMenu');
 
 @Component({
-        components: {'match-tags': MatchTags, bbcode: BBCodeView(core.bbCodeParser), modal: Modal, 'ad-view': CharacterAdView}
+        components: {
+            'match-tags': MatchTags,
+            bbcode: BBCodeView(core.bbCodeParser),
+            modal: Modal,
+            'relation-view': CharacterRelationView,
+        }
     })
     export default class UserMenu extends Vue {
         @Prop({required: true})
@@ -219,27 +224,26 @@ const log = NewLogger('UserMenu');
                 .catch((e: object) => alert(errorToString(e)));
         }
 
-        showAdLogs(): void {
-            if (!this.hasAdLogs()) {
+        showRelationship(): void {
+            if (!this.hasRelationship(this.character))
                 return;
-            }
 
-            (<CharacterAdView>this.$refs['adViewDialog']).show();
+            (<CharacterRelationView>this.$refs['relationViewDialog']).show();
         }
 
 
-        hasAdLogs(): boolean {
-            if (!this.character) {
+        hasRelationship(c: Character.Character | undefined): boolean {
+            if (!c)
                 return false;
-            }
 
             const cache = core.cache.adCache.getSync(this.character.name);
 
-            if (!cache) {
-                return false;
-            }
+            if (cache?.count && cache.count() > 0)
+                return true;
 
-            return (cache.count() > 0);
+            // Channels
+            return !!core.conversations.channelConversations.find(convs => !!convs.channel.members[c.name]);
+
         }
 
         get isChannelMod(): boolean {
