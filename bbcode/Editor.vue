@@ -15,6 +15,7 @@
                   </div>
                 </div>
             </div>
+            <div class="modal-backdrop show color-popup-visible" v-show="colorPopupVisible" v-if="colorPopupVisible"></div>
 
             <EIconSelector :onSelect="onSelectEIcon" ref="eIconSelector"></EIconSelector>
 
@@ -453,6 +454,10 @@
   }
 
   .bbcode-toolbar {
+      .modal-backdrop.color-popup-visible {
+          opacity: 0;
+      }
+
     .toolbar-buttons {
       .btn.toggled {
         background-color: var(--secondary) !important;
@@ -463,8 +468,9 @@
       max-width: 145px;
       top: -57px;
       left: 94px;
-      line-height: 1;
-      z-index: 1000;
+      /* z-index 1041 is just above the modal-backdrop default,
+         allowing it to eat mouse clicks outside the color-selector. */
+      z-index: 1041;
       background-color: var(--input-bg);
 
       .btn-group {
