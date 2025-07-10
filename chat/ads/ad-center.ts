@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import core from '../core';
 import { Conversation } from '../interfaces';
 
@@ -19,24 +18,25 @@ export class AdCenter {
     return this.ads;
   }
 
-  async set(ads: Ad[]): Promise<void> {
-    const cleanedAds = _.map(
-      _.filter(ads, (ad) => (ad.content.trim().length > 0)),
-      (ad): Ad => {
-        const filteredTags = _.map(_.filter(ad.tags, (tag) => tag.trim().length > 0), (tag) => tag.trim());
+    async set(ads: Ad[]): Promise<void> {
+        // Ad cleaning
+        this.ads = ads
+                .filter(ad => ad.content.trim())
+                .map(ad => {
+                    const filteredTags = ad.tags
+                            .filter(tag => tag.trim())
+                            .map(tag => tag.trim());
 
-        return {
-          ...ad,
-          content: ad.content.trim(),
-          tags: filteredTags.length > 0 ? filteredTags : ['default']
-        };
-      }
-    );
+                    return {
+                        ...ad,
+                        content: ad.content.trim(),
+                        tags: filteredTags.length > 0 ? filteredTags : ['default'],
+                    };
+                }
+        );
 
-    this.ads = cleanedAds;
-
-    await core.settingsStore.set('ads', cleanedAds);
-  }
+        await core.settingsStore.set('ads', this.ads);
+    }
 
   async add(content: string, tags: string[] = ['default']): Promise<void> {
     this.ads.push({ content, tags, disabled: false });
@@ -45,7 +45,7 @@ export class AdCenter {
   }
 
   getTags(ads: Ad[] = this.ads): string[] {
-    return _.uniq(_.flatten(_.map(ads, (ad) => ad.tags)));
+    return [ ...new Set(ads.flatMap(ad => ad.tags)) ];
   }
 
   getActiveTags(): string[] {
@@ -53,25 +53,25 @@ export class AdCenter {
   }
 
   getActiveAds(): Ad[] {
-    return _.filter(this.ads, (ad) => !ad.disabled);
+    return this.ads.filter(ad => !ad.disabled);
   }
 
   getMatchingAds(tags: string[]): Ad[] {
-    return _.filter(this.ads, (ad) => !ad.disabled && _.intersection(ad.tags, tags).length > 0);
+    return this.ads.filter(ad => !ad.disabled && ad.tags.some(t => tags.includes(t)));
   }
 
   schedule(tags: string[], channelIds: string[], order: 'random' | 'ad-center', timeoutMinutes: number): void {
     const ads = this.getMatchingAds(tags);
 
-    _.each(channelIds, (channelId) => this.scheduleForChannel(channelId, ads, order, timeoutMinutes));
+    channelIds.forEach(channelId => this.scheduleForChannel(channelId, ads, order, timeoutMinutes));
   }
 
   adsAreRunning(): boolean {
-    return !_.every(core.conversations.channelConversations, (conv) => !conv.isSendingAutomatedAds());
+    return core.conversations.channelConversations.some(conv => conv.isSendingAutomatedAds());
   }
 
   stopAllAds(): void {
-    _.each(core.conversations.channelConversations, (conv) => conv.adManager.stop());
+    core.conversations.channelConversations.forEach(conv => conv.adManager.stop());
   }
 
   protected getConversation(channelId: string): Conversation.ChannelConversation | undefined {
@@ -81,7 +81,7 @@ export class AdCenter {
   isMissingFromAdCenter(adContentToTest: string): boolean {
     const cleaned = adContentToTest.trim().toLowerCase();
 
-    return _.every(this.ads, (ad) => ad.content.trim().toLowerCase() !== cleaned);
+    return this.ads.every(ad => ad.content.trim().toLowerCase() !== cleaned);
   }
 
   isSafeToOverride(channelId: string): boolean {
@@ -91,7 +91,7 @@ export class AdCenter {
       return true;
     }
 
-    return _.every(conv.settings.adSettings.ads, (adContent) => !this.isMissingFromAdCenter(adContent));
+    return conv.settings.adSettings.ads.every(adContent => !this.isMissingFromAdCenter(adContent));
   }
 
   // tslint:disable-next-line:prefer-function-over-method
@@ -107,7 +107,9 @@ export class AdCenter {
 
       adSettings: {
         ...conv.settings.adSettings,
-        ads: _.map(_.filter(ads, (ad) => !ad.disabled && ad.content.trim().length > 0), (ad) => ad.content.trim()),
+        ads: ads
+                .filter(ad => !ad.disabled && ad.content.trim())
+                .map(ad => ad.content.trim()),
         randomOrder: order === 'random'
       }
     };

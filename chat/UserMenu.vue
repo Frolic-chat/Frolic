@@ -82,7 +82,6 @@ import { Channel, Character } from './interfaces';
 import l from './localize';
 import ReportDialog from './ReportDialog.vue';
 import { Matcher, MatchReport } from '../learn/matcher';
-import _ from 'lodash';
 import MatchTags from './preview/MatchTags.vue';
 import { MemoManager } from './character/memo';
 
@@ -266,7 +265,7 @@ import { MemoManager } from './character/memo';
               if (myProfile && theirProfile) {
                 const match = Matcher.identifyBestMatchReport(myProfile.character, theirProfile.character.character);
 
-                if (_.keys(match.merged).length > 0) {
+                if (Object.keys(match.merged).length > 0) {
                   this.match = match;
                 }
               }
