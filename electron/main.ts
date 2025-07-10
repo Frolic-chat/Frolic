@@ -62,6 +62,7 @@ import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
 import { IncognitoArgFromBrowserPath } from '../constants/general';
 import checkForGitRelease from './updater';
+import versionUpgradeRoutines from './version-upgrade';
 
 import InitIcon from './icon';
 const icon: string = InitIcon(platform);
@@ -464,9 +465,12 @@ function onReady(): void {
     app.setAppUserModelId('com.squirrel.fchat.Frolic');
     app.on('open-file', createWindow);
 
-    if (settings.version !== app.getVersion()) {
-        // This is a useful place to put anything that needs to happen on upgrade.
-        settings.version = app.getVersion();
+    const targetVersion = app.getVersion();
+    if (settings.version !== targetVersion) {
+        // Run all routines necessary to upgrade the general settings.
+        versionUpgradeRoutines(settings.version, targetVersion);
+
+        settings.version = targetVersion;
         setGeneralSettings(settings);
     }
 
