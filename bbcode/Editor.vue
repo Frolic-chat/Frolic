@@ -465,7 +465,7 @@
     }
 
     .color-selector {
-      max-width: 145px;
+      width: 13.6em;
       top: -57px;
       left: 94px;
       /* z-index 1041 is just above the modal-backdrop default,
@@ -473,8 +473,16 @@
       z-index: 1041;
       background-color: var(--input-bg);
 
+      > .popover-body {
+        padding: 0.75em;
+      }
+
       .btn-group {
-        display: block;
+        display: flex;
+        flex-flow: wrap;
+        justify-content: center;
+
+        margin: auto !important;
       }
 
       .btn {
@@ -487,6 +495,7 @@
           border: 1px solid var(--secondary);
           width: 1.3rem;
           height: 1.3rem;
+          min-width: 16.6%;
 
           &::before {
             display: none !important;
