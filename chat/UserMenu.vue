@@ -35,9 +35,9 @@
                 <span class="far fa-fw fa-bookmark"></span>
                 {{ l(character.isBookmarked ? 'user.unbookmark' : 'user.bookmark') }}
             </a>
-            <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
-                <span class="far fa-fw fa-ad"></span>
-                {{l('user.adLog')}}
+            <a tabindex="-1" href="#" @click.prevent="showRelationship()" class="list-group-item list-group-item-action" :class="{ disabled: !hasRelationship(character)}">
+                <span class="fas fa-fw fa-tty"></span>
+                {{l('user.relationLog')}}
             </a>
             <a tabindex="-1" href="#" @click.prevent="setHidden()" class="list-group-item list-group-item-action" v-show="!isChatOp">
                 <span class="fa fa-fw fa-eye-slash"></span>
@@ -65,7 +65,7 @@
             <div style="float:right;text-align:right;">{{ memoLength }} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
         </modal>
-        <ad-view ref="adViewDialog" :character="character" v-if="character"></ad-view>
+        <relation-view ref="relationViewDialog" :character="character" v-if="character"></relation-view>
     </div>
 </template>
 
@@ -74,7 +74,8 @@ import { Component, Prop } from '@f-list/vue-ts';
 import Vue from 'vue';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
-import CharacterAdView from './character/CharacterAdView.vue';
+// import CharacterAdView from './character/CharacterAdView.vue';
+import CharacterRelationView from './character/CharacterRelationView.vue';
 import { characterImage, errorToString, getByteLength, profileLink } from './common';
 import core from './core';
 import { Channel, Character } from './interfaces';
@@ -85,7 +86,12 @@ import MatchTags from './preview/MatchTags.vue';
 import { MemoManager } from './character/memo';
 
 @Component({
-        components: {'match-tags': MatchTags, bbcode: BBCodeView(core.bbCodeParser), modal: Modal, 'ad-view': CharacterAdView}
+        components: {
+            'match-tags': MatchTags,
+            bbcode: BBCodeView(core.bbCodeParser),
+            modal: Modal,
+            'relation-view': CharacterRelationView,
+        }
     })
     export default class UserMenu extends Vue {
         @Prop({required: true})
@@ -181,27 +187,27 @@ import { MemoManager } from './character/memo';
           this.memoManager?.set(this.memo).catch((e: object) => alert(errorToString(e)))
         }
 
-        showAdLogs(): void {
-            if (!this.hasAdLogs()) {
+        showRelationship(): void {
+            if (!this.hasRelationship(this.character))
                 return;
-            }
 
-            (<CharacterAdView>this.$refs['adViewDialog']).show();
+            (<CharacterRelationView>this.$refs['relationViewDialog']).show();
         }
 
 
-        hasAdLogs(): boolean {
-            if (!this.character) {
+        hasRelationship(c: Character.Character | undefined): boolean {
+            if (!c)
                 return false;
-            }
 
-            const cache = core.cache.adCache.get(this.character.name);
+            // Ads
+            const cache = core.cache.adCache.get(c.name);
 
-            if (!cache) {
-                return false;
-            }
+            if (cache?.count && cache.count() > 0)
+                return true;
 
-            return (cache.count() > 0);
+            // Channels
+            return !!core.conversations.channelConversations.find(convs => !!convs.channel.members[c.name]);
+
         }
 
         get isChannelMod(): boolean {
