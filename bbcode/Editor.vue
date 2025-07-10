@@ -53,7 +53,6 @@
 
 <script lang="ts">
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
-    import _ from 'lodash';
     import Vue from 'vue';
     import { mixin as clickaway } from 'vue-clickaway';
     import {getKey} from '../chat/common';
@@ -185,20 +184,17 @@
                 for(let i = 0, l = this.extras.length; i < l; i++)
                     buttons.push(this.extras[i]);
 
-            const colorButtonIndex = _.findIndex(buttons, (b) => b.tag === 'color');
+            const colorButton = buttons.findIndex(b => b.tag === 'color');
 
-            if (this.colorPopupVisible) {
-              const colorButton = _.clone(buttons[colorButtonIndex]);
-              colorButton.outerClass = 'toggled';
-
-              buttons[colorButtonIndex] = colorButton;
-            }
+            buttons[colorButton].outerClass = this.colorPopupVisible
+                ? 'toggled'
+                : '';
 
             return buttons;
         }
 
         getButtonByTag(tag: string): EditorButton {
-          const btn = _.find(this.buttons, (b) => b.tag === tag);
+          const btn = this.buttons.find(b => b.tag === tag);
 
           if (!btn) {
             throw new Error('Unknown button');
