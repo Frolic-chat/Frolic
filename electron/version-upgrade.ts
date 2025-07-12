@@ -15,7 +15,7 @@ export default function (start: string, end: string): string {
     // This should be rewritten with error handling using the routine returns.
     upgrades.forEach(v => routines[v]());
 
-    log.debug('default.versionStart', { from: start, to: end, count: upgrades.length });
+    log.debug('default.finished', { from: start, to: end, count: upgrades.length });
     return end;
 }
 
