@@ -37,7 +37,7 @@ const platform = process.platform;
 import * as electron from 'electron';
 const app = electron.app; // Module to control application life.
 
-// `InitLogger` runs the electron-log init func, so has to run before any file actually uses electron-log.
+// `InitLogger` runs the electron-log init, so has to run before any use of the logger.
 import InitLogger from './logger';
 InitLogger(app.getPath('logs'));
 
@@ -83,15 +83,17 @@ fs.mkdirSync(settingsDir, {recursive: true});
 const settingsFile = path.join(settingsDir, 'settings');
 const settings = new GeneralSettings();
 
-if (!fs.existsSync(settingsFile))
+if (!fs.existsSync(settingsFile)) {
     shouldImportSettings = true;
-else
+}
+else {
     try {
         Object.assign(settings, <GeneralSettings>JSON.parse(fs.readFileSync(settingsFile, 'utf8')));
     }
     catch (e) {
         log.error(`Error loading settings: ${e}`);
     }
+}
 
 if (!settings.hwAcceleration) {
     log.info('Disabling hardware acceleration.');
@@ -382,14 +384,6 @@ function createWindow(): electron.BrowserWindow | undefined {
         }
     );
 
-
-    // window.loadURL(url.format({ //tslint:disable-line:no-floating-promises
-    //     pathname: path.join(__dirname, 'window.html'),
-    //     protocol: 'file:',
-    //     slashes: true,
-    //     query: {settings: JSON.stringify(settings), import: shouldImportSettings ? 'true' : []}
-    // }));
-
     setUpWebContents(window.webContents);
 
     // Save window state when it is being closed.
@@ -437,9 +431,12 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
 
     const browserWindow = new electron.BrowserWindow(windowProperties);
     remoteMain.enable(browserWindow.webContents);
-    browserWindow.loadFile(path.join(__dirname, 'browser_option.html'), {
-        query: { settings: JSON.stringify(settings), import: shouldImportSettings ? 'true' : '' }
-    });
+    browserWindow.loadFile(
+        path.join(__dirname, 'browser_option.html'),
+        { query: {
+            settings: JSON.stringify(settings)
+        }},
+    );
 
     browserWindow.once('ready-to-show', () => {
         browserWindow.show();
