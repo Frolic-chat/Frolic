@@ -6,6 +6,7 @@ import * as remote from '@electron/remote';
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('eicon/store');
 
+import { FisherYatesShuffle } from '../../helpers/utils';
 import { EIconUpdater } from './updater';
 
 /**
@@ -40,17 +41,6 @@ function Rotate<T>(arr: T[], amount: number): T[] {
     arr.push(...remove);
 
     return remove;
-}
-
-/**
- * A fast randomization algorithm.
- * @param arr An array to be randomized; will be modified in-place
- */
-async function FisherYatesShuffle(arr: any[]): Promise<void> {
-    for (let cp = arr.length - 1; cp > 0; cp--) {
-        const np = Math.floor(Math.random() * (cp + 1));
-        [arr[cp], arr[np]] = [arr[np], arr[cp]];
-    }
 }
 
 /**
