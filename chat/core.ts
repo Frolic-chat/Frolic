@@ -9,7 +9,7 @@ import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
 import { AdCenter } from './ads/ad-center';
 import { GeneralSettings } from '../electron/common';
 import { SiteSession } from '../site/site-session';
-import _ from 'lodash';
+import { SettingsMerge } from '../helpers/utils';
 
 import { EventBus } from './preview/event-bus';
 import Logger from 'electron-log/renderer';
@@ -87,10 +87,13 @@ const data = {
     async reloadSettings(): Promise<void> {
         const s = await core.settingsStore.get('settings');
 
-        state._settings = _.mergeWith(new SettingsImpl(), s, (oVal, sVal) => {
-            if (Array.isArray(oVal) && Array.isArray(sVal)) {
-                return sVal;
-            }
+        state._settings = SettingsMerge(new SettingsImpl, s as Partial<SettingsImpl>);
+
+        log.debug('data.reloadSettings', {
+            initial: new SettingsImpl(),
+            saved: s,
+            result: state._settings,
+            //test: test,
         });
 
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
