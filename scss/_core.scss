@@ -42,6 +42,10 @@
   margin-top: 20px;
 }
 
+.fa-blank {
+  visibility: hidden !important;
+}
+
 @mixin force-word-wrapping {
   overflow-wrap: break-word;
   word-wrap: break-word;
