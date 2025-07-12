@@ -45,11 +45,13 @@
         @Prop({ default: false })
         readonly multiple: boolean = false;
         @Prop
+        // @ts-ignore
         readonly value?: Multiselect<typeof this.multiple>;
         @Prop
         readonly title?: string;
 
         filter = '';
+        // @ts-ignore
         selected?: Multiselect<typeof this.multiple>;
 
         @Watch('value')
