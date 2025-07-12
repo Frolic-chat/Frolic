@@ -97,10 +97,10 @@ const data = {
         });
 
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
-        state.hiddenUsers = hiddenUsers !== undefined ? hiddenUsers : [];
+        state.hiddenUsers = hiddenUsers ?? [];
 
         const favoriteEIcons = await core.settingsStore.get('favoriteEIcons');
-        state.favoriteEIcons = favoriteEIcons !== undefined ? favoriteEIcons : {};
+        state.favoriteEIcons = favoriteEIcons ?? {};
     }
 };
 

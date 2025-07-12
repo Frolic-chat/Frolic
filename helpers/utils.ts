@@ -1,6 +1,13 @@
+// For FindExeFileFromName
 import { platform } from "process";
 import { execSync } from "child_process";
 
+/**
+ * Find a given filename on the system, using `where` in `Program Files` on
+ * Windows and `which` on Linux.
+ * @param exe A filename, with or without `.exe` at the end
+ * @returns A filename if found on the system, otherwise an empty string.
+ */
 export function FindExeFileFromName(exe: string): string {
     if (platform === 'win32') {
         const bp = exe + (exe.endsWith('.exe') ? '' : '.exe');

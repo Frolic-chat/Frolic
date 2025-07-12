@@ -110,7 +110,7 @@
         previewWarnings: ReadonlyArray<string> = [];
         previewResult = '';
         // tslint:disable-next-line: no-unnecessary-type-assertion
-        text: string = (this.value !== undefined ? this.value : '') as string;
+        text: string = this.value ?? '';
         element!: HTMLTextAreaElement;
         sizer!: HTMLTextAreaElement;
         maxHeight!: number;
@@ -269,7 +269,7 @@
 
           this.applyButtonEffect(button, btnColor);
 
-          this.colorPopupVisible = false;
+          this.dismissColorSelector();
         }
 
         dismissEIconSelector(): void {

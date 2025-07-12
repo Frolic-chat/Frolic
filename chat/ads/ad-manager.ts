@@ -142,6 +142,13 @@ export class AdManager {
         ) as Timer;
     }
 
+    /**
+     * Generates an order to post ads, randomzing the order if the user has enabled that.
+     *
+     * If you have three ads to post, the return will be `[0, 1, 2]`.
+     * If you have random ordering turned on, the return might be `[2, 0, 1]`.
+     * @returns A possibly-shuffled index array indicating the order to post the queued ads.
+     */
     generateAdMap(): number[] {
         const ads = this.getAds();
         const idx = _.range(ads.length);
