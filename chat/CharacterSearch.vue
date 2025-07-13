@@ -3,15 +3,18 @@
         :buttonText="state === 'results' ? l('characterSearch.again') : undefined" class="character-search">
         <div v-if="options && state === 'search'">
             <div v-show="error" class="alert alert-danger">{{error}}</div>
+
             <filterable-select v-model="data.kinks" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.kinks')" :filterFunc="filterKink" :options="options.kinks">
                 <template v-slot="s">{{s.option.name}}</template>
             </filterable-select>
-            <filterable-select v-for="item in listItems" :multiple="true"
-                v-model="data[item]" :placeholder="l('general.filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
-            </filterable-select>
 
-            <filterable-select class="species-filter" v-model="data.species" :filterFunc="filterSpecies" :multiple="true" :placeholder="l('general.filter')"
+            <template v-for="item in listItems">
+                <filterable-select v-model="data[item]" :multiple="true" :placeholder="l('general.filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
+                </filterable-select>
+            </template>
+
+            <filterable-select v-model="data.species" class="species-filter" :filterFunc="filterSpecies" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.species')" :options="options.species">
                 <template v-slot="s">{{s.option.shortName}} <small>{{s.option.details}}</small></template>
             </filterable-select>
@@ -66,7 +69,6 @@
     import { Character, Connection, ExtendedSearchData, SearchData, SearchKink, SearchSpecies } from './interfaces';
     import l from './localize';
     import UserView from './UserView.vue';
-    import * as _ from 'lodash';
     import {EventBus} from './preview/event-bus';
     import CharacterSearchHistory from './CharacterSearchHistory.vue';
     import { Matcher } from '../learn/matcher';
@@ -227,8 +229,8 @@
 
           const data = JSON.parse(this.debugSearchJson);
 
-          _.assign(kinkMatchScoreMap, data.scoreMap);
-          _.assign(kinkMatchWeights, data.weights);
+          Object.assign(kinkMatchScoreMap, data.scoreMap);
+          Object.assign(kinkMatchWeights, data.weights);
 
           core.cache.profileCache.clear();
 
@@ -306,7 +308,7 @@
                     // tslint:disable-next-line no-unsafe-any no-any
                     && (event.character)
                     // tslint:disable-next-line no-unsafe-any no-any
-                    && (_.find(this.results, (s: SearchResult) => s.character.name === event.character.character.name))
+                    && (this.results.find(s => s.character.name === event.character.character.name))
                 ) {
                     this.countUpdater?.requestUpdate(event.character.character.name);
               }
@@ -331,23 +333,16 @@
 
         @Watch('data', { deep: true })
         onDataChange(): void {
-            this.searchString = _.join(
-                _.map(
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    _.flatten(_.map(this.data as any)),
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    (v) => _.get(v, 'name', v)
-                ),
-                ', '
-            );
+          this.searchString = Object.values(this.data)
+                  .flat()
+                  .map(v => v?.name ?? v)
+                  .join(', ');
         }
 
-
         private resort(results = this.results) {
-          this.results = (_.filter(
-              results,
-              (x) => this.isSpeciesMatch(x) && this.isBodyTypeMatch(x) && !this.isSmartFiltered(x)
-          ) as SearchResult[]).sort(sort);
+          this.results = (results
+                  .filter(x => this.isSpeciesMatch(x) && this.isBodyTypeMatch(x) && !this.isSmartFiltered(x)) as SearchResult[])
+                  .sort(sort);
         }
 
 
@@ -365,8 +360,8 @@
           // optimization
           result.profile = knownCharacter;
 
-          const isSearchingForAnthro = (!!_.find(this.data.species, (s) => s.id === Species.Anthro));
-          const isSearchingForHuman = (!!_.find(this.data.species, (s) => s.id === Species.Human));
+          const isSearchingForAnthro = (!!this.data.species.find(s => s.id === Species.Anthro));
+          const isSearchingForHuman = (!!this.data.species.find(s => s.id === Species.Human));
 
           const species = Matcher.species(knownCharacter.character.character);
 
@@ -375,11 +370,9 @@
             return ((isSearchingForHuman) && (this.data.species.length === 1));
           }
 
-          return ((isSearchingForAnthro) && (_.indexOf(nonAnthroSpecies, species) < 0))
+          return (isSearchingForAnthro && !nonAnthroSpecies.includes(species))
             // || ((isSearchingForMammal) && (_.indexOf(mammalSpecies, s.id) >= 0))
-            || !!_.find(this.data.species, (s: SearchSpecies) => (
-              (s.id === species)
-            ));
+            || !!this.data.species.find(s => s.id === species);
         }
 
         isBodyTypeMatch(result: SearchResult) {
@@ -394,10 +387,14 @@
             result.profile = knownCharacter
 
             const bodytypeId = result.profile.character.character.infotags[51]?.list
-            if (bodytypeId === undefined) return false
+            if (bodytypeId === undefined)
+                return false
 
-            const bodytype = options!.listitems.filter(x => x.name === 'bodytype').find(x => +x.id === bodytypeId)
-            return this.data.bodytypes.indexOf(bodytype!.value) > -1
+            const bodytype = options!.listitems
+                    .filter(x => x.name === 'bodytype')
+                    .find(x => +x.id === bodytypeId);
+
+            return bodytype && this.data.bodytypes.includes(bodytype.value);
         }
 
         isSmartFiltered(result: SearchResult) {
@@ -409,68 +406,59 @@
         }
 
         getSpeciesOptions(): SearchSpecies[] {
-            const species = _.map(
-                speciesMapping,
-                (keywords: string[], speciesIdStr: Species): SearchSpecies => {
-                    // const speciesId: number = Species[speciesName];
-                    const keywordsStr = `${keywords.join(', ')}`;
-                    const details = `${keywordsStr.substring(0, 24)}...`;
-                    const speciesId = parseInt(speciesIdStr as any, 10);
+            const species = Object.entries(speciesMapping)
+                    .map(([k, v]) => {
+                        // More `Object.entries()` broadening types again. Sigh...
+                        const speciesId = Number(k) as keyof typeof speciesMapping;
+                        const keywords = v as typeof speciesMapping[typeof speciesId];
 
-                    if (speciesId in speciesNames) {
-                        const name = `${speciesNames[speciesId].substring(0, 1).toUpperCase()}${speciesNames[speciesId].substring(1)}`;
+                        const keywordsStr = `${keywords.join(', ')}`;
+                        const details = `${keywordsStr.substring(0, 24)}...`;
+
+                        if (speciesId in speciesNames) {
+                            const name = speciesNames[speciesId][0].toUpperCase() + speciesNames[speciesId].substring(1);
+
+                            return {
+                                details,
+                                keywords: `${name}: ${keywordsStr}`,
+                                name: `${name} (species)`,
+                                shortName: name,
+                                id: speciesId
+                            };
+                        }
+
+                        const speciesName = Species[speciesId];
 
                         return {
                             details,
-                            keywords: `${name}: ${keywordsStr}`,
-                            name: `${name} (species)`,
-                            shortName: name,
+                            keywords: `${speciesName}s: ${keywordsStr}`,
+                            name: `${speciesName}s (species)`,
+                            shortName: `${speciesName}s`,
                             id: speciesId
                         };
-                    }
+                    });
 
-                    const speciesName = Species[speciesId];
-
-                    return {
-                        details,
-                        keywords: `${speciesName}s: ${keywordsStr}`,
-                        name: `${speciesName}s (species)`,
-                        shortName: `${speciesName}s`,
-                        id: speciesId
-                    };
-                }
-            ) as unknown[] as SearchSpecies[];
-
-            // console.log('SPECIES', species);
-
-            return _.sortBy(species, 'name');
+            return species.sort((a, b) => a.name.localeCompare(b.name));
         }
 
 
         countPendingResults(names?: string[], results = this.results): number {
-            // console.log('COUNTPENDINGRESULTS', names);
-
-            return _.reduce(
-                results,
-                (accum: number, result: SearchResult) => {
-                  if (!!result.profile) {
+            return results.reduce((accum: number, result: SearchResult) => {
+                if (!!result.profile)
                     return accum;
-                  }
 
-                  if ((_.isUndefined(names)) || (_.indexOf(names, result.character.name) >= 0)) {
+                if (!names || names.includes(result.character.name))
                     result.profile = core.cache.profileCache.getSync(result.character.name);
-                  }
 
-                  return !!result.profile ? accum : accum + 1;
-                },
-                0
-            );
+                return !!result.profile ? accum : accum + 1;
+            },
+            0);
         }
 
 
         filterKink(filter: RegExp, kink: SearchKink): boolean {
             if(this.data.kinks.length >= 5)
-                return this.data.kinks.indexOf(kink) !== -1;
+                return this.data.kinks.includes(kink);
             return filter.test(kink.name);
         }
 
@@ -489,28 +477,40 @@
         }
 
 
+        /**
+         * I don't think this can ever actually pass undefined (can you hit the "select" button
+         * with nothing selected?), but I don't actually care to do the work to fix anything.
+         * @param data Entry from the history - the data will fill the fields on the search form.
+         */
         updateSearch(data?: ExtendedSearchData): void {
-          if (data) {
-            // this.data = {kinks: [], genders: [], orientations: [], languages: [], furryprefs: [], roles: [], positions: []};
-            // this.data = data;
+            log.debug('updateSearch.datacheck', data);
 
-            this.data = _.mapValues(
-                data,
-                (category, categoryName) => (
-                  _.map(
-                    category,
-                    (selection) => {
-                        const jsonSelection = JSON.stringify(selection);
-                        const v = _.find((this.options as any)[categoryName], (op) => (JSON.stringify(op) === jsonSelection));
+            if (!data)
+                return;
 
-                        return v || selection;
-                    }
-                  )
-                )
-            ) as ExtendedSearchData;
-          }
+            log.debug('updateSearch.data.preUpdate', this.data);
+
+            this.data = Object.entries(data)
+                    .reduce((acc, [k, v]) => {
+                        // `Object.entries()` broadens these types, so restrict them again.
+                        const category = k as keyof ExtendedSearchData;
+                        const content = v as ExtendedSearchData[typeof category];
+
+                        // @ts-ignore This works fine because category and content are derived from the same k:v in `data` so you'll never assign the wrong value to key. Feel free to rephrase this so there's no typing errors... if you can do that.
+                        acc[category] = content.map(selection => {
+                            const jsonSelection = JSON.stringify(selection);
+                            // @ts-ignore Old TS in webpack hates this: `find` might be different for each array type. Mordern TS doesn't complain.
+                            const v = this.options[category].find(opt => JSON.stringify(opt) === jsonSelection);
+
+                            return v || selection;
+                        });
+
+                        return acc;
+                    },
+                    {} as ExtendedSearchData);
+
+            log.debug('updateSearch.data.postUpdate', this.data);
         }
-
 
         submit(): void {
             if(this.state === 'results') {
@@ -551,15 +551,15 @@
 
 
         async updateSearchHistory(data: ExtendedSearchData): Promise<void> {
-            const history = (await core.settingsStore.get('searchHistory')) || [];
             const dataStr = JSON.stringify(data, null, 0);
 
-            const filteredHistory = _.map(
-                _.reject(history, (h: SearchData) => (JSON.stringify(h, null, 0) === dataStr)),
-              (h) => _.merge({ species: [], bodytypes: [] }, h)
-            ) as ExtendedSearchData[];
+            const filteredHistory = ((await core.settingsStore.get('searchHistory')) || [])
+                    .filter(h => JSON.stringify(h, null, 0) !== dataStr)
+                    .map(h => ({ species: [], ...h }));
 
-            const newHistory: ExtendedSearchData[] = _.take(_.concat([data], filteredHistory), 15);
+            const newHistory = [data]
+                    .concat(filteredHistory)
+                    .slice(0, 15);
 
             await core.settingsStore.set('searchHistory', newHistory);
         }
