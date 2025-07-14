@@ -584,22 +584,21 @@
       }
 
 
-      start() {
-          this.timerId = setInterval(
-              () => {
-                if (this.updatedNames.length > 0) {
-                    log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
-                  this.callback(this.updatedNames);
-                  this.updatedNames = [];
-                }
+        start() {
+            this.timerId = setInterval(
+            () => {
+                log.debug('resultCountUpdater.tick', { timerId: this.timerId });
 
-                log.debug('characterSearch.resultCountUpdater.tick', { timerId: this.timerId });
-              },
-              250
-          );
+                this.callback(this.updatedNames);
 
-        log.debug('characterSearch.resultCountUpdater.start', this.timerId);
-      }
+                if (this.updatedNames.length)
+                    this.updatedNames = [];
+                },
+                250
+            );
+
+            log.debug('resultCountUpdater.start', this.timerId);
+        }
 
 
       stop() {
