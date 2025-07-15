@@ -60,14 +60,26 @@ export class ImageUrlMutator {
         // );
 
         this.add(
-           /^https?:\/\/(.*\.)?(?:twitter|x)\.com\/(.*)/,
-           async(url: string, match: RegExpMatchArray): Promise<string> => {
+           /^https?:\/\/(?:.*twitter.com|x.com)\/(\w*\/status\/\d*)(?:\/(photo)\/(\d*))?/,
+           async (url: string, match: RegExpMatchArray): Promise<string> => {
                 const path = match[1];
 
                 try {
                     const result = await Axios.get(`https://api.fxtwitter.com/${path}`);
 
-                    const imageUrl: string | null = result.data?.tweet?.media?.photos?.[0]?.url ?? null;
+                    //This looks like complete nonsense, but it's pretty simple to explain:
+                    //The regex has 3 capture groups, the latter 2 of which are optional:
+                    //  1.  The base URI we send to the fxtwitter.com API to fetch the tweet data
+                    //  2.  Whether or not the original twitter.com/ x.com URL is a photo link or not
+                    //  3.  The number of the photo in the tweet. We'll be relying on our regular expression to parse whether or not this is actually a number,
+                    //      not Typescript (hence `(\d*)?` which checks for digit characters only.
+                    //This way, if the link in question focuses on a specific photo in a tweet, we can ask fxtwitter to show us that specific image instead
+                    //Everything else is just sanity checking
+                    const photoNum = match[3] ? Number.parseInt(match[3]) : 1; // default to 1 if not provided
+                    const photoIndex = photoNum - 1;
+
+                    const imageUrl: string | null = result.data?.tweet?.media?.photos?.[photoIndex]?.url ?? null;
+
                     if (imageUrl) {
                         if (this.debug) console.log('Twitter', url, imageUrl);
                         return imageUrl;
