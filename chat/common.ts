@@ -93,7 +93,7 @@ export class Settings implements ISettings {
             human: false,
             hyper: false,
             incest: false,
-            nonbinary: false,
+            intersex: false,
             male: false,
             microMacro: false,
             obesity: false,

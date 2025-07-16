@@ -7,7 +7,7 @@ export const smartFilterTypes = {
   human: { name: 'Humans' },
   hyper: { name: 'Hyper' },
   incest: { name: 'Incest' },
-  nonbinary: { name: 'Nonbinary' },
+  intersex: { name: 'Nonbinary' },
   male: { name: 'Males' },
   microMacro: { name: 'Micro/macro' },
   obesity: { name: 'Obesity' },

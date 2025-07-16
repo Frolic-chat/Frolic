@@ -175,8 +175,8 @@ export const smartFilters: SmartFilterCollection = {
     kinks: [Kink.Incest, Kink.IncestParental, Kink.IncestSiblings, Kink.ParentChildPlay, Kink.ForcedIncest]
   }),
 
-  nonbinary: new SmartFilter({
-    name: 'nonbinary',
+  intersex: new SmartFilter({
+    name: 'intersex',
     genders: [Gender.Transgender, Gender.Herm, Gender.MaleHerm, Gender.Cuntboy, Gender.Shemale]
   }),
 
