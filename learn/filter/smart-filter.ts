@@ -116,11 +116,17 @@ export class SmartFilter {
   }
 
   testIsHuman(c: Character): boolean {
-    return !!this.opts.isHuman && (Matcher.isHuman(c) || false);
+    if (!this.opts.isHuman)
+        return false;
+
+    return Matcher.isKemonomimi(c) ? Matcher.tiltHuman(c) : Matcher.isHuman(c);
   }
 
   testIsAnthro(c: Character): boolean {
-    return !!this.opts.isAnthro && (Matcher.isAnthro(c) || false);
+    if (!this.opts.isAnthro)
+        return false;
+
+    return Matcher.isKemonomimi(c) ? !Matcher.tiltHuman(c) : Matcher.isAnthro(c);
   }
 }
 

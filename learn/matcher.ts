@@ -163,14 +163,16 @@ export class CharacterAnalysis {
     readonly postLengthPreference: PostLengthPreference | null;
     readonly bodyType: BodyType | null;
 
+    /** In addition to use in the matcher, `isAnthro` is also used by smartfilters to filter anthros. */
     readonly isAnthro: boolean;
+    /** In addition to use in the matcher, `isHuman` is also used by smartfilters to filter anthros. */
     readonly isHuman: boolean;
+    /** In addition to use in the matcher, `isKemonomimi` is also used by smartfilters to filter anthros. */
     readonly isKemonomimi: boolean;
     readonly isMammal: boolean;
 
     /**
-     * Checks both species and body type to determine if you qualify as both (Kemonomimi). It is only used by species in the likelyHuman SpeciesMap.
-     * @type {boolean}
+     * Checks both species and body type to determine if you qualify as both (Kemonomimi). It is used by species in the likelyHuman SpeciesMap, and in smart filters to test human/anthro filters against kemonomimi.
      */
     readonly tiltHuman: boolean;
 
@@ -201,7 +203,8 @@ export class CharacterAnalysis {
             this.isMammal =     false;
 
         }
-        this.tiltHuman = Matcher.tiltHuman(c);
+
+        this.tiltHuman = this.isKemonomimi ? Matcher.tiltHuman(c) : false;
     }
 }
 
@@ -1387,7 +1390,7 @@ export class Matcher {
      * The inclusion of Species.Kemonomimi can't be done yet; we want kemonomimi to return their anthro species as well as being kemonomimi. Someone who says they don't want anteaters probably also doesn't want anteatergirls, so we need to track their anthro species.
      * If we move to a "species phrase" = [taglist] layout, then we can fully encapsulate that a foxgirl is both a fox, kemomimi, mammal, and possibly human species all in one.
      */
-    static isKemonomimi(c: Character, species: Species | null): boolean {
+    static isKemonomimi(c: Character, species: Species | null = null): boolean {
         const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
 
         if (!species)
@@ -1407,6 +1410,8 @@ export class Matcher {
     /**
      * Checks for deliberate signs that a character prefers humans over furries.
      * This can change how a kemonomimi gets matched against human/furry preference.
+     *
+     * This does not validate that you are kemonomimi! It can be used for any species.
      */
     static tiltHuman(c: Character): boolean {
         const preference: FurryPreference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
