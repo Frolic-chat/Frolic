@@ -259,8 +259,8 @@ export default class CharacterPreview extends Vue {
       }
 
       this.smartFilterDetails = [
-          ..._.map(_.filter(_.toPairs(results.ageCheck), (v) => v[1]), (v) => v[0]),
-          ..._.map(_.filter(_.toPairs(results.filters), (v) => v[1].isFiltered), (v: any) => v[0])
+          ...Object.entries(results.ageCheck).filter(v => v[1]).map(v => v[0]),
+          ...Object.entries(results.filters).filter(v => v[1] && v[1].isFiltered).map(v => v[0]),
       ];
   }
 
