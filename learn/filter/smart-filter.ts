@@ -253,7 +253,7 @@ export const smartFilters: SmartFilterCollection = {
 
 export function testSmartFilters(c: Character, opts: SmartFilterSettings): {
   ageCheck: { ageMin: boolean; ageMax: boolean };
-  filters: { [key in keyof SmartFilterCollection]: SmartFilterTestResult }
+  filters: { [key in keyof SmartFilterCollection]: SmartFilterTestResult | false }
 } | null {
   if (c.name === core.characters.ownCharacter.name) {
     return null;
@@ -290,7 +290,13 @@ export function testSmartFilters(c: Character, opts: SmartFilterSettings): {
 
   return {
     ageCheck,
-    filters: _.mapValues(smartFilters, (f, k) => (opts.smartFilters as any)[k] && f.test(c))
+    filters: Object.keys(smartFilters)
+            .reduce((out, k) => {
+                const key = k as keyof typeof opts.smartFilters;
+                out[key] = opts.smartFilters[key] && smartFilters[key].test(c);
+                return out;
+            },
+            {} as { [K in keyof typeof smartFilters]: SmartFilterTestResult | false }),
   };
 }
 
@@ -305,5 +311,5 @@ export function matchesSmartFilters(c: Character, opts: SmartFilterSettings): bo
     return true;
   }
 
-  return !_.every(match.filters, (filterResult) => !filterResult.isFiltered);
+  return Object.values(match?.filters).some(r => r && r.isFiltered);
 }
