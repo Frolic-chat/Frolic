@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Matcher } from '../matcher';
 import { BodyType, Build, Gender, Kink, Species, TagId } from '../matcher-types';
 import { SmartFilterSelection, SmartFilterSettings } from './types';
@@ -59,7 +58,7 @@ export class SmartFilter {
       return false;
     }
 
-    const score = _.reduce(this.opts.kinks, (curScore, kinkId) => {
+    const score = this.opts.kinks.reduce((curScore, kinkId) => {
       const pref = Matcher.getKinkPreference(c, kinkId);
 
       if (pref) {
@@ -83,7 +82,7 @@ export class SmartFilter {
 
     const build = Matcher.getTagValueList(TagId.Build, c);
 
-    return build !== null && _.findIndex(this.opts.builds || [], (b) => b === build) >= 0;
+    return build !== null && this.opts.builds.some(b => b === build);
   }
 
   testGenders(c: Character): boolean {
@@ -93,7 +92,7 @@ export class SmartFilter {
 
     const gender = Matcher.getTagValueList(TagId.Gender, c);
 
-    return gender !== null && _.findIndex(this.opts.genders || [], (g) => g === gender) >= 0;
+    return gender !== null && this.opts.genders.some(g => g === gender);
   }
 
   testBodyTypes(c: Character): boolean {
@@ -103,7 +102,7 @@ export class SmartFilter {
 
     const bodyType = Matcher.getTagValueList(TagId.BodyType, c);
 
-    return bodyType !== null && _.findIndex(this.opts.bodyTypes || [], (b) => b === bodyType) >= 0;
+    return bodyType !== null && this.opts.bodyTypes.some(b => b === bodyType);
   }
 
   testSpecies(c: Character): boolean {
@@ -113,7 +112,7 @@ export class SmartFilter {
 
     const species = Matcher.species(c);
 
-    return species !== null && _.findIndex(this.opts.species || [], (s) => s === species) >= 0;
+    return species !== null && this.opts.species.some(s => s === species);
   }
 
   testIsHuman(c: Character): boolean {
