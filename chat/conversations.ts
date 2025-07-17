@@ -623,6 +623,7 @@ class State implements Interfaces.State {
     }
 
     getPrivate(character: Character): PrivateConversation;
+    getPrivate(character: Character, noCreate: boolean): PrivateConversation | undefined;
     getPrivate(character: Character, noCreate: boolean = false): PrivateConversation | undefined {
         const key = character.name.toLowerCase();
 
@@ -726,7 +727,7 @@ async function withNeutralVisibilityPrivateConversation(
     character: Character.Character,
     cb: (p: PrivateConversation, c: Character.Character) => Promise<void>
 ): Promise<void> {
-    const isVisibleConversation = !!(state.getPrivate as any)(character, true);
+    const isVisibleConversation = !!state.getPrivate(character, true);
     const conv = state.getPrivate(character);
 
     await cb(conv, character);
