@@ -40,14 +40,19 @@ export class SmartFilter {
     const builds = this.testBuilds(c);
     const bodyTypes = this.testBodyTypes(c);
     const species = this.testSpecies(c);
-    const isAnthro = this.testIsAnthro(c);
-    const isHuman = this.testIsHuman(c);
+
+    // Unused externally.
+    const humanKemono = Matcher.isKemonomimi(c) ? Matcher.tiltHuman(c) : undefined;
+
+    const isAnthro = this.testIsAnthro(c, humanKemono);
+    const isHuman = this.testIsHuman(c, humanKemono);
     const kinks = this.testKinks(c);
     const genders = this.testGenders(c);
 
     const isFiltered = builds || bodyTypes || species || isAnthro || isHuman || kinks || genders;
     const result = { isFiltered, builds, bodyTypes, species, isAnthro, isHuman, kinks, genders };
 
+    if (humanKemono) log.debug('SmartFilter.test', { name: c.name, humanKemono, isAnthro, isHuman, isFiltered });
     log.silly('smart-filter.test', { name: c.name, filterName: this.opts.name, result });
 
     return result;
@@ -115,18 +120,18 @@ export class SmartFilter {
     return species !== null && this.opts.species.some(s => s === species);
   }
 
-  testIsHuman(c: Character): boolean {
+  testIsHuman(c: Character, tiltHuman: boolean | undefined): boolean {
     if (!this.opts.isHuman)
         return false;
 
-    return Matcher.isKemonomimi(c) ? Matcher.tiltHuman(c) : Matcher.isHuman(c);
+    return tiltHuman ?? Matcher.isHuman(c);
   }
 
-  testIsAnthro(c: Character): boolean {
+  testIsAnthro(c: Character, tiltHuman: boolean | undefined): boolean {
     if (!this.opts.isAnthro)
         return false;
 
-    return Matcher.isKemonomimi(c) ? !Matcher.tiltHuman(c) : Matcher.isAnthro(c);
+    return tiltHuman !== undefined ? !tiltHuman : Matcher.isAnthro(c);
   }
 }
 
