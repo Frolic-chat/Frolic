@@ -719,14 +719,19 @@ async function addEventMessage(this: any, message: Interfaces.Message): Promise<
         await state.selectedConversation.addMessage(message);
 }
 
+/**
+ * Tests whether a character is in your PMs or a friend/bookmark.
+ * @param this Unused; object
+ * @param character Character to test importance of
+ * @returns true if character is friend, bookmark, or has an open private message chat.
+ */
 function isOfInterest(this: any, character: Character): boolean {
     return character.isFriend || character.isBookmarked || state.privateMap[character.name.toLowerCase()] !== undefined;
 }
 
-async function withNeutralVisibilityPrivateConversation(
-    character: Character.Character,
-    cb: (p: PrivateConversation, c: Character.Character) => Promise<void>
-): Promise<void> {
+async function withNeutralVisibilityPrivateConversation(character: Character.Character,
+                                                        cb: (p: PrivateConversation, c: Character.Character) => Promise<void>
+                                                       ): Promise<void> {
     const isVisibleConversation = !!state.getPrivate(character, true);
     const conv = state.getPrivate(character);
 
