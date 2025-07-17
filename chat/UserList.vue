@@ -138,6 +138,12 @@
 
     EventBus.$on('own-profile-update',   recalculateSorterGenderPriorities);
 
+    function isImportantToChannel(char: Character.Character, conv: Channel.Channel): boolean {
+        return char.isChatOp // Global operator
+            || conv.opList.includes(char.name)
+            || conv.owner === char.name;
+    }
+
     @Component({
         components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}
     })
@@ -244,7 +250,7 @@
           return members.filter(m => {
             const p = core.cache.profileCache.getSync(m.character.name);
 
-            return !p || !p.match.isFiltered;
+            return !p || !p.match.isFiltered || isImportantToChannel(m.character, this.channel);
           });
         }
 

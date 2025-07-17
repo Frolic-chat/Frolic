@@ -737,11 +737,38 @@ async function withNeutralVisibilityPrivateConversation(
     }
 }
 
+/**
+ * Test whether a user has superpowers in a given channel.
+ * @param char Character to determine importance of
+ * @param channel Channel to test user importance against
+ * @returns True if character is of some importance in that room
+ */
+function isImportantToChannel(char: Character.Character, channel: Channel.Channel): boolean {
+    return char.isChatOp // Global operator
+        || channel.opList.includes(char.name)
+        || channel.owner === char.name;
+}
+
+/**
+ * Tests whether someone has superpowers in any channel you're in.
+ * @param fromChar Character who sent you a message
+ * @returns True if character is important in any channel you're in.
+ */
+function globallyImportant(fromChar: Character.Character): boolean {
+    for (const channel of core.channels.joinedChannels) {
+        if (isImportantToChannel(fromChar, channel))
+            return true;
+    }
+
+    return false;
+}
+
 export async function testSmartFilterForPrivateMessage(fromChar: Character.Character, originalMessage?: Message): Promise<boolean> {
     const cachedProfile = core.cache.profileCache.getSync(fromChar.name) || await core.cache.profileCache.get(fromChar.name);
     const firstTime = cachedProfile && !cachedProfile.match.autoResponded;
 
     if (
+        !globallyImportant(fromChar) &&
         cachedProfile &&
         cachedProfile.match.isFiltered &&
         core.state.settings.risingFilter.autoReply &&
@@ -785,6 +812,7 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
     }
 
     if (
+        !globallyImportant(fromChar) &&
         cachedProfile &&
         cachedProfile.match.isFiltered &&
         core.state.settings.risingFilter.hidePrivateMessages &&
@@ -803,14 +831,33 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
     return false;
 }
 
+/**
+ * Determine if we need to filter this (site-moderated) channel
+ * @param conv Conversation to test for smart filtering
+ * @returns True if the channel will be filtered
+ */
+function filterPubChannels(conv: ChannelConversation): boolean {
+    return core.state.settings.risingFilter.hidePublicChannelMessages
+        && isChannel(conv)
+        && conv.channel.owner === '';
+}
+
+/**
+ * Determine if we need to filter this (user-moderated) channel
+ * @param conv Conversation to test for smart filtering
+ * @returns True if the channel will be filtered
+ */
+function filterPrivChannels(conv: ChannelConversation): boolean {
+    return core.state.settings.risingFilter.hidePrivateChannelMessages
+        && isChannel(conv)
+        && conv.channel.owner !== '';
+}
+
 async function testSmartFilterForChannel(fromChar: Character.Character, conversation: ChannelConversation): Promise<boolean> {
-    if (
-        (isChannel(conversation) && conversation.channel.owner === '' && core.state.settings.risingFilter.hidePublicChannelMessages) ||
-        (isChannel(conversation) && conversation.channel.owner !== '' && core.state.settings.risingFilter.hidePrivateChannelMessages)
-    ) {
+    if (filterPubChannels(conversation) || filterPrivChannels(conversation)) {
         const cachedProfile = core.cache.profileCache.getSync(fromChar.name) || await core.cache.profileCache.get(fromChar.name);
 
-        if (cachedProfile && cachedProfile.match.isFiltered && !fromChar.isChatOp) {
+        if (!isImportantToChannel(fromChar, conversation.channel) && cachedProfile && cachedProfile.match.isFiltered) {
             return true;
         }
     }
