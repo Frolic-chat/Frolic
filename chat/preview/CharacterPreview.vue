@@ -100,7 +100,7 @@ import {
 import { BBCodeView } from '../../bbcode/view';
 import { EventBus } from './event-bus';
 import { Character, CustomKink } from '../../interfaces';
-import { matchesSmartFilters, testSmartFilters } from '../../learn/filter/smart-filter';
+import { testSmartFilters } from '../../learn/filter/smart-filter';
 import { smartFilterTypes } from '../../learn/filter/types';
 import { Conversation } from '../interfaces';
 import MessageView from '../message_view';
@@ -241,22 +241,25 @@ export default class CharacterPreview extends Vue {
   }
 
   updateSmartFilterReport() {
-      if (!this.character) {
+      if (!this.character)
         return;
-      }
 
-      this.smartFilterIsFiltered = matchesSmartFilters(this.character.character, core.state.settings.risingFilter);
+      // Zero-out dirty cache
       this.smartFilterDetails = [];
-
-      if (!this.smartFilterIsFiltered) {
-        return;
-      }
 
       const results = testSmartFilters(this.character.character, core.state.settings.risingFilter);
 
-      if (!results) {
+      if (!results)
         return;
-      }
+
+      // The below block is near verbatim `matchSmartFilters` but that requires a second call to `testSmartFilters` so it's better to inline it since we're using the results.
+      this.smartFilterIsFiltered = Object.values(results.filters).some(r => r && r.isFiltered);
+
+      if (results.ageCheck.ageMax || results.ageCheck.ageMin)
+          this.smartFilterIsFiltered = true;
+
+      if (!this.smartFilterIsFiltered)
+          return;
 
       this.smartFilterDetails = [
           ...Object.entries(results.ageCheck).filter(v => v[1]).map(v => v[0]),
