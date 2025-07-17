@@ -1259,15 +1259,12 @@ export class Matcher {
     }
 
     static findKinkById(c: Character, kinkId: number): KinkChoice | number | undefined {
-        if (kinkId in c.kinks) {
+        if (kinkId in c.kinks)
             return c.kinks[kinkId];
-        }
 
         for (const custom of Object.values(c.customs)) {
-            if (custom) {
-                if (custom.children?.includes(kinkId))
-                    return custom.choice;
-            }
+            if (custom?.children?.includes(kinkId))
+                return custom.choice;
         }
 
         return undefined;
@@ -1286,7 +1283,7 @@ export class Matcher {
     static getTagValueList(tagId: number, c: Character): number | null {
         const t = Matcher.getTagValue(tagId, c);
 
-        if (!t || !t.list)
+        if (!t?.list)
             return null;
 
         return t.list;
@@ -1361,18 +1358,14 @@ export class Matcher {
         if (bodyTypeId === BodyType.Human)
             return true;
 
-        if (!species)
-            species = Matcher.species(c);
-
-        if (!species)
-            return false;
+        if (!species) species = Matcher.species(c);
 
         return species === Species.Human;
     }
 
     static getMappedKemonomimiSpecies(c: Character): Species | null {
         const speciesTag = Matcher.getTagValue(TagId.Species, c);
-        if (!speciesTag || !speciesTag.string)
+        if (!speciesTag?.string)
             return null;
 
         Matcher.ensureMapsAreBuilt();
@@ -1380,8 +1373,9 @@ export class Matcher {
         const mappedSpecies = Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!)
                            || Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!, true);
 
-        log.debug('matcher.species.kemonomimi', { character: c.name, mappedspecies: mappedSpecies });
-        return mappedSpecies || null;
+        if (mappedSpecies) log.debug('species.kemonomimi.mapped', { character: c.name, species: mappedSpecies });
+
+        return mappedSpecies;
     }
 
     /**
@@ -1391,20 +1385,27 @@ export class Matcher {
      * If we move to a "species phrase" = [taglist] layout, then we can fully encapsulate that a foxgirl is both a fox, kemomimi, mammal, and possibly human species all in one.
      */
     static isKemonomimi(c: Character, species: Species | null = null): boolean {
-        const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
-
         if (!species)
             species = Matcher.species(c);
 
         if (!species)
             return false;
 
-        if (bodyTypeId === BodyType.Human && nonAnthroSpecies.indexOf(species) < 0) {
-            log.verbose('matcher.species.kemomimi.indirect', { character: c.name, species: species });
+        //log.verbose('species.kemonomimi.test', { c: c.name, s: Species[species], sk: Species[Species.Kemonomimi], ts: typeof species, tsk: typeof Species.Kemonomimi });
+        if (species === Species.Kemonomimi) {
+            log.debug('species.kemonomimi.direct', { character: c.name, species: species });
             return true;
         }
 
-        return !!Matcher.getMappedKemonomimiSpecies(c) || false;
+        // Nonhuman but human body type.
+        const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
+        if (bodyTypeId === BodyType.Human && !nonAnthroSpecies.includes(species)) {
+            log.debug('species.kemomimi.indirect', { character: c.name, species: species });
+            return true;
+        }
+
+        // Species in both non-human and neko maps.
+        return !!Matcher.getMappedKemonomimiSpecies(c);
     }
 
     /**
@@ -1416,18 +1417,19 @@ export class Matcher {
     static tiltHuman(c: Character): boolean {
         const preference: FurryPreference = Matcher.getTagValueList(TagId.FurryPreference, c) || FurryPreference.FursAndHumans;
 
-        // log.debug('matcher.tilthuman', { character: c.name, pref: preference });
-
         // You are what you eat.
         if (preference === FurryPreference.HumansOnly
         ||  preference === FurryPreference.HumansPreferredFurriesOk) {
+            log.debug('tilthuman.shortcircuit', { character: c.name, pref: 'human' });
             return true;
         }
         else if (preference === FurryPreference.FurriesOnly
-              || preference === FurryPreference.FurriesPreferredHumansOk) {
+        ||       preference === FurryPreference.FurriesPreferredHumansOk) {
+            log.debug('tilthuman.shortcircuit', { character: c.name, pref: 'furry' });
             return false;
         }
 
+        // You are what you clearly demonstrate a liking for.
         const h = Matcher.getKinkSpeciesPreference(c, Species.Human);
         const f = Matcher.getKinkSpeciesPreference(c, Species.Anthro);
         const likesHumans     = h === KinkPreference.Favorite
@@ -1439,7 +1441,7 @@ export class Matcher {
         const dislikesFurries = f === KinkPreference.Maybe
                              || f === KinkPreference.No;
 
-        log.debug('matcher.tilthuman.preferences', { character: c.name, humanpref:  h, anthropref: f });
+        log.debug('tilthuman.preference', { character: c.name, humanpref:  h, anthropref: f });
 
         if (likesHumans && !likesFurries || dislikesFurries && !dislikesHumans)
             return true;
@@ -1450,7 +1452,7 @@ export class Matcher {
     static species(c: Character): Species | null {
         const mySpecies = Matcher.getTagValue(TagId.Species, c);
 
-        if (!mySpecies || !mySpecies.string) {
+        if (!mySpecies?.string) {
             const noFurries = Matcher.furryLikeabilityScore(c) === Scoring.MISMATCH;
             const noAnthros = Matcher.getKinkSpeciesPreference(c, Species.Anthro) === KinkPreference.No;
 
@@ -1462,8 +1464,7 @@ export class Matcher {
 
         const s = Matcher.getMappedSpecies(mySpecies.string);
 
-        if (!s)
-            log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });
+        if (!s) log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });
 
         return s;
     }
@@ -1494,22 +1495,14 @@ export class Matcher {
 
         const finalSpecies = (skipAscii ? species : anyAscii(species)).toLowerCase().trim();
 
-        _.each(
-            mapping,
-            (matchers, speciesId: string) => {
-                _.each(
-                    matchers,
-                    matcher => {
-
-                        // finalSpecies.indexOf(k) >= 0)
-                        if (matcher.mappedPhrase.length > match.length && matcher.regexp.test(finalSpecies)) {
-                            match = matcher.mappedPhrase;
-                            foundSpeciesId = parseInt(speciesId, 10);
-                        }
-                    }
-                );
-            }
-        );
+        Object.entries(mapping).forEach(([speciesId, matchers]: [string, SpeciesMappingCache[keyof SpeciesMappingCache]]) => {
+            matchers.forEach(matcher => {
+                if (matcher.mappedPhrase.length > match.length && matcher.regexp.test(finalSpecies)) {
+                    match = matcher.mappedPhrase;
+                    foundSpeciesId = Number(speciesId);
+                }
+            });
+        });
 
         return foundSpeciesId;
     }
@@ -1527,14 +1520,14 @@ export class Matcher {
         Matcher.ensureMapsAreBuilt();
 
         const mappedSpecies = Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!)
-                           || Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!, true);
+                           ?? Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!, true);
 
         const maybeHuman    = Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!)
-                           || Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!, true);
+                           ?? Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!, true);
 
         // log.debug('matcher.getMappedSpecies', { mappedspecies: mappedSpecies, maybehuman: maybeHuman });
 
-        return mappedSpecies || maybeHuman;
+        return mappedSpecies ?? maybeHuman;
     }
 
     static getAllSpecies(c: Character): Species[] {
