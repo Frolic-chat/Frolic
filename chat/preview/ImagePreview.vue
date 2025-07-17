@@ -139,54 +139,45 @@
             // tslint:disable-next-line:no-floating-promises
             this.jsMutator.init();
 
-            EventBus.$on(
-                'imagepreview-dismiss',
-                (eventData: EventBusEvent) => {
-                    // console.log('Event dismiss', eventData.url);
-                    this.dismiss(this.negotiateUrl(eventData.url as string || ''), eventData.force as boolean);
+            EventBus.$on('imagepreview-dismiss', (eventData: EventBusEvent) => {
+                // console.log('Event dismiss', eventData.url);
+                this.dismiss(this.negotiateUrl(eventData.url as string || ''), eventData.force as boolean);
+            });
+
+            EventBus.$on('imagepreview-show', (eventData: EventBusEvent) => {
+                // console.log('Event show', eventData.url);
+
+                const url = this.negotiateUrl(eventData.url as string || '');
+                const isInternalPreview = CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER.test(url);
+
+                if (
+                    ((!core.state.settings.risingCharacterPreview) && (isInternalPreview))
+                    || ((!core.state.settings.risingLinkPreview) && (!isInternalPreview))
+                ) {
+                    return;
                 }
-            );
 
-            EventBus.$on(
-                'imagepreview-show',
-                (eventData: EventBusEvent) => {
-                    // console.log('Event show', eventData.url);
+                this.show(url);
+            });
 
-                    const url = this.negotiateUrl(eventData.url as string || '');
-                    const isInternalPreview = CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER.test(url);
-
-                    if (
-                      ((!core.state.settings.risingCharacterPreview) && (isInternalPreview))
-                      || ((!core.state.settings.risingLinkPreview) && (!isInternalPreview))
-                    ) {
-                      return;
-                    }
-
-                    this.show(url);
+            EventBus.$on('imagepreview-toggle-stickyness', (eventData: EventBusEvent) => {
+                if (!core.state.settings.risingLinkPreview) {
+                    return;
                 }
-            );
 
-            EventBus.$on(
-                'imagepreview-toggle-stickyness',
-                (eventData: EventBusEvent) => {
-                    if (!core.state.settings.risingLinkPreview) {
-                        return;
-                    }
+                const eventUrl = this.jsMutator.mutateUrl(this.negotiateUrl(eventData.url as string || ''));
 
-                    const eventUrl = this.jsMutator.mutateUrl(this.negotiateUrl(eventData.url as string || ''));
+                if (
+                    ((eventData.force === true) || (this.url === eventUrl))
+                    && (this.visible)
+                ) {
+                    this.sticky = !this.sticky;
 
-                    if (
-                      ((eventData.force === true) || (this.url === eventUrl))
-                      && (this.visible)
-                    ) {
-                        this.sticky = !this.sticky;
-
-                        if (eventData.force) {
-                          this.hide();
-                        }
+                    if (eventData.force) {
+                        this.hide();
                     }
                 }
-            );
+            });
 
             const webview = this.getWebview();
 

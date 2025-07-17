@@ -317,15 +317,13 @@
         onMounted(): void {
             log.debug('init.chat.mounted');
 
-            EventBus.$on(
-                'word-definition', (data: any) => {
-                    this.wordDefinitionLookup = data.lookupWord;
+            EventBus.$on('word-definition', (data: any) => {
+                this.wordDefinitionLookup = data.lookupWord;
 
-                    if (!!data.lookupWord) {
-                        (<Modal>this.$refs.wordDefinitionViewer).show();
-                    }
+                if (!!data.lookupWord) {
+                    (<Modal>this.$refs.wordDefinitionViewer).show();
                 }
-            );
+            });
         }
 
 
