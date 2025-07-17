@@ -139,13 +139,11 @@ export class CacheManager {
 
 
     updateAdScoringForProfile(c: ComplexCharacter, score: number, isFiltered: boolean): void {
-        EventBus.$emit(
-            'character-score', {
-                character: c,
-                score,
-                isFiltered
-            }
-        );
+        EventBus.$emit('character-score', {
+            character: c,
+            score,
+            isFiltered
+        });
 
         this.populateAllConversationsWithScore(c.character.name, score, isFiltered);
         void this.respondToPendingRejections(c);
@@ -270,12 +268,7 @@ export class CacheManager {
         EventBus.$on('channel-ad',              this.on_channel_ad);
         EventBus.$on('select-conversation',     this.on_select_conversation);
         EventBus.$on('conversation-load-more',  this.on_conversation_load_more);
-
-
-        // EventBus.$on(
-        //     'private-message',
-        //     (data: any) => {}
-        // );
+        // EventBus.$on('private-message', (data: any) => {});
 
 
         const scheduleNextFetch = () => {

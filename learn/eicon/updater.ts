@@ -42,31 +42,25 @@ export class EIconUpdater {
 
             if (isAxios(e) && e.response) { // Server responded with failure
                 log.debug('eicon.axios.err.response', e.response.status, e.response.headers);
-                EventBus.$emit(
-                    'error', {
-                        source: 'eicon.fetchall', type: 'http response',
-                        message: `HTTP Response ${e.response.status} from eicon server.`,
-                    }
-                );
+                EventBus.$emit('error', {
+                    source: 'eicon.fetchall', type: 'http response',
+                    message: `HTTP Response ${e.response.status} from eicon server.`,
+                });
             }
             else if (isAxios(e) && e.request) { // No response
                 const r = (e.request as XMLHttpRequest);
                 log.debug('eicon.axios.err.request', { status: r.status, readyState: r.readyState });
-                EventBus.$emit(
-                    'error', {
-                        source: 'eicon.fetchall', type: 'http request',
-                        message: 'There was no response from the eicon server.',
-                    }
-                );
+                EventBus.$emit('error', {
+                    source: 'eicon.fetchall', type: 'http request',
+                    message: 'There was no response from the eicon server.',
+                });
             }
             else {
                 log.debug('eicon.axios.err.generic', { err: e });
-                EventBus.$emit(
-                    'error', {
-                        source: 'eicon.fetchall', type: 'http generic',
-                        message: 'Miscellaneous error contacting the eicon server.',
-                    }
-                );
+                EventBus.$emit('error', {
+                    source: 'eicon.fetchall', type: 'http generic',
+                    message: 'Miscellaneous error contacting the eicon server.',
+                });
             }
 
             return undefined;
@@ -88,13 +82,11 @@ export class EIconUpdater {
 
         if (!asOfTimestamp) {
             log.error('No "# As Of: " line found.');
-            EventBus.$emit(
-                'error', {
-                    source: 'eicon.fetchall.timestamp',
-                    type: typeof undefined,
-                    message: "Didn't receive timestamp from eicon server.",
-                }
-            );
+            EventBus.$emit('error', {
+                source: 'eicon.fetchall.timestamp',
+                type: typeof undefined,
+                message: "Didn't receive timestamp from eicon server.",
+            });
         }
 
         return { asOfTimestamp, eicons };
@@ -122,13 +114,11 @@ export class EIconUpdater {
 
         if (!asOfTimestamp) {
             log.error('No "# As Of: " line found.');
-            EventBus.$emit(
-                'error', {
-                    source: 'eicon timestamp failure',
-                    type: typeof undefined,
-                    message: "Didn't receive timestamp from eicon server.",
-                }
-            );
+            EventBus.$emit('error', {
+                source: 'eicon timestamp failure',
+                type: typeof undefined,
+                message: "Didn't receive timestamp from eicon server.",
+            });
         }
 
         return { recordUpdates, asOfTimestamp };
