@@ -297,7 +297,6 @@
             <div class="warning">
               <h5>{{l('rising.header.dangerZone')}}</h5>
               <div>{{l('rising.filter.warning')}}</div>
-              <div>{{l('rising.filter.adminWarning')}}</div>
               <div>{{l('rising.filter.naToFriends')}}</div>
               <div>{{l('rising.filter.beta')}}</div>
             </div>
