@@ -51,6 +51,7 @@ class Channel implements Interfaces.Channel {
         this.members[member.character.name] = member;
         sortMember(this.sortedMembers, member);
 
+        // Add handler for private channels to queue characters.
         for(const handler of state.handlers)
             await handler('join', this, member);
     }

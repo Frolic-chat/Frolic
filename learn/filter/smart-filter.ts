@@ -321,5 +321,5 @@ export function matchesSmartFilters(c: Character, opts: SmartFilterSettings): bo
     return true;
   }
 
-  return Object.values(match?.filters).some(r => r && r.isFiltered);
+  return Object.values(match.filters).some(r => r && r.isFiltered);
 }
