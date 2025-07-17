@@ -271,7 +271,7 @@ export function testSmartFilters(c: Character, opts: SmartFilterSettings): {
 
   const coreCharacter = core.characters.get(c.name);
 
-  if (coreCharacter?.isChatOp || coreCharacter?.isBookmarked || coreCharacter?.isFriend) {
+  if (coreCharacter?.isBookmarked || coreCharacter?.isFriend) {
     return null;
   }
 
