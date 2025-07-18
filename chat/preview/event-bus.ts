@@ -82,13 +82,12 @@ class EventBusManager {
 
         this.callbacks[event].push(callback);
 
-        log.debug(
-            'eventbus.on', {
-                event: event,
-                events: this.callbacks[event].length,
-                cb: callback.toString(),
-            }
-        );
+        log.debug('eventbus.on', {
+            event: event,
+            events: this.callbacks[event].length,
+            // cb: callback.toString(),
+            cb: callback.name,
+        });
     }
 
 
@@ -98,28 +97,26 @@ class EventBusManager {
 
         const i = r.indexOf(callback);
         if (i < 0) {
-            log.debug(
-                'eventbus.off', {
-                    event: event,
-                    success: i > -1,
-                    remaining: r.length,
-                    cb: callback.toString(),
-                }
-            );
+            log.debug('eventbus.off', {
+                event: event,
+                success: i > -1,
+                remaining: r.length,
+                // cb: callback.toString(),
+                cb: callback.name,
+            });
 
             return;
         }
 
         r.splice(i, 1);
 
-        log.debug(
-            'eventbus.off', {
-                event: event,
-                success: i > -1,
-                remaining: r.length,
-                cb: callback.toString(),
-            }
-        );
+        log.debug('eventbus.off', {
+            event: event,
+            success: i > -1,
+            remaining: r.length,
+            // cb: callback.toString(),
+            cb: callback.name,
+        });
     }
 
 
@@ -139,23 +136,20 @@ class EventBusManager {
                 .then(() => {
                     this.$off(event, onceWrapper);
                     log.debug('eventbus.once.resolved');
-                }
-            );
+                });
         };
 
         this.$on(event, onceWrapper);
 
-        log.debug(
-            'eventbus.once', {
-                event: event,
-                events: this.callbacks[event].length,
-            }
-        );
+        log.debug('eventbus.once', {
+            event: event,
+            events: this.callbacks[event].length,
+        });
     }
 
 
     $emit(event: string, data: EventBusEvent): void {
-        (this.callbacks[event] || []).forEach((cb) => cb(data));
+        (this.callbacks[event] || []).forEach(cb => cb(data));
     }
 
 
