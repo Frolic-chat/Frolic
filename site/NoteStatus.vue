@@ -74,30 +74,26 @@ hasReports(): boolean {
     return !!this.reports.find(r => r.count > 0 && r.dismissedCount !== r.count);
 }
 
-
 updateCounts(): void {
-    const v = core.siteSession.interfaces.notes.getCounts();
+    const latest = core.siteSession.interfaces.notes.getCounts();
 
-    const mapper = {
+    const mapper: Record<'message' | 'note', Partial<keyof typeof latest>> = {
         message: 'unreadMessages',
         note: 'unreadNotes'
     };
 
-    _.each(
-        mapper,
-        (field: string, type: string) => {
-            const report = this.reports.find(r => r.type === type);
+    Object.entries(mapper).forEach(([k, v]) => {
+        const report = this.reports.find(r => r.type === k);
 
-            if (!report)
-                throw new Error(`Did not find report ${type}`);
+        if (!report)
+            throw new Error(`Did not find report ${k}`);
 
-            const count = (v as any)[field] as number;
+        const count = latest[v];
 
-            if (count !== report.dismissedCount) report.dismissedCount = 0;
+        if (count !== report.dismissedCount) report.dismissedCount = 0;
 
-            report.count = count;
-        }
-    );
+        report.count = count;
+    });
   }
 }
 </script>
