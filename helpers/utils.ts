@@ -35,6 +35,25 @@ export async function FisherYatesShuffle(arr: any[]): Promise<void> {
 }
 
 /**
+ * A lodash-replacement debounce useful on any input without a submit. Invoke
+ * the bounce-blocker on every input, and the callback will only fire once
+ * there's no input.
+ * @param callback Callback to bounce
+ * @param wait Time to wait for there to be no input
+ * @returns A function to invoke to reset the debounce
+ */
+export function debounce<T>(callback: (this: T, ...args: any) => void,
+                            wait: number = 330
+                           ): () => void {
+    let timer: ReturnType<typeof setTimeout>;
+
+    return function (this: T, ...args: any) {
+        clearTimeout(timer);
+        timer = setTimeout(() => { callback.apply(this, args); }, wait)
+    }
+}
+
+/**
  * `Null` is an "object" type so must be examined before checking for object.
  * There's no point in checking `isArray` unless `typeof subj` is successful.
  * @param subj Anything

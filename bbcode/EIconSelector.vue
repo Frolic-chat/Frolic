@@ -81,16 +81,7 @@ import { EIconStore } from '../learn/eicon/store';
 import core from '../chat/core';
 import modal from '../components/Modal.vue';
 import CustomDialog from '../components/custom_dialog';
-
-// Another func that should be a `utils` file.
-function debounce<T>(func: (this: T, ...args: any) => void, wait: number = 330): () => void {
-    let timer: ReturnType<typeof setTimeout>;
-
-    return function (this: T, ...args: any) {
-        clearTimeout(timer);
-        timer = setTimeout(() => { func.apply(this, args); }, wait)
-    }
-}
+import { debounce } from '../helpers/utils';
 
 let store: EIconStore | undefined;
 
