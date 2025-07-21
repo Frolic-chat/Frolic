@@ -817,8 +817,7 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
 
     if (
         !globallyImportant(fromChar) &&
-        cachedProfile &&
-        cachedProfile.match.isFiltered &&
+        cachedProfile?.match.isFiltered &&
         core.state.settings.risingFilter.hidePrivateMessages &&
         firstTime // subsequent messages bypass this filter on purpose
     ) {
