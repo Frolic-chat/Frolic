@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import core from '../chat/core';
 import { ChannelAdEvent, ChannelMessageEvent, CharacterDataEvent, EventBus, SelectConversationEvent } from '../chat/preview/event-bus';
-import { Channel, Conversation } from '../chat/interfaces';
+import { Conversation } from '../chat/interfaces';
 import { methods } from '../site/character_page/data_store';
 import { Character as ComplexCharacter } from '../site/character_page/interfaces';
 import { AdCache } from './ad-cache';
@@ -10,20 +10,20 @@ import { CharacterProfiler } from './character-profiler';
 import { CharacterCacheRecord, ProfileCache } from './profile-cache';
 import ChannelConversation = Conversation.ChannelConversation;
 import Message = Conversation.Message;
-import { Character } from '../fchat/interfaces';
-import Bluebird from 'bluebird';
+import { Character as ChatCharacter } from '../fchat/interfaces';
 import ChatMessage = Conversation.ChatMessage;
 import { GeneralSettings } from '../electron/common';
 import { Gender } from './matcher-types';
 import { WorkerStore } from './store/worker';
 import { PermanentIndexedStore } from './store/types';
 import * as path from 'path';
+import { lastElement } from '../helpers/utils';
 // import * as electron from 'electron';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('cache-manager');
 
-import { testSmartFilterForPrivateMessage } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
+import { shouldFilterPrivate } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 
 
 export interface ProfileCacheQueueEntry {
@@ -141,7 +141,7 @@ export class CacheManager {
     updateAdScoringForProfile(c: ComplexCharacter, score: number, isFiltered: boolean): void {
         EventBus.$emit('character-score', { profile: c, score, isFiltered });
 
-        this.populateAllConversationsWithScore(c.character.name, score, isFiltered);
+        this.scoreAllConversations(c.character.name, score, isFiltered);
         void this.respondToPendingRejections(c);
     }
 
@@ -155,13 +155,12 @@ export class CacheManager {
         if (conv && conv.messages.length > 0 && Date.now() - lastElement(conv.messages).time.getTime() < 5 * 60 * 1000) {
           const sessionMessages = conv.messages.filter(m => m.time.getTime() >= this.startTime.getTime());
 
-          const allMessagesFromThem = _.every(
-            sessionMessages,
-            m => ('sender' in m)  && m.sender.name === conv.character.name
-          );
+          const allMessagesFromThem = sessionMessages
+                // Update to `Object.hasOwn(m, 'sender')` once typescript stops being shit.
+                .every(m => ('sender' in m) && m.sender.name === conv.character.name);
 
           if (sessionMessages.length > 0 && allMessagesFromThem) {
-            await testSmartFilterForPrivateMessage(char);
+            await shouldFilterPrivate(char);
           }
         }
       }
@@ -354,20 +353,16 @@ export class CacheManager {
         const message = data.message;
         const channel = data.channel;
 
-        this.adCache.register(
-            {
-                name: message.sender.name,
-                channelName : channel.name,
-                datePosted: message.time,
-                message: message.text
-            }
-        );
+        this.adCache.register({
+            name: message.sender.name,
+            channelName : channel.name,
+            datePosted: message.time,
+            message: message.text
+        });
 
-        if (
-          (!data.profile) &&
-          (core.conversations.selectedConversation === data.channel) &&
-          (this.isActiveTab)
-        ) {
+        if (!data.profile
+        &&  core.conversations.selectedConversation === data.channel
+        &&  this.isActiveTab) {
             await this.queueForFetching(message.sender.name, true, data.channel.channel.id);
         }
 
@@ -383,113 +378,94 @@ export class CacheManager {
     async onSelectConversation(data: SelectConversationEvent): Promise<void> {
         // Check we are working with a channel conversation.
         const conversation = data.conversation;
-
-        const channel = _.get(conversation, 'channel') as (Channel.Channel | undefined);
-        const channelId = _.get(channel, 'id', '<missing>');
+        const channel = (conversation as ChannelConversation | null)?.channel;
+        const channelId = channel?.id ?? '<missing>';
 
         // Remove unfinished fetches related to other channels
-        this.queue = _.reject(
-            this.queue,
-          (q) => (!!q.channelId) && (q.channelId !== channelId)
+        this.queue = this.queue.filter(q => q.channelId === channelId);
+
+        if (!channel)
+            return;
+
+        const checkedNames: Record<string, boolean> = {};
+
+        // Add fetchers for unknown profiles in ads
+        await Promise.all(conversation!.messages
+                .filter(m => {
+                    if (m.type !== Message.Type.Ad)
+                        return false;
+
+                    if (m.sender.name in checkedNames)
+                        return false;
+
+                    checkedNames[m.sender.name] = true;
+                    return true;
+                })
+                .map(async m => {
+                    // m must be ChatMessage because `m.type === Ad`.
+                    const chatMessage = m as ChatMessage;
+
+                    if (chatMessage.score)
+                        return;
+
+                    const p = await this.resolvePScore(false, chatMessage.sender, conversation as ChannelConversation, chatMessage, true);
+
+                    if (!p)
+                        await this.queueForFetching(chatMessage.sender.name, true, channel.id);
+                })
         );
-
-        if (channel) {
-            const checkedNames: Record<string, boolean> = {};
-
-            // Add fetchers for unknown profiles in ads
-            await Bluebird.each(
-              _.filter(
-                conversation!.messages,
-                (m) => {
-                  if (m.type !== Message.Type.Ad) {
-                    return false;
-                  }
-
-                  const chatMessage = m as unknown as ChatMessage;
-
-                  if (chatMessage.sender.name in checkedNames) {
-                    return false;
-                  }
-
-                  checkedNames[chatMessage.sender.name] = true;
-                  return true;
-                }
-              ),
-              async(m: Message) => {
-                const chatMessage: ChatMessage = m as unknown as ChatMessage;
-
-                if (chatMessage.score) {
-                    return;
-                }
-
-                const p = await this.resolvePScore(false, chatMessage.sender, conversation as ChannelConversation, chatMessage, true);
-
-                if (!p) {
-                    await this.queueForFetching(chatMessage.sender.name, true, channel.id);
-                }
-              }
-            );
-        }
     }
 
 
-    async resolvePScore(
-      skipStore: boolean,
-      char: Character.Character,
-      conv: ChannelConversation,
-      msg?: Message,
-      populateAll: boolean = true
-    ): Promise<CharacterCacheRecord | undefined> {
-      if (!core.characters.ownProfile) {
+    async resolvePScore(skipStore: boolean,
+                        char: ChatCharacter,
+                        conv: ChannelConversation,
+                        msg?: Message,
+                        populateAll: boolean = true
+                       ): Promise<CharacterCacheRecord | undefined> {
+      if (!core.characters.ownProfile)
           return undefined;
-      }
 
       // this is done here so that the message will be rendered correctly when cache is hit
-      let p: CharacterCacheRecord | undefined;
+      let p = await core.cache.profileCache.get(char.name, skipStore, conv.channel.name) ?? undefined;
 
-      p = await core.cache.profileCache.get(
-          char.name,
-          skipStore,
-          conv.channel.name
-      ) || undefined;
-
-      if ((p) && (msg)) {
-          // if (p.matchScore === 0) {
-          //     console.log(`Fetched score 0 for character ${char.name}`);
-          //
-          //     p.matchScore = ProfileCache.score(p.character);
-          //
-          //     await core.cache.profileCache.register(p.character, false);
-          //
-          //     console.log(`Re-scored character ${char.name} to ${p.matchScore}`);
-          // }
-
+      if (p && msg) {
           msg.score = p.match.matchScore;
           msg.filterMatch = p.match.isFiltered;
 
+          if (populateAll) this.scoreAllConversations(char.name, p.match.matchScore, p.match.isFiltered);
+      }
 
       // Undefined return is legacy code and should be updated to just use null.
       return p;
     }
 
+    // private normalAction(msg: Message): msg is ChatMessage {
+    //     return msg.type !== Message.Type.Event // No `sender`.
+    //         && msg.type !== Message.Type.Ad    // Already handled.
+    //         && msg.type !== Message.Type.Bcast // Do not decorate broadcasts.
+    //         && msg.type !== Message.Type.Warn;  // Do not decorate warnings.
+    // }
+
 
     // tslint:disable-next-line: prefer-function-over-method
-    public populateAllConversationsWithScore(characterName: string, score: number, isFiltered: boolean): void {
-        _.each(
-            core.conversations.channelConversations,
-            (ch: ChannelConversation) => {
-                _.each(
-                    ch.messages, (m: Conversation.Message) => {
-                        if ((m.type === Message.Type.Ad) && (m.sender) && (m.sender.name === characterName)) {
-                            // console.log('Update score', score, ch.name, m.sender.name, m.text, m.id);
+    public scoreAllConversations(characterName: string, score: number, isFiltered: boolean): void {
+        // Actually none of this seems to change anything with ads or messages.
+        core.conversations.channelConversations.forEach(ch => {
+            ch.messages.forEach(m => {
+                if (m.type === Message.Type.Ad && m.sender.name === characterName) {
+                    // console.log('Update score', score, ch.name, m.sender.name, m.text, m.id);
 
-                            m.score = score;
-                            m.filterMatch = isFiltered;
-                        }
-                    }
-                );
-            }
-        );
+                    m.score = score;
+                    m.filterMatch = isFiltered;
+                }
+                // This is called when you reset your settings.
+                // else if (this.normalAction(m) && m.sender.name === characterName) {
+                //     m.score = score;
+                //     m.filterMatch = isFiltered;
+                // }
+            });
+        });
     }
 
 

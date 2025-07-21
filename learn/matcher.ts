@@ -1192,16 +1192,11 @@ export class Matcher {
                     || bucket === 'negative' && (yourKinkValue === 'no' || yourKinkValue === 'maybe')
                     || bucket === 'positive' && (yourKinkValue === 'favorite' || yourKinkValue === 'yes');
 
-                if (isBucketMatch && !isExcluded) {
+                if (isBucketMatch && !isExcluded)
                     accum.total += 1;
-                }
 
-                if (
-                    !(theirKinkId in theirKinks)
-                    || isExcluded
-                ) {
+                if (!(theirKinkId in theirKinks) || isExcluded)
                     return accum;
-                }
 
                 const theirKinkValue = theirKinks[theirKinkId];
 
@@ -1224,8 +1219,7 @@ export class Matcher {
 
         result.weighted = result.count === 0 || Math.abs(result.score) < 1
             ? 0
-            :
-            Math.log(result.total) * Math.log(Math.abs(result.score)) * Math.sign(result.score)
+            : Math.log(result.total) * Math.log(Math.abs(result.score)) * Math.sign(result.score)
                 // (Math.log(result.count) / Math.log(kinkMatchWeights.logBase)) // log 8 base
                 // * (result.score / result.count)
         ;
@@ -1782,15 +1776,12 @@ export class UserListSorter {
 
         const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
 
-        ulslog.silly(
-            'userlist.sorter.genderfromkink',
-            {
-                character: c.name,
-                fchatGender: fchatGender,
-                kinkGender: gender,
-                pref: pref,
-            }
-        );
+        ulslog.silly('userlist.sorter.genderfromkink', {
+            character: c.name,
+            fchatGender: fchatGender,
+            kinkGender: gender,
+            pref: pref,
+        });
 
         if      (pref === KinkPreference.Favorite)
             return Scoring.MATCH;
@@ -1800,7 +1791,7 @@ export class UserListSorter {
             return Scoring.WEAK_MISMATCH;
         else if (pref === KinkPreference.No)
             return Scoring.MISMATCH;
-        else     // null
+        else    // null
             return null;
     }
 
@@ -1812,17 +1803,14 @@ export class UserListSorter {
         // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
         const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
 
-        ulslog.silly(
-            'userlist.sorter.genderfromorientation',
-            {
-                character: c.name,
-                fchatGender: fchatGender,
-                myGender: myGender,
-                orientation: orientation,
-                theirGender: theirGender,
-                score: score,
-            }
-        );
+        ulslog.silly('userlist.sorter.genderfromorientation', {
+            character: c.name,
+            fchatGender: fchatGender,
+            myGender: myGender,
+            orientation: orientation,
+            theirGender: theirGender,
+            score: score,
+        });
 
         return score;
     }

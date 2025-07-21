@@ -54,6 +54,7 @@ async function characterData(name: string | undefined, id: number = -1, skipEven
 // @ts-ignore
 async function executeCharacterData(name: string | undefined, id: number = -1, skipEvent: boolean = false): Promise<Character> {
     const data = await core.connection.queryApi<CharacterInfo & {
+        is_self: boolean,
         badges: string[],
         customs_first: boolean,
         character_list: { id: number, name: string }[],
@@ -128,10 +129,10 @@ async function executeCharacterData(name: string | undefined, id: number = -1, s
             timezone:    data.timezone,
             deleted:     false
         },
+        settings:       data.settings,
+        badges:         data.badges,
         memo:           data.memo,
         character_list: data.character_list,
-        badges:         data.badges,
-        settings:       data.settings,
         bookmarked:     core.characters.get(data.name).isBookmarked,
         self_staff:     false
     };
