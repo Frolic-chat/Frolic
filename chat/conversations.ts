@@ -945,7 +945,9 @@ export default function(this: any): Interfaces.State {
             return;
         }
 
-        EventBus.$emit('private-message', { message });
+        // This was never implemented, but it might be a worthwhile entry point.
+        // It only ever had a hook in cache-manager.
+        // EventBus.$emit('private-message', { message });
 
         const conv = state.getPrivate(char);
         await conv.addMessage(message);

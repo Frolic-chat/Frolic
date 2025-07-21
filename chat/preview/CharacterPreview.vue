@@ -98,8 +98,8 @@ import {
   TagId
 } from '../../learn/matcher-types';
 import { BBCodeView } from '../../bbcode/view';
-import { EventBus } from './event-bus';
-import { Character, CustomKink } from '../../interfaces';
+import { EventBus, CharacterScoreEvent } from './event-bus';
+import { CustomKink } from '../../interfaces';
 import { testSmartFilters } from '../../learn/filter/smart-filter';
 import { smartFilterTypes } from '../../learn/filter/types';
 import { Conversation } from '../interfaces';
@@ -155,7 +155,7 @@ export default class CharacterPreview extends Vue {
   TagId = TagId;
   Score = Score;
 
-  scoreWatcher: ((event: any) => void) | null = null;
+  scoreWatcher: ((event: CharacterScoreEvent) => void) | null = null;
   customs?: CustomKinkWithScore[];
 
   conversation?: Conversation.Message[];
@@ -171,16 +171,11 @@ export default class CharacterPreview extends Vue {
   @Hook('mounted')
   mounted(): void {
     // tslint:disable-next-line no-unsafe-any no-any
-    this.scoreWatcher = (event: {character: Character, score: number}): void => {
+    this.scoreWatcher = (e: CharacterScoreEvent): void => {
         // console.log('scoreWatcher', event);
 
-        if (
-            (event.character)
-            && (this.characterName)
-            && (event.character.name === this.characterName)
-        ) {
-          this.load(this.characterName, true);
-        }
+        if (this.characterName && e.profile.character.name === this.characterName)
+            this.load(this.characterName, true);
     };
 
     EventBus.$on('character-score', this.scoreWatcher);
