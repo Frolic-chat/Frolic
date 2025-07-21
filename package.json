@@ -85,6 +85,8 @@
   },
   "scripts": {
     "watch": "cd electron && yarn watch",
-    "start": "cd electron && yarn start"
+    "start": "cd electron && yarn start",
+    "pack-all": "cd electron && yarn pack-all",
+    "devtools": "node ./node_modules/.bin/vue-devtools"
   }
 }

@@ -54,6 +54,11 @@ import {GeneralSettings /*, nativeRequire*/ } from './common';
 import {Logs, SettingsStore} from './filesystem';
 import Notifications from './notifications';
 import * as SlimcatImporter from './importer';
+
+// This is a noble attempt but none of the components show unless I tag directly into the html.
+// import { connect as vueDevToolsInit } from '@vue/devtools';
+// if (process.env.NODE_ENV === 'development') vueDevToolsInit('http://localhost', '8098');
+
 import Index from './Index.vue';
 
 import Logger from 'electron-log/renderer';
