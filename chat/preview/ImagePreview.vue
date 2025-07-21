@@ -47,7 +47,7 @@
     import {Component, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../core';
-    import { EventBus, EventBusEvent } from './event-bus';
+    import { EventBus, ImagePreviewEvent, ImageToggleEvent, LogDetailsEvent } from './event-bus';
     import {domain} from '../../bbcode/core';
     import {ImageDomMutator} from './image-dom-mutator';
 
@@ -139,15 +139,15 @@
             // tslint:disable-next-line:no-floating-promises
             this.jsMutator.init();
 
-            EventBus.$on('imagepreview-dismiss', (eventData: EventBusEvent) => {
+            EventBus.$on('imagepreview-dismiss', (e: ImagePreviewEvent) => {
                 // console.log('Event dismiss', eventData.url);
-                this.dismiss(this.negotiateUrl(eventData.url as string || ''), eventData.force as boolean);
+                this.dismiss(this.negotiateUrl(e.url), e.force);
             });
 
-            EventBus.$on('imagepreview-show', (eventData: EventBusEvent) => {
+            EventBus.$on('imagepreview-show', (e: ImagePreviewEvent) => {
                 // console.log('Event show', eventData.url);
 
-                const url = this.negotiateUrl(eventData.url as string || '');
+                const url = this.negotiateUrl(e.url);
                 const isInternalPreview = CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER.test(url);
 
                 if (
@@ -160,22 +160,27 @@
                 this.show(url);
             });
 
-            EventBus.$on('imagepreview-toggle-stickyness', (eventData: EventBusEvent) => {
-                if (!core.state.settings.risingLinkPreview) {
+            /**
+             * Also hides with `force`.
+             */
+            EventBus.$on('imagepreview-toggle-sticky', (e: ImageToggleEvent) => {
+                if (!core.state.settings.risingLinkPreview)
                     return;
+
+                if (!this.visible)
+                    return;
+
+                if (e.force)
+                    this.hide();
+
+                if (e.url) {
+                    const eventUrl = this.jsMutator.mutateUrl(this.negotiateUrl(e.url));
+
+                    if (this.url === eventUrl)
+                        this.sticky = !this.sticky;
                 }
-
-                const eventUrl = this.jsMutator.mutateUrl(this.negotiateUrl(eventData.url as string || ''));
-
-                if (
-                    ((eventData.force === true) || (this.url === eventUrl))
-                    && (this.visible)
-                ) {
+                else if (e.force) {
                     this.sticky = !this.sticky;
-
-                    if (eventData.force) {
-                        this.hide();
-                    }
                 }
             });
 
@@ -188,25 +193,29 @@
             // );
 
             webview.addEventListener(
-                'update-target-url', // 'did-navigate', // 'dom-ready',
-                (event: EventBusEvent) => {
+                'update-target-url',
+                // 'did-navigate',
+                // 'dom-ready',
+                (e: LogDetailsEvent) => {
                     const url = webview.getURL();
                     const js = this.jsMutator.getMutatorJsForSite(url, 'update-target-url');
 
                     // tslint:disable-next-line
-                    this.executeJavaScript(js, 'update-target-url', event);
+                    this.executeJavaScript(js, 'update-target-url', e);
                 }
             );
 
 
             webview.addEventListener(
-                'dom-ready', // 'did-navigate', // 'dom-ready',
-                (event: EventBusEvent) => {
+                'dom-ready',
+                // 'did-navigate',
+                // 'dom-ready',
+                (e: LogDetailsEvent) => {
                     const url = webview.getURL();
                     const js = this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 
                     // tslint:disable-next-line
-                    this.executeJavaScript(js, 'dom-ready', event);
+                    this.executeJavaScript(js, 'dom-ready', e);
 
                     this.setState('loaded');
                 }
@@ -215,10 +224,7 @@
 
             webview.addEventListener(
                 'did-fail-load',
-                (event: Event) => {
-
-                    const e = event as DidFailLoadEvent;
-
+                (e: DidFailLoadEvent) => {
                     if (e.errorCode !== -3) {
                         this.setState('error'); // -3 is a weird error code, not sure why it occurs
                     }
@@ -232,7 +238,7 @@
                                 || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 
                             // tslint:disable-next-line
-                            this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', event);
+                            this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
                             return;
                         }
 
@@ -259,7 +265,7 @@
                     const js = this.jsMutator.getErrorMutator(e.errorCode, e.errorDescription);
 
                     // tslint:disable-next-line
-                    this.executeJavaScript(js, 'did-fail-load', event);
+                    this.executeJavaScript(js, 'did-fail-load', e);
                 }
             );
 

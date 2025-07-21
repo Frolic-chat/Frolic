@@ -74,7 +74,7 @@ export default class IconView extends Vue {
         //   return;
         // }
 
-        EventBus.$emit('imagepreview-toggle-stickyness', {url: this.getCharacterUrl()});
+        EventBus.$emit('imagepreview-toggle-sticky', {url: this.getCharacterUrl()});
     }
 }
 </script>

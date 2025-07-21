@@ -63,7 +63,7 @@
         }
 
         toggleStickyness(): void {
-            EventBus.$emit('imagepreview-toggle-stickyness', {url: this.url});
+            EventBus.$emit('imagepreview-toggle-sticky', {url: this.url});
         }
 
         handleClick(e: MouseEvent): void {

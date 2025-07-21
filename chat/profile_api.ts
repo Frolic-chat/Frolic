@@ -137,7 +137,7 @@ async function executeCharacterData(name: string | undefined, id: number = -1, s
     };
 
     if (!skipEvent)
-        EventBus.$emit('character-data', { character: charData });
+        EventBus.$emit('character-data', { profile: charData });
 
     return charData;
 }

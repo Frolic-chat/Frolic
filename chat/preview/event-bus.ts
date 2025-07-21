@@ -1,8 +1,10 @@
-import { Character } from '../../site/character_page/interfaces';
+import { Character, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
+import { Settings } from '../interfaces';
 import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
+import { CharacterCacheRecord } from '../../learn/profile-cache';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('event-bus');
@@ -18,7 +20,7 @@ const log = Logger.scope('event-bus');
 /**
  * 'imagepreview-dismiss': {url: string}
  * 'imagepreview-show': {url: string}
- * 'imagepreview-toggle-stickyness': {url: string}
+ * 'imagepreview-toggle-sticky': {url: string}
  *
  * 'own-profile-update': {characterProfile: CharacterProfile (site/character_page/interfaces)}
  * 'character-data': {character: Character}
@@ -37,33 +39,62 @@ const log = Logger.scope('event-bus');
  * 'error': { source: string, type?: string, message: string }
  */
 
-// tslint:disable: no-any
-export interface EventBusEvent { [key: string]: any; }
+export interface EmptyEvent {}
 
-export interface CharacterProfileEvent extends EventBusEvent {
-    profile: Character;
+export interface EventBusEvent { [key: string]: any }
+
+export interface LogDetailsEvent { [key: string]: any }
+
+export interface ImagePreviewEvent {
+    url: string;
+    force?: boolean;
 }
 
-export interface ChannelMessageEvent extends EventBusEvent {
+// Tried a Multiselect (to adapt url based on hide) but no bueno.
+export type ImageToggleEvent =
+    | { url?: string, force:  true  }
+    | { url:  string, force?: false };
+
+export interface WordDefinitionEvent {
+     lookupWord: string;
+     x: number;
+     y: number;
+}
+
+export interface ChannelAdEvent extends ChannelMessageEvent {
+    profile?: CharacterCacheRecord | undefined;
+}
+
+export interface ChannelMessageEvent {
     message: Message;
     channel: ChannelConversation;
 }
 
-// tslint:disable-next-line no-empty-interface
-export interface ChannelAdEvent extends ChannelMessageEvent {}
-
-export interface CharacterDataEvent {
-    character: Character;
+export interface PrivateMessageEvent {
+    message: Message;
 }
 
-export interface SelectConversationEvent extends EventBusEvent {
+export interface CharacterScoreEvent extends CharacterDataEvent {
+    score: number;
+    isFiltered: boolean;
+}
+
+export interface CharacterDataEvent {
+    profile: Character;
+}
+
+export interface SelectConversationEvent {
     conversation: Conversation | null;
 }
 
-// tslint:disable-next-line no-empty-interface
-export interface NoteCountsUpdate extends EventBusEvent, NoteCheckerCount {}
+export interface NoteCountsEvent extends NoteCheckerCount {}
 
-export interface ErrorEvent extends EventBusEvent {
+export interface MemoEvent {
+    character: string;
+    memo: CharacterMemo;
+}
+
+export interface ErrorEvent {
     source:  string,
     type?:   string,
     message: string,
@@ -74,7 +105,27 @@ export type EventCallback = (data: any) => void | Promise<void>;
 class EventBusManager {
     private callbacks: Record<string, EventCallback[]> = {};
 
+    $on(event: 'core-connected', callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'configuration-update', callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'error', callback: (e: ErrorEvent) => void | Promise<void>): void;
 
+    $on(event: 'word-definition', callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
+
+    $on(event: 'own-profile-update', callback: (e: CharacterDataEvent) => void | Promise<void>): void;
+    $on(event: 'note-counts-update', callback: () => void | Promise<void>): void;
+    $on(event: 'character-data', callback: (e: CharacterDataEvent) => void | Promise<void>): void;
+    $on(event: 'character-score', callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
+    $on(event: 'character-memo', callback: (e: MemoEvent) => void | Promise<void>): void;
+
+    $on(event: 'channel-message', callback: (e: ChannelMessageEvent) => void | Promise<void>): void;
+    $on(event: 'channel-ad', callback: (e: ChannelAdEvent) => void | Promise<void>): void;
+    $on(event: 'private-message', callback: (e: PrivateMessageEvent) => void | Promise<void>): void;
+    $on(event: 'select-conversation', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
+    $on(event: 'conversation-load-more', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
+
+    $on(event: 'imagepreview-show' | 'imagepreview-dismiss', callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
+    $on(event: 'imagepreview-toggle-sticky', callback: (e: ImageToggleEvent) => void | Promise<void>): void;
+    //$on(event: string, callback: EventCallback): void;
     $on(event: string, callback: EventCallback): void {
         this.$off(event, callback);
 
@@ -119,7 +170,8 @@ class EventBusManager {
         });
     }
 
-
+    // The fancy notes api has a way to lock these and `$on` signatures
+    // together, so come back and do that once it's implemented.
     $once(event: string, callback: EventCallback): void {
         if (!(event in this.callbacks)) this.callbacks[event] = [];
 
@@ -139,6 +191,7 @@ class EventBusManager {
                 });
         };
 
+        // @ts-expect-error No overload for generic string; there's a fancy way to implement $on/$once argument syncing that we can do later to fix this.
         this.$on(event, onceWrapper);
 
         log.debug('eventbus.once', {
@@ -148,7 +201,28 @@ class EventBusManager {
     }
 
 
-    $emit(event: string, data: EventBusEvent): void {
+    $emit(event: 'core-connected', data: Settings): void;
+    $emit(event: 'configuration-update', data: Settings): void;
+    $emit(event: 'error', data: ErrorEvent): void;
+
+    $emit(event: 'word-definition', data: WordDefinitionEvent): void;
+
+    $emit(event: 'own-profile-update', data: CharacterDataEvent): void;
+    $emit(event: 'note-counts-update', data: NoteCountsEvent): void;
+    $emit(event: 'character-data', data: CharacterDataEvent): void;
+    $emit(event: 'character-score', data: CharacterScoreEvent): void;
+    $emit(event: 'character-memo', data: MemoEvent): void;
+
+    $emit(event: 'channel-message', data: ChannelMessageEvent): void;
+    $emit(event: 'channel-ad', data: ChannelAdEvent): void;
+    $emit(event: 'private-message', data: PrivateMessageEvent): void;
+    $emit(event: 'select-conversation', data: SelectConversationEvent): void;
+    $emit(event: 'conversation-load-more', data: SelectConversationEvent): void;
+
+    $emit(event: 'imagepreview-show' | 'imagepreview-dismiss', data: ImagePreviewEvent): void;
+    $emit(event: 'imagepreview-toggle-sticky', data: ImageToggleEvent): void;
+    $emit(event: 'character-score', data: CharacterScoreEvent): void;
+    $emit(event: string, data?: EventBusEvent): void {
         (this.callbacks[event] || []).forEach(cb => cb(data));
     }
 
