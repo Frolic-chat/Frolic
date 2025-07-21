@@ -391,9 +391,6 @@
 
             log.debug('init.window.tab.add.remote');
 
-            // tab devtools
-            // view.webContents.openDevTools();
-
             if (remote.process.argv.includes('--devtools')) {
               view.webContents.openDevTools({ mode: 'detach' });
             }
@@ -448,10 +445,7 @@
             tab.view.setBounds(getWindowBounds());
             tab.view.webContents.focus();
 
-            // tab.view.webContents.send('active-tab', { webContentsId: tab.view.webContents.id });
-            _.each(this.tabs, (t) => t.view.webContents.send(t === tab ? 'active-tab' : 'inactive-tab'));
-
-            // electron.ipcRenderer.send('active-tab', { webContentsId: tab.view.webContents.id });
+            this.tabs.forEach(t => t.view.webContents.send(t === tab ? 'active-tab' : 'inactive-tab'));
         }
 
         remove(tab: Tab, shouldConfirm: boolean = true): void {

@@ -405,12 +405,6 @@
 
             log.debug('init.chat.listeners.done');
 
-            /*if (process.env.NODE_ENV !== 'production') {
-                const dt = require('@vue/devtools');
-
-                dt.connect();
-            }*/
-
             this.createHookFinished = true;
         }
 

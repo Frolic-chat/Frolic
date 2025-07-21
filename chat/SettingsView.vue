@@ -652,7 +652,7 @@
                     c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
 
                     if (oldFiltered !== c.match.isFiltered) {
-                        core.cache.populateAllConversationsWithScore(c.character.character.name, c.match.matchScore, c.match.isFiltered);
+                        core.cache.scoreAllConversations(c.character.character.name, c.match.matchScore, c.match.isFiltered);
                     }
                 }
             );

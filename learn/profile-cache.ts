@@ -87,22 +87,22 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         //     this.lastFetch = Date.now();
         // }
 
-        const pd = await this.store.getProfile(name);
+        const profile_data = await this.store.getProfile(name);
 
-        if (!pd)
+        if (!profile_data)
             return null;
 
-        const cacheRecord = await this.register(pd.profileData, true);
+        const cacheRecord = await this.register(profile_data.profileData, true);
 
-        cacheRecord.lastFetched = new Date(pd.lastFetched * 1000);
-        cacheRecord.added = new Date(pd.firstSeen * 1000);
+        cacheRecord.lastFetched = new Date(profile_data.lastFetched * 1000);
+        cacheRecord.added = new Date(profile_data.firstSeen * 1000);
 
         cacheRecord.meta = {
-            lastMetaFetched: pd.lastMetaFetched ? new Date(pd.lastMetaFetched * 1000) : null,
-            groups: pd.groups,
-            friends: pd.friends,
-            images: pd.images,
-            guestbook: pd.guestbook
+            lastMetaFetched: profile_data.lastMetaFetched ? new Date(profile_data.lastMetaFetched * 1000) : null,
+            groups: profile_data.groups,
+            friends: profile_data.friends,
+            images: profile_data.images,
+            guestbook: profile_data.guestbook
         };
 
         /* cacheRecord.counts = {

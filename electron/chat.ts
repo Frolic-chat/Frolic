@@ -30,10 +30,6 @@
  * @see {@link https://github.com/f-list/exported|GitHub repo}
  */
 
-// import { DebugLogger } from './debug-logger';
-// // @ts-ignore
-// const dl = new DebugLogger('chat');
-
 import * as electron from 'electron';
 
 import * as remote from '@electron/remote';
@@ -72,19 +68,6 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
     if(e.ctrlKey && e.shiftKey && getKey(e) === Keys.KeyI)
         remote.getCurrentWebContents().toggleDevTools();
 });
-
-/* process.env.SPELLCHECKER_PREFER_HUNSPELL = '1';
-const sc = nativeRequire<{
-    Spellchecker: new() => {
-        add(word: string): void
-        remove(word: string): void
-        isMisspelled(x: string): boolean
-        setDictionary(name: string | undefined, dir: string): void
-        getCorrectionsForMisspelling(word: string): ReadonlyArray<string>
-    }
-}>('spellchecker/build/Release/spellchecker.node');
-const spellchecker = new sc.Spellchecker();*/
-
 
 Axios.defaults.params = {__fchat: `desktop/${remote.app.getVersion()}`};
 

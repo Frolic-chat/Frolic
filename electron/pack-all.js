@@ -11,15 +11,7 @@ const distDir = path.join(__dirname, 'dist');
 //const isBeta = pkg.version.indexOf('beta') !== -1;
 const modules = path.join(__dirname, 'app', 'node_modules');
 
-// const spellcheckerPath = 'spellchecker/build/Release/spellchecker.node',
-//     integerPath = 'integer/build/Release/integer.node',
-//     betterSqlite3 = 'better-sqlite3/build/Release/better_sqlite3.node';
-//
-// mkdir(path.dirname(path.join(modules, spellcheckerPath)));
-// fs.copyFileSync(require.resolve(spellcheckerPath), path.join(modules, spellcheckerPath));
-
 const includedPaths = [
-    // 'spellchecker/build/Release/spellchecker.node',
     'throat',
     'node-fetch',
     'jquery',

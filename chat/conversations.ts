@@ -768,7 +768,7 @@ function globallyImportant(fromChar: Character.Character): boolean {
     return false;
 }
 
-export async function testSmartFilterForPrivateMessage(fromChar: Character.Character, originalMessage?: Message): Promise<boolean> {
+export async function shouldFilterPrivate(fromChar: Character.Character, originalMessage?: Message): Promise<boolean> {
     const cachedProfile = core.cache.profileCache.getSync(fromChar.name) || await core.cache.profileCache.get(fromChar.name);
     const firstTime = cachedProfile && !cachedProfile.match.autoResponded;
 
@@ -824,7 +824,7 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
         if (core.state.settings.logMessages && originalMessage) {
             await withNeutralVisibilityPrivateConversation(
               fromChar,
-              async(p) => core.logs.logMessage(p, originalMessage)
+              async p => core.logs.logMessage(p, originalMessage)
             );
         }
 
@@ -939,7 +939,7 @@ export default function(this: any): Interfaces.State {
         if(char.isIgnored) return connection.send('IGN', {action: 'notify', character: data.character});
         const message = createMessage(MessageType.Message, char, decodeHTML(data.message), time);
 
-        if (await testSmartFilterForPrivateMessage(char, message) === true) {
+        if (await shouldFilterPrivate(char, message) === true) {
             return;
         }
 
