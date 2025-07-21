@@ -236,7 +236,7 @@ export class IndexedStore implements PermanentIndexedStore {
         const store = tx.objectStore(IndexedStore.STORE_NAME);
         const idx = store.index(IndexedStore.LAST_FETCHED_INDEX_NAME);
 
-        const totalRecords = await promisifyRequest<number>(store.count());
+        //const totalRecords = await promisifyRequest<number>(store.count());
 
         const expirationTime = Math.round(Date.now() / 1000) - (daysToExpire * 24 * 60 * 60);
         const getAllKeysRequest = idx.getAllKeys(IDBKeyRange.upperBound(expirationTime));

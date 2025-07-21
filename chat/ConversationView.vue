@@ -72,10 +72,10 @@
 
                 <div class="btn-toolbar">
                     <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                            <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                                {{l('channel.mode.' + mode)}}
-                            </button>
-                            <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                            {{l('channel.mode.' + mode)}}
+                        </button>
+                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
                         <button class="dropdown-item" :class="{ selected: showNonMatchingAds }" type="button" @click="toggleNonMatchingAds()">
                             {{l('channel.ads.incompatible')}}
                         </button>
