@@ -78,6 +78,7 @@ export class SiteSession {
         this.request = request.defaults({ jar: request.jar() });
         this.csrf = '';
 
+        // Querying 'messages.php' (which returns a page) still pings the site checker for some reason.
         const res = await this.get('');
 
         if (res.statusCode !== 200)
