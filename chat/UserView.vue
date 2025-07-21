@@ -8,7 +8,7 @@ import Vue from 'vue';
 import {Channel, Character} from '../fchat';
 import { Score } from '../learn/matcher';
 import core from './core';
-import { EventBus } from './preview/event-bus';
+import { EventBus, CharacterScoreEvent } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import { characterImage } from './common';
 import { CharacterCacheRecord } from '../learn/profile-cache';
@@ -164,7 +164,7 @@ export default class UserView extends Vue {
     avatarUrl: string | null = null;
 
     // tslint:disable-next-line no-any
-    scoreWatcher: ((event: any) => void) | null = null;
+    scoreWatcher: ((event: CharacterScoreEvent) => void) | null = null;
 
     @Hook('mounted')
     onMounted(): void {
@@ -176,11 +176,11 @@ export default class UserView extends Vue {
             }
 
             // tslint:disable-next-line no-unsafe-any no-any
-            this.scoreWatcher = (event: any): void => {
+            this.scoreWatcher = (event: CharacterScoreEvent): void => {
                 // console.log('scoreWatcher', event);
 
                 // tslint:disable-next-line no-unsafe-any no-any
-                if (event.character && event.character.character.name === this.character.name) {
+                if (event.profile.character.name === this.character.name) {
                     this.update();
 
                     if (this.scoreWatcher) {
@@ -285,7 +285,7 @@ export default class UserView extends Vue {
         if (!this.preview)
             return;
 
-        EventBus.$emit('imagepreview-toggle-stickyness', {url: this.getCharacterUrl()});
+        EventBus.$emit('imagepreview-toggle-sticky', {url: this.getCharacterUrl()});
     }
 }
 </script>
