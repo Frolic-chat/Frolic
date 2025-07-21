@@ -84,15 +84,9 @@
 
 
         describeSearch(searchData: SearchData | ExtendedSearchData): string {
-            return _.join(
-                _.map(
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    _.flatten(_.map(searchData as any)),
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    (v) => _.get(v, 'name', v)
-                ),
-                ', '
-            );
+            return (Object.values(searchData) as ExtendedSearchData[keyof ExtendedSearchData][])
+                .flat().map(v => typeof v === 'string' ? v : v.name)
+                .join(', ');
         }
 
 
