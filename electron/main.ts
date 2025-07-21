@@ -826,7 +826,7 @@ function onReady(): void {
     });
     electron.ipcMain.on('connect', (e: Electron.IpcMainEvent, character: string) => { //hack
         // This is the "not logged in" check.
-        if (characters.indexOf(character) === -1) {
+        if (!characters.includes(character)) {
             log.debug('ipcMain.connect.notLoggedIn');
             characters.push(character); // add to "logged in"
             e.returnValue = true;
