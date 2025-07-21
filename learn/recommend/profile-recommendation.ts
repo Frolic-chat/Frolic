@@ -206,13 +206,13 @@ export class ProfileRecommendationAnalyzer {
         }
 
         if (p.furryPreference === FurryPreference.FurriesOnly) {
-            if (Matcher.getKinkPreference(c, Kink.Humans)! > 0) {
+            if ((Matcher.getKinkPreference(c, Kink.Humans) ?? 0) > 0) {
                 this.add('KINK_MISMATCH_FURRIES_ONLY_HUMAN', ProfileRecommendationLevel.NOTE, l('phelper.mismatch'), l('phelper.mismatchFurriesOnly'));
             }
         }
 
         if (p.furryPreference === FurryPreference.HumansOnly) {
-            if (Matcher.getKinkPreference(c, Kink.AnimalsFerals)! >= 0 || Matcher.getKinkPreference(c, Kink.Zoophilia)! >= 0) {
+            if ((Matcher.getKinkPreference(c, Kink.AnimalsFerals) ?? 0) >= 0 || (Matcher.getKinkPreference(c, Kink.Zoophilia) ?? 0) >= 0) {
                 // do nothing
             } else {
                 const likedAnthros = this.getLikedAnimals();
@@ -226,7 +226,7 @@ export class ProfileRecommendationAnalyzer {
         if (p.furryPreference !== FurryPreference.HumansOnly) {
             const likedAnthros = this.getLikedAnimals();
 
-            if (likedAnthros && !_.difference(likedAnthros, [Kink.AnthroCharacters, Kink.Mammals, Kink.Humans] as any as Species[])) {
+            if ([Kink.AnthroCharacters, Kink.Mammals, Kink.Humans].every(s => likedAnthros[s])) {
                 this.add('KINK_NO_SPECIES', ProfileRecommendationLevel.NOTE, l('phelper.addSpeciesPref1'), l('phelper.addSpeciesPref2'));
             }
         }
@@ -235,6 +235,6 @@ export class ProfileRecommendationAnalyzer {
     protected getLikedAnimals(): Species[] {
         const c = this.profile.character;
 
-        return _.filter(mammalSpecies, (species) => Matcher.getKinkPreference(c, species)! > 0);
+        return mammalSpecies.filter(species => (Matcher.getKinkPreference(c, species) ?? 0) > 0);
     }
 }

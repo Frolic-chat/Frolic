@@ -310,8 +310,7 @@
             // Allow emitted variations for custom buttons.
             this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
             // noinspection TypeScriptValidateTypes
-            if(button.handler !== undefined) {
-                // tslint:ignore-next-line:no-any
+            if(button.handler) {
                 return button.handler.call(this as any, this);
             }
             if(button.startText === undefined || withArgument)

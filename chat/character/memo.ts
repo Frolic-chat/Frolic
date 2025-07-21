@@ -23,9 +23,9 @@ export class MemoManager {
       await this.load(true);
     }
 
-    const response = await core.connection.queryApi('character-memo-save.php', {target: this.memo!.id, note: message});
+    const response = await core.connection.queryApi<{ note: string }>('character-memo-save.php', {target: this.memo!.id, note: message});
 
-    this.memo!.memo = (response as any).note;
+    this.memo!.memo = response.note ?? null;
 
     await this.updateStores();
   }

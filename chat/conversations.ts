@@ -774,8 +774,7 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
 
     if (
         !globallyImportant(fromChar) &&
-        cachedProfile &&
-        cachedProfile.match.isFiltered &&
+        cachedProfile?.match.isFiltered &&
         core.state.settings.risingFilter.autoReply &&
         !cachedProfile.match.autoResponded
     ) {
@@ -818,12 +817,11 @@ export async function testSmartFilterForPrivateMessage(fromChar: Character.Chara
 
     if (
         !globallyImportant(fromChar) &&
-        cachedProfile &&
-        cachedProfile.match.isFiltered &&
+        cachedProfile?.match.isFiltered &&
         core.state.settings.risingFilter.hidePrivateMessages &&
         firstTime // subsequent messages bypass this filter on purpose
     ) {
-        if (core.state.settings.logMessages && originalMessage && firstTime) {
+        if (core.state.settings.logMessages && originalMessage) {
             await withNeutralVisibilityPrivateConversation(
               fromChar,
               async(p) => core.logs.logMessage(p, originalMessage)

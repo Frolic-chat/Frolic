@@ -65,6 +65,8 @@ export interface MatchResultCharacterInfo {
 }
 
 export interface MatchResultScores {
+    // String keys fix Object.entries() broken inference
+    readonly [key: string]: Score;
     [key: number]: Score;
     [TagId.Orientation]: Score;
     [TagId.Gender]: Score;
@@ -347,13 +349,10 @@ export class Matcher {
 
     private static mergeResultScores(scores: MatchResultScores, results: MatchResultScores): void {
         Object.entries(scores)
-                .forEach(
-                    ([k, v]: [any, Score]) => {
-                        if (v.score !== Scoring.NEUTRAL
-                        && (!(k in results) || v.score < results[k].score))
-                            results[k] = v;
-                    }
-                );
+            .forEach(([k, v]) => {
+                if (v.score !== Scoring.NEUTRAL && (!(k in results) || v.score < results[k].score))
+                    results[Number(k)] = v;
+            });
     }
 
 
@@ -406,8 +405,8 @@ export class Matcher {
             }
 
             // Only neutral scores given
-            if ( yourScores.every((n: Scoring) => n === Scoring.NEUTRAL)
-            ||  theirScores.every((n: Scoring) => n === Scoring.NEUTRAL))
+            if ( yourScores.every(n => n.score === Scoring.NEUTRAL)
+            ||  theirScores.every(n => n.score === Scoring.NEUTRAL))
                 return Scoring.NEUTRAL;
         }
 
@@ -1178,10 +1177,12 @@ export class Matcher {
 
         // let missed = 0;
 
-        const result: any = _.reduce(
-            yourKinks,
-            (accum, yourKinkValue: any, yourKinkId: any) => {
-                const theirKinkId = yourKinkId in kinkComparisonSwaps ? kinkComparisonSwaps[yourKinkId] : yourKinkId;
+        const result: KinkBucketScore = Object.entries(yourKinks).reduce(
+            (accum, [yourKinkIdStr, yourKinkValue]) => {
+                const yourKinkId = Number(yourKinkIdStr);
+                const theirKinkId = yourKinkId in kinkComparisonSwaps
+                    ? kinkComparisonSwaps[yourKinkId]
+                    : yourKinkId;
 
                 const isExcluded = yourKinkId in kinkComparisonExclusions
                     || Store.shared.kinks[yourKinkId] && Store.shared.kinks[yourKinkId].kink_group in kinkComparisonExclusionGroups;
@@ -1202,19 +1203,20 @@ export class Matcher {
                     return accum;
                 }
 
-                const theirKinkValue = theirKinks[theirKinkId] as any;
+                const theirKinkValue = theirKinks[theirKinkId];
 
                 if (isBucketMatch) {
                     return {
                         score: accum.score + this.getKinkMatchScore(yourKinkValue, theirKinkValue),
                         count: accum.count + 1,
                         total: accum.total,
+                        weighted: 0,
                     };
                 }
 
                 return accum;
             },
-            { score: 0, count: 0, total: 0 }
+            { score: 0, count: 0, total: 0, weighted: 0 }
         );
 
         // const yourBucketCounts = this.countKinksByBucket(yourKinks);

@@ -252,8 +252,7 @@ export class ImageDomMutator {
                 if (!u)
                     return url;
 
-                // tslint:disable-next-line no-any
-                (u.query as any).enterAgree = 1;
+                u.query.enterAgree = '1';
 
                 u.search = null;
 
