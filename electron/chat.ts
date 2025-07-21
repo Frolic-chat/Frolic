@@ -228,14 +228,14 @@ function onSettings(s: GeneralSettings): void {
     // for(const word of s.customDictionary) spellchecker.add(word);
 }
 
-electron.ipcRenderer.on('settings', (_: Electron.IpcRendererEvent, s: GeneralSettings) => onSettings(s));
+electron.ipcRenderer.on('settings', (_e, s: GeneralSettings) => onSettings(s));
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 let settings = <GeneralSettings>JSON.parse(params['settings']!);
 
 // console.log('SETTINGS', settings);
 
-if(params['import'] !== undefined)
+if (params['import'] !== undefined) {
     try {
         if(SlimcatImporter.canImportGeneral() && confirm(l('importer.importGeneral'))) {
             SlimcatImporter.importGeneral(settings);
@@ -244,6 +244,7 @@ if(params['import'] !== undefined)
     } catch {
         alert(l('importer.error'));
     }
+}
 onSettings(settings);
 
 

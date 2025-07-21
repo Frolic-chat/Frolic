@@ -423,10 +423,9 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,
             spellcheck: true,
-            enableRemoteModule: true,
             contextIsolation: false,
             partition: 'persist:fchat',
-        } as any
+        }
     };
 
     const browserWindow = new electron.BrowserWindow(windowProperties);
@@ -486,10 +485,7 @@ function onReady(): void {
             // {role: 'resetZoom'},
             {
                 label: l('action.resetZoom'),
-                click: (_m: electron.MenuItem, _w: electron.BrowserWindow) => {
-                    // log.info('MENU ZOOM0');
-                    // w.webContents.setZoomLevel(0);
-
+                click: () => {
                     zoomLevel = 0;
 
                     for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', 0);
@@ -500,9 +496,10 @@ function onReady(): void {
             {
                 // role: 'zoomIn',
                 label: l('action.zoomIn'),
-                click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
+                click: (_m, w) => {
+                    if (!w)
+                        return
 
-                    // log.info('MENU ZOOM+');
                     zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
                     // w.webContents.setZoomLevel(newZoom);
 
@@ -514,8 +511,10 @@ function onReady(): void {
             {
                 // role: 'zoomOut',
                 label: l('action.zoomOut'),
-                click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
-                    // log.info('MENU ZOOM-');
+                click: (_m, w) => {
+                    if (!w)
+                        return
+
                     zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
 
                     // w.webContents.setZoomLevel(newZoom);
@@ -564,19 +563,22 @@ function onReady(): void {
                 },
                 {
                     label: l('action.newTab'),
-                    click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
+                    click: (_m, w) => {
                         if (hasCompletedUpgrades && tabCount < 3) w.webContents.send('open-tab');
                     },
                     accelerator: 'CmdOrCtrl+t'
                 },
                 {
                     label: l('settings.logDir'),
-                    click: (_m, window: electron.BrowserWindow) => {
+                    click: (_m, window) => {
+                        if (!window)
+                            return;
+
                         const dir = electron.dialog.showOpenDialogSync(
                             {defaultPath: settings.logDirectory, properties: ['openDirectory']}
                         );
 
-                        if (dir !== undefined) {
+                        if (dir) {
                             if (dir[0].startsWith(path.dirname(app.getPath('exe'))))
                                 return electron.dialog.showErrorBox(l('settings.logDir'), l('settings.logDir.inAppDir'));
 
@@ -600,8 +602,8 @@ function onReady(): void {
                     label: l('settings.closeToTray'),
                     type: 'checkbox',
                     checked: settings.closeToTray,
-                    click: (item: electron.MenuItem) => {
-                        settings.closeToTray = item.checked;
+                    click: m => {
+                        settings.closeToTray = m.checked;
                         setGeneralSettings(settings);
                     }
                 },
@@ -609,8 +611,8 @@ function onReady(): void {
                     label: l('settings.profileViewer'),
                     type: 'checkbox',
                     checked: settings.profileViewer,
-                    click: (item: electron.MenuItem) => {
-                        settings.profileViewer = item.checked;
+                    click: m => {
+                        settings.profileViewer = m.checked;
                         setGeneralSettings(settings);
                     }
                 },
@@ -628,8 +630,8 @@ function onReady(): void {
                     label: l('settings.hwAcceleration'),
                     type: 'checkbox',
                     checked: settings.hwAcceleration,
-                    click: (item: electron.MenuItem) => {
-                        settings.hwAcceleration = item.checked;
+                    click: m => {
+                        settings.hwAcceleration = m.checked;
                         setGeneralSettings(settings);
                     }
                 },
@@ -645,30 +647,26 @@ function onReady(): void {
                 // },
                 {
                     label: l('fixLogs.action'),
-                    click: (_m, window: electron.BrowserWindow) => window.webContents.send('fix-logs')
+                    click: (_m, w) => w?.webContents.send('fix-logs'),
                 },
 
                 { type: 'separator' },
                 {
                     label: l('action.logLevel'),
-                    submenu: logLevels
-                        .map((level: string) => (
-                            {
-                                checked: settings.risingSystemLogLevel === level,
-                                label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
-                                click: () => setSystemLogLevel(level as LogLevelOption),
-                                type: <'radio'>'radio'
-                            }
-                        )
-                    )
+                    submenu: logLevels.map(level => ({
+                        checked: settings.risingSystemLogLevel === level,
+                        label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
+                        click: () => setSystemLogLevel(level as LogLevelOption),
+                        type: <'radio'>'radio'
+                    })),
                 },
                 {
                     visible: platform === 'win32',
                     label: l('action.toggleHighContrast'),
                     type: 'checkbox',
                     checked: settings.risingDisableWindowsHighContrast,
-                    click: (item: electron.MenuItem) => {
-                        settings.risingDisableWindowsHighContrast = item.checked;
+                    click: m => {
+                        settings.risingDisableWindowsHighContrast = m.checked;
                         setGeneralSettings(settings);
                     }
                 },
@@ -680,9 +678,7 @@ function onReady(): void {
                 },
                 {
                     label: l('action.profile'),
-                    click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
-                        w.webContents.send('reopen-profile');
-                    },
+                    click: (_m, w) => w?.webContents.send('reopen-profile'),
                     accelerator: 'CmdOrCtrl+p'
                 },
 
@@ -692,9 +688,12 @@ function onReady(): void {
                 {
                     accelerator: platform === 'darwin' ? 'Cmd+Q' : undefined,
                     label: l('action.quit'),
-                    click(_m: electron.MenuItem, window: electron.BrowserWindow): void {
+                    click: (_m, window) => {
                         if (characters.length === 0)
                             return app.quit();
+
+                        if (!window)
+                            return;
 
                         const button = electron.dialog.showMessageBoxSync(window, {
                             message: l('chat.confirmLeave'),
@@ -707,7 +706,7 @@ function onReady(): void {
                         }
                     }
                 }
-            ] as electron.MenuItemConstructorOptions[]
+            ]
         },
         {
             label: `&${l('action.edit')}`,
@@ -718,8 +717,8 @@ function onReady(): void {
                 {role: 'cut'},
                 {role: 'copy'},
                 {role: 'paste'},
-                {role: 'selectall'}
-            ] as electron.MenuItemConstructorOptions[]
+                {role: 'selectAll'},
+            ],
         },
         viewItem,
         {
@@ -763,7 +762,7 @@ function onReady(): void {
 
                 const menu = electron.Menu.getApplicationMenu()!;
                 const item = menu.getMenuItemById(updateMenuItem.id);
-                if (item !== null) item.visible = true;
+                if (item) item.visible = true;
 
                 for (const w of windows) w.webContents.send('update-available', true);
             }
@@ -780,7 +779,7 @@ function onReady(): void {
 
                 const menu = electron.Menu.getApplicationMenu()!;
                 const item = menu.getMenuItemById(updateMenuItem.id);
-                if (item !== null) item.visible = true;
+                if (item) item.visible = true;
 
                 for (const w of windows) w.webContents.send('update-available', true);
             }
@@ -804,7 +803,7 @@ function onReady(): void {
     //#endregion
 
 
-    electron.ipcMain.on('tab-added', (_event: Electron.IpcMainEvent, id: number) => {
+    electron.ipcMain.on('tab-added', (_e, id: number) => {
         const webContents = electron.webContents.fromId(id);
         if (!webContents) {
             log.error('main.tab-added.error', 'Failed to have id when tab added, but still triggered tab-added. This is a weird error!');
@@ -825,39 +824,39 @@ function onReady(): void {
         settings.host = host;
         setGeneralSettings(settings);
     });
-    electron.ipcMain.on('connect', (e: Electron.IpcMainEvent, character: string) => { //hack
-        // This is the "not logged in" check.
-        if (characters.indexOf(character) === -1) {
-            log.debug('ipcMain.connect.notLoggedIn');
-            characters.push(character); // add to "logged in"
-            e.returnValue = true;
-            return true;
-        }
-        else {
+    electron.ipcMain.on('connect', (e, character: string) => { //hack
+        if (characters.includes(character)) { // Logged in already!
             log.debug('ipcMain.connect.alreadyLoggedIn');
             e.preventDefault();
             e.returnValue = false;
             return false;
         }
+        else {
+            log.debug('ipcMain.connect.notLoggedIn');
+            characters.push(character);
+            e.returnValue = true;
+            return true;
+        }
+
     });
-    electron.ipcMain.on('dictionary-add', (_event: Electron.IpcMainEvent, word: string) => {
+    electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
         // setGeneralSettings(settings);
         for (const w of windows) w.webContents.session.addWordToSpellCheckerDictionary(word);
     });
-    electron.ipcMain.on('dictionary-remove', (_event: Electron.IpcMainEvent /*, word: string*/) => {
+    electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
         // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
         // setGeneralSettings(settings);
     });
-    electron.ipcMain.on('disconnect', (_event: Electron.IpcMainEvent, character: string) => {
+    electron.ipcMain.on('disconnect', (_e, character: string) => {
         const index = characters.indexOf(character);
         if (index !== -1) characters.splice(index, 1);
     });
 
 
     const adCoordinator = new AdCoordinatorHost();
-    electron.ipcMain.on('request-send-ad', (event: electron.IpcMainEvent, adId: string) => (adCoordinator.processAdRequest(event, adId)));
+    electron.ipcMain.on('request-send-ad', (e, adId: string) => adCoordinator.processAdRequest(e, adId));
 
     const emptyBadge = electron.nativeImage.createEmpty();
     const badge = electron.nativeImage.createFromPath(
@@ -869,9 +868,9 @@ function onReady(): void {
         if (platform === 'darwin')
             app.dock.setBadge(hasNew ? '!' : '');
 
-        const window = electron.BrowserWindow.fromWebContents(e.sender) as electron.BrowserWindow | undefined;
+        const window = electron.BrowserWindow.fromWebContents(e.sender);
 
-        if (window !== undefined)
+        if (window)
             window.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
     }
     electron.ipcMain.on('has-new', badgeWindow);
@@ -883,7 +882,7 @@ function onReady(): void {
             w.send('rising-upgrade-complete');
     });
 
-    electron.ipcMain.on('update-zoom', (_e: Electron.IpcMainEvent, zl: number) => {
+    electron.ipcMain.on('update-zoom', (_e, zl: number) => {
         // log.info('MENU ZOOM UPDATE', zoomLevel);
         for (const w of electron.webContents.getAllWebContents())
             w.send('update-zoom', zl);
@@ -914,7 +913,7 @@ function onReady(): void {
             }
         );
 
-        if (dir !== undefined)
+        if (dir)
             return dir[0];
 
         return '';
