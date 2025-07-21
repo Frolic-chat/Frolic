@@ -101,6 +101,9 @@ export interface CharacterMemo {
     memo: string | null;
 }
 
+/**
+ * Character page API response, formatted bizarrely.
+ */
 export interface Character {
     readonly is_self: boolean
     character: CharacterInfo

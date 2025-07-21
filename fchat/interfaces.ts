@@ -161,6 +161,10 @@ export namespace Character {
     export type Status = 'offline' | 'online' | 'away' | 'idle' | 'looking' | 'busy' | 'dnd' | 'crown';
     export type TypingStatus = 'typing' | 'paused' | 'clear';
 
+    /**
+     * This is a promise-like structure that can simultaneously return a value
+     * and provide you with an error (if there is any).
+     */
     export interface ValidationData {
         in:  any;
         out: any;
@@ -189,6 +193,9 @@ export namespace Character {
         setOverride(name: string, type: keyof CharacterOverrides, value: any): void;
     }
 
+    /**
+     * Chat character: Name, gender, status, typing indicator, relationships, and overrides.
+     */
     export interface Character {
         readonly name: string
         readonly gender: Gender | undefined
@@ -202,6 +209,9 @@ export namespace Character {
     }
 }
 
+/**
+ * Chat character: Name, gender, status, typing indicator, relationships, and overrides.
+ */
 export type Character = Character.Character;
 
 export namespace Channel {

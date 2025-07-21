@@ -78,6 +78,7 @@ export class SiteSession {
         this.request = request.defaults({ jar: request.jar() });
         this.csrf = '';
 
+        // Querying 'messages.php' (which returns a page) still pings the site checker for some reason.
         const res = await this.get('');
 
         if (res.statusCode !== 200)
@@ -87,6 +88,7 @@ export class SiteSession {
             throw new Error(`SiteSession.init: body is type ${typeof res.body}`);
 
         const input = res.body.match(/<input.*?csrf_token.*?>/);
+        // return $("#flcsrf-token").attr("content")
 
         if (!input || input.length < 1)
             throw new Error('SiteSession.init: Missing csrf token');
