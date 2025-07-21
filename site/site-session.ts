@@ -87,6 +87,7 @@ export class SiteSession {
             throw new Error(`SiteSession.init: body is type ${typeof res.body}`);
 
         const input = res.body.match(/<input.*?csrf_token.*?>/);
+        // return $("#flcsrf-token").attr("content")
 
         if (!input || input.length < 1)
             throw new Error('SiteSession.init: Missing csrf token');
