@@ -51,6 +51,11 @@ export interface Infotag {
     infotag_group:  number
 }
 
+/**
+ * Public character page.
+ *
+ * @see [file://site/character_page/interfaces.ts](site/character_page/interfaces.ts)
+ */
 export interface Character extends SimpleCharacter {
     id:              number
     name:            string
@@ -71,6 +76,10 @@ export interface Character extends SimpleCharacter {
 
 export type KinkChoice = 'favorite' | 'yes' | 'maybe' | 'no';
 
+/**
+ * A user's display settings for their character page.
+ * Many of these may be absent from the API response.
+ */
 export interface CharacterSettings {
     readonly customs_first:         boolean
     readonly show_friends:          boolean
