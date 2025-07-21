@@ -152,7 +152,7 @@ export class CacheManager {
       if (char && char.status !== 'offline') {
         const conv = core.conversations.getPrivate(char, true);
 
-        if (conv && conv.messages.length > 0 && Date.now() - _.last(conv.messages)!.time.getTime() < 5 * 60 * 1000) {
+        if (conv && conv.messages.length > 0 && Date.now() - lastElement(conv.messages).time.getTime() < 5 * 60 * 1000) {
           const sessionMessages = conv.messages.filter(m => m.time.getTime() >= this.startTime.getTime());
 
           const allMessagesFromThem = _.every(
@@ -381,6 +381,7 @@ export class CacheManager {
 
 
     async onSelectConversation(data: SelectConversationEvent): Promise<void> {
+        // Check we are working with a channel conversation.
         const conversation = data.conversation;
 
         const channel = _.get(conversation, 'channel') as (Channel.Channel | undefined);
@@ -466,11 +467,8 @@ export class CacheManager {
           msg.score = p.match.matchScore;
           msg.filterMatch = p.match.isFiltered;
 
-          if (populateAll) {
-            this.populateAllConversationsWithScore(char.name, p.match.matchScore, p.match.isFiltered);
-          }
-      }
 
+      // Undefined return is legacy code and should be updated to just use null.
       return p;
     }
 

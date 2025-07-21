@@ -131,3 +131,6 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
 //         return sVal;
 //     }
 // });
+
+export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
+

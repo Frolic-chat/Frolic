@@ -423,10 +423,9 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,
             spellcheck: true,
-            enableRemoteModule: true,
             contextIsolation: false,
             partition: 'persist:fchat',
-        } as any
+        }
     };
 
     const browserWindow = new electron.BrowserWindow(windowProperties);

@@ -485,6 +485,8 @@
         risingShowPortraitInMessage!: boolean;
         risingShowHighQualityPortraits!: boolean;
 
+        // So the object has to be created to start stuffing things in it.
+        // But the empty object is an invalid SmartFilterSettings.
         risingFilter: SmartFilterSettings = {} as any;
 
         risingAvailableThemes: ReadonlyArray<string> = [];

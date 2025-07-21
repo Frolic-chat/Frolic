@@ -1252,7 +1252,7 @@ export const kinkComparisonExclusionGroups = {
 };
 
 
-export const kinkComparisonSwaps: Record<any, number> = {
+export const kinkComparisonSwaps: Record<number, number> = {
     137: 157, // anal sex giving -> receiving
     157: 137, // anal sex receiving -> giving
     163:  16, // rimming giving -> receiving
