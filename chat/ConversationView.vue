@@ -237,10 +237,8 @@
     import CharacterChannelList from './character/CharacterChannelList.vue';
     import * as _ from 'lodash';
     import Dropdown from '../components/Dropdown.vue';
-    import { EventBus } from './preview/event-bus';
-    // import { CharacterMemo } from '../site/character_page/interfaces';
+    import { EventBus, MemoEvent } from './preview/event-bus';
     import { MemoManager } from './character/memo';
-    import { CharacterMemo } from '../site/character_page/interfaces';
 
     @Component({
         components: {
@@ -355,13 +353,12 @@
             this.configUpdateHook = () => this.updateOwnName();
             EventBus.$on('configuration-update', this.configUpdateHook);
 
-            this.memoUpdateHook = (e: any) => this.refreshMemo(e);
+            this.memoUpdateHook = e => this.refreshMemo(e);
             EventBus.$on('character-memo', this.memoUpdateHook);
         }
 
-        protected configUpdateHook: any;
-
-        protected memoUpdateHook: any;
+        protected configUpdateHook?: () => void;
+        protected memoUpdateHook?: (e: MemoEvent) => void;
 
         @Hook('destroyed')
         destroyed(): void {
@@ -372,8 +369,10 @@
             clearInterval(this.autoPostingUpdater);
             clearInterval(this.adCountdown);
 
-            EventBus.$off('configuration-update', this.configUpdateHook);
-            EventBus.$off('character-memo', this.memoUpdateHook);
+            if (this.configUpdateHook)
+                EventBus.$off('configuration-update', this.configUpdateHook);
+            if (this.memoUpdateHook)
+                EventBus.$off('character-memo', this.memoUpdateHook);
         }
 
         hideSearch(): void {
@@ -677,8 +676,8 @@
           this.userMemo = this.editorMemo ?? null;
         }
 
-        refreshMemo(event: { character: string, memo: CharacterMemo }): void {
-          this.userMemo = event.memo.memo;
+        refreshMemo(e: MemoEvent): void {
+          this.userMemo = e.memo.memo;
         }
 
         async showMemo(): Promise<void> {

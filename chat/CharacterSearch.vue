@@ -69,7 +69,7 @@
     import { Character, Connection, ExtendedSearchData, SearchData, SearchKink, SearchSpecies } from './interfaces';
     import l from './localize';
     import UserView from './UserView.vue';
-    import {EventBus} from './preview/event-bus';
+    import {EventBus, CharacterScoreEvent} from './preview/event-bus';
     import CharacterSearchHistory from './CharacterSearchHistory.vue';
     import { Matcher } from '../learn/matcher';
     import {
@@ -186,7 +186,7 @@
         searchString = '';
 
         // tslint:disable-next-line no-any
-        scoreWatcher: ((event: any) => void) | null = null;
+        scoreWatcher: ((event: CharacterScoreEvent) => void) | null = null;
 
         @Hook('created')
         async created(): Promise<void> {
@@ -300,18 +300,11 @@
             }
 
             // tslint:disable-next-line no-unsafe-any no-any
-            this.scoreWatcher = (event: any): void => {
+            this.scoreWatcher = (e: CharacterScoreEvent): void => {
                 // console.log('scoreWatcher', event);
 
-                if (
-                    (this.state === 'results')
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    && (event.character)
-                    // tslint:disable-next-line no-unsafe-any no-any
-                    && (this.results.find(s => s.character.name === event.character.character.name))
-                ) {
-                    this.countUpdater?.requestUpdate(event.character.character.name);
-              }
+                if (this.state === 'results' && e.profile && this.results.find(s => s.character.name === e.profile.character.name))
+                    this.countUpdater?.requestUpdate(e.profile.character.name);
             };
 
             EventBus.$on('character-score', this.scoreWatcher);

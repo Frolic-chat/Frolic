@@ -169,7 +169,7 @@
     import * as FLIST from '../constants/flist';
     import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './filesystem';
     import * as SlimcatImporter from './importer';
-    import { EventBus, ErrorEvent } from '../chat/preview/event-bus';
+    import { EventBus, ErrorEvent, WordDefinitionEvent } from '../chat/preview/event-bus';
 
     import BBCodeTester from '../bbcode/Tester.vue';
     import { BBCodeView } from '../bbcode/view';
@@ -317,7 +317,7 @@
         onMounted(): void {
             log.debug('init.chat.mounted');
 
-            EventBus.$on('word-definition', (data: any) => {
+            EventBus.$on('word-definition', (data: WordDefinitionEvent) => {
                 this.wordDefinitionLookup = data.lookupWord;
 
                 if (!!data.lookupWord) {
@@ -329,6 +329,7 @@
 
         @Hook('created')
         async created(): Promise<void> {
+            // Event bus is only supposed to be for character/cache/preview updates.
             EventBus.$on('error', this.errSetter);
 
             await this.startAndUpgradeCache();
@@ -687,11 +688,11 @@
 
             // const imagePreview = this.$refs['imagePreview'] as ImagePreview;
 
-            if (imagePreview && imagePreview.isVisible() && imagePreview.sticky) {
+            if (imagePreview?.isVisible() && imagePreview.sticky) {
                 e.stopPropagation();
                 e.preventDefault();
 
-                EventBus.$emit('imagepreview-toggle-stickyness', {force: true});
+                EventBus.$emit('imagepreview-toggle-sticky', { force: true });
             }
         }
 

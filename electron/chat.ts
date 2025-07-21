@@ -156,7 +156,7 @@ webContents.on('context-menu', (_, props) => {
             id: 'toggleStickyness',
             label: l('action.toggleStickyPreview'),
             click(): void {
-                EventBus.$emit('imagepreview-toggle-stickyness', {url: props.linkURL});
+                EventBus.$emit('imagepreview-toggle-sticky', {url: props.linkURL});
             }
         });
     } else if(hasText)
