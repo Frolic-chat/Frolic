@@ -300,7 +300,7 @@
             }
 
             // tslint:disable-next-line no-unsafe-any no-any
-            this.scoreWatcher = (e: CharacterScoreEvent): void => {
+            this.scoreWatcher = e => {
                 // console.log('scoreWatcher', event);
 
                 if (this.state === 'results' && e.profile && this.results.find(s => s.character.name === e.profile.character.name))

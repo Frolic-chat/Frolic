@@ -137,12 +137,12 @@ class EventBusManager {
 
         this.callbacks[event].push(callback);
 
-        log.debug('eventbus.on', {
-            event: event,
-            events: this.callbacks[event].length,
-            // cb: callback.toString(),
-            cb: callback.name,
-        });
+        // log.debug('eventbus.on', {
+        //     event: event,
+        //     events: this.callbacks[event].length,
+        //     // cb: callback.toString(),
+        //     cb: callback.name,
+        // });
     }
 
 
@@ -152,26 +152,26 @@ class EventBusManager {
 
         const i = r.indexOf(callback);
         if (i < 0) {
-            log.debug('eventbus.off', {
-                event: event,
-                success: i > -1,
-                remaining: r.length,
-                // cb: callback.toString(),
-                cb: callback.name,
-            });
+            // log.debug('eventbus.off', {
+            //     event: event,
+            //     success: i > -1,
+            //     remaining: r.length,
+            //     // cb: callback.toString(),
+            //     cb: callback.name,
+            // });
 
             return;
         }
 
         r.splice(i, 1);
 
-        log.debug('eventbus.off', {
-            event: event,
-            success: i > -1,
-            remaining: r.length,
-            // cb: callback.toString(),
-            cb: callback.name,
-        });
+        // log.debug('eventbus.off', {
+        //     event: event,
+        //     success: i > -1,
+        //     remaining: r.length,
+        //     // cb: callback.toString(),
+        //     cb: callback.name,
+        // });
     }
 
     // The fancy notes api has a way to lock these and `$on` signatures
@@ -231,6 +231,9 @@ class EventBusManager {
     }
 
 
+    /**
+     * This is used in one place in Chat.vue for connection closing.
+     */
     clear(): void {
         this.callbacks = {};
     }
