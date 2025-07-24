@@ -562,6 +562,18 @@ function onReady(): void {
                     accelerator: 'CmdOrCtrl+t'
                 },
                 {
+                    label: "hidden switch-tab accelerator",
+                    accelerator: 'Ctrl+Tab',
+                    click: (_m, w) => w?.webContents.send('switch-tab'),
+                    visible: false,
+                },
+                {
+                    label: "hidden previous-tab accelerator",
+                    accelerator: 'Ctrl+Shift+Tab',
+                    click: (_m, w) => w?.webContents.send('previous-tab'),
+                    visible: false,
+                },
+                {
                     label: l('settings.logDir'),
                     click: (_m, window) => {
                         if (!window)
