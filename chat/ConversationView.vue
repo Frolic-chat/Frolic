@@ -79,8 +79,8 @@
                         <button class="dropdown-item" :class="{ selected: showNonMatchingAds }" type="button" @click="toggleNonMatchingAds()">
                             {{l('channel.ads.incompatible')}}
                         </button>
-                        <div class="dropdown-divider"></div>
-                        <button v-show="conversation.settings.adSettings.ads.length > 0" class="dropdown-item" type="button" @click="showAdSettings()">
+                        <div class="dropdown-divider" v-show="conversation.settings.adSettings.ads.length > 0"></div>
+                        <button class="dropdown-item" v-show="conversation.settings.adSettings.ads.length > 0" type="button" @click="showAdSettings()">
                             {{l('channel.ads.edit')}}
                         </button>
                     </dropdown>
