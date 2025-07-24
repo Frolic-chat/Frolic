@@ -1761,8 +1761,8 @@ export class Matcher {
 }
 
 // This is event bus abuse. Event bus is only supposed to be for character upates.
-EventBus.$on('core-connected',       (s: Settings) => Matcher.importSettings(s));
-EventBus.$on('configuration-update', (s: Settings) => Matcher.importSettings(s));
+EventBus.$on('core-connected',       s => Matcher.importSettings(s));
+EventBus.$on('configuration-update', s => Matcher.importSettings(s));
 
 log.debug('init.matcher');
 

@@ -204,7 +204,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import * as _ from 'lodash';
     import NoteStatus from '../site/NoteStatus.vue';
     import { Dialog } from '../helpers/dialog';
-    // import { EventBus } from './preview/event-bus';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
     import Modal from '../components/Modal.vue';
