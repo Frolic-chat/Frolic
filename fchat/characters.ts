@@ -165,8 +165,8 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         for (const key in state.characters) {
             const character = state.characters[key]!;
-            character.isFriend     = state.friendList.indexOf(character.name)   !== -1;
-            character.isBookmarked = state.bookmarkList.indexOf(character.name) !== -1;
+            character.isFriend     = state.friendList.includes(character.name);
+            character.isBookmarked = state.bookmarkList.includes(character.name);
             character.status = 'offline';
             character.statusText = '';
         }
@@ -177,11 +177,13 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         connection.send('STA', reconnectStatus);
 
-        for(const key in state.characters) {
-            const char = state.characters[key]!;
-            char.isIgnored = state.ignoreList.indexOf(key)   !== -1;
-            char.isChatOp  = state.opList.indexOf(char.name) !== -1;
-        }
+        Object.keys(state.characters)
+            .filter(k => state.characters[k])
+            .forEach(k => {
+                const char = state.characters[k]!;
+                char.isIgnored = state.ignoreList.includes(k);
+                char.isChatOp  = state.opList.includes(char.name);
+            });
     });
     connection.onMessage('IGN', (data) => {
         switch(data.action) {

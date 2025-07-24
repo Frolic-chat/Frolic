@@ -470,13 +470,17 @@ function onReady(): void {
         setGeneralSettings(settings);
     }
 
+    function updateAllZoom(c: Electron.WebContents[] = [], b: electron.BrowserWindow[] = [], zoomLevel: number) {
+        c.forEach(w => w.send('update-zoom', zoomLevel))
+
+        b.forEach(w => w.webContents.send('update-zoom', zoomLevel))
+    }
+
     const updateMenuItem = {
         label: l('action.updateAvailable'),
         id: 'update',
         visible: false,
-        click: () => {
-            openURLExternally(FROLIC.GitHubReleasesUrl);
-        }
+        click: () => openURLExternally(FROLIC.GitHubReleasesUrl),
     }
 
     const viewItem = {
@@ -487,9 +491,7 @@ function onReady(): void {
                 label: l('action.resetZoom'),
                 click: () => {
                     zoomLevel = 0;
-
-                    for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', 0);
-                    for (const win of windows) win.webContents.send('update-zoom', 0);
+                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+0'
             },
@@ -501,10 +503,7 @@ function onReady(): void {
                         return
 
                     zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
-                    // w.webContents.setZoomLevel(newZoom);
-
-                    for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', zoomLevel);
-                    for (const win of windows) win.webContents.send('update-zoom', zoomLevel);
+                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+='
             },
@@ -516,11 +515,7 @@ function onReady(): void {
                         return
 
                     zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
-
-                    // w.webContents.setZoomLevel(newZoom);
-
-                    for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', zoomLevel);
-                    for (const win of windows) win.webContents.send('update-zoom', zoomLevel);
+                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+-'
             },
@@ -556,15 +551,13 @@ function onReady(): void {
             submenu: [
                 {
                     label: l('action.newWindow'),
-                    click: () => {
-                        if (hasCompletedUpgrades) createWindow();
-                    },
+                    click: () => { if (hasCompletedUpgrades) createWindow() },
                     accelerator: 'CmdOrCtrl+n'
                 },
                 {
                     label: l('action.newTab'),
                     click: (_m, w) => {
-                        if (hasCompletedUpgrades && tabCount < 3) w.webContents.send('open-tab');
+                        if (hasCompletedUpgrades && tabCount < 3) w?.webContents.send('open-tab');
                     },
                     accelerator: 'CmdOrCtrl+t'
                 },
@@ -616,7 +609,10 @@ function onReady(): void {
                         setGeneralSettings(settings);
                     }
                 },
-                { label: l('settings.spellcheck'), submenu: spellcheckerMenu },
+                {
+                    label: l('settings.spellcheck'),
+                    submenu: spellcheckerMenu,
+                },
                 {
                     label: l('settings.theme'),
                     submenu: themes.map((x) => ({
@@ -635,7 +631,6 @@ function onReady(): void {
                         setGeneralSettings(settings);
                     }
                 },
-
                 // {
                 //     label: l('settings.beta'), type: 'checkbox', checked: settings.beta,
                 //     click: async(item: electron.MenuItem) => {
@@ -649,7 +644,6 @@ function onReady(): void {
                     label: l('fixLogs.action'),
                     click: (_m, w) => w?.webContents.send('fix-logs'),
                 },
-
                 { type: 'separator' },
                 {
                     label: l('action.logLevel'),
@@ -672,9 +666,7 @@ function onReady(): void {
                 },
                 {
                     label: l('settings.browser'),
-                    click: () => {
-                        openBrowserSettings();
-                    }
+                    click: () => openBrowserSettings(),
                 },
                 {
                     label: l('action.profile'),
