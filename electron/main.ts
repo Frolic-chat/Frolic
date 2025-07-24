@@ -494,9 +494,10 @@ function onReady(): void {
             {
                 // role: 'zoomIn',
                 label: l('action.zoomIn'),
-                click: (_m: electron.MenuItem, w: electron.BrowserWindow) => {
+                click: (_m, w) => {
+                    if (!w)
+                        return
 
-                    // log.info('MENU ZOOM+');
                     zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
                     // w.webContents.setZoomLevel(newZoom);
 
