@@ -470,6 +470,12 @@ function onReady(): void {
         setGeneralSettings(settings);
     }
 
+    function updateAllZoom(c: Electron.WebContents[] = [], b: electron.BrowserWindow[] = [], zoomLevel: number) {
+        c.forEach(w => w.send('update-zoom', zoomLevel))
+
+        b.forEach(w => w.webContents.send('update-zoom', zoomLevel))
+    }
+
     const updateMenuItem = {
         label: l('action.updateAvailable'),
         id: 'update',
@@ -485,9 +491,7 @@ function onReady(): void {
                 label: l('action.resetZoom'),
                 click: () => {
                     zoomLevel = 0;
-
-                    for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', 0);
-                    for (const win of windows) win.webContents.send('update-zoom', 0);
+                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+0'
             },
@@ -499,10 +503,7 @@ function onReady(): void {
                         return
 
                     zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
-                    // w.webContents.setZoomLevel(newZoom);
-
-                    for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', zoomLevel);
-                    for (const win of windows) win.webContents.send('update-zoom', zoomLevel);
+                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+='
             },
@@ -514,11 +515,7 @@ function onReady(): void {
                         return
 
                     zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
-
-                    // w.webContents.setZoomLevel(newZoom);
-
-                    for (const win of electron.webContents.getAllWebContents()) win.send('update-zoom', zoomLevel);
-                    for (const win of windows) win.webContents.send('update-zoom', zoomLevel);
+                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+-'
             },
