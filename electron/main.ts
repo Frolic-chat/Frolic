@@ -474,9 +474,7 @@ function onReady(): void {
         label: l('action.updateAvailable'),
         id: 'update',
         visible: false,
-        click: () => {
-            openURLExternally(FROLIC.GitHubReleasesUrl);
-        }
+        click: () => openURLExternally(FROLIC.GitHubReleasesUrl),
     }
 
     const viewItem = {
@@ -555,15 +553,13 @@ function onReady(): void {
             submenu: [
                 {
                     label: l('action.newWindow'),
-                    click: () => {
-                        if (hasCompletedUpgrades) createWindow();
-                    },
+                    click: () => { if (hasCompletedUpgrades) createWindow() },
                     accelerator: 'CmdOrCtrl+n'
                 },
                 {
                     label: l('action.newTab'),
                     click: (_m, w) => {
-                        if (hasCompletedUpgrades && tabCount < 3) w.webContents.send('open-tab');
+                        if (hasCompletedUpgrades && tabCount < 3) w?.webContents.send('open-tab');
                     },
                     accelerator: 'CmdOrCtrl+t'
                 },
@@ -615,7 +611,10 @@ function onReady(): void {
                         setGeneralSettings(settings);
                     }
                 },
-                { label: l('settings.spellcheck'), submenu: spellcheckerMenu },
+                {
+                    label: l('settings.spellcheck'),
+                    submenu: spellcheckerMenu,
+                },
                 {
                     label: l('settings.theme'),
                     submenu: themes.map((x) => ({
@@ -634,7 +633,6 @@ function onReady(): void {
                         setGeneralSettings(settings);
                     }
                 },
-
                 // {
                 //     label: l('settings.beta'), type: 'checkbox', checked: settings.beta,
                 //     click: async(item: electron.MenuItem) => {
@@ -648,7 +646,6 @@ function onReady(): void {
                     label: l('fixLogs.action'),
                     click: (_m, w) => w?.webContents.send('fix-logs'),
                 },
-
                 { type: 'separator' },
                 {
                     label: l('action.logLevel'),
@@ -671,9 +668,7 @@ function onReady(): void {
                 },
                 {
                     label: l('settings.browser'),
-                    click: () => {
-                        openBrowserSettings();
-                    }
+                    click: () => openBrowserSettings(),
                 },
                 {
                     label: l('action.profile'),
