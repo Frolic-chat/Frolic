@@ -793,15 +793,15 @@ function onReady(): void {
 
 
     //#region SecureStore
-    electron.ipcMain.handle('setPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string, password: string) => {
+    electron.ipcMain.handle('setPassword', async (_e, domain: string, account: string, password: string) => {
         await SecureStore.setPassword(domain, account, password);
     });
 
-    electron.ipcMain.handle('deletePassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
+    electron.ipcMain.handle('deletePassword', async (_e, domain: string, account: string) => {
         await SecureStore.deletePassword(domain, account);
     });
 
-    electron.ipcMain.handle('getPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
+    electron.ipcMain.handle('getPassword', async (_e, domain: string, account: string) => {
         return await SecureStore.getPassword(domain, account);
     });
     //#endregion
@@ -823,7 +823,7 @@ function onReady(): void {
         --tabCount;
         for(const w of windows) w.webContents.send('allow-new-tabs', true);
     });
-    electron.ipcMain.on('save-login', (_event: Electron.IpcMainEvent, account: string, host: string) => {
+    electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
         settings.account = account;
         settings.host = host;
         setGeneralSettings(settings);
@@ -926,7 +926,8 @@ function onReady(): void {
     function updateBrowserOption(_e: Electron.IpcMainEvent,
                                  path: string,
                                  args: string,
-                                 incognito: string) {
+                                 incognito: string
+                                ): void {
         log.debug('Browser Path settings update:', path, args, incognito);
 
         settings.browserPath = path;
@@ -937,7 +938,7 @@ function onReady(): void {
 
     electron.ipcMain.on('browser-option-update', updateBrowserOption);
 
-    electron.ipcMain.on('open-url-externally', (_e: Electron.IpcMainEvent, url: string, incognito: boolean = false) => {
+    electron.ipcMain.on('open-url-externally', (_e, url: string, incognito: boolean = false) => {
         openURLExternally(url, incognito);
     });
 
