@@ -470,10 +470,12 @@ function onReady(): void {
         setGeneralSettings(settings);
     }
 
-    function updateAllZoom(c: Electron.WebContents[] = [], b: electron.BrowserWindow[] = [], zoomLevel: number) {
-        c.forEach(w => w.send('update-zoom', zoomLevel))
-
-        b.forEach(w => w.webContents.send('update-zoom', zoomLevel))
+    function updateAllZoom(c: Electron.WebContents[]   = [],
+                           b: electron.BrowserWindow[] = [],
+                           zoomLevel: number
+                        ): void {
+        c.forEach(w => w.send('update-zoom', zoomLevel));
+        b.forEach(w => w.webContents.send('update-zoom', zoomLevel));
     }
 
     const updateMenuItem = {
@@ -627,7 +629,7 @@ function onReady(): void {
                 },
                 {
                     label: l('settings.theme'),
-                    submenu: themes.map((x) => ({
+                    submenu: themes.map(x => ({
                         checked: settings.theme === x,
                         click: () => setTheme(x),
                         label: x,
@@ -869,25 +871,20 @@ function onReady(): void {
 
     // Badge windows with alerts
     function badgeWindow(e: Electron.IpcMainEvent, hasNew: boolean) {
-        if (platform === 'darwin')
-            app.dock.setBadge(hasNew ? '!' : '');
+        app.dock?.setBadge(hasNew ? '!' : '');
 
         const window = electron.BrowserWindow.fromWebContents(e.sender);
-
-        if (window)
-            window.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
+        window?.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
     }
     electron.ipcMain.on('has-new', badgeWindow);
 
     electron.ipcMain.on('rising-upgrade-complete', () => {
-        // console.log('RISING COMPLETE SHARE');
         hasCompletedUpgrades = true;
         for (const w of electron.webContents.getAllWebContents())
             w.send('rising-upgrade-complete');
     });
 
     electron.ipcMain.on('update-zoom', (_e, zl: number) => {
-        // log.info('MENU ZOOM UPDATE', zoomLevel);
         for (const w of electron.webContents.getAllWebContents())
             w.send('update-zoom', zl);
     });
@@ -903,24 +900,17 @@ function onReady(): void {
         else if (platform === "darwin") {
             filters = [{ name: 'Executables', extensions: ['app'] }];
         }
-        else {
-            // linux and anything else that might be supported
-            // no specific extension for executables
+        else { // unix and whatever else
             filters = [{ name: 'Executables', extensions: ['*'] }];
         }
 
-        const dir = electron.dialog.showOpenDialogSync(
-            {
-                defaultPath: settings.browserPath,
-                properties: ['openFile'],
-                filters: filters
-            }
-        );
+        const dir = electron.dialog.showOpenDialogSync({
+            defaultPath: settings.browserPath,
+            properties: ['openFile'],
+            filters: filters,
+        });
 
-        if (dir)
-            return dir[0];
-
-        return '';
+        return dir?.[0] ?? '';
     });
 
     function updateBrowserOption(_e: Electron.IpcMainEvent,
