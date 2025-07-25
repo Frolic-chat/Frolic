@@ -43,7 +43,11 @@ export interface EmptyEvent {}
 
 export interface EventBusEvent { [key: string]: any }
 
-export interface LogDetailsEvent { [key: string]: any }
+/**
+ * This was previously used in the ImagePreview but prevents typescript from
+ * type checking, so let the default event types prevail.
+ */
+// export interface LogDetailsEvent { [key: string]: any }
 
 export interface ImagePreviewEvent {
     url: string;
