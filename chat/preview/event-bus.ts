@@ -231,6 +231,9 @@ class EventBusManager {
     }
 
 
+    /**
+     * This is used in one place in Chat.vue for connection closing.
+     */
     clear(): void {
         this.callbacks = {};
     }

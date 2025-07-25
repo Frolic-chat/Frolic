@@ -46,7 +46,7 @@
     import {Component, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../core';
-    import { EventBus, ImagePreviewEvent, ImageToggleEvent } from './event-bus';
+    import { EventBus } from './event-bus';
     import {domain} from '../../bbcode/core';
     import {ImageDomMutator} from './image-dom-mutator';
 
@@ -127,12 +127,12 @@
             // tslint:disable-next-line:no-floating-promises
             this.jsMutator.init();
 
-            EventBus.$on('imagepreview-dismiss', (e: ImagePreviewEvent) => {
+            EventBus.$on('imagepreview-dismiss', e => {
                 // console.log('Event dismiss', eventData.url);
                 this.dismiss(this.negotiateUrl(e.url), e.force);
             });
 
-            EventBus.$on('imagepreview-show', (e: ImagePreviewEvent) => {
+            EventBus.$on('imagepreview-show', e => {
                 // console.log('Event show', eventData.url);
 
                 const url = this.negotiateUrl(e.url);
@@ -149,9 +149,9 @@
             });
 
             /**
-             * Also hides with `force`.
+             * Toggles the ImagePreview sticky if it's visible, but also hides with `force`.
              */
-            EventBus.$on('imagepreview-toggle-sticky', (e: ImageToggleEvent) => {
+            EventBus.$on('imagepreview-toggle-sticky', e => {
                 if (!core.state.settings.risingLinkPreview)
                     return;
 

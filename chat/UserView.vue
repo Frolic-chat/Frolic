@@ -177,7 +177,7 @@ export default class UserView extends Vue {
             }
 
             // tslint:disable-next-line no-unsafe-any no-any
-            this.scoreWatcher = (event: CharacterScoreEvent): void => {
+            this.scoreWatcher = (event): void => {
                 // console.log('scoreWatcher', event);
 
                 // tslint:disable-next-line no-unsafe-any no-any
