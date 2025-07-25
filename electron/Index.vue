@@ -168,7 +168,7 @@
     import * as FLIST from '../constants/flist';
     import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './filesystem';
     import * as SlimcatImporter from './importer';
-    import { EventBus, ErrorEvent, WordDefinitionEvent } from '../chat/preview/event-bus';
+    import { EventBus, ErrorEvent } from '../chat/preview/event-bus';
 
     import BBCodeTester from '../bbcode/Tester.vue';
     import { BBCodeView } from '../bbcode/view';
@@ -312,12 +312,11 @@
         onMounted(): void {
             log.debug('init.chat.mounted');
 
-            EventBus.$on('word-definition', (data: WordDefinitionEvent) => {
-                this.wordDefinitionLookup = data.lookupWord;
+            EventBus.$on('word-definition', event => {
+                this.wordDefinitionLookup = event.lookupWord;
 
-                if (!!data.lookupWord) {
+                if (event.lookupWord)
                     (<Modal>this.$refs.wordDefinitionViewer).show();
-                }
             });
         }
 
