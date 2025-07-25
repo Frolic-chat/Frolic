@@ -330,8 +330,18 @@
           return 'https://static.f-list.net/images/avatar/' + (tab.user || '').toLowerCase() + '.png';
         }
 
+        /**
+         * Due to electron shenanigans, the replacement for this deprecated
+         * function is recommended as the undocumented `.destroy()`, and therefore
+         * typescript will complain, so we cast to any.
+         * @see {@link https://github.com/electron/docs-parser/issues/96 | Electron Fuckery}
+         */
         destroyAllTabs(): void {
+            // Deprecated
             browserWindow.setBrowserView(null!); //tslint:disable-line:no-null-keyword
+
+            //(browserWindow.webContents as any).destroy(); // Electron issue recommends.
+            //browserWindow.webContents.close(); // Can also try this; emits 'destroyed' event
             this.tabs.forEach(destroyTab);
             this.tabs = [];
         }

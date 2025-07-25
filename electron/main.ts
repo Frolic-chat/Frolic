@@ -499,11 +499,12 @@ function onReady(): void {
                 // role: 'zoomIn',
                 label: l('action.zoomIn'),
                 click: (_m, w) => {
-                    if (!w)
-                        return
-
-                    zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
-                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                    // `BrowserWindow` is an extension of `BaseWindow` after Electron upgrade
+                    // Will we ever be in a situation where it's otherwise?
+                    if (w instanceof Electron.BrowserWindow) {
+                        zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
+                        updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                    }
                 },
                 accelerator: 'CmdOrCtrl+='
             },
@@ -511,11 +512,13 @@ function onReady(): void {
                 // role: 'zoomOut',
                 label: l('action.zoomOut'),
                 click: (_m, w) => {
-                    if (!w)
-                        return
+                    // `BrowserWindow` is an extension of `BaseWindow`
+                    // Will we ever be in a situation where it's otherwise?
+                    if (w instanceof Electron.BrowserWindow) {
+                        zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
 
-                    zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
-                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                        updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                    }
                 },
                 accelerator: 'CmdOrCtrl+-'
             },
@@ -557,20 +560,27 @@ function onReady(): void {
                 {
                     label: l('action.newTab'),
                     click: (_m, w) => {
-                        if (hasCompletedUpgrades && tabCount < 3) w?.webContents.send('open-tab');
+                        if (hasCompletedUpgrades && tabCount < 3 && w instanceof Electron.BrowserWindow)
+                            w.webContents.send('open-tab');
                     },
                     accelerator: 'CmdOrCtrl+t'
                 },
                 {
                     label: "hidden switch-tab accelerator",
                     accelerator: 'Ctrl+Tab',
-                    click: (_m, w) => w?.webContents.send('switch-tab'),
+                    click: (_m, w) => {
+                        if (w instanceof Electron.BrowserWindow)
+                            w.webContents.send('switch-tab');
+                    },
                     visible: false,
                 },
                 {
                     label: "hidden previous-tab accelerator",
                     accelerator: 'Ctrl+Shift+Tab',
-                    click: (_m, w) => w?.webContents.send('previous-tab'),
+                    click: (_m, w) => {
+                        if (w instanceof Electron.BrowserWindow)
+                            w.webContents.send('previous-tab');
+                    },
                     visible: false,
                 },
                 {
@@ -654,7 +664,10 @@ function onReady(): void {
                 // },
                 {
                     label: l('fixLogs.action'),
-                    click: (_m, w) => w?.webContents.send('fix-logs'),
+                    click: (_m, w) => {
+                        if (w instanceof Electron.BrowserWindow)
+                            w.webContents.send('fix-logs');
+                    },
                 },
                 { type: 'separator' },
                 {
@@ -682,7 +695,10 @@ function onReady(): void {
                 },
                 {
                     label: l('action.profile'),
-                    click: (_m, w) => w?.webContents.send('reopen-profile'),
+                    click: (_m, w) => {
+                        if (w instanceof Electron.BrowserWindow)
+                            w.webContents.send('reopen-profile');
+                    },
                     accelerator: 'CmdOrCtrl+p'
                 },
 

@@ -76,7 +76,7 @@ export class BlockerIntegration {
 
     blocker.blockFonts();
 
-    log.debug('adblock.preloaders', { loaders: session.getPreloads() });
+    log.debug('adblock.preloaders', { loaders: session.getPreloadScripts() });
 
     blocker.on('request-blocked', (request: Request) => {
         log.debug('adblock.request.blocked', { url: request.url });
