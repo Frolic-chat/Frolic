@@ -470,10 +470,12 @@ function onReady(): void {
         setGeneralSettings(settings);
     }
 
-    function updateAllZoom(c: Electron.WebContents[] = [], b: electron.BrowserWindow[] = [], zoomLevel: number) {
-        c.forEach(w => w.send('update-zoom', zoomLevel))
-
-        b.forEach(w => w.webContents.send('update-zoom', zoomLevel))
+    function updateAllZoom(c: Electron.WebContents[]   = [],
+                           b: electron.BrowserWindow[] = [],
+                           zoomLevel: number
+                        ): void {
+        c.forEach(w => w.send('update-zoom', zoomLevel));
+        b.forEach(w => w.webContents.send('update-zoom', zoomLevel));
     }
 
     const updateMenuItem = {
@@ -637,7 +639,7 @@ function onReady(): void {
                 },
                 {
                     label: l('settings.theme'),
-                    submenu: themes.map((x) => ({
+                    submenu: themes.map(x => ({
                         checked: settings.theme === x,
                         click: () => setTheme(x),
                         label: x,
@@ -809,15 +811,15 @@ function onReady(): void {
 
 
     //#region SecureStore
-    electron.ipcMain.handle('setPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string, password: string) => {
+    electron.ipcMain.handle('setPassword', async (_e, domain: string, account: string, password: string) => {
         await SecureStore.setPassword(domain, account, password);
     });
 
-    electron.ipcMain.handle('deletePassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
+    electron.ipcMain.handle('deletePassword', async (_e, domain: string, account: string) => {
         await SecureStore.deletePassword(domain, account);
     });
 
-    electron.ipcMain.handle('getPassword', async (_event: Electron.IpcMainInvokeEvent, domain: string, account: string) => {
+    electron.ipcMain.handle('getPassword', async (_e, domain: string, account: string) => {
         return await SecureStore.getPassword(domain, account);
     });
     //#endregion
@@ -839,7 +841,7 @@ function onReady(): void {
         --tabCount;
         for(const w of windows) w.webContents.send('allow-new-tabs', true);
     });
-    electron.ipcMain.on('save-login', (_event: Electron.IpcMainEvent, account: string, host: string) => {
+    electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
         settings.account = account;
         settings.host = host;
         setGeneralSettings(settings);
@@ -885,25 +887,20 @@ function onReady(): void {
 
     // Badge windows with alerts
     function badgeWindow(e: Electron.IpcMainEvent, hasNew: boolean) {
-        if (platform === 'darwin')
-            app.dock.setBadge(hasNew ? '!' : '');
+        app.dock?.setBadge(hasNew ? '!' : '');
 
         const window = electron.BrowserWindow.fromWebContents(e.sender);
-
-        if (window)
-            window.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
+        window?.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
     }
     electron.ipcMain.on('has-new', badgeWindow);
 
     electron.ipcMain.on('rising-upgrade-complete', () => {
-        // console.log('RISING COMPLETE SHARE');
         hasCompletedUpgrades = true;
         for (const w of electron.webContents.getAllWebContents())
             w.send('rising-upgrade-complete');
     });
 
     electron.ipcMain.on('update-zoom', (_e, zl: number) => {
-        // log.info('MENU ZOOM UPDATE', zoomLevel);
         for (const w of electron.webContents.getAllWebContents())
             w.send('update-zoom', zl);
     });
@@ -919,30 +916,24 @@ function onReady(): void {
         else if (platform === "darwin") {
             filters = [{ name: 'Executables', extensions: ['app'] }];
         }
-        else {
-            // linux and anything else that might be supported
-            // no specific extension for executables
+        else { // unix and whatever else
             filters = [{ name: 'Executables', extensions: ['*'] }];
         }
 
-        const dir = electron.dialog.showOpenDialogSync(
-            {
-                defaultPath: settings.browserPath,
-                properties: ['openFile'],
-                filters: filters
-            }
-        );
+        const dir = electron.dialog.showOpenDialogSync({
+            defaultPath: settings.browserPath,
+            properties: ['openFile'],
+            filters: filters,
+        });
 
-        if (dir)
-            return dir[0];
-
-        return '';
+        return dir?.[0] ?? '';
     });
 
     function updateBrowserOption(_e: Electron.IpcMainEvent,
                                  path: string,
                                  args: string,
-                                 incognito: string) {
+                                 incognito: string
+                                ): void {
         log.debug('Browser Path settings update:', path, args, incognito);
 
         settings.browserPath = path;
@@ -953,7 +944,7 @@ function onReady(): void {
 
     electron.ipcMain.on('browser-option-update', updateBrowserOption);
 
-    electron.ipcMain.on('open-url-externally', (_e: Electron.IpcMainEvent, url: string, incognito: boolean = false) => {
+    electron.ipcMain.on('open-url-externally', (_e, url: string, incognito: boolean = false) => {
         openURLExternally(url, incognito);
     });
 

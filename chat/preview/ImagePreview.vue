@@ -42,12 +42,11 @@
 </template>
 
 <script lang="ts">
-    import * as _ from 'lodash';
     import l from '../localize';
     import {Component, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../core';
-    import { EventBus, ImagePreviewEvent, ImageToggleEvent, LogDetailsEvent } from './event-bus';
+    import { EventBus, ImagePreviewEvent, ImageToggleEvent } from './event-bus';
     import {domain} from '../../bbcode/core';
     import {ImageDomMutator} from './image-dom-mutator';
 
@@ -62,22 +61,11 @@
     import * as remote from '@electron/remote';
 
     import Timer = NodeJS.Timeout;
-    import IpcMessageEvent = Electron.IpcMessageEvent;
     import CharacterPreview from './CharacterPreview.vue';
 
     const screen = remote.screen;
 
-    const FLIST_PROFILE_MATCH = _.cloneDeep(/https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+%_.!~*'()]+)\/?/);
-
-    interface DidFailLoadEvent extends Event {
-        errorCode: number;
-        errorDescription: string;
-    }
-
-    interface DidNavigateEvent extends Event {
-        httpResponseCode: number;
-        httpStatusText: string;
-    }
+    const FLIST_PROFILE_MATCH = /https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+%_.!~*'()]+)\/?/;
 
     @Component({
         components: {
@@ -192,11 +180,7 @@
             //     5000
             // );
 
-            webview.addEventListener(
-                'update-target-url',
-                // 'did-navigate',
-                // 'dom-ready',
-                (e: LogDetailsEvent) => {
+            webview.addEventListener('update-target-url', e => {
                     const url = webview.getURL();
                     const js = this.jsMutator.getMutatorJsForSite(url, 'update-target-url');
 
@@ -206,68 +190,44 @@
             );
 
 
-            webview.addEventListener(
-                'dom-ready',
-                // 'did-navigate',
-                // 'dom-ready',
-                (e: LogDetailsEvent) => {
-                    const url = webview.getURL();
-                    const js = this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
+            webview.addEventListener('dom-ready', e => {
+                const url = webview.getURL();
+                const js = this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 
-                    // tslint:disable-next-line
-                    this.executeJavaScript(js, 'dom-ready', e);
+                // tslint:disable-next-line
+                this.executeJavaScript(js, 'dom-ready', e);
 
-                    this.setState('loaded');
+                this.setState('loaded');
+            });
+
+
+            webview.addEventListener('did-fail-load', e => {
+                if (e.errorCode !== -3) {
+                    // -3 is a weird error code, not sure why it occurs
+                    this.setState('error');
                 }
-            );
 
 
-            webview.addEventListener(
-                'did-fail-load',
-                (e: DidFailLoadEvent) => {
-                    if (e.errorCode !== -3) {
-                        this.setState('error'); // -3 is a weird error code, not sure why it occurs
-                    }
+                if (e.errorCode < 0) {
+                    const url = webview.getURL();
 
+                    if (url.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
+                        const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
+                            || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 
-                    if (e.errorCode < 0) {
-                        const url = webview.getURL();
-
-                        if (url.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
-                            const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
-                                || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
-
-                            // tslint:disable-next-line
-                            this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
-                            return;
-                        }
-
-                        // console.error('DID FAIL LOAD', event);
-                        // const url = this.getUrl() || '';
-                        //
-                        // const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
-                        //   || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
-                        //
-                        // // tslint:disable-next-line
-                        // this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', event);
+                        // tslint:disable-next-line
+                        this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
                         return;
                     }
 
-                    // if (e.errorCode < 100) {
-                    //   const url = webview.getURL();
-                    //   const js = this.jsMutator.getMutatorJsForSite(url, 'update-target-url');
-                    //
-                    //   this.executeJavaScript(js, 'did-fail-load-but-still-loading', event);
-                    //
-                    //   return;
-                    // }
-
-                    const js = this.jsMutator.getErrorMutator(e.errorCode, e.errorDescription);
-
-                    // tslint:disable-next-line
-                    this.executeJavaScript(js, 'did-fail-load', e);
+                    return;
                 }
-            );
+
+                const js = this.jsMutator.getErrorMutator(e.errorCode, e.errorDescription);
+
+                // tslint:disable-next-line
+                this.executeJavaScript(js, 'did-fail-load', e);
+            });
 
             webview.addEventListener('did-frame-navigate', e => {
                 if (e.httpResponseCode >= 400) {
@@ -278,26 +238,15 @@
                 }
             });
 
-            // webview.getWebContents().on(
-            webview.addEventListener(
-                'did-finish-load',
-                (event: Event) => {
-                    this.debugLog('ImagePreview did-finish-load', event);
+
+            webview.addEventListener('ipc-message', e => {
+                this.debugLog('ImagePreview ipc-message', e);
+
+                if (e.channel === 'webview.img') {
+                    // tslint:disable-next-line:no-unsafe-any
+                    this.updatePreviewSize(parseInt(e.args[0], 10), parseInt(e.args[1], 10));
                 }
-            );
-
-
-            webview.addEventListener(
-                'ipc-message',
-                (event: IpcMessageEvent) => {
-                    this.debugLog('ImagePreview ipc-message', event);
-
-                    if (event.channel === 'webview.img') {
-                        // tslint:disable-next-line:no-unsafe-any
-                        this.updatePreviewSize(parseInt(event.args[0], 10), parseInt(event.args[1], 10));
-                    }
-                }
-            );
+            });
 
 
             // const webContentsId = webview.getWebContentsId();
@@ -309,26 +258,20 @@
             //     }
             // );
 
-
-            _.each(
-                ['did-start-loading', 'load-commit', 'dom-ready', 'will-navigate', 'did-navigate', 'did-navigate-in-page', 'update-target-url', 'ipc-message'],
-                (en: string) => {
-                    webview.addEventListener(
-                        en,
-                        (event: Event) => {
-                            this.debugLog(`ImagePreview ${en} ${Date.now()}`, event);
-                        }
-                    );
-                }
-            );
+            ['did-start-loading', 'did-finish-load', 'load-commit', 'dom-ready', 'will-navigate', 'did-navigate', 'did-navigate-in-page', 'update-target-url', 'ipc-message'].forEach(en => {
+                webview.addEventListener(en, event => {
+                    this.debugLog(`ImagePreview ${en} ${Date.now()}`, event);
+                });
+            });
 
 
             setInterval(
                 () => {
-                    if (((this.visible) && (!this.exitInterval) && (!this.shouldDismiss)) || (this.interval))
+                    if ((this.visible && !this.exitInterval && !this.shouldDismiss) || this.interval) {
                         this.initialCursorPosition = screen.getCursorScreenPoint();
+                    }
 
-                    if ((this.visible) && (this.shouldDismiss) && (this.hasMouseMovedSince()) && (!this.exitInterval) && (!this.interval)) {
+                    if (this.visible && this.shouldDismiss && this.hasMouseMovedSince() && !this.exitInterval && !this.interval) {
                         this.debugLog('ImagePreview: call hide from interval');
 
                         this.hide();
@@ -348,23 +291,21 @@
 
 
         negotiateUrl(url: string): string {
-          const match = url.match(FLIST_PROFILE_MATCH);
+            const match = url.match(FLIST_PROFILE_MATCH);
 
-          if (!match) {
-            return url;
-          }
+            if (!match)
+                return url;
 
-          return `flist-character://${decodeURI(match[2])}`;
+            return `flist-character://${decodeURI(match[2])}`;
         }
 
         updatePreviewSize(width: number, height: number): void {
             const helper = this.previewManager.getVisiblePreview();
 
-            if ((!helper) || (!helper.reactsToSizeUpdates())) {
-              return;
-            }
+            if (!helper || !helper.reactsToSizeUpdates())
+                return;
 
-            if ((width) && (height)) {
+            if (width && height) {
                 this.debugLog('ImagePreview: updatePreviewSize', width, height, width / height);
 
                 helper.setRatio(width / height);
@@ -409,7 +350,9 @@
 
             // console.log('DISMISS');
 
-            const due = this.visible ? this.MinTimePreviewVisible - Math.min(this.MinTimePreviewVisible, (Date.now() - this.visibleSince)) : 0;
+            const due = this.visible
+                ? this.MinTimePreviewVisible - Math.min(this.MinTimePreviewVisible, (Date.now() - this.visibleSince))
+                : 0;
 
             this.cancelTimer();
 
@@ -419,7 +362,7 @@
             this.exitUrl = this.url;
             this.shouldDismiss = true;
 
-            if ((!this.hasMouseMovedSince()) && (!force))
+            if (!this.hasMouseMovedSince() && !force)
                 return;
 
             this.debugLog('ImagePreview: dismiss.exec', due, this.previewManager.getVisibilityStatus(), url);
@@ -428,10 +371,7 @@
             // when dealing with situations such as quickly scrolling text that moves the cursor away
             // from the link
             // tslint:disable-next-line no-unnecessary-type-assertion
-            this.exitInterval = setTimeout(
-                () => this.hide(),
-                due
-            ) as Timer;
+            this.exitInterval = setTimeout(() => this.hide(), due);
         }
 
         show(initialUrl: string): void {
@@ -442,24 +382,26 @@
 
             // console.log('SHOW');
 
-            if ((this.visible) && (!this.exitInterval) && (!this.hasMouseMovedSince())) {
+            if (this.visible && !this.exitInterval && !this.hasMouseMovedSince()) {
                 this.debugLog('ImagePreview: show cancel: visible & not moved');
                 return;
             }
 
-            if ((this.url === url) && ((this.visible) || (this.interval))) {
+            if (this.url === url && (this.visible || this.interval)) {
                 this.debugLog('ImagePreview: same url', url, this.url);
                 return;
             }
 
-            if ((this.url) && (this.sticky) && (this.visible)) {
+            if (this.url && this.sticky && this.visible) {
                 this.debugLog('ImagePreview: sticky visible');
                 return;
             }
 
             this.debugLog('ImagePreview: show.exec', url);
 
-            const due = ((url === this.exitUrl) && (this.exitInterval)) ? 0 : 200;
+            const due = url === this.exitUrl && this.exitInterval
+                ? 0
+                : 200;
 
             this.url = url;
             this.domain = domain(url);
@@ -487,12 +429,13 @@
 
                     if (helper) {
                       this.setState(helper.shouldTrackLoading() ? 'loading' : 'loaded');
-                    } else {
+                    }
+                    else {
                       this.setState('loaded');
                     }
                 },
                 due
-            ) as Timer;
+            );
         }
 
         hasMouseMovedSince(): boolean {
@@ -502,8 +445,9 @@
             try {
                 const p = screen.getCursorScreenPoint();
 
-                return ((p.x !== this.initialCursorPosition.x) || (p.y !== this.initialCursorPosition.y));
-            } catch (err) {
+                return (p.x !== this.initialCursorPosition.x || p.y !== this.initialCursorPosition.y);
+            }
+            catch (err) {
                 console.error('ImagePreview', err);
                 return true;
             }
@@ -523,13 +467,9 @@
             this.exitInterval = null;
         }
 
-        isVisible(): boolean {
-            return this.visible;
-        }
+        isVisible(): boolean { return this.visible }
 
-        getUrl(): string | null {
-            return this.url;
-        }
+        getUrl(): string | null { return this.url }
 
         /* isExternalUrl(): boolean {
             // 'f-list.net' is tested here on purpose, because keeps the character URLs from being previewed
@@ -555,9 +495,8 @@
 
 
         async executeJavaScript(js: string | undefined, context: string = 'unknown', logDetails?: any): Promise<any> {
-            // console.log('EXECUTE JS', js);
-
-            if (!this.runJs) return;
+            if (!this.runJs)
+                return;
 
             const webview = this.getWebview();
 
@@ -569,21 +508,18 @@
             this.debugLog(`ImagePreview execute-${context}`, js, logDetails);
 
             try {
-                const result = await (webview.executeJavaScript(js) as unknown as Promise<any>);
+                const result = await webview.executeJavaScript(js);
 
                 this.debugLog(`ImagePreview result-${context}`, result);
 
                 return result;
-            } catch (err) {
+            }
+            catch (err) {
                 this.debugLog(`ImagePreview error-${context}`, err);
             }
         }
 
-        debugLog(...args: any[]): void {
-            if (this.debug) {
-                console.log(...args);
-            }
-        }
+        debugLog(...args: any[]): void { if (this.debug) console.log(...args) }
 
 
         toggleStickyMode(): void {
@@ -594,17 +530,14 @@
         }
 
 
-        toggleJsMode(): void {
-            this.runJs = !this.runJs;
-        }
+        toggleJsMode(): void { this.runJs = !this.runJs }
 
 
         reloadUrl(): void {
             const helper = this.previewManager.getVisiblePreview();
 
-            if ((!helper) || (!helper.usesWebView())) {
-              return;
-            }
+            if (!helper?.usesWebView())
+                return;
 
             // helper.reload();
             this.getWebview().reload();
@@ -627,7 +560,7 @@
               [
                 new ExternalImagePreviewHelper(this),
                 new LocalImagePreviewHelper(this),
-                new CharacterPreviewHelper(this)
+                new CharacterPreviewHelper(this),
                 // new ChannelPreviewHelper(this)
               ]
             );
@@ -659,7 +592,12 @@
 
 
         setState(state: string): void {
-            this.debugLog('ImagePreview set-state', state, (this.visibleSince > 0) ? `${(Date.now() - this.visibleSince) / 1000}s` : '');
+            this.debugLog('ImagePreview set-state',
+                state,
+                this.visibleSince > 0
+                    ? `${(Date.now() - this.visibleSince) / 1000}s`
+                    : ''
+            );
 
             this.state = state;
             this.shouldShowSpinner = this.testSpinner();
@@ -668,8 +606,8 @@
 
 
         testSpinner(): boolean {
-            return (this.visibleSince > 0)
-                ? ((this.state === 'loading') && (Date.now() - this.visibleSince > 1000))
+            return this.visibleSince > 0
+                ? this.state === 'loading' && Date.now() - this.visibleSince > 1000
                 : false;
         }
 
@@ -677,11 +615,10 @@
         testError(): boolean {
             const helper = this.previewManager.getVisiblePreview();
 
-            if ((!helper) || (!helper.usesWebView())) {
-              return false;
-            }
+            if (!helper?.usesWebView())
+                return false;
 
-            return (this.state === 'error');
+            return this.state === 'error';
         }
     }
 </script>

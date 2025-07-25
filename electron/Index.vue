@@ -185,10 +185,8 @@
         {
             urls: [ 'https://api.imgur.com/*', 'https://i.imgur.com/*' ],
         },
-        (details: any, callback: any) => {
-            details.requestHeaders['Origin'] = null;
-            details.headers['Origin'] = null;
-
+        (details, callback) => {
+            details.requestHeaders['Origin'] = '';
             callback({requestHeaders: details.requestHeaders});
         }
     );
