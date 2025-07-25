@@ -269,19 +269,14 @@
                 }
             );
 
-            webview.addEventListener(
-                'did-navigate',
-                (event: Event) => {
-                    const e = event as DidNavigateEvent;
+            webview.addEventListener('did-frame-navigate', e => {
+                if (e.httpResponseCode >= 400) {
+                    const js = this.jsMutator.getErrorMutator(e.httpResponseCode, e.httpStatusText);
 
-                    if (e.httpResponseCode >= 400) {
-                        const js = this.jsMutator.getErrorMutator(e.httpResponseCode, e.httpStatusText);
-
-                        // tslint:disable-next-line
-                        this.executeJavaScript(js, 'did-navigate', event);
-                    }
+                    // tslint:disable-next-line
+                    this.executeJavaScript(js, 'did-navigate', e);
                 }
-            );
+            });
 
             // webview.getWebContents().on(
             webview.addEventListener(
