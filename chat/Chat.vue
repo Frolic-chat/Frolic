@@ -139,14 +139,11 @@
                 }
             });
             core.connection.onEvent('closed', (isReconnect) => {
-                log.debug(
-                  'connection.closed',
-                  {
+                log.debug('connection.closed', {
                     character: core.characters.ownCharacter?.name,
                     error: this.error,
                     isReconnect
-                  }
-                );
+                });
 
                 if(isReconnect) (<Modal>this.$refs['reconnecting']).show(true);
                 if(this.connected) core.notifications.playSound('logout');
@@ -166,11 +163,9 @@
             core.connection.onEvent('connecting', async() => {
                 this.connecting = true;
 
-                log.debug(
-                    'connection.connecting', {
-                        character: core.characters.ownCharacter?.name
-                    }
-                );
+                log.debug('connection.connecting', {
+                    character: core.characters.ownCharacter?.name
+                });
 
                 profileApiInit(
                     {
@@ -186,11 +181,9 @@
                     await core.notifications.requestPermission();
             });
             core.connection.onEvent('connected', () => {
-                log.debug(
-                    'connection.connected', {
-                        character: core.characters.ownCharacter?.name
-                    }
-                );
+                log.debug('connection.connected', {
+                    character: core.characters.ownCharacter?.name
+                });
 
                 (<Modal>this.$refs['reconnecting']).hide();
                 this.error = '';
@@ -210,12 +203,10 @@
                 }
             );
             core.connection.onError(e => {
-                log.debug(
-                    'connection.error', {
-                        error: errorToString(e),
-                        character: core.characters.ownCharacter?.name
-                    }
-                );
+                log.debug('connection.error', {
+                    error: errorToString(e),
+                    character: core.characters.ownCharacter?.name
+                });
 
                 if ((<Error & {request?: object}>e).request !== undefined) {//catch axios network errors
                     this.error = l('login.connectError', errorToString(e));
