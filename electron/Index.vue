@@ -183,9 +183,7 @@
     /* tslint:disable:no-unsafe-any no-any no-unnecessary-type-assertion */
     session.defaultSession.webRequest.onBeforeSendHeaders(
         {
-            urls: [
-                'https://(api|i).imgur.com/.*'
-            ]
+            urls: [ 'https://api.imgur.com/*', 'https://i.imgur.com/*' ],
         },
         (details: any, callback: any) => {
             details.requestHeaders['Origin'] = null;
