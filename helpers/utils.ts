@@ -38,19 +38,77 @@ export async function FisherYatesShuffle(arr: any[]): Promise<void> {
  * A lodash-replacement debounce useful on any input without a submit. Invoke
  * the bounce-blocker on every input, and the callback will only fire once
  * there's no input.
+ *
+ * The `maxWait` parameter prevents you from being able to delay the function
+ * forever. If `maxWait` is shorter than `wait`, it acts as a trailing-edge throttle.
  * @param callback Callback to bounce
  * @param wait Time to wait for there to be no input
+ * @param maxWait The limit on how long you can delay the function
  * @returns A function to invoke to reset the debounce
  */
 export function debounce<T>(callback: (this: T, ...args: any) => void,
-                            wait: number = 330
+                            { wait = 330, maxWait = 0 }: {
+                                wait?:    number,
+                                maxWait?: number,
+                            } = {}
                            ): () => void {
-    let timer: ReturnType<typeof setTimeout>;
+    let ret: () => void;
 
-    return function (this: T, ...args: any) {
-        clearTimeout(timer);
-        timer = setTimeout(() => { callback.apply(this, args); }, wait)
+    if (!maxWait) { // Simple
+        let timer: ReturnType<typeof setTimeout> | undefined;
+
+        ret = function (this: T, ...args: any) {
+            clearTimeout(timer);
+            timer = setTimeout(() => callback.apply(this, args), wait);
+        };
     }
+    else { // maxWait
+        let timer:    ReturnType<typeof setTimeout> | undefined;
+        let maxTimer: ReturnType<typeof setTimeout> | undefined;
+
+        const clear_timers = () => {
+            clearTimeout(maxTimer);
+            clearTimeout(timer);
+            maxTimer = undefined;
+            timer = undefined;
+        };
+
+        ret = function (this: T, ...args: any) {
+            if (!maxTimer) {
+                console.log('debounce.maxwait.fresh');
+
+                maxTimer = setTimeout(
+                    () => {
+                        clear_timers();
+                        callback.apply(this, args);
+                    },
+                    maxWait
+                );
+
+                timer = setTimeout(
+                    () => {
+                        clear_timers();
+                        callback.apply(this, args);
+                    },
+                    wait
+                );
+            }
+            else { // refresh
+                console.log('debounce.maxwait.running');
+
+                clearTimeout(timer);
+                timer = setTimeout(
+                    () => {
+                        clear_timers();
+                        callback.apply(this, args);
+                    },
+                    wait
+                );
+            }
+        }
+    }
+
+    return ret;
 }
 
 /**
