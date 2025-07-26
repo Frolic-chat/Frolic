@@ -16,8 +16,8 @@
                 <h4>
                   {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fas fa-sort-amount-down"></i></a>
                 </h4>
-                <div v-for="member in filteredMembers" :key="member.character.name">
-                    <user :character="member.character" :channel="channel" :showStatus="true"></user>
+                <div v-for="member in memberList" :key="member.character.name">
+                    <user :character="member.character" :channel="channel" @user-filter="userViewUpdateDebounce" @user-status="userViewUpdateDebounce" @user-rank="userViewUpdateDebounce"></user>
                 </div>
             </div>
             <div class="input-group" style="margin-top:5px;flex-shrink:0">
@@ -26,7 +26,7 @@
                         <span class="fas fa-search"></span>
                     </div>
                 </div>
-                <input class="form-control" v-model="filter" :placeholder="l('general.filter')" type="text"/>
+                <input class="form-control" v-model="filter" @input="filterDebounce()" :placeholder="l('general.filter')" type="text"/>
             </div>
         </div>
         <div v-if="!channel && !isConsoleTab" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
@@ -42,235 +42,300 @@
 </template>
 
 <script lang="ts">
-    import {Component} from '@f-list/vue-ts';
-    import Vue from 'vue';
-    import Tabs from '../components/tabs';
-    import core from './core';
-    import { Channel, Character, Conversation } from './interfaces';
-    import l from './localize';
-    import Sidebar from './Sidebar.vue';
-    import UserView from './UserView.vue';
-    import characterPage from '../site/character_page/character_page.vue';
-    import { profileLink } from './common';
+import { Component, Watch } from '@f-list/vue-ts';
+import Vue from 'vue';
+import Tabs from '../components/tabs';
+import core from './core';
+import { Channel, Character, Conversation } from './interfaces';
+import l from './localize';
+import Sidebar from './Sidebar.vue';
+import UserView from './UserListUserView.vue';
+import characterPage from '../site/character_page/character_page.vue';
+import { profileLink } from './common';
 
-    import { UserListSorter } from '../learn/matcher';
+import { UserListSorter } from '../learn/matcher';
+import { Scoring } from '../learn/matcher-types';
+import { debounce } from '../helpers/utils';
 
-    import Logger from 'electron-log/renderer';
-    const log = Logger.scope('UserList');
+// import Logger from 'electron-log/renderer';
+// const log = Logger.scope('UserList');
 
-    import { EventBus, CharacterProfileEvent } from './preview/event-bus';
+import { EventBus, CharacterDataEvent } from './preview/event-bus';
 
-    type StatusSort = {
-        [key in Character.Status]: number;
+type StatusSort = {
+    [key in Character.Status]: number;
+};
+
+type GenderSort = {
+    [key in Character.Gender]: number;
+};
+
+const statusSort: StatusSort = {
+    'crown':   0,
+    'looking': 1,
+    'online':  2,
+    'idle':    3,
+    'away':    4,
+    'busy':    5,
+    'dnd':     6,
+    'offline': 7,
+};
+
+const genderSort: GenderSort = {
+    'Cunt-boy':     0,
+    'Female':       1,
+    'Herm':         2,
+    'Male':         3,
+    'Male-Herm':    4,
+    'None':         5,
+    'Shemale':      6,
+    'Transgender':  7,
+};
+
+const availableSorts = ['normal', 'status', 'gender'] as const;
+
+async function recalculateSorterGenderPriorities(profileEvent: CharacterDataEvent): Promise<void> {
+    const you = profileEvent.profile.character;
+    const likes: Record<Scoring, Character.Gender[]> = {
+        '1': [], '0.5': [], '0': [], '-0.5': [], '-1': [],
     };
 
-    type GenderSort = {
-        [key in Character.Gender]: number;
-    };
+    for (const gender of (Object.keys(genderSort) as Character.Gender[])) {
+        // Try by kink, then by orientation.
+        const scoring = UserListSorter.getGenderPreferenceFromKink(you, gender)
+            ?? UserListSorter.GetGenderPreferenceFromOrientation(you, gender);
 
-    const statusSort: StatusSort = {
-        'crown':   0,
-        'looking': 1,
-        'online':  2,
-        'idle':    3,
-        'away':    4,
-        'busy':    5,
-        'dnd':     6,
-        'offline': 7,
-    };
-
-    const genderSort: GenderSort = {
-        'Cunt-boy':     0,
-        'Female':       1,
-        'Herm':         2,
-        'Male':         3,
-        'Male-Herm':    4,
-        'None':         5,
-        'Shemale':      6,
-        'Transgender':  7,
-    };
-
-    const availableSorts = ['normal', 'status', 'gender'] as const;
-
-    function recalculateSorterGenderPriorities(profileEvent: CharacterProfileEvent): void {
-        const you = profileEvent.profile.character;
-        const likes: {[key: string]: string[]} = {
-            '1': [], '0.5': [], '0': [], '-0.5': [], '-1': [],
-        }; // turn this into a record of number to string array
-
-        for (const gender of Object.keys(genderSort)) {
-            // SCORE GENDER BY KINK
-            let scoring: number | null = UserListSorter.getGenderPreferenceFromKink(you, gender);
-
-            // SCORE GENDER BY ORIENTATION
-            if (scoring === null) {
-                scoring = UserListSorter.GetGenderPreferenceFromOrientation(you, gender);
-            }
-
-            likes[scoring.toString()].push(gender);
-        }
-
-        // re-sort genderSort for character's gender pref.
-        for (const array of Object.values(likes)) {
-            array.sort(
-                (a, b) => {
-                    return a.localeCompare(b);
-                }
-            )
-        }
-
-        const simpleStruct = [
-          likes['1'], likes['0.5'], likes['0'], likes['-0.5'], likes['-1'],
-        ];
-        let i=0;
-        simpleStruct.forEach(array => {
-            while (array.length > 0) {
-                const value = array.shift() as Character.Gender;
-                if (value !== undefined) {
-                    genderSort[value] = i;
-                    i++;
-                }
-            }
-        });
-
-        log.debug('userlist.sorter.gender', { genderSort: genderSort });
+        likes[scoring].push(gender);
     }
 
-    EventBus.$on('own-profile-update',   recalculateSorterGenderPriorities);
+    let i = 0;
+    Object.values(likes).forEach(level =>
+        level.sort((a, b) => a.localeCompare(b))
+            .forEach(g => genderSort[g] = i++)
+    );
 
-    function isImportantToChannel(char: Character.Character, conv: Channel.Channel): boolean {
-        return char.isChatOp // Global operator
-            || conv.opList.includes(char.name)
-            || conv.owner === char.name;
+    //log.debug('userlist.sorter.gender', { genderSort: genderSort });
+}
+
+EventBus.$on('own-profile-update', async e => await recalculateSorterGenderPriorities(e));
+
+function isImportantToChannel(char: Character.Character, conv: Channel.Channel): boolean {
+    return char.isChatOp // Global operator
+        || conv.opList.includes(char.name)
+        || conv.owner === char.name;
+}
+
+let asyncSortedMembers: ReadonlyArray<Channel.Member> | null = null;
+let syncSortedMembers: ReadonlyArray<Channel.Member> = [];
+
+@Component({
+    components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}
+})
+export default class UserList extends Vue {
+    proxy: boolean = false;
+    tab = '0';
+    expanded = window.innerWidth >= 992;
+    filter = '';
+    l = l;
+
+    get memberList(): ReadonlyArray<Channel.Member> {
+        this.proxy;
+
+        if (asyncSortedMembers) {
+            //log.debug('memberList.asyncSort');
+            const m = [ ...asyncSortedMembers ];
+            asyncSortedMembers = null;
+            return m;
+        }
+        else {
+            //log.debug('memberList.syncSort');
+            return syncSortedMembers;
+        }
     }
 
-    @Component({
-        components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}
-    })
-    export default class UserList extends Vue {
-        tab = '0';
-        expanded = window.innerWidth >= 992;
-        filter = '';
-        l = l;
-        sorter = (x: Character, y: Character) => (
-            x.name.toLocaleLowerCase() < y.name.toLocaleLowerCase()
-                ? -1
-                : ( x.name.toLocaleLowerCase() > y.name.toLocaleLowerCase()
-                    ? 1
-                    : 0
-                )
-        );
+    sorter = (x: Character, y: Character) => (
+        x.name.toLocaleLowerCase() < y.name.toLocaleLowerCase()
+            ? -1
+            : x.name.toLocaleLowerCase() > y.name.toLocaleLowerCase()
+                ? 1
+                : 0
+    );
 
-        sortType: typeof availableSorts[number] = 'normal';
+    sortType: typeof availableSorts[number] = 'normal';
 
-        get friends(): Character[] {
-            return core.characters.friends.slice()
-                                    .sort(this.sorter);
-        }
+    get friends(): Character[] {
+        return core.characters.friends.slice()
+            .sort(this.sorter);
+    }
 
-        get bookmarks(): Character[] {
-            return core.characters.bookmarks.slice()
-                                    .filter(x => core.characters.friends.indexOf(x) === -1)
-                                    .sort(this.sorter);
-        }
+    get bookmarks(): Character[] {
+        return core.characters.bookmarks.slice()
+            .filter(x => !core.characters.friends.includes(x))
+            .sort(this.sorter);
+    }
 
-        get channel(): Channel {
-            return (<Conversation.ChannelConversation>core.conversations.selectedConversation).channel;
-        }
+    get channel(): Channel {
+        return (<Conversation.ChannelConversation>core.conversations.selectedConversation).channel;
+    }
 
-        get isConsoleTab(): Boolean {
-            return core.conversations.selectedConversation === core.conversations.consoleTab;
-        }
+    get isConsoleTab(): Boolean {
+        return core.conversations.selectedConversation === core.conversations.consoleTab;
+    }
 
-        get profileName(): string | undefined {
-            return this.channel ? undefined : core.conversations.selectedConversation.name;
-        }
+    get profileName(): string | undefined {
+        return this.channel ? undefined : core.conversations.selectedConversation.name;
+    }
 
-        get profileUrl(): string | undefined {
-          if (!this.profileName) {
+    get profileUrl(): string | undefined {
+        if (!this.profileName)
             return;
-          }
 
-          return profileLink(this.profileName);
-        }
+        return profileLink(this.profileName);
+    }
 
-        /* If we should ever want to use custom icons for each sort type, combining level-down-alt with:
-         * stream (normal)
-         * user-clock (status)
-         * venus-mars (gender)
-         * would be easy and make sense.
-         */
-        get filteredMembers(): ReadonlyArray<Channel.Member> {
-          const members = this.getFilteredMembers();
+    /* If we should ever want to use custom icons for each sort type, combining level-down-alt with:
+     * stream (normal)
+     * user-clock (status)
+     * venus-mars (gender)
+     * would be easy and make sense.
+     */
+    fastMemberList(): ReadonlyArray<Channel.Member> {
+        const sorted = [ ...this.matcherFilteredMembers() ];
 
-          if (this.sortType === 'normal') {
-            return members;
-          }
-
-          const sorted = [...members];
-
-          switch (this.sortType) {
-            case 'status':
-              sorted.sort((a, b) => {
+        switch (this.sortType) {
+        case 'normal':
+            break;
+        case 'status':
+            sorted.sort((a, b) => {
                 const aVal = statusSort[a.character.status];
                 const bVal = statusSort[b.character.status];
 
-                if (aVal - bVal === 0) {
-                  return a.character.name.localeCompare(b.character.name);
-                }
+                if (aVal - bVal === 0)
+                    return a.character.name.localeCompare(b.character.name);
 
                 return aVal - bVal;
-              });
-              break;
-
-            case 'gender':
-              sorted.sort((a, b) => {
+            });
+            break;
+        case 'gender':
+            sorted.sort((a, b) => {
                 const aVal = genderSort[(a.character.gender || 'None')];
                 const bVal = genderSort[(b.character.gender || 'None')];
 
-                if (aVal - bVal === 0) {
-                  return a.character.name.localeCompare(b.character.name);
-                }
+                if (aVal - bVal === 0)
+                    return a.character.name.localeCompare(b.character.name);
 
                 return aVal - bVal;
-              });
-              break;
-          }
-
-          return sorted;
+            });
+            break;
         }
 
-        getFilteredMembers() {
-          const members = this.prefilterMembers();
+        //log.debug('fastMemberList', { list: sorted.length });
+        return sorted;
+    }
 
-          if (!core.state.settings.risingFilter.hideChannelMembers) {
+    matcherFilteredMembers() {
+        const members = this.userFilteredMembers();
+
+        if (!core.state.settings.risingFilter.hideChannelMembers)
             return members;
-          }
 
-          return members.filter(m => {
+        return members.filter(m => {
             const p = core.cache.profileCache.getSync(m.character.name);
 
-            return !p || !p.match.isFiltered || isImportantToChannel(m.character, this.channel);
-          });
-        }
+            return !p?.match.isFiltered || isImportantToChannel(m.character, this.channel);
+        });
+    }
 
-        prefilterMembers(): ReadonlyArray<Channel.Member> {
-          const sorted = this.channel.sortedMembers;
+    userFilteredMembers(): ReadonlyArray<Channel.Member> {
+        const sorted = this.channel.sortedMembers;
 
-          if(this.filter.length === 0)
+        if (!this.filter)
             return sorted;
 
-          const filter = new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
+        const filter = new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
 
-          return sorted.filter(member => filter.test(member.character.name));
-        }
+        return sorted.filter(member => filter.test(member.character.name));
+    }
 
-        switchSort() {
-          const nextSortIndex = availableSorts.indexOf(this.sortType) + 1;
+    switchSort() {
+        const nextSortIndex = availableSorts.indexOf(this.sortType) + 1;
+        this.sortType = availableSorts[nextSortIndex % availableSorts.length];
+    }
 
-          this.sortType = availableSorts[nextSortIndex % availableSorts.length];
+    @Watch('channel', { deep: false })
+    fastChannelUpdate(): void {
+        //log.debug('fastChannelUpdate');
+
+        if (this.channel) {
+            syncSortedMembers = this.fastMemberList();
+            this.proxy = !this.proxy;
+
+            this.$nextTick(this.update);
         }
     }
+
+    @Watch('sortType')
+    sortUpdate(): void { this.update() }
+
+    filterDebounce = debounce(this.update, { wait: 355 });
+
+    changeFilter(): void { this.update() }
+
+    userViewUpdateDebounce = debounce(this.update, { maxWait: 1000 });
+
+    async update(): Promise<void> {
+        asyncSortedMembers = await this.updateMemberList();
+        this.proxy = !this.proxy;
+
+        //log.debug('update', { asm: asyncSortedMembers.length });
+    }
+
+    async updateMemberList(): Promise<ReadonlyArray<Channel.Member>> {
+        const sorted = [ ...this.matcherFilteredMembers() ];
+
+        switch (this.sortType) {
+        case 'normal':
+            break;
+        case 'status':
+            sorted.sort((a, b) => {
+                const aVal = statusSort[a.character.status];
+                const bVal = statusSort[b.character.status];
+
+                if (aVal - bVal === 0)
+                    return a.character.name.localeCompare(b.character.name);
+
+                return aVal - bVal;
+            });
+            break;
+        case 'gender':
+            sorted.sort((a, b) => {
+                const aVal = genderSort[(a.character.gender || 'None')];
+                const bVal = genderSort[(b.character.gender || 'None')];
+
+                if (aVal - bVal === 0)
+                    return a.character.name.localeCompare(b.character.name);
+
+                return aVal - bVal;
+            });
+            break;
+        }
+
+        return sorted;
+    }
+
+    // @Hook('mounted')
+    // mounted(): void {
+    //     log.debug('mounted');
+    //     this.fastChannelUpdate();
+
+    //     // EventBus.$on('select-conversation', async (_c: Conversation) => {
+    //     //     if (this.channel) {
+    //     //         //this.asyncSortedMembers = await this.updateAsyncMemberList();
+    //     //         log.debug('select-conversation');
+    //     //         //log.debug('created.select-conversation', { asm: this.asyncSortedMembers });
+    //     // });
+    // }
+}
 </script>
 
 <style lang="scss">
