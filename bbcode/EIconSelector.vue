@@ -96,7 +96,7 @@ export default class EIconSelector extends CustomDialog {
     search: string = '';
     refreshing: boolean = true;
 
-    searchUpdateDebounce = debounce(() => this.runSearch(), 350);
+    searchUpdateDebounce = debounce(() => this.runSearch(), { wait: 350 });
 
     @Hook('mounted')
     async mounted(): Promise<void> {
