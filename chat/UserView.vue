@@ -2,7 +2,6 @@
      v-bind character and channel are used in UserMenu handleEvent when crawling up the DOM -->
 <template><span :class="userClass" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="!!avatar" :src="avatarUrl" class="user-avatar" /><span v-if="!!statusClass" :class="statusClass"></span><span v-if="!!rankIcon" :class="rankIcon"></span><span v-if="!!smartFilterIcon" :class="smartFilterIcon"></span>{{character.name}}<span v-if="!!matchClass" :class="matchClass">{{getMatchScoreTitle(matchScore)}}</span></span></template>
 
-
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
@@ -14,44 +13,42 @@ import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import { characterImage } from './common';
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
-
 export function getStatusIcon(status: Character.Status): string {
     switch(status) {
-        case 'online':
-            return 'far fa-user';
-        case 'looking':
-            return 'fa fa-eye';
-        case 'dnd':
-            return 'fa fa-minus-circle';
-        case 'offline':
-            return 'fa fa-ban';
-        case 'away':
-            return 'far fa-circle';
-        case 'busy':
-            return 'fa fa-cog';
-        case 'idle':
-            return 'far fa-clock';
-        case 'crown':
-            return 'fa fa-birthday-cake';
+    case 'online':
+        return 'far fa-user';
+    case 'looking':
+        return 'fa fa-eye';
+    case 'dnd':
+        return 'fa fa-minus-circle';
+    case 'offline':
+        return 'fa fa-ban';
+    case 'away':
+        return 'far fa-circle';
+    case 'busy':
+        return 'fa fa-cog';
+    case 'idle':
+        return 'far fa-clock';
+    case 'crown':
+        return 'fa fa-birthday-cake';
     }
 }
 
-
 export interface StatusClasses {
-    rankIcon:         string | null;
-    smartFilterIcon:  string | null;
-    statusClass:      string | null;
-    matchClass:       string | null;
+    rankIcon:         string          | null;
+    smartFilterIcon:  string          | null;
+    statusClass:      string          | null;
+    matchClass:       string          | null;
     matchScore:       string | number | null;
     userClass:        string;
     isBookmark:       boolean;
 }
 
-export function getStatusClasses(   character:    Character,
-                                    channel:      Channel | undefined,
-                                    showStatus:   boolean,
-                                    showBookmark: boolean,
-                                    showMatch:    boolean
+export function getStatusClasses(character:    Character,
+                                 channel:      Channel | undefined,
+                                 showStatus:   boolean,
+                                 showBookmark: boolean,
+                                 showMatch:    boolean
                                 ): StatusClasses {
 
     let rankIcon:        StatusClasses['rankIcon']        = null;
@@ -63,10 +60,10 @@ export function getStatusClasses(   character:    Character,
     if (character.isChatOp) {
         rankIcon = 'far fa-gem';
     }
-    else if (channel !== undefined) {
-        rankIcon = (channel.owner === character.name)
+    else if (channel) {
+        rankIcon = channel.owner === character.name
             ? 'fa fa-key'
-            : channel.opList.indexOf(character.name) !== -1
+            : channel.opList.includes(character.name)
                 ? (channel.id.substring(0, 4) === 'adh-' ? 'fa fa-shield-alt' : 'fa fa-star')
                 : null;
     }
@@ -77,25 +74,25 @@ export function getStatusClasses(   character:    Character,
     let cache: CharacterCacheRecord | null | undefined = undefined;
     try {
         /**
-         * In legacy portions of the code, `core.connection.isOpen` is used as
-         * a proxy for having loaded `core.state.settings`, and it works only
-         * because you're stuck on a load screen for the duration of both
-         * structures setting up. However, this coupling seems like it's just
-         * tip-toeing around the issue. `.settings` *deliberately* throws, so
-         * it's better to catch than pretend we care about `.isOpen`.
+         * In old code, `core.connection.isOpen` is a proxy for `core.state.settings`,
+         * and it works because you're stuck on a load screen for the duration of both
+         * structures setting up. However, this coupling just tip-toes around the issue.
+         * `.settings` *deliberately* throws, so catching is proper and intended.
          */
-        cache = ((showMatch && core.state.settings.risingAdScore)
-             || core.state.settings.risingFilter.showFilterIcon)
-                    ? core.cache.profileCache.getSync(character.name)
-                    : undefined;
+        if (showMatch && core.state.settings.risingAdScore) {
+            // Isn't this supposed to show some sort of matching?
+            cache = core.cache.profileCache.getSync(character.name);
+        }
+        else if (core.state.settings.risingFilter.showFilterIcon) {
+            cache = core.cache.profileCache.getSync(character.name);
+        }
     }
     catch {}
 
     // undefined == not interested
     // null == no cache hit
-    if (cache === null && showMatch) {
+    if (cache === null && showMatch)
         void core.cache.addProfile(character.name);
-    }
 
     if (cache && showMatch && core.state.settings.risingAdScore) {
         if (cache.match.searchScore >= kinkMatchWeights.unicornThreshold && cache.match.matchScore === Scoring.MATCH) {
@@ -112,11 +109,15 @@ export function getStatusClasses(   character:    Character,
         smartFilterIcon = 'user-filter fas fa-filter';
     }
 
-    const baseGender = character.overrides.gender || character.gender;
-    const gender = baseGender !== undefined ? baseGender.toLowerCase() : 'none';
+    const gender = (character.overrides.gender || character.gender)?.toLowerCase() ?? 'none';
 
-    const isBookmark = showBookmark && core.connection.isOpen && core.state.settings.colorBookmarks &&
-        (character.isFriend || character.isBookmarked);
+    let isBookmark: boolean = false;
+    try {
+        if (showBookmark && core.state.settings.colorBookmarks && (character.isFriend || character.isBookmarked)) {
+            isBookmark = true;
+        }
+    }
+    catch {}
 
     const userClass = `user-view gender-${gender}${isBookmark ? ' user-bookmark' : ''}`;
 
@@ -127,10 +128,9 @@ export function getStatusClasses(   character:    Character,
         matchScore,
         userClass,
         smartFilterIcon,
-        isBookmark
+        isBookmark,
     };
 }
-
 
 @Component({ components: {} })
 export default class UserView extends Vue {
@@ -140,31 +140,30 @@ export default class UserView extends Vue {
     @Prop()
     readonly channel?: Channel;
 
-    @Prop()
-    readonly showStatus?: boolean = true;
+    @Prop({ default: true })
+    readonly showStatus: boolean = true;
 
-    @Prop({default: true})
-    readonly bookmark?: boolean = true;
+    @Prop({ default: true })
+    readonly bookmark: boolean = true;
 
-    @Prop()
-    readonly match?: boolean = false;
+    @Prop({ default: false })
+    readonly match: boolean = false;
 
-    @Prop({default: true})
+    @Prop({ default: true })
     readonly preview: boolean = true;
 
-    @Prop({default: false})
+    @Prop({ default: false })
     readonly avatar: boolean = false;
 
-    userClass = '';
+    userClass:       StatusClasses['userClass']       = '';
+    rankIcon:        StatusClasses['rankIcon']        = null;
+    statusClass:     StatusClasses['statusClass']     = null;
+    matchClass:      StatusClasses['matchClass']      = null;
+    matchScore:      StatusClasses['matchScore']      = null;
+    smartFilterIcon: StatusClasses['smartFilterIcon'] = null;
 
-    rankIcon: string | null = null;
-    smartFilterIcon: string | null = null;
-    statusClass: string | null = null;
-    matchClass: string | null = null;
-    matchScore: number | string | null = null;
-    avatarUrl: string | null = null;
+    avatarUrl:       string | null                    = null;
 
-    // tslint:disable-next-line no-any
     scoreWatcher: ((event: CharacterScoreEvent) => void) | null = null;
 
     @Hook('mounted')
@@ -172,16 +171,11 @@ export default class UserView extends Vue {
         this.update();
 
         if (this.match && !this.matchClass) {
-            if (this.scoreWatcher) {
+            if (this.scoreWatcher)
                 EventBus.$off('character-score', this.scoreWatcher);
-            }
 
-            // tslint:disable-next-line no-unsafe-any no-any
-            this.scoreWatcher = (event): void => {
-                // console.log('scoreWatcher', event);
-
-                // tslint:disable-next-line no-unsafe-any no-any
-                if (event.profile.character.name === this.character.name) {
+            this.scoreWatcher = ({ profile }): void => {
+                if (profile.character.name === this.character.name) {
                     this.update();
 
                     if (this.scoreWatcher) {
@@ -205,29 +199,18 @@ export default class UserView extends Vue {
     }
 
     @Hook('deactivated')
-    deactivate(): void {
-        this.dismiss();
-    }
+    deactivate(): void { this.dismiss() }
 
     @Hook('beforeUpdate')
-    onBeforeUpdate(): void {
-        this.update();
-    }
+    onBeforeUpdate(): void { this.update() }
 
     @Watch('character.status')
-    onStatusUpdate(): void {
-        //console.error('userview character update', this.character.name, this.character.status);
-        this.update();
-    }
+    onStatusUpdate(): void { this.update() }
 
     @Watch('character.overrides.avatarUrl')
-    onAvatarUrlUpdate(): void {
-        this.update();
-    }
+    onAvatarUrlUpdate(): void { this.update() }
 
     update(): void {
-        // console.log('user.view.update', this.character.name);
-
         const res = getStatusClasses(this.character, this.channel, !!this.showStatus, !!this.bookmark, !!this.match);
 
         this.rankIcon        = res.rankIcon;
@@ -239,55 +222,39 @@ export default class UserView extends Vue {
         this.avatarUrl       = this.character.overrides.avatarUrl || characterImage(this.character.name);
     }
 
-
     getMatchScoreTitle(score: number | string | null): string {
         switch (score) {
-            case 'unicorn':
-                return 'Unicorn';
-
-            case Scoring.MATCH:
-                return 'Great';
-
-            case Scoring.WEAK_MATCH:
-                return 'Good';
-
-            case Scoring.WEAK_MISMATCH:
-                return 'Maybe';
-
-            case Scoring.MISMATCH:
-                return 'No';
+        case 'unicorn':
+            return 'Unicorn';
+        case Scoring.MATCH:
+            return 'Great';
+        case Scoring.WEAK_MATCH:
+            return 'Good';
+        case Scoring.WEAK_MISMATCH:
+            return 'Maybe';
+        case Scoring.MISMATCH:
+            return 'No';
         }
 
         return '';
     }
 
-
-    getCharacterUrl(): string {
-        return `flist-character://${this.character.name}`;
-    }
-
+    getCharacterUrl(): string { return `flist-character://${this.character.name}` }
 
     dismiss(force: boolean = false): void {
-        if (!this.preview)
-            return;
-
-        EventBus.$emit('imagepreview-dismiss', {url: this.getCharacterUrl(), force});
+        if (this.preview)
+            EventBus.$emit('imagepreview-dismiss', { url: this.getCharacterUrl(), force });
     }
-
 
     show(): void {
-        if (!this.preview)
-            return;
 
-        EventBus.$emit('imagepreview-show', {url: this.getCharacterUrl()});
+        if (this.preview)
+            EventBus.$emit('imagepreview-show', { url: this.getCharacterUrl() });
     }
 
-
     toggleStickyness(): void {
-        if (!this.preview)
-            return;
-
-        EventBus.$emit('imagepreview-toggle-sticky', {url: this.getCharacterUrl()});
+        if (this.preview)
+            EventBus.$emit('imagepreview-toggle-sticky', { url: this.getCharacterUrl() });
     }
 }
 </script>
