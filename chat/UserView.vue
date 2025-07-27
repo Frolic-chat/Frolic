@@ -2,7 +2,6 @@
      v-bind character and channel are used in UserMenu handleEvent when crawling up the DOM -->
 <template><span :class="userClass" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="!!avatar" :src="avatarUrl" class="user-avatar" /><span v-if="!!statusClass" :class="statusClass"></span><span v-if="!!rankIcon" :class="rankIcon"></span><span v-if="!!smartFilterIcon" :class="smartFilterIcon"></span>{{character.name}}<span v-if="!!matchClass" :class="matchClass">{{getMatchScoreTitle(matchScore)}}</span></span></template>
 
-
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
@@ -14,28 +13,26 @@ import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import { characterImage } from './common';
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
-
 export function getStatusIcon(status: Character.Status): string {
     switch(status) {
-        case 'online':
-            return 'far fa-user';
-        case 'looking':
-            return 'fa fa-eye';
-        case 'dnd':
-            return 'fa fa-minus-circle';
-        case 'offline':
-            return 'fa fa-ban';
-        case 'away':
-            return 'far fa-circle';
-        case 'busy':
-            return 'fa fa-cog';
-        case 'idle':
-            return 'far fa-clock';
-        case 'crown':
-            return 'fa fa-birthday-cake';
+    case 'online':
+        return 'far fa-user';
+    case 'looking':
+        return 'fa fa-eye';
+    case 'dnd':
+        return 'fa fa-minus-circle';
+    case 'offline':
+        return 'fa fa-ban';
+    case 'away':
+        return 'far fa-circle';
+    case 'busy':
+        return 'fa fa-cog';
+    case 'idle':
+        return 'far fa-clock';
+    case 'crown':
+        return 'fa fa-birthday-cake';
     }
 }
-
 
 export interface StatusClasses {
     rankIcon:         string          | null;
@@ -47,11 +44,11 @@ export interface StatusClasses {
     isBookmark:       boolean;
 }
 
-export function getStatusClasses(   character:    Character,
-                                    channel:      Channel | undefined,
-                                    showStatus:   boolean,
-                                    showBookmark: boolean,
-                                    showMatch:    boolean
+export function getStatusClasses(character:    Character,
+                                 channel:      Channel | undefined,
+                                 showStatus:   boolean,
+                                 showBookmark: boolean,
+                                 showMatch:    boolean
                                 ): StatusClasses {
 
     let rankIcon:        StatusClasses['rankIcon']        = null;
@@ -64,7 +61,7 @@ export function getStatusClasses(   character:    Character,
         rankIcon = 'far fa-gem';
     }
     else if (channel) {
-        rankIcon = (channel.owner === character.name)
+        rankIcon = channel.owner === character.name
             ? 'fa fa-key'
             : channel.opList.includes(character.name)
                 ? (channel.id.substring(0, 4) === 'adh-' ? 'fa fa-shield-alt' : 'fa fa-star')
@@ -134,7 +131,6 @@ export function getStatusClasses(   character:    Character,
         isBookmark,
     };
 }
-
 
 @Component({ components: {} })
 export default class UserView extends Vue {
@@ -226,21 +222,16 @@ export default class UserView extends Vue {
         this.avatarUrl       = this.character.overrides.avatarUrl || characterImage(this.character.name);
     }
 
-
     getMatchScoreTitle(score: number | string | null): string {
         switch (score) {
         case 'unicorn':
             return 'Unicorn';
-
         case Scoring.MATCH:
             return 'Great';
-
         case Scoring.WEAK_MATCH:
             return 'Good';
-
         case Scoring.WEAK_MISMATCH:
             return 'Maybe';
-
         case Scoring.MISMATCH:
             return 'No';
         }
@@ -248,11 +239,7 @@ export default class UserView extends Vue {
         return '';
     }
 
-
-    getCharacterUrl(): string {
-        return `flist-character://${this.character.name}`;
-    }
-
+    getCharacterUrl(): string { return `flist-character://${this.character.name}` }
 
     dismiss(force: boolean = false): void {
         if (!this.preview)
@@ -261,14 +248,12 @@ export default class UserView extends Vue {
         EventBus.$emit('imagepreview-dismiss', { url: this.getCharacterUrl(), force });
     }
 
-
     show(): void {
         if (!this.preview)
             return;
 
         EventBus.$emit('imagepreview-show', { url: this.getCharacterUrl() });
     }
-
 
     toggleStickyness(): void {
         if (!this.preview)
