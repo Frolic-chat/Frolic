@@ -14,7 +14,7 @@
         <div v-if="channel" style="padding-left:5px;flex:1;display:flex;flex-direction:column" v-show="tab === '1'">
             <div class="users" style="flex:1;padding-left:5px">
                 <h4>
-                  {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><i class="fas fa-sort-amount-down"></i></a>
+                  {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
                 </h4>
                 <div v-for="member in filteredMembers" :key="member.character.name">
                     <user :character="member.character" :channel="channel" :showStatus="true"></user>
@@ -54,19 +54,13 @@
     import { profileLink } from './common';
 
     import { UserListSorter } from '../learn/matcher';
+    import { EventBus, CharacterDataEvent } from './preview/event-bus';
 
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('UserList');
 
-    import { EventBus, CharacterProfileEvent } from './preview/event-bus';
-
-    type StatusSort = {
-        [key in Character.Status]: number;
-    };
-
-    type GenderSort = {
-        [key in Character.Gender]: number;
-    };
+    type StatusSort = { [key in Character.Status]: number };
+    type GenderSort = { [key in Character.Gender]: number };
 
     const statusSort: StatusSort = {
         'crown':   0,
@@ -77,7 +71,7 @@
         'busy':    5,
         'dnd':     6,
         'offline': 7,
-    };
+    } as const;
 
     const genderSort: GenderSort = {
         'Cunt-boy':     0,
@@ -92,8 +86,8 @@
 
     const availableSorts = ['normal', 'status', 'gender'] as const;
 
-    function recalculateSorterGenderPriorities(profileEvent: CharacterProfileEvent): void {
-        const you = profileEvent.profile.character;
+    function recalculateSorterGenderPriorities({ profile }: CharacterDataEvent): void {
+        const you = profile.character;
         const likes: {[key: string]: string[]} = {
             '1': [], '0.5': [], '0': [], '-0.5': [], '-1': [],
         }; // turn this into a record of number to string array
@@ -112,11 +106,7 @@
 
         // re-sort genderSort for character's gender pref.
         for (const array of Object.values(likes)) {
-            array.sort(
-                (a, b) => {
-                    return a.localeCompare(b);
-                }
-            )
+            array.sort((a, b) => a.localeCompare(b))
         }
 
         const simpleStruct = [
@@ -126,7 +116,7 @@
         simpleStruct.forEach(array => {
             while (array.length > 0) {
                 const value = array.shift() as Character.Gender;
-                if (value !== undefined) {
+                if (value) {
                     genderSort[value] = i;
                     i++;
                 }
@@ -136,7 +126,7 @@
         log.debug('userlist.sorter.gender', { genderSort: genderSort });
     }
 
-    EventBus.$on('own-profile-update',   recalculateSorterGenderPriorities);
+    EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
 
     function isImportantToChannel(char: Character.Character, conv: Channel.Channel): boolean {
         return char.isChatOp // Global operator
@@ -152,26 +142,18 @@
         expanded = window.innerWidth >= 992;
         filter = '';
         l = l;
-        sorter = (x: Character, y: Character) => (
-            x.name.toLocaleLowerCase() < y.name.toLocaleLowerCase()
-                ? -1
-                : ( x.name.toLocaleLowerCase() > y.name.toLocaleLowerCase()
-                    ? 1
-                    : 0
-                )
-        );
 
         sortType: typeof availableSorts[number] = 'normal';
 
         get friends(): Character[] {
             return core.characters.friends.slice()
-                                    .sort(this.sorter);
+                .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
         }
 
         get bookmarks(): Character[] {
             return core.characters.bookmarks.slice()
-                                    .filter(x => core.characters.friends.indexOf(x) === -1)
-                                    .sort(this.sorter);
+                .filter(x => !core.characters.friends.includes(x))
+                .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
         }
 
         get channel(): Channel {
@@ -187,9 +169,8 @@
         }
 
         get profileUrl(): string | undefined {
-          if (!this.profileName) {
-            return;
-          }
+          if (!this.profileName)
+              return;
 
           return profileLink(this.profileName);
         }
@@ -203,21 +184,20 @@
         get filteredMembers(): ReadonlyArray<Channel.Member> {
           const members = this.getFilteredMembers();
 
-          if (this.sortType === 'normal') {
-            return members;
-          }
+            if (this.sortType === 'normal')
+                return members;
 
-          const sorted = [...members];
+            const sorted = [ ...members ];
 
-          switch (this.sortType) {
+            /** `{ sensitivity: 'base' }` should not be necessary due to the pre-sorting that happens when a new channel member joins, but could technically come in handy after changing through various list sorts. */
+            switch (this.sortType) {
             case 'status':
               sorted.sort((a, b) => {
                 const aVal = statusSort[a.character.status];
                 const bVal = statusSort[b.character.status];
 
-                if (aVal - bVal === 0) {
-                  return a.character.name.localeCompare(b.character.name);
-                }
+                    if (aVal === bVal)
+                        return a.character.name.localeCompare(b.character.name, undefined, { sensitivity: 'base' });
 
                 return aVal - bVal;
               });
@@ -228,9 +208,8 @@
                 const aVal = genderSort[(a.character.gender || 'None')];
                 const bVal = genderSort[(b.character.gender || 'None')];
 
-                if (aVal - bVal === 0) {
-                  return a.character.name.localeCompare(b.character.name);
-                }
+                if (aVal === bVal)
+                        return a.character.name.localeCompare(b.character.name, undefined, { sensitivity: 'base' });
 
                 return aVal - bVal;
               });
@@ -243,22 +222,21 @@
         getFilteredMembers() {
           const members = this.prefilterMembers();
 
-          if (!core.state.settings.risingFilter.hideChannelMembers) {
-            return members;
-          }
+            if (!core.state.settings.risingFilter.hideChannelMembers)
+                return members;
 
           return members.filter(m => {
             const p = core.cache.profileCache.getSync(m.character.name);
 
-            return !p || !p.match.isFiltered || isImportantToChannel(m.character, this.channel);
-          });
+                return !p?.match.isFiltered || isImportantToChannel(m.character, this.channel);
+            });
         }
 
         prefilterMembers(): ReadonlyArray<Channel.Member> {
           const sorted = this.channel.sortedMembers;
 
-          if(this.filter.length === 0)
-            return sorted;
+            if (!this.filter)
+                return sorted;
 
           const filter = new RegExp(this.filter.replace(/[^\w]/gi, '\\$&'), 'i');
 
@@ -266,9 +244,8 @@
         }
 
         switchSort() {
-          const nextSortIndex = availableSorts.indexOf(this.sortType) + 1;
-
-          this.sortType = availableSorts[nextSortIndex % availableSorts.length];
+            const next = availableSorts.indexOf(this.sortType) + 1;
+            this.sortType = availableSorts[next % availableSorts.length];
         }
     }
 </script>
@@ -280,6 +257,7 @@
 
     #user-list {
         flex-direction: column;
+
         h4 {
             margin: 5px 0 0 -5px;
             font-size: 17px;
