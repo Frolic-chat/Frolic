@@ -276,7 +276,7 @@ export class Matcher {
     }
 
     static identifyBestMatchReport(you: Character, them: Character): MatchReport {
-        const reportStartTime = Date.now();
+        //const reportStartTime = Date.now();
 
         const yourCharacterAnalyses  = Matcher.generateAnalysisVariations(you);
         const theirCharacterAnalyses = Matcher.generateAnalysisVariations(them);
@@ -335,13 +335,13 @@ export class Matcher {
             }
         }
 
-        log.debug(
-            'report.identify.best', {
-                buildTime: Date.now() - reportStartTime,
-                variations: yourCharacterAnalyses.length * theirCharacterAnalyses.length,
-                report: bestReport!,
-            }
-        );
+        // log.debug(
+        //     'report.identify.best', {
+        //         buildTime: Date.now() - reportStartTime,
+        //         variations: yourCharacterAnalyses.length * theirCharacterAnalyses.length,
+        //         report: bestReport!,
+        //     }
+        // );
 
         return bestReport!;
     }
@@ -811,7 +811,7 @@ export class Matcher {
 
         const weighted = scores.favorite.weighted + scores.yes.weighted + scores.maybe.weighted + scores.no.weighted;
 
-        log.debug('report.score.kink', { them: this.them.name, you: this.you.name, scores, weight: weighted });
+        // log.debug('report.score.kink', { them: this.them.name, you: this.you.name, scores, weight: weighted });
 
         if (scores.favorite.count + scores.yes.count + scores.maybe.count + scores.no.count < 10) {
             return new Score(Scoring.NEUTRAL);
