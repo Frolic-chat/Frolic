@@ -34,8 +34,8 @@ import * as path from 'path';
 import process from 'node:process';
 const platform = process.platform;
 
-import * as electron from 'electron';
-const app = electron.app; // Module to control application life.
+import * as Electron from 'electron';
+const app = Electron.app; // Module to control application life.
 
 // `InitLogger` runs the electron-log init, so has to run before any use of the logger.
 import InitLogger from './logger';
@@ -70,7 +70,7 @@ const icon: string = InitIcon(platform);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-const windows: electron.BrowserWindow[] = [];
+const windows: Electron.BrowserWindow[] = [];
 const characters: string[] = [];
 let tabCount = 0;
 
@@ -108,7 +108,7 @@ if (!settings.hwAcceleration) {
 
 
 export function updateSpellCheckerLanguages(langs: string[]): void {
-    electron.session.defaultSession.setSpellCheckerLanguages(langs);
+    Electron.session.defaultSession.setSpellCheckerLanguages(langs);
 
     for (const w of windows) {
         w.webContents.session.setSpellCheckerLanguages(langs);
@@ -139,7 +139,7 @@ async function toggleDictionary(lang: string): Promise<void> {
 function setGeneralSettings(value: GeneralSettings): void {
     fs.writeFileSync(settingsFile, JSON.stringify(value));
 
-    for (const w of electron.webContents.getAllWebContents()) w.send('settings', settings);
+    for (const w of Electron.webContents.getAllWebContents()) w.send('settings', settings);
 
     shouldImportSettings = false;
 
@@ -148,9 +148,9 @@ function setGeneralSettings(value: GeneralSettings): void {
     Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
 }
 
-async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
+async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
     const selected = getSafeLanguages(settings.spellcheckLang);
-    const langs = electron.session.defaultSession.availableSpellCheckerLanguages;
+    const langs = Electron.session.defaultSession.availableSpellCheckerLanguages;
 
     const sortedLangs = langs
         .map(lang => ({
@@ -161,7 +161,7 @@ async function addSpellcheckerItems(menu: electron.Menu): Promise<void> {
         .sort((a, b) => a.name.localeCompare(b.name));
 
     for (const lang of sortedLangs) {
-        menu.append(new electron.MenuItem(
+        menu.append(new Electron.MenuItem(
             {
                 type: 'checkbox',
                 label: lang.name,
@@ -191,12 +191,12 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     if (!settings.browserPath) {
         if (!incognito) {
             // Zero config: Open in system default browser
-            electron.shell.openExternal(url);
+            Electron.shell.openExternal(url);
             return;
         }
         else {
             // TODO: Robust error handler.
-            electron.dialog.showMessageBox({
+            Electron.dialog.showMessageBox({
                 title: 'Frolic - Browser Failure',
                 message: l('chat.noBrowser'),
                 type: 'warning',
@@ -225,7 +225,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     }
     catch {
         // TODO: Robust error handler.
-        electron.dialog.showMessageBox({
+        Electron.dialog.showMessageBox({
             title: 'Frolic - Browser Failure',
             message: l('chat.brokenBrowser'),
             type: 'warning',
@@ -245,7 +245,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         }
         else {
             // TODO: Robust error handler.
-            electron.dialog.showMessageBox({
+            Electron.dialog.showMessageBox({
                 title: 'Frolic - Browser Failure',
                 message: l('chat.noBrowser'),
                 type: 'warning',
@@ -283,7 +283,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         exec(`"${settings.browserPath}" ${args}`);
 }
 
-function setUpWebContents(webContents: electron.WebContents): void {
+function setUpWebContents(webContents: Electron.WebContents): void {
     remoteMain.enable(webContents);
 
     const openLinkExternally = (url: string) => {
@@ -301,7 +301,7 @@ function setUpWebContents(webContents: electron.WebContents): void {
 
     webContents.setVisualZoomLevelLimits(1, 5);
 
-    webContents.on('will-navigate', (e: Electron.Event, url: string) => {
+    webContents.on('will-navigate', (e, url: string) => {
         e.preventDefault();
         openLinkExternally(url);
     });
@@ -315,12 +315,12 @@ function setUpWebContents(webContents: electron.WebContents): void {
 
 const windowStatePath = path.join(settingsDir, 'window.json');
 
-function createWindow(): electron.BrowserWindow | undefined {
+function createWindow(): Electron.BrowserWindow | undefined {
     if (tabCount >= 3) return;
 
     const lastState = windowState.getSavedWindowState(windowStatePath);
 
-    const windowProperties: electron.BrowserWindowConstructorOptions & {maximized: boolean} = {
+    const windowProperties: Electron.BrowserWindowConstructorOptions & {maximized: boolean} = {
         ...lastState,
         center: lastState.x === undefined,
         show: false,
@@ -343,23 +343,23 @@ function createWindow(): electron.BrowserWindow | undefined {
        windowProperties.frame = false;
     }
 
-    const window = new electron.BrowserWindow(windowProperties);
+    const window = new Electron.BrowserWindow(windowProperties);
 
     remoteMain.enable(window.webContents);
 
     windows.push(window);
 
     window.webContents.on('will-attach-webview', () => {
-            const all = electron.webContents.getAllWebContents();
+            const all = Electron.webContents.getAllWebContents();
             all.forEach(item => remoteMain.enable(item));
     });
 
-    updateSupportedLanguages(electron.session.defaultSession.availableSpellCheckerLanguages);
+    updateSupportedLanguages(Electron.session.defaultSession.availableSpellCheckerLanguages);
 
     const safeLanguages = getSafeLanguages(settings.spellcheckLang);
 
     // console.log('CREATEWINDOW', safeLanguages);
-    electron.session.defaultSession.setSpellCheckerLanguages(safeLanguages);
+    Electron.session.defaultSession.setSpellCheckerLanguages(safeLanguages);
     window.webContents.session.setSpellCheckerLanguages(safeLanguages);
 
     // Set up ad blocker
@@ -367,14 +367,12 @@ function createWindow(): electron.BrowserWindow | undefined {
 
     // This prevents automatic download prompts on certain webview URLs without
     // stopping conversation logs from being downloaded
-    electron.session.defaultSession.on('will-download',
-        (e: Electron.Event, item: electron.DownloadItem) => {
-            if (!item.getURL().match(/^blob:file:/)) {
-                log.info('download.prevent', { item, event: e });
-                e.preventDefault();
-            }
+    Electron.session.defaultSession.on('will-download', (e, item) => {
+        if (!item.getURL().match(/^blob:file:/)) {
+            log.info('download.prevent', { item, event: e });
+            e.preventDefault();
         }
-    );
+    });
 
     // tslint:disable-next-line:no-floating-promises
     window.loadFile(
@@ -402,13 +400,13 @@ function showPatchNotes(): void {
     openURLExternally(FROLIC.ChangelogUrl);
 }
 
-function openBrowserSettings(): electron.BrowserWindow | undefined {
+function openBrowserSettings(): Electron.BrowserWindow | undefined {
     let desiredHeight = 664
     if (platform === 'darwin') {
         desiredHeight = 664;
     }
 
-    const windowProperties: electron.BrowserWindowConstructorOptions = {
+    const windowProperties: Electron.BrowserWindowConstructorOptions = {
         center: true,
         show: false,
         icon: icon,
@@ -428,7 +426,7 @@ function openBrowserSettings(): electron.BrowserWindow | undefined {
         }
     };
 
-    const browserWindow = new electron.BrowserWindow(windowProperties);
+    const browserWindow = new Electron.BrowserWindow(windowProperties);
     remoteMain.enable(browserWindow.webContents);
     browserWindow.loadFile(
         path.join(__dirname, 'browser_option.html'),
@@ -471,7 +469,7 @@ function onReady(): void {
     }
 
     function updateAllZoom(c: Electron.WebContents[]   = [],
-                           b: electron.BrowserWindow[] = [],
+                           b: Electron.BrowserWindow[] = [],
                            zoomLevel: number
                         ): void {
         c.forEach(w => w.send('update-zoom', zoomLevel));
@@ -487,13 +485,13 @@ function onReady(): void {
 
     const viewItem = {
         label: `&${ l('action.view') }`,
-        submenu: <electron.MenuItemConstructorOptions[]>[
+        submenu: <Electron.MenuItemConstructorOptions[]>[
             // {role: 'resetZoom'},
             {
                 label: l('action.resetZoom'),
                 click: () => {
                     zoomLevel = 0;
-                    updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                    updateAllZoom(Electron.webContents.getAllWebContents(), windows, zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+0'
             },
@@ -505,7 +503,7 @@ function onReady(): void {
                     // Will we ever be in a situation where it's otherwise?
                     if (w instanceof Electron.BrowserWindow) {
                         zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
-                        updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                        updateAllZoom(Electron.webContents.getAllWebContents(), windows, zoomLevel);
                     }
                 },
                 accelerator: 'CmdOrCtrl+='
@@ -519,7 +517,7 @@ function onReady(): void {
                     if (w instanceof Electron.BrowserWindow) {
                         zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
 
-                        updateAllZoom(electron.webContents.getAllWebContents(), windows, zoomLevel);
+                        updateAllZoom(Electron.webContents.getAllWebContents(), windows, zoomLevel);
                     }
                 },
                 accelerator: 'CmdOrCtrl+-'
@@ -530,7 +528,7 @@ function onReady(): void {
     };
     if (process.env.NODE_ENV !== 'production')
         viewItem.submenu.unshift({role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}, {type: 'separator'});
-    const spellcheckerMenu = new electron.Menu();
+    const spellcheckerMenu = new Electron.Menu();
 
     //tslint:disable-next-line:no-floating-promises
     addSpellcheckerItems(spellcheckerMenu);
@@ -549,7 +547,7 @@ function onReady(): void {
         setGeneralSettings(settings);
     };
 
-    electron.Menu.setApplicationMenu(electron.Menu.buildFromTemplate([
+    Electron.Menu.setApplicationMenu(Electron.Menu.buildFromTemplate([
         updateMenuItem,
         {
             label: `&${l('title')}`,
@@ -591,15 +589,15 @@ function onReady(): void {
                         if (!window)
                             return;
 
-                        const dir = electron.dialog.showOpenDialogSync(
+                        const dir = Electron.dialog.showOpenDialogSync(
                             {defaultPath: settings.logDirectory, properties: ['openDirectory']}
                         );
 
                         if (dir) {
                             if (dir[0].startsWith(path.dirname(app.getPath('exe'))))
-                                return electron.dialog.showErrorBox(l('settings.logDir'), l('settings.logDir.inAppDir'));
+                                return Electron.dialog.showErrorBox(l('settings.logDir'), l('settings.logDir.inAppDir'));
 
-                            const button = electron.dialog.showMessageBoxSync(window, {
+                            const button = Electron.dialog.showMessageBoxSync(window, {
                                 message: l('settings.logDir.confirm', dir[0], settings.logDirectory),
                                 buttons: [l('confirmYes'), l('confirmNo')],
                                 cancelId: 1
@@ -717,7 +715,7 @@ function onReady(): void {
                         if (!window)
                             return;
 
-                        const button = electron.dialog.showMessageBoxSync(window, {
+                        const button = Electron.dialog.showMessageBoxSync(window, {
                             message: l('chat.confirmLeave'),
                             buttons: [l('confirmYes'), l('confirmNo')],
                             cancelId: 1
@@ -782,7 +780,7 @@ function onReady(): void {
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
 
-                const menu = electron.Menu.getApplicationMenu()!;
+                const menu = Electron.Menu.getApplicationMenu()!;
                 const item = menu.getMenuItemById(updateMenuItem.id);
                 if (item) item.visible = true;
 
@@ -799,7 +797,7 @@ function onReady(): void {
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
 
-                const menu = electron.Menu.getApplicationMenu()!;
+                const menu = Electron.Menu.getApplicationMenu()!;
                 const item = menu.getMenuItemById(updateMenuItem.id);
                 if (item) item.visible = true;
 
@@ -811,22 +809,22 @@ function onReady(): void {
 
 
     //#region SecureStore
-    electron.ipcMain.handle('setPassword', async (_e, domain: string, account: string, password: string) => {
+    Electron.ipcMain.handle('setPassword', async (_e, domain: string, account: string, password: string) => {
         await SecureStore.setPassword(domain, account, password);
     });
 
-    electron.ipcMain.handle('deletePassword', async (_e, domain: string, account: string) => {
+    Electron.ipcMain.handle('deletePassword', async (_e, domain: string, account: string) => {
         await SecureStore.deletePassword(domain, account);
     });
 
-    electron.ipcMain.handle('getPassword', async (_e, domain: string, account: string) => {
+    Electron.ipcMain.handle('getPassword', async (_e, domain: string, account: string) => {
         return await SecureStore.getPassword(domain, account);
     });
     //#endregion
 
 
-    electron.ipcMain.on('tab-added', (_e, id: number) => {
-        const webContents = electron.webContents.fromId(id);
+    Electron.ipcMain.on('tab-added', (_e, id: number) => {
+        const webContents = Electron.webContents.fromId(id);
         if (!webContents) {
             log.error('main.tab-added.error', 'Failed to have id when tab added, but still triggered tab-added. This is a weird error!');
             return;
@@ -837,16 +835,16 @@ function onReady(): void {
         if(tabCount === 3)
             for(const w of windows) w.webContents.send('allow-new-tabs', false);
     });
-    electron.ipcMain.on('tab-closed', () => {
+    Electron.ipcMain.on('tab-closed', () => {
         --tabCount;
         for(const w of windows) w.webContents.send('allow-new-tabs', true);
     });
-    electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
+    Electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
         settings.account = account;
         settings.host = host;
         setGeneralSettings(settings);
     });
-    electron.ipcMain.on('connect', (e, character: string) => { //hack
+    Electron.ipcMain.on('connect', (e, character: string) => { //hack
         if (characters.includes(character)) { // Logged in already!
             log.debug('ipcMain.connect.alreadyLoggedIn');
             e.preventDefault();
@@ -861,27 +859,27 @@ function onReady(): void {
         }
 
     });
-    electron.ipcMain.on('dictionary-add', (_e, word: string) => {
+    Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
         // setGeneralSettings(settings);
         for (const w of windows) w.webContents.session.addWordToSpellCheckerDictionary(word);
     });
-    electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
+    Electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
         // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
         // setGeneralSettings(settings);
     });
-    electron.ipcMain.on('disconnect', (_e, character: string) => {
+    Electron.ipcMain.on('disconnect', (_e, character: string) => {
         const index = characters.indexOf(character);
         if (index !== -1) characters.splice(index, 1);
     });
 
 
     const adCoordinator = new AdCoordinatorHost();
-    electron.ipcMain.on('request-send-ad', (e, adId: string) => adCoordinator.processAdRequest(e, adId));
+    Electron.ipcMain.on('request-send-ad', (e, adId: string) => adCoordinator.processAdRequest(e, adId));
 
-    const emptyBadge = electron.nativeImage.createEmpty();
-    const badge = electron.nativeImage.createFromPath(
+    const emptyBadge = Electron.nativeImage.createEmpty();
+    const badge = Electron.nativeImage.createFromPath(
         path.join(__dirname, <string>require('./build/badge.png').default)
     );
 
@@ -889,23 +887,23 @@ function onReady(): void {
     function badgeWindow(e: Electron.IpcMainEvent, hasNew: boolean) {
         app.dock?.setBadge(hasNew ? '!' : '');
 
-        const window = electron.BrowserWindow.fromWebContents(e.sender);
+        const window = Electron.BrowserWindow.fromWebContents(e.sender);
         window?.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
     }
-    electron.ipcMain.on('has-new', badgeWindow);
+    Electron.ipcMain.on('has-new', badgeWindow);
 
-    electron.ipcMain.on('rising-upgrade-complete', () => {
+    Electron.ipcMain.on('rising-upgrade-complete', () => {
         hasCompletedUpgrades = true;
-        for (const w of electron.webContents.getAllWebContents())
+        for (const w of Electron.webContents.getAllWebContents())
             w.send('rising-upgrade-complete');
     });
 
-    electron.ipcMain.on('update-zoom', (_e, zl: number) => {
-        for (const w of electron.webContents.getAllWebContents())
+    Electron.ipcMain.on('update-zoom', (_e, zl: number) => {
+        for (const w of Electron.webContents.getAllWebContents())
             w.send('update-zoom', zl);
     });
 
-    electron.ipcMain.handle('browser-option-browse', async () => {
+    Electron.ipcMain.handle('browser-option-browse', async () => {
         log.debug('settings.browser.browse');
         console.log('settings.browser.browse', JSON.stringify(settings));
 
@@ -920,7 +918,7 @@ function onReady(): void {
             filters = [{ name: 'Executables', extensions: ['*'] }];
         }
 
-        const dir = electron.dialog.showOpenDialogSync({
+        const dir = Electron.dialog.showOpenDialogSync({
             defaultPath: settings.browserPath,
             properties: ['openFile'],
             filters: filters,
@@ -942,9 +940,9 @@ function onReady(): void {
         setGeneralSettings(settings);
     }
 
-    electron.ipcMain.on('browser-option-update', updateBrowserOption);
+    Electron.ipcMain.on('browser-option-update', updateBrowserOption);
 
-    electron.ipcMain.on('open-url-externally', (_e, url: string, incognito: boolean = false) => {
+    Electron.ipcMain.on('open-url-externally', (_e, url: string, incognito: boolean = false) => {
         openURLExternally(url, incognito);
     });
 
