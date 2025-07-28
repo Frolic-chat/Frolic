@@ -77,6 +77,15 @@
                 </label>
             </div>
             <div class="form-group">
+                <label class="control-label" for="expensiveMemberList">
+                    <input type="checkbox" id="expensiveMemberList" v-model="expensiveMemberList"/>
+                    {{l('settings.expensiveMemberList')}}
+                </label>
+                <div v-if="expensiveMemberList">
+                    <small>{{ l('settings.expensiveMemberList.selectedInfo') }}</small>
+                </div>
+            </div>
+            <div class="form-group">
                 <label class="control-label" for="fontSize">{{l('settings.fontSize')}}</label>
                 <input id="fontSize" type="number" min="10" max="24" class="form-control" v-model="fontSize"/>
             </div>
@@ -466,6 +475,7 @@
         logMessages!: boolean; // All messages
         logChannels!: boolean;
         logAds!: boolean;
+        expensiveMemberList!: boolean;
         fontSize!: string;
         showNeedsReply!: boolean;
         enterSend!: boolean;
@@ -522,6 +532,7 @@
             this.logMessages = settings.logMessages;
             this.logChannels = settings.logChannels;
             this.logAds = settings.logAds;
+            this.expensiveMemberList = settings.expensiveMemberList;
             this.fontSize = settings.fontSize.toString();
             this.showNeedsReply = settings.showNeedsReply;
             this.enterSend = settings.enterSend;
@@ -607,6 +618,7 @@
                 logMessages: this.logMessages,
                 logChannels: this.logChannels,
                 logAds: this.logAds,
+                expensiveMemberList: this.expensiveMemberList,
                 fontSize: isNaN(fontSize) ? 14 : fontSize < 10 ? 10 : fontSize > 24 ? 24 : fontSize,
                 showNeedsReply: this.showNeedsReply,
                 enterSend: this.enterSend,
