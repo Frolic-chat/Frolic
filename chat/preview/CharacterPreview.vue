@@ -82,7 +82,100 @@ import { methods } from '../../site/character_page/data_store';
 import {Character as ComplexCharacter} from '../../site/character_page/interfaces';
 import { Matcher, MatchReport, Score } from '../../learn/matcher';
 import { Character as CharacterStatus } from '../../fchat';
-import { getStatusClasses, StatusClasses } from '../UserView.vue';
+import { getStatusIcon } from '../UserView.vue';
+import { kinkMatchWeights, Scoring } from '../../learn/matcher-types';
+import { CharacterCacheRecord } from '../../learn/profile-cache';
+
+export interface StatusClasses {
+    rankIcon:         string          | null;
+    smartFilterIcon:  string          | null;
+    statusClass:      string          | null;
+    matchClass:       string          | null;
+    matchScore:       string | number | null;
+    userClass:        string;
+    isBookmark:       boolean;
+}
+
+export function getStatusClasses(character:    CharacterStatus.Character,
+                                 showStatus:   boolean,
+                                 showBookmark: boolean,
+                                 showMatch:    boolean
+                                ): StatusClasses {
+
+    let rankIcon:        StatusClasses['rankIcon']        = null;
+    let statusClass:     StatusClasses['statusClass']     = null;
+    let matchClass:      StatusClasses['matchClass']      = null;
+    let matchScore:      StatusClasses['matchScore']      = null;
+    let smartFilterIcon: StatusClasses['smartFilterIcon'] = null;
+
+    if (character.isChatOp) {
+        rankIcon = 'far fa-gem';
+    }
+
+    if (showStatus || character.status === 'crown')
+        statusClass = `fa-fw ${getStatusIcon(character.status)}`;
+
+    let cache: CharacterCacheRecord | null | undefined = undefined;
+    try {
+        /**
+         * In old code, `core.connection.isOpen` is a proxy for `core.state.settings`,
+         * and it works because you're stuck on a load screen for the duration of both
+         * structures setting up. However, this coupling just tip-toes around the issue.
+         * `.settings` *deliberately* throws, so catching is proper and intended.
+         */
+        if (showMatch && core.state.settings.risingAdScore) {
+            // Isn't this supposed to show some sort of matching?
+            cache = core.cache.profileCache.getSync(character.name);
+        }
+        else if (core.state.settings.risingFilter.showFilterIcon) {
+            cache = core.cache.profileCache.getSync(character.name);
+        }
+    }
+    catch {}
+
+    // undefined == not interested
+    // null == no cache hit
+    if (cache === null && showMatch)
+        void core.cache.addProfile(character.name);
+
+    if (cache && showMatch && core.state.settings.risingAdScore) {
+        if (cache.match.searchScore >= kinkMatchWeights.unicornThreshold && cache.match.matchScore === Scoring.MATCH) {
+            matchClass = 'match-found unicorn';
+            matchScore = 'unicorn';
+        }
+        else {
+            matchClass = `match-found ${Score.getClasses(cache.match.matchScore)}`;
+            matchScore = cache.match.matchScore;
+        }
+    }
+
+    if (cache?.match.isFiltered && core.state.settings.risingFilter.showFilterIcon) {
+        smartFilterIcon = 'user-filter fas fa-filter';
+    }
+
+    const gender = (character.overrides.gender || character.gender)?.toLowerCase() ?? 'none';
+
+    let isBookmark: boolean = false;
+    try {
+        if (showBookmark && core.state.settings.colorBookmarks && (character.isFriend || character.isBookmarked)) {
+            isBookmark = true;
+        }
+    }
+    catch {}
+
+    const userClass = `user-view gender-${gender}${isBookmark ? ' user-bookmark' : ''}`;
+
+    return {
+        rankIcon:    rankIcon    ? `user-rank   ${rankIcon}`    : null,
+        statusClass: statusClass ? `user-status ${statusClass}` : null,
+        matchClass,
+        matchScore,
+        userClass,
+        smartFilterIcon,
+        isBookmark,
+    };
+}
+
 import * as _ from 'lodash';
 import l from '../localize';
 import { AdCachedPosting } from '../../learn/ad-cache';
@@ -292,7 +385,7 @@ export default class CharacterPreview extends Vue {
     }
 
     this.statusMessage = this.onlineCharacter.statusText;
-    this.statusClasses = getStatusClasses(this.onlineCharacter, undefined, true, false, true);
+    this.statusClasses = getStatusClasses(this.onlineCharacter, true, false, true);
   }
 
   updateAdStatus(): void {

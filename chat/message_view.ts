@@ -48,6 +48,7 @@ const userPostfix: {[key: number]: string | undefined} = {
                         avatar: tryRisingPortrait(),
                         character: message.sender,
                         channel: this.channel,
+                        immediate: true,
                     }
                 }),
                 userPostfix[message.type] !== undefined

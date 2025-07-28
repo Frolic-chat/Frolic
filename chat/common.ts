@@ -45,6 +45,7 @@ export class Settings implements ISettings {
     logMessages = true; // All messages
     logChannels = false;
     logAds = false;
+    expensiveMemberList = false;
     fontSize = 14;
     showNeedsReply = false;
     enterSend = true;

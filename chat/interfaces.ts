@@ -231,6 +231,7 @@ export namespace Settings {
         readonly logMessages: boolean; // All messages
         readonly logChannels: boolean;
         readonly logAds: boolean;
+        readonly expensiveMemberList: boolean;
         readonly fontSize: number;
         readonly showNeedsReply: boolean;
         readonly enterSend: boolean;

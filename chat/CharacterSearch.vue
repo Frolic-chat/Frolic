@@ -41,11 +41,11 @@
             <div v-for="record in results" :key="record.character.name" class="search-result" :class="'status-' + record.character.status">
                 <template v-if="record.character.status === 'looking'" v-once>
                     <img :src="characterImage(record.character.name)" v-if="showAvatars"/>
-                    <user :character="record.character" :showStatus="true" :match="shouldShowMatch" :avatar="false"></user>
+                    <user :character="record.character" :showStatus="true" :match="shouldShowMatch" :hide="true" :avatar="false"></user>
                     <bbcode :text="record.character.statusText" class="status-text"></bbcode>
                 </template>
                 <template v-else v-once>
-                  <user :character="record.character" :showStatus="true" :match="shouldShowMatch" :avatar="shouldShowAvatar"></user>
+                  <user :character="record.character" :showStatus="true" :match="shouldShowMatch" :hide="true" :avatar="shouldShowAvatar"></user>
                   <bbcode :text="record.character.statusText" v-if="!!record.character.statusText" class="status-text"></bbcode>
                 </template>
             </div>

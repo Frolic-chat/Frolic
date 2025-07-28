@@ -17,7 +17,7 @@
                 {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
             </h4>
             <div v-for="member in filteredMembers" :key="member.character.name">
-                <user :character="member.character" :channel="channel" :showStatus="true"></user>
+                <user :character="member.character" :channel="channel" :hide="true" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
             </div>
         </div>
         <div class="input-group" style="margin-top:5px;flex-shrink:0">
@@ -57,6 +57,7 @@ import { profileLink } from './common';
 import { UserListSorter } from '../learn/matcher';
 import { Scoring } from '../learn/matcher-types';
 import { EventBus, CharacterDataEvent } from './preview/event-bus';
+import { debounce } from '../helpers/utils';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('UserList');
@@ -72,6 +73,9 @@ const statusSort: StatusSort = {
     'offline': 7,
 } as const;
 
+/**
+ * This list is automatically re-sorted to your character's preference.
+ */
 const genderSort: GenderSort = {
     'Cunt-boy':     0,
     'Female':       1,
@@ -135,6 +139,15 @@ export default class UserList extends Vue {
     filter = '';
     l = l;
 
+    userListProxy = false;
+    userViewUpdateThrottle = debounce(this.update, { wait: 1000, maxWait: 3000 });
+
+    /** This was async in testing */
+    update(): void {
+        // asyncSortedMembers = await this.updateMemberList();
+        this.userListProxy = !this.userListProxy;
+    }
+
     sortType: typeof availableSorts[number] = 'normal';
 
     get friends(): Character[] {
@@ -171,6 +184,9 @@ export default class UserList extends Vue {
         * would be easy and make sense.
         */
     get filteredMembers(): ReadonlyArray<Channel.Member> {
+        //Trigger update from UserView
+        this.userListProxy;
+
         const members = this.getFilteredMembers();
 
         if (this.sortType === 'normal')
