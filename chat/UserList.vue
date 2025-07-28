@@ -47,6 +47,7 @@
     import Tabs from '../components/tabs';
     import core from './core';
     import { Channel, Character, Conversation } from './interfaces';
+    import { isImportantToChannel } from './conversations';
     import l from './localize';
     import Sidebar from './Sidebar.vue';
     import UserView from './UserView.vue';
@@ -136,13 +137,7 @@
         log.debug('userlist.sorter.gender', { genderSort: genderSort });
     }
 
-    EventBus.$on('own-profile-update',   recalculateSorterGenderPriorities);
-
-    function isImportantToChannel(char: Character.Character, conv: Channel.Channel): boolean {
-        return char.isChatOp // Global operator
-            || conv.opList.includes(char.name)
-            || conv.owner === char.name;
-    }
+    EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
 
     @Component({
         components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}

@@ -748,7 +748,7 @@ async function withNeutralVisibilityPrivateConversation(character: Character.Cha
  * @param channel Channel to test user importance against
  * @returns True if character is of some importance in that room
  */
-function isImportantToChannel(char: Character.Character, channel: Channel.Channel): boolean {
+export function isImportantToChannel(char: Character.Character, channel: Channel.Channel): boolean {
     return char.isChatOp // Global operator
         || channel.opList.includes(char.name)
         || channel.owner === char.name;
@@ -759,7 +759,7 @@ function isImportantToChannel(char: Character.Character, channel: Channel.Channe
  * @param fromChar Character who sent you a message
  * @returns True if character is important in any channel you're in.
  */
-function globallyImportant(fromChar: Character.Character): boolean {
+export function globallyImportant(fromChar: Character.Character): boolean {
     for (const channel of core.channels.joinedChannels) {
         if (isImportantToChannel(fromChar, channel))
             return true;
