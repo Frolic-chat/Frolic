@@ -75,7 +75,6 @@ import {
     speciesNames
 } from '../learn/matcher-types';
 import { CharacterCacheRecord } from '../learn/profile-cache';
-import Bluebird from 'bluebird';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('CharacterSearch');
@@ -243,10 +242,8 @@ export default class CharacterSearch extends CustomDialog {
                 .sort(sort);
 
             // pre-warm cache
-            await Bluebird.mapSeries(
-                results,
-                c => core.cache.profileCache.get(c.character.name)
-            );
+            for (const c of results)
+                await core.cache.profileCache.get(c.character.name);
 
             this.resultsPending = this.countPendingResults(undefined, results);
 
