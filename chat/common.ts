@@ -10,11 +10,7 @@ export function profileLink(this: any | never, character: string): string {
 export function characterImage(this: any | never, character: string): string {
     const c = core.characters.get(character);
 
-    if (c.overrides.avatarUrl) {
-        return c.overrides.avatarUrl;
-    }
-
-    return `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
+    return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
 }
 
 export function getByteLength(this: any | never, str: string): number {

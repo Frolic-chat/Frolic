@@ -236,16 +236,15 @@ export default class Connection implements Interfaces.Connection {
             throw error;
         }
 
-        log.debug(
-          'api.query.success',
-          {
-            endpoint,
-            data,
-            character: core.characters.ownCharacter?.name,
-            deltaToLastApiCall: Date.now() - lastFetch,
-            deltaToLastApiTicket: Date.now() - lastApiTicketFetch
-          }
-        );
+        if (endpoint !== 'character-data.php') {
+            log.debug('api.query.success', {
+                endpoint,
+                data,
+                character: core.characters.ownCharacter?.name,
+                deltaToLastApiCall: Date.now() - lastFetch,
+                deltaToLastApiTicket: Date.now() - lastApiTicketFetch
+            });
+        }
 
         return res;
     }
