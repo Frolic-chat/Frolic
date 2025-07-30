@@ -549,6 +549,7 @@
         risingShowPortraitNearInput!: boolean;
         risingShowPortraitInMessage!: boolean;
         risingShowHighQualityPortraits!: boolean;
+        customGender!: boolean;
 
         // So the object has to be created to start stuffing things in it.
         // But the empty object is an invalid SmartFilterSettings.
@@ -608,6 +609,7 @@
             this.risingShowPortraitNearInput = settings.risingShowPortraitNearInput;
             this.risingShowPortraitInMessage = settings.risingShowPortraitInMessage;
             this.risingShowHighQualityPortraits = settings.risingShowHighQualityPortraits;
+            this.customGender = settings.customGender;
 
             this.notifyFriendSignIn = settings.notifyFriendSignIn;
 
@@ -695,6 +697,7 @@
                 risingShowPortraitNearInput: this.risingShowPortraitNearInput,
                 risingShowPortraitInMessage: this.risingShowPortraitInMessage,
                 risingShowHighQualityPortraits: this.risingShowHighQualityPortraits,
+                customGender: this.customGender,
 
                 notifyFriendSignIn: this.notifyFriendSignIn,
 
