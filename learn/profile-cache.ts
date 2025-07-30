@@ -210,8 +210,30 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         return match?.[1].trim() ?? null;
     }
 
+    static detectCustomGender(description: string): string | null {
+        // if (!core.state.settings.useCustomGender) {
+        //     return null;
+        // }
+
+        const match = description.match(/\[i=gender=([^\]]+)]/i);
+
+        return match?.[1] ?? null;
+    }
+
     updateOverrides(c: ComplexCharacter): void {
         const avatarUrl = ProfileCache.detectRisingPortraitURL(c.character.description);
+
+        const gender = ProfileCache.detectCustomGender(c.character.description);
+
+        //const color = ProfileCache.detectCustomColor()
+
+        // de-hardcode this.
+        if (gender === 'tm' || gender === 'tf') {
+            core.characters.setOverride(c.character.name, 'gender', gender);
+        }
+        else if (gender) {
+            log.warn('updateOverrides.gender.invalid', "tm and tf only at this time.");
+        }
 
         if (avatarUrl) {
             if (!ProfileCache.isSafeRisingPortraitURL(avatarUrl)) {
