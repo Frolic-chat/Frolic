@@ -19,6 +19,11 @@ export class CharacterProfiler {
         this.adCache = adCache;
     }
 
+    /**
+     * Although this is exclusively used by the profile cache manager, it could easily be supported as a General Relationship Tracker (eidols).
+     * @param characterName
+     * @returns Numerical rating used to reorganize the profile queue; higher scores to the front
+     */
     calculateInterestScoreForQueueEntry(entry: ProfileCacheQueueEntry): number {
         const c = core.characters.get(entry.name);
 

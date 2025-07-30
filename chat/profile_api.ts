@@ -57,9 +57,7 @@ async function characterData(name: string | undefined, id: number = -1, skipEven
     return characterDataThroat(async() => executeCharacterData(name, id, skipEvent));
 }
 
-// tslint:disable-next-line: ban-ts-ignore
-// @ts-ignore
-async function executeCharacterData(name: string | undefined, id: number = -1, skipEvent: boolean = false): Promise<Character> {
+async function executeCharacterData(name: string | undefined, _id: number = -1, skipEvent: boolean = false): Promise<Character> {
     const data = await core.connection.queryApi<CharacterInfo & {
         is_self: boolean,
         badges: string[],

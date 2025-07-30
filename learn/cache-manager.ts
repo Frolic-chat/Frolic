@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import core from '../chat/core';
 import { ChannelAdEvent, ChannelMessageEvent, CharacterDataEvent, EventBus, SelectConversationEvent } from '../chat/preview/event-bus';
 import { Conversation } from '../chat/interfaces';
@@ -83,7 +82,14 @@ export class CacheManager {
         return this.lastPost;
     }
 
+    /**
+     * Add a user to the queue for fetching profiles from the server.
+     * @param name Character name
+     * @param skipCacheCheck The cache can be skipped to hard-reload character data
+     * @param channelId Provide a channel id to allow dropping this character from the queue if we un-focus the channel. (Useful to mitigate background noise from characters your no longer care about)
+     */
     async queueForFetching(name: string, skipCacheCheck: boolean = false, channelId?: string): Promise<void> {
+        // This settings check is inappropriately placed. A method is a course of action; the settings should be checked before deciding which course of action you take.
         if (!core.state.settings.risingAdScore) {
             return;
         }
@@ -101,7 +107,8 @@ export class CacheManager {
 
         const key = ProfileCache.nameKey(name);
 
-        if (!!_.find(this.queue, (q: ProfileCacheQueueEntry) => (q.key === key)))
+        // Store them as lowercase and we won't have to check the key.
+        if (this.queue.some(q => q.key === key))
             return;
 
         const entry: ProfileCacheQueueEntry = {
@@ -114,9 +121,6 @@ export class CacheManager {
         };
 
         this.queue.push(entry);
-
-        // console.log('Added to queue', entry.name, entry.added.toISOString());
-        // console.log('AddProfileForFetching', name, this.queue.length);
     }
 
 
@@ -138,6 +142,12 @@ export class CacheManager {
     }
 
 
+    /**
+     * A wasteful function that will probably die when the cache is more orderly.
+     * @param c
+     * @param score
+     * @param isFiltered
+     */
     updateAdScoringForProfile(c: ComplexCharacter, score: number, isFiltered: boolean): void {
         this.scoreAllConversations(c.character.name, score, isFiltered);
         void this.respondToPendingRejections(c);
@@ -164,6 +174,14 @@ export class CacheManager {
       }
     }
 
+    /**
+     * Fetch a character profile from the server and add it to the cache.
+     * If provided a character object, then it runs the secondary processes of
+     * turning that character into a fully fleshed-out character.
+     *
+     * But under what scenarios do we actually need to process without fetching?
+     * @param character Character name to fetch, or a character object to finish
+     */
     async addProfile(character: string | ComplexCharacter): Promise<void> {
         if (typeof character === 'string') {
             log.silly('Learn discover', character);
@@ -194,19 +212,22 @@ export class CacheManager {
             return null;
         }
 
+        // Sorting should be done when we add the new entry,
+        // not every update.
+
         // re-score
-        this.queue.forEach((e: ProfileCacheQueueEntry) => e.score = this.calculateScore(e));
+        this.queue.forEach(e => e.score = this.calculateScore(e))
+        this.queue.sort((a, b) => a.score - b.score);
 
-        this.queue = _.sortBy(this.queue, 'score');
+        log.debug('QUEUE', this.queue.map(q => `${q.name}: ${q.score}`));
 
-        log.debug('QUEUE', _.map(this.queue, (q) => `${q.name}: ${q.score}`));
+        const entry = this.queue.pop();
 
-        const entry = this.queue.pop() as ProfileCacheQueueEntry;
+        if (!entry)
+            return null;
 
-        if (entry) {
-          // just in case - remove duplicates
-          this.queue = this.queue.filter(q => q.name !== entry.name);
-        }
+        // just in case - remove duplicates
+        this.queue = this.queue.filter(q => q.name !== entry.name);
 
         log.debug('PopFromQueue', entry.name, this.queue.length);
 
@@ -298,7 +319,7 @@ export class CacheManager {
                             }
 
                             // just in case - remove duplicates
-                            this.queue = _.filter(this.queue, (q) => q.name !== next.name);
+                            this.queue = this.queue.filter(q => q.name !== next.name);
                             delete this.ongoingLog[next.name];
                         } catch (err) {
                             console.error('Profile queue error', err);
@@ -389,32 +410,41 @@ export class CacheManager {
 
         // Add fetchers for unknown profiles in ads
         await Promise.all(conversation!.messages
-                .filter(m => {
-                    if (m.type !== Message.Type.Ad)
-                        return false;
+            .filter(m => {
+                if (m.type !== Message.Type.Ad)
+                    return false;
 
-                    if (m.sender.name in checkedNames)
-                        return false;
+                if (m.sender.name in checkedNames)
+                    return false;
 
-                    checkedNames[m.sender.name] = true;
-                    return true;
-                })
-                .map(async m => {
-                    // m must be ChatMessage because `m.type === Ad`.
-                    const chatMessage = m as ChatMessage;
+                checkedNames[m.sender.name] = true;
+                return true;
+            })
+            .map(async m => {
+                // m must be ChatMessage because `m.type === Ad`.
+                const chatMessage = m as ChatMessage;
 
-                    if (chatMessage.score)
-                        return;
+                if (chatMessage.score)
+                    return;
 
-                    const p = await this.resolvePScore(false, chatMessage.sender, conversation as ChannelConversation, chatMessage, true);
+                const p = await this.resolvePScore(false, chatMessage.sender, conversation as ChannelConversation, chatMessage, true);
 
-                    if (!p)
-                        await this.queueForFetching(chatMessage.sender.name, true, channel.id);
-                })
+                if (!p)
+                    await this.queueForFetching(chatMessage.sender.name, true, channel.id);
+            })
         );
     }
 
 
+    /**
+     * Match a character, score their message (if provided), and return their scored Character.
+     * @param skipStore Don't store profile in cache; just retrieve scoring info
+     * @param char Character who posted the message
+     * @param conv Conversation message is posted in
+     * @param msg Message to be scored
+     * @param populateAll (Default: true) Spread score to all conversations?
+     * @returns CharacterCache if relevant
+     */
     async resolvePScore(skipStore: boolean,
                         char: ChatCharacter,
                         conv: ChannelConversation,

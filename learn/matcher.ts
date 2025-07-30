@@ -470,7 +470,7 @@ export class Matcher {
 
     static scoreOrientationByGender(yourGender: Gender | null, yourOrientation: Orientation | null, theirGender: Gender | null): Score {
         function doesntHaveGender(g: Gender | null): g is null {
-            return g === null
+            return !g
                 || g === Gender.None;
         }
 
