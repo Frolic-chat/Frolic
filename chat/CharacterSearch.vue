@@ -405,13 +405,20 @@ export default class CharacterSearch extends CustomDialog {
      */
     countPendingResults(names?: string[], results = this.results): number {
         return results.reduce((accum, result) => {
+            const char = result.character.name;
             if (result.profile)
                 return accum;
 
-            if (!names || names.includes(result.character.name))
-                result.profile = core.cache.profileCache.getSync(result.character.name);
+            if (!names || names.includes(char)) {
+                result.profile = core.cache.profileCache.getSync(char);
 
-            return result.profile ? accum : accum + 1;
+                if (!result.profile)
+                    core.cache.addProfile(char);
+                else
+                    return accum;
+            }
+
+            return accum + 1;
         },
         0);
     }
