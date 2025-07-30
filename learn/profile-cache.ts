@@ -64,6 +64,11 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
 
+    /**
+     * Query the cache for a player record, returning immediately. Fails with a `null` return if the character hasn't been cached. Use {@link get | `get` (async)} if you want to get the profile from server and cache it.
+     * @param name Character to query the cache for
+     * @returns Character profile if it's cached; null otherwise
+     */
     getSync(name: string): CharacterCacheRecord | null {
         const key = AsyncCache.nameKey(name);
 
@@ -83,13 +88,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         if (!this.store || skipStore)
             return null;
 
-        // if (false) {
-        //     log.info(`Retrieve '${name}' for channel '${fromChannel}, gap: ${(Date.now() - this.lastFetch)}ms`);
-        //     this.lastFetch = Date.now();
-        // }
-
         const profile_data = await this.store.getProfile(name);
-
         if (!profile_data)
             return null;
 

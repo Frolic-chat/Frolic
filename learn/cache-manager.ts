@@ -114,9 +114,6 @@ export class CacheManager {
         };
 
         this.queue.push(entry);
-
-        // console.log('Added to queue', entry.name, entry.added.toISOString());
-        // console.log('AddProfileForFetching', name, this.queue.length);
     }
 
 
@@ -164,6 +161,10 @@ export class CacheManager {
       }
     }
 
+    /**
+     * Fetch a character profile from the server and add it to the cache.
+     * @param character Character name to cache
+     */
     async addProfile(character: string | ComplexCharacter): Promise<void> {
         if (typeof character === 'string') {
             log.silly('Learn discover', character);
