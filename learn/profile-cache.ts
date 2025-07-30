@@ -64,6 +64,13 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
 
+    /**
+     * Query the cache for a player record, returning immediately. Fails with `null` if the character hasn't been cached. Use {@link get | `get` (async)} if you want to reach deeper and get the profile from the disk-backed store and cache it in readily-accessible memory.
+     *
+     * This method does **NOT** query the server for the character.
+     * @param name Character to query the cache for
+     * @returns Character profile if it's cached; null otherwise
+     */
     getSync(name: string): CharacterCacheRecord | null {
         const key = AsyncCache.nameKey(name);
 
@@ -74,22 +81,28 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
 
+    /**
+     * Asynchronously gets a character from the in-memory cache, or from the PermanentIndexedStore if it's not in memory. Then register it with the matcher (was matcher data not saved before...?).
+     *
+     * This method does **NOT** query the server for the character.
+     *
+     * This function could use some adjustment to ensure it always runs async, as "potentially async" is bad control flow design. Please remove this comment line when you do so. :)
+     * @param name Character to retrieve
+     * @param skipStore Return negative if the character isn't in the cache
+     * @param _fromChannel Unused
+     * @returns Preferably a character; null if not in cache and `skipStore`; null if profile is not in the store
+     */
     async get(name: string, skipStore: boolean = false, _fromChannel?: string): Promise<CharacterCacheRecord | null> {
         const key = AsyncCache.nameKey(name);
 
+        // This portion is identical to the sync version.
         if (key in this.cache)
             return this.cache[key];
 
         if (!this.store || skipStore)
             return null;
 
-        // if (false) {
-        //     log.info(`Retrieve '${name}' for channel '${fromChannel}, gap: ${(Date.now() - this.lastFetch)}ms`);
-        //     this.lastFetch = Date.now();
-        // }
-
         const profile_data = await this.store.getProfile(name);
-
         if (!profile_data)
             return null;
 
@@ -235,6 +248,12 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
             : null;
     }
 
+    /**
+     * Register the profile with the in-memory cache and (by default) the disk-backed store; putting it through the matcher and smart filters in the process.
+     * @param c Response from "character profile" API request
+     * @param skipStore (Default: false) Don't add the updated character to the store
+     * @returns Character with match details
+     */
     async register(c: ComplexCharacter, skipStore: boolean = false): Promise<CharacterCacheRecord> {
         const k = AsyncCache.nameKey(c.character.name);
         const match = ProfileCache.match(c);

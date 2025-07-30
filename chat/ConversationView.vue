@@ -464,9 +464,8 @@
         }
 
         @Watch('conversation.typingStatus')
-        // tslint:disable-next-line: ban-ts-ignore
-        // @ts-ignore-next
-        typingStatusChanged(str: string, oldValue: string): void {
+
+        typingStatusChanged(_str: string, oldValue: string): void {
             if(oldValue === 'clear') this.keepScroll();
         }
 

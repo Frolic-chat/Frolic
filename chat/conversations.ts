@@ -629,7 +629,8 @@ class State implements Interfaces.State {
         const key = character.name.toLowerCase();
 
         let conv = state.privateMap[key];
-        if (conv !== undefined)
+
+        if (conv)
             return conv;
 
         if (noCreate)
@@ -642,8 +643,8 @@ class State implements Interfaces.State {
         this.privateConversations.push(conv);
         this.privateMap[key] = conv;
 
-        const index = this.recent.findIndex(c => c.character === conv!.name);
-        if (index !== -1) this.recent.splice(index, 1);
+        // @ts-ignore Webpack TS says conv is possibly undefined.
+        this.recent = this.recent.filter(c => c.character !== conv.name);
 
         if (this.recent.length >= 50) this.recent.pop();
 
@@ -1030,10 +1031,13 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('LRP', async(data, time) => {
-        const char = core.characters.get(data.character);
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
-        if(char.isIgnored || core.state.hiddenUsers.indexOf(char.name) !== -1) return;
+        if (!conv)
+            return core.channels.leave(data.channel);
+
+        const char = core.characters.get(data.character);
+        if (char.isIgnored || core.state.hiddenUsers.includes(char.name))
+            return;
 
         const msg = new Message(MessageType.Ad, char, decodeHTML(data.message), time);
 

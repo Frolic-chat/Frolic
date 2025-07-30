@@ -185,16 +185,15 @@ export default class Connection implements Interfaces.Connection {
     protected async queryApiExec<T = object>(endpoint: string, data?: {account?: string, ticket?: string}): Promise<T> {
         if(!this.ticketProvider) throw new Error('No credentials set!');
 
-        log.debug(
-          'api.query.start',
-          {
-            endpoint,
-            data,
-            character: core.characters.ownCharacter?.name,
-            deltaToLastApiCall: Date.now() - lastFetch,
-            deltaToLastApiTicket: Date.now() - lastApiTicketFetch
-          }
-        );
+        if (endpoint !== 'character-data.php') {
+            log.debug('api.query.start', {
+                endpoint,
+                data,
+                character: core.characters.ownCharacter?.name,
+                deltaToLastApiCall: Date.now() - lastFetch,
+                deltaToLastApiTicket: Date.now() - lastApiTicketFetch
+            });
+        }
 
         if(data === undefined) data = {};
 
@@ -204,32 +203,26 @@ export default class Connection implements Interfaces.Connection {
         let res = <T & {error: string}>(await queryApi(endpoint, data)).data;
 
         if(res.error === 'Invalid ticket.' || res.error === 'Your login ticket has expired (five minutes) or no ticket requested.') {
-            log.debug(
-              'api.ticket.loss',
-              {
+            log.debug('api.ticket.loss', {
                 error: res.error,
                 character: core.characters.ownCharacter?.name,
                 deltaToLastApiCall: Date.now() - lastFetch,
                 deltaToLastApiTicket: Date.now() - lastApiTicketFetch
-              }
-            );
+            });
 
             data.ticket = await this.refreshTicket(data.ticket);
             res = <T & {error: string}>(await queryApi(endpoint, data)).data;
         }
 
         if(res.error !== '') {
-            log.debug(
-              'api.query.error',
-              {
+            log.debug('api.query.error', {
                 error: res.error,
                 endpoint,
                 data,
                 character: core.characters.ownCharacter?.name,
                 deltaToLastApiCall: Date.now() - lastFetch,
                 deltaToLastApiTicket: Date.now() - lastApiTicketFetch
-              }
-            );
+            });
 
             const error = new Error(res.error);
             (<Error & {request: true}>error).request = true;
