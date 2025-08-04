@@ -43,6 +43,7 @@
               </div>
             </div>
           </div>
+          <div class="form-group col-12"><hr></div>
           <div class="form-group col-12">
             <label class="control-label" for="browserArgs">{{l('settings.browser.arguments')}}</label>
             <div class="row">
@@ -57,6 +58,7 @@
               </div>
             </div>
           </div>
+          <div class="form-group col-12"><hr></div>
           <div class="form-group col-12">
             <label class="control-label" for="incognitoArg">{{ l('settings.browser.incognito.title') }}</label>
             <div class="row">

@@ -401,9 +401,9 @@ function showPatchNotes(): void {
 }
 
 function openBrowserSettings(): Electron.BrowserWindow | undefined {
-    let desiredHeight = 664
+    let desiredHeight = 733
     if (platform === 'darwin') {
-        desiredHeight = 664;
+        desiredHeight = 733;
     }
 
     const windowProperties: Electron.BrowserWindowConstructorOptions = {
