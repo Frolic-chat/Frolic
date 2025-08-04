@@ -22,6 +22,9 @@ function createBBCodeParser(): BBCodeParser {
     return parser;
 }
 
+/**
+ * The state operates as an event-bus, allowing global-reaching updates.
+ */
 class State implements StateInterface {
     _settings: Settings | undefined = undefined;
     hiddenUsers: string[] = [];
