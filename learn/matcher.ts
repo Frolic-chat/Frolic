@@ -349,9 +349,9 @@ export class Matcher {
 
     private static mergeResultScores(scores: MatchResultScores, results: MatchResultScores): void {
         Object.entries(scores)
-            .forEach(([k, v]) => {
-                if (v.score !== Scoring.NEUTRAL && (!(k in results) || v.score < results[k].score))
-                    results[Number(k)] = v;
+            .forEach(([category, categoryScore]) => {
+                if (categoryScore.score !== Scoring.NEUTRAL && (!(category in results) || categoryScore.score < results[category].score))
+                    results[Number(category)] = categoryScore;
             });
     }
 
