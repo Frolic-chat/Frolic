@@ -225,7 +225,6 @@ class EventBusManager {
 
     $emit(event: 'imagepreview-show' | 'imagepreview-dismiss', data: ImagePreviewEvent): void;
     $emit(event: 'imagepreview-toggle-sticky', data: ImageToggleEvent): void;
-    $emit(event: 'character-score', data: CharacterScoreEvent): void;
     $emit(event: string, data?: EventBusEvent): void {
         (this.callbacks[event] || []).forEach(cb => cb(data));
     }
