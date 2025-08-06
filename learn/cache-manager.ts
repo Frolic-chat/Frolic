@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import core from '../chat/core';
 import { ChannelAdEvent, ChannelMessageEvent, CharacterDataEvent, EventBus, SelectConversationEvent } from '../chat/preview/event-bus';
 import { Conversation } from '../chat/interfaces';
@@ -108,7 +107,8 @@ export class CacheManager {
 
         const key = ProfileCache.nameKey(name);
 
-        if (!!_.find(this.queue, (q: ProfileCacheQueueEntry) => (q.key === key)))
+        // Store them as lowercase and we won't have to check the key.
+        if (this.queue.some(q => q.key === key))
             return;
 
         const entry: ProfileCacheQueueEntry = {
@@ -216,18 +216,18 @@ export class CacheManager {
         // not every update.
 
         // re-score
-        this.queue.forEach((e: ProfileCacheQueueEntry) => e.score = this.calculateScore(e));
+        this.queue.forEach(e => e.score = this.calculateScore(e))
+        this.queue.sort((a, b) => a.score - b.score);
 
-        this.queue = _.sortBy(this.queue, 'score');
+        log.debug('QUEUE', this.queue.map(q => `${q.name}: ${q.score}`));
 
-        log.debug('QUEUE', _.map(this.queue, (q) => `${q.name}: ${q.score}`));
+        const entry = this.queue.pop();
 
-        const entry = this.queue.pop() as ProfileCacheQueueEntry;
+        if (!entry)
+            return null;
 
-        if (entry) {
-          // just in case - remove duplicates
-          this.queue = this.queue.filter(q => q.name !== entry.name);
-        }
+        // just in case - remove duplicates
+        this.queue = this.queue.filter(q => q.name !== entry.name);
 
         log.debug('PopFromQueue', entry.name, this.queue.length);
 
@@ -319,7 +319,7 @@ export class CacheManager {
                             }
 
                             // just in case - remove duplicates
-                            this.queue = _.filter(this.queue, (q) => q.name !== next.name);
+                            this.queue = this.queue.filter(q => q.name !== next.name);
                             delete this.ongoingLog[next.name];
                         } catch (err) {
                             console.error('Profile queue error', err);
