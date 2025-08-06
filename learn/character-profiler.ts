@@ -3,8 +3,8 @@ import { Character as CharacterFChatInf } from '../fchat';
 import { Character as ComplexCharacter } from '../site/character_page/interfaces';
 import { Matcher } from './matcher';
 import { AdCache } from './ad-cache';
-import { ProfileCacheQueueEntry } from './cache-manager';
 import { TagId } from './matcher-types';
+import { Scoring } from './matcher-types';
 
 
 export class CharacterProfiler {
@@ -24,15 +24,15 @@ export class CharacterProfiler {
      * @param characterName
      * @returns Numerical rating used to reorganize the profile queue; higher scores to the front
      */
-    calculateInterestScoreForQueueEntry(entry: ProfileCacheQueueEntry): number {
-        const c = core.characters.get(entry.name);
+    calculateInterestScore(characterName: string): number {
+        const c = core.characters.get(characterName);
 
         if (!c)
             return 0;
 
         const genderScore = this.getInterestScoreForGender(this.me, c);
         const statusScore = this.getInterestScoreForStatus(c);
-        const adScore = (genderScore > 0) ? this.getLastAdvertisementStatus(c) : 0;
+        const adScore = (genderScore > 0) ? this.getLastAdvertisementStatus(c) : Scoring.NEUTRAL;
         const friendlyScore = this.getInterestScoreForFriendlies(c);
 
         // tslint:disable-next-line: number-literal-format binary-expression-operand-order
@@ -43,26 +43,27 @@ export class CharacterProfiler {
     }
 
 
-    getInterestScoreForFriendlies(c: CharacterFChatInf.Character): number {
-        if(c.isFriend)
-            return 1;
+    getInterestScoreForFriendlies(c: CharacterFChatInf.Character): Scoring {
+        if (c.isFriend)
+            return Scoring.MATCH;
 
-        if(c.isBookmarked)
-            return 0.5;
+        if (c.isBookmarked)
+            return Scoring.WEAK_MATCH;
 
-        if(c.isIgnored)
-            return -1;
+        if (c.isIgnored)
+            return Scoring.MISMATCH;
 
-        return 0;
+        // Hidden users includes this user?
+
+        return Scoring.NEUTRAL;
     }
 
 
-    getInterestScoreForGender(me: ComplexCharacter, c: CharacterFChatInf.Character): number {
+    getInterestScoreForGender(me: ComplexCharacter, c: CharacterFChatInf.Character): Scoring {
         const g = Matcher.strToGender(c.gender);
 
-        if (g === null) {
-            return 0;
-        }
+        if (!g)
+            return Scoring.NEUTRAL;
 
         const myGender = Matcher.getTagValueList(TagId.Gender, me.character);
         const myOrientation = Matcher.getTagValueList(TagId.Orientation, me.character);
@@ -72,36 +73,41 @@ export class CharacterProfiler {
     }
 
 
-    getInterestScoreForStatus(c: CharacterFChatInf.Character): number {
-        if ((c.status === 'offline') || (c.status === 'away') || (c.status === 'busy') || (c.status === 'dnd'))
-            return -0.5;
-
-        if (c.status === 'looking')
-            return 0.5;
-
-        return 0;
+    getInterestScoreForStatus(c: CharacterFChatInf.Character): Scoring {
+        switch (c.status){
+        case 'offline':
+        case 'away':
+        case 'busy':
+        case 'dnd':
+            return Scoring.WEAK_MISMATCH;
+        case 'looking':
+            return Scoring.WEAK_MATCH;
+        default:
+            return Scoring.NEUTRAL;
+        }
     }
 
 
-    getLastAdvertisementStatus(c: CharacterFChatInf.Character): number {
+    getLastAdvertisementStatus(c: CharacterFChatInf.Character): Scoring {
         const ads = this.adCache.get(c.name);
 
         if (!ads)
-            return 0;
+            return Scoring.NEUTRAL;
 
         const lastPost = ads.getDateLastPosted();
 
-        if (lastPost === null)
-            return 0;
+        if (!lastPost)
+            return Scoring.NEUTRAL;
 
         const delta = Date.now() - lastPost.getTime();
 
         if (delta < CharacterProfiler.ADVERTISEMENT_RECENT_RANGE)
-            return 1;
+            return Scoring.MATCH;
 
         if (delta < CharacterProfiler.ADVERTISEMENT_POTENTIAL_RAGE)
-            return 0.5;
+            return Scoring.WEAK_MATCH;
 
-        return -0.5; // has been advertising, but not recently, so likely busy
+        // has been advertising, but not recently, so likely busy
+        return Scoring.WEAK_MISMATCH;
     }
 }
