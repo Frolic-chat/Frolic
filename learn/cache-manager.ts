@@ -139,8 +139,6 @@ export class CacheManager {
 
 
     updateAdScoringForProfile(c: ComplexCharacter, score: number, isFiltered: boolean): void {
-        EventBus.$emit('character-score', { profile: c, score, isFiltered });
-
         this.scoreAllConversations(c.character.name, score, isFiltered);
         void this.respondToPendingRejections(c);
     }

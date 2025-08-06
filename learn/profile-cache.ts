@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import core from '../chat/core';
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../site/character_page/interfaces';
 import { AsyncCache } from './async-cache';
+import { EventBus } from '../chat/preview/event-bus';
 import { Matcher, MatchReport } from './matcher';
 import { PermanentIndexedStore } from './store/types';
 import { CharacterImage, SimpleCharacter } from '../interfaces';
@@ -285,6 +286,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         };
 
         this.cache[k] = rNew;
+
+        EventBus.$emit('character-score', { profile: c, score, isFiltered });
 
         return rNew;
     }
