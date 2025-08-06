@@ -83,7 +83,14 @@ export class CacheManager {
         return this.lastPost;
     }
 
+    /**
+     * Add a user to the queue for fetching profiles from the server.
+     * @param name Character name
+     * @param skipCacheCheck The cache can be skipped to hard-reload character data
+     * @param channelId Provide a channel id to allow dropping this character from the queue if we un-focus the channel. (Useful to mitigate background noise from characters your no longer care about)
+     */
     async queueForFetching(name: string, skipCacheCheck: boolean = false, channelId?: string): Promise<void> {
+        // This settings check is inappropriately placed. A method is a course of action; the settings should be checked before deciding which course of action you take.
         if (!core.state.settings.risingAdScore) {
             return;
         }
@@ -135,6 +142,12 @@ export class CacheManager {
     }
 
 
+    /**
+     * A wasteful function that will probably die when the cache is more orderly.
+     * @param c
+     * @param score
+     * @param isFiltered
+     */
     updateAdScoringForProfile(c: ComplexCharacter, score: number, isFiltered: boolean): void {
         this.scoreAllConversations(c.character.name, score, isFiltered);
         void this.respondToPendingRejections(c);
@@ -163,7 +176,11 @@ export class CacheManager {
 
     /**
      * Fetch a character profile from the server and add it to the cache.
-     * @param character Character name to cache
+     * If provided a character object, then it runs the secondary processes of
+     * turning that character into a fully fleshed-out character.
+     *
+     * But under what scenarios do we actually need to process without fetching?
+     * @param character Character name to fetch, or a character object to finish
      */
     async addProfile(character: string | ComplexCharacter): Promise<void> {
         if (typeof character === 'string') {
@@ -194,6 +211,9 @@ export class CacheManager {
         if (this.queue.length === 0) {
             return null;
         }
+
+        // Sorting should be done when we add the new entry,
+        // not every update.
 
         // re-score
         this.queue.forEach((e: ProfileCacheQueueEntry) => e.score = this.calculateScore(e));
@@ -416,6 +436,15 @@ export class CacheManager {
     }
 
 
+    /**
+     * Match a character, score their message (if provided), and return their scored Character.
+     * @param skipStore Don't store profile in cache; just retrieve scoring info
+     * @param char Character who posted the message
+     * @param conv Conversation message is posted in
+     * @param msg Message to be scored
+     * @param populateAll (Default: true) Spread score to all conversations?
+     * @returns CharacterCache if relevant
+     */
     async resolvePScore(skipStore: boolean,
                         char: ChatCharacter,
                         conv: ChannelConversation,
