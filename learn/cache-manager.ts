@@ -410,28 +410,28 @@ export class CacheManager {
 
         // Add fetchers for unknown profiles in ads
         await Promise.all(conversation!.messages
-                .filter(m => {
-                    if (m.type !== Message.Type.Ad)
-                        return false;
+            .filter(m => {
+                if (m.type !== Message.Type.Ad)
+                    return false;
 
-                    if (m.sender.name in checkedNames)
-                        return false;
+                if (m.sender.name in checkedNames)
+                    return false;
 
-                    checkedNames[m.sender.name] = true;
-                    return true;
-                })
-                .map(async m => {
-                    // m must be ChatMessage because `m.type === Ad`.
-                    const chatMessage = m as ChatMessage;
+                checkedNames[m.sender.name] = true;
+                return true;
+            })
+            .map(async m => {
+                // m must be ChatMessage because `m.type === Ad`.
+                const chatMessage = m as ChatMessage;
 
-                    if (chatMessage.score)
-                        return;
+                if (chatMessage.score)
+                    return;
 
-                    const p = await this.resolvePScore(false, chatMessage.sender, conversation as ChannelConversation, chatMessage, true);
+                const p = await this.resolvePScore(false, chatMessage.sender, conversation as ChannelConversation, chatMessage, true);
 
-                    if (!p)
-                        await this.queueForFetching(chatMessage.sender.name, true, channel.id);
-                })
+                if (!p)
+                    await this.queueForFetching(chatMessage.sender.name, true, channel.id);
+            })
         );
     }
 
