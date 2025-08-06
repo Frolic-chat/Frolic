@@ -235,7 +235,7 @@ export class CacheManager {
     }
 
     calculateScore(e: ProfileCacheQueueEntry): number {
-        return this.characterProfiler ? this.characterProfiler.calculateInterestScoreForQueueEntry(e) : 0;
+        return this.characterProfiler ? this.characterProfiler.calculateInterestScore(e.name) : 0;
     }
 
     private on_character_data = async(data: CharacterDataEvent) => {
