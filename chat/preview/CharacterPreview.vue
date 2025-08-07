@@ -2,7 +2,7 @@
   <div class="character-preview">
     <div v-if="match && character" class="row">
       <div class="col-2">
-        <img :src="getAvatarUrl()" class="character-avatar">
+        <img :src="avatarUrl" class="character-avatar">
       </div>
 
       <div class="col-10">
@@ -19,6 +19,7 @@
             <span class="uc">
               <span v-if="species">{{ species }}</span>{{ (species && kemonomimi) ? ' ' : '' }}<span v-if="kemonomimi">{{ kemonomimi }}</span>
             </span>
+            <span class="divider" v-if="species || kemonomimi"> / </span>
           </div>
 
           <div class="info-text-block" v-if="sexualOrientation || subDomRole || gender">
@@ -27,6 +28,7 @@
             <span class="uc" v-if="subDomRole">{{ subDomRole }}</span>
             <span class="divider" v-if="(gender || subDomRole) && sexualOrientation"> / </span>
             <span class="uc" v-if="sexualOrientation">{{ sexualOrientation }}</span>
+            <span class="divider" v-if="sexualOrientation"> / </span>
           </div>
         </div>
 
@@ -47,7 +49,7 @@
 
         <div class="memo" v-if="memo">
           <h4>{{ l('characterPreview.memo') }}</h4>
-          <div>{{ memo }}</div>
+          <div class="memo-body">{{ memo }}</div>
         </div>
 
         <div class="status-message" v-if="statusMessage">
@@ -176,11 +178,10 @@ export function getStatusClasses(character:    CharacterStatus.Character,
     };
 }
 
-import * as _ from 'lodash';
 import l from '../localize';
 import { AdCachedPosting } from '../../learn/ad-cache';
 import {formatTime} from '../common';
-import * as Utils from '../../site/utils';
+import { characterImage } from '../common';
 import MatchTags from './MatchTags.vue';
 import {
   furryPreferenceMapping,
@@ -197,6 +198,7 @@ import { testSmartFilters } from '../../learn/filter/smart-filter';
 import { smartFilterTypes } from '../../learn/filter/types';
 import { Conversation } from '../interfaces';
 import MessageView from '../message_view';
+import { lastElement } from '../../helpers/utils';
 
 interface CustomKinkWithScore extends CustomKink {
   score: number;
@@ -243,31 +245,24 @@ export default class CharacterPreview extends Vue {
   subDomRole?: string;
 
   formatTime = formatTime;
-  // readonly avatarUrl = Utils.avatarURL;
 
   TagId = TagId;
   Score = Score;
 
-  scoreWatcher: ((event: CharacterScoreEvent) => void) | null = null;
+  scoreWatcher: ((e: CharacterScoreEvent) => Promise<void>) | null = null;
   customs?: CustomKinkWithScore[];
 
   conversation?: Conversation.Message[];
 
-  getAvatarUrl(): string {
-    if (this.onlineCharacter && this.onlineCharacter.overrides.avatarUrl) {
-      return this.onlineCharacter.overrides.avatarUrl;
-    }
-
-    return Utils.avatarURL(this.characterName || this.character?.character.name || '');
+  get avatarUrl() {
+    return this.onlineCharacter?.overrides.avatarUrl || characterImage(this.characterName ?? this.character?.character.name ?? '');
   }
 
   @Hook('mounted')
   mounted(): void {
-    // tslint:disable-next-line no-unsafe-any no-any
-    this.scoreWatcher = (e: CharacterScoreEvent): void => {
-        // console.log('scoreWatcher', event);
 
-        if (this.characterName && e.profile.character.name === this.characterName)
+    this.scoreWatcher = async ({ profile }): Promise<void> => {
+        if (this.characterName && profile.character.name === this.characterName)
             this.load(this.characterName, true);
     };
 
@@ -279,7 +274,6 @@ export default class CharacterPreview extends Vue {
   beforeDestroy(): void {
       if (this.scoreWatcher) {
           EventBus.$off('character-score', this.scoreWatcher);
-
           this.scoreWatcher = null;
       }
   }
@@ -330,7 +324,7 @@ export default class CharacterPreview extends Vue {
 
   updateSmartFilterReport() {
       if (!this.character)
-        return;
+          return;
 
       // Zero-out dirty cache
       this.smartFilterDetails = [];
@@ -338,7 +332,7 @@ export default class CharacterPreview extends Vue {
       const results = testSmartFilters(this.character.character, core.state.settings.risingFilter);
 
       if (!results)
-        return;
+          return;
 
       // The below block is near verbatim `matchSmartFilters` but that requires a second call to `testSmartFilters` so it's better to inline it since we're using the results.
       this.smartFilterIsFiltered = Object.values(results.filters).some(r => r && r.isFiltered);
@@ -360,20 +354,19 @@ export default class CharacterPreview extends Vue {
     const logKey = this.characterName!.toLowerCase();
     const logDates = await core.logs.getLogDates(ownName, logKey);
 
-    if (logDates.length === 0) {
-      return;
-    }
+    if (!logDates.length)
+        return;
 
-    const messages = await core.logs.getLogs(ownName, logKey, _.last(logDates) as Date);
+    const messages = await core.logs.getLogs(ownName, logKey, lastElement(logDates));
     const matcher = /\[AUTOMATED MESSAGE]/;
 
-    this.conversation = _.map(
-      _.takeRight(_.filter(messages, (m) => !matcher.exec(m.text)), 3),
-        (m) => ({
-          ...m,
-          text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text
-        })
-    );
+    this.conversation = messages
+        .filter(m => !matcher.exec(m.text))
+        .slice(-3)
+        .map(m => ({
+            ...m,
+            text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text
+        }));
   }
 
   updateOnlineStatus(): void {
@@ -408,25 +401,24 @@ export default class CharacterPreview extends Vue {
   }
 
   updateCustoms(): void {
-    this.customs = _.orderBy(
-      _.map(
-        _.reject(Object.values(this.character!.character.customs ?? {}), (c) => _.isUndefined(c)) as CustomKink[],
-        (c: CustomKink) => {
-          const val: CustomKinkWithScore = _.assign(
-            {},
-            c,
-            {
-              score: kinkMapping[c.choice] as number,
-              name: c.name.trim().replace(/^\W+/, '').replace(/\W+$/, '')
-            }
-          ) as CustomKinkWithScore;
+      if (!this.character?.character.customs) {
+          this.customs = undefined;
+          return;
+      }
 
-          return val;
-        }
-      ),
-      ['score', 'name'],
-      ['desc', 'asc']
-    );
+    this.customs = Object.values(this.character.character.customs)
+        .filter(c => !!c)
+        .map(c => ({
+            ...c,
+            // @ts-ignore Webpack TS says possibly undefined, probably ignoring `!!c`
+            score: kinkMapping[c.choice],
+            // @ts-ignore Webpack TS says possibly undefined, probably ignoring `!!c`
+            name: c.name.trim().replace(/^\W+/, '').replace(/\W+$/, ''),
+        } as CustomKinkWithScore))
+        .sort((a,b) => {
+            const s = b.score - a.score;
+            return s || a.name.localeCompare(b.name);
+        });
   }
 
 
@@ -447,10 +439,6 @@ export default class CharacterPreview extends Vue {
 
     const rawSpecies = Matcher.getTagValue(TagId.Species, c);
     const rawAge = Matcher.getTagValue(TagId.Age, c);
-
-    // if ((a.species) && (!Species[a.species])) {
-      // console.log('SPECIES', a.species, rawSpecies);
-    // }
 
     if ((a.orientation) && (!Orientation[a.orientation])) {
       console.error('Missing Orientation', a.orientation, c.name);
@@ -473,30 +461,12 @@ export default class CharacterPreview extends Vue {
       .replace(/bi curious/, 'bi-curious');
   }
 
-  byScore(_tagId: any): string {
-    return '';
-
-    // too much
-    // if (!this.match) {
-    //   return '';
-    // }
-    //
-    // const score = this.match.merged[tagId];
-    //
-    // if (!score) {
-    //   return '';
-    // }
-    //
-    // return score.getRecommendedClass();
-  }
-
-
   getOnlineStatus(): string {
     if (!this.onlineCharacter) {
       return 'Offline';
     }
 
-    const s = this.onlineCharacter.status as string;
+    const s = this.onlineCharacter.status;
 
     return `${s.substring(0, 1).toUpperCase()}${s.substring(1)}`;
   }
@@ -518,10 +488,9 @@ export default class CharacterPreview extends Vue {
   .character-preview {
     padding: 10px;
     padding-right: 15px;
-    background-color: var(--input-bg);
+    background-color: color-mix(in oklab, var(--input-bg) 91%, transparent);
     max-height: 100%;
     overflow: hidden;
-    opacity: 0.95;
     border-radius: 0 5px 5px 5px;
     border: 1px solid var(--secondary);
 
@@ -602,6 +571,12 @@ export default class CharacterPreview extends Vue {
       padding: 10px;
       border-radius: 5px;
       margin-top: 1.3rem;
+    }
+
+    .memo-body {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .filter-matches {
