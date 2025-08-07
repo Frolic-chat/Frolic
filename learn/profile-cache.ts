@@ -208,7 +208,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         if (avatarUrl) {
             if (!ProfileCache.isSafeRisingPortraitURL(avatarUrl)) {
-                log.info('portrait.hq.invalid.domain', { name, url: avatarUrl });
+                log.warn('portrait.hq.invalid.domain', { name: c.character.name, url: avatarUrl });
                 return;
             }
 
