@@ -129,7 +129,9 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
                 )
                 .catch(
                     (err: any) => {
-                        console.warn('webview.loadURL() in show()', err);
+                        // Standard error when closing the image viewer while it's trying to load an image.
+                        if (err.code !== "ERR_FAILED")
+                            console.warn('webview.loadURL() in show()', err);
                     }
                 );
 
@@ -191,4 +193,3 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
             : { display: 'none' };
     }
 }
-
