@@ -169,7 +169,7 @@ export class CharacterAnalysis {
     readonly isAnthro: boolean;
     /** In addition to use in the matcher, `isHuman` is also used by smartfilters to filter anthros. */
     readonly isHuman: boolean;
-    /** In addition to use in the matcher, `isKemonomimi` is also used by smartfilters to filter anthros. */
+    /** In addition to use in the matcher, `isKemonomimi` is also used by smartfilters to filter anthros, as well as in the character preview to display species. */
     readonly isKemonomimi: boolean;
     readonly isMammal: boolean;
 
