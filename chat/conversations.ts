@@ -858,9 +858,9 @@ function filterPrivChannels(conv: ChannelConversation): boolean {
 
 async function testSmartFilterForChannel(fromChar: Character.Character, conversation: ChannelConversation): Promise<boolean> {
     if (filterPubChannels(conversation) || filterPrivChannels(conversation)) {
-        const cachedProfile = core.cache.profileCache.getSync(fromChar.name) || await core.cache.profileCache.get(fromChar.name);
+        const storedProfile = await core.cache.profileCache.get(fromChar.name);
 
-        if (!isImportantToChannel(fromChar, conversation.channel) && cachedProfile && cachedProfile.match.isFiltered) {
+        if (storedProfile?.match.isFiltered && !isImportantToChannel(fromChar, conversation.channel)) {
             return true;
         }
     }
@@ -956,10 +956,10 @@ export default function(this: any): Interfaces.State {
             return;
 
         const conversation = state.channelMap[data.channel.toLowerCase()];
-        if (conversation === undefined)
+        if (!conversation)
             return core.channels.leave(data.channel);
 
-        if (await testSmartFilterForChannel(char, conversation) === true)
+        if (await testSmartFilterForChannel(char, conversation))
             return;
 
         const message = createMessage(MessageType.Message, char, decodeHTML(data.message), time);

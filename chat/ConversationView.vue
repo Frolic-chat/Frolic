@@ -501,13 +501,19 @@
                         this.conversation.enteredText.substring(selection.end);
                     ++this.tabOptionsIndex;
                 }
-            } else {
-                if(this.tabOptions !== undefined) this.tabOptions = undefined;
-                if(getKey(e) === Keys.ArrowUp && this.conversation.enteredText.length === 0
-                    && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey)
+            }
+            else {
+                if (this.tabOptions !== undefined)
+                    this.tabOptions = undefined;
+
+                if (getKey(e) === Keys.ArrowUp && this.conversation.enteredText.length === 0
+                    && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
                     this.conversation.loadLastSent();
-                else if(getKey(e) === Keys.Enter) {
-                    if(e.shiftKey === this.settings.enterSend) return;
+                }
+                else if (getKey(e) === Keys.Enter) {
+                    if (e.shiftKey === this.settings.enterSend)
+                        return;
+
                     e.preventDefault();
                     await this.conversation.send();
                 }
