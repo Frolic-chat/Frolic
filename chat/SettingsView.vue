@@ -639,7 +639,7 @@
                     maxAge: (minAge !== null && maxAge !== null) ? Math.max(minAge, maxAge) : maxAge
                 },
 
-                risingCharacterTheme: this.risingCharacterTheme != "undefined" ? this.risingCharacterTheme : undefined
+                risingCharacterTheme: this.risingCharacterTheme ?? undefined,
             };
 
             console.log('SETTINGS', minAge, maxAge, core.state.settings);

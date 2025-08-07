@@ -134,7 +134,7 @@ class State implements Interfaces.State {
     setOverride(name: string, type: 'avatarUrl', value: string | undefined): void;
     setOverride(name: string, type: 'gender', value: Interfaces.Gender | undefined): void;
     setOverride(name: string, type: 'status', value: Interfaces.Status | undefined): void;
-    setOverride(name: string, type: keyof CharacterOverrides, value: any): void {
+    setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
         const char = this.get(name);
 
         Vue.set(char.overrides, type, value);
