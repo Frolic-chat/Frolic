@@ -18,6 +18,11 @@
                     <input type="checkbox" id="enterSend" v-model="enterSend"/>
                     {{l('settings.enterSend')}}
                 </label>
+                <br v-show="enterSend">
+                <label v-show="enterSend" class="control-label" for="secondEnterSend">
+                    <input type="checkbox" id="secondEnterSend" v-model="secondEnterSend" :disabled="!enterSend"/>
+                    {{l('settings.secondEnterSend')}}
+                </label>
             </div>
             <div class="form-group">
                 <label class="control-label" for="showAvatars">
@@ -464,6 +469,7 @@
         fontSize!: string;
         showNeedsReply!: boolean;
         enterSend!: boolean;
+        secondEnterSend!: boolean;
         colorBookmarks!: boolean;
         bbCodeBar!: boolean;
 
@@ -519,6 +525,7 @@
             this.fontSize = settings.fontSize.toString();
             this.showNeedsReply = settings.showNeedsReply;
             this.enterSend = settings.enterSend;
+            this.secondEnterSend = settings.secondEnterSend;
             this.colorBookmarks = settings.colorBookmarks;
             this.bbCodeBar = settings.bbCodeBar;
             this.availableImports = (await core.settingsStore.getAvailableCharacters()).filter((x) => x !== core.connection.character);
@@ -603,6 +610,7 @@
                 fontSize: isNaN(fontSize) ? 14 : fontSize < 10 ? 10 : fontSize > 24 ? 24 : fontSize,
                 showNeedsReply: this.showNeedsReply,
                 enterSend: this.enterSend,
+                secondEnterSend: this.secondEnterSend,
                 colorBookmarks: this.colorBookmarks,
                 bbCodeBar: this.bbCodeBar,
 
