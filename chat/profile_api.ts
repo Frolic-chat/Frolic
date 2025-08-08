@@ -43,8 +43,15 @@ import throat from 'throat';
 const characterDataThroat = throat(2);
 
 
-// tslint:disable-next-line: ban-ts-ignore
-// @ts-ignore
+/**
+ * This is the, "I need the data returned right now" version of {@link core.cache.addProfile | `CacheManager.addProfile`}. Where that function adds the profile fetching to a queue (which adds the character profile to the profile cache), this function directly returns the character profile.
+ *
+ * All values are passed to {@link executeCharacterData | `executeCharacterData`}. `id` is unused.
+ * @param name Character name
+ * @param id (Default: -1) Unused
+ * @param skipEvent (Default: false) Do not emit the `character-data` {@link EventBus | `EventBus`} event.
+ * @returns
+ */
 async function characterData(name: string | undefined, id: number = -1, skipEvent: boolean = false): Promise<Character> {
     // console.log('CharacterDataquery', name);
     return characterDataThroat(async() => executeCharacterData(name, id, skipEvent));
