@@ -151,6 +151,40 @@
   background-color: theme-color-level("info", -4);
 }
 
+.second-enter-send-allowed {
+  animation: sendingAllowedVisibilityEffect 3s forwards;
+}
+
+@keyframes sendingAllowedVisibilityEffect {
+  0% {
+    box-shadow: 0 0 0px color-mix(in oklab, var(--textGreenColor) 0%, transparent);
+  }
+  7% {
+    box-shadow: 0 0 5px color-mix(in oklab, var(--textGreenColor) 100%, transparent);
+  }
+
+  26% {
+    box-shadow: 0 0 8px color-mix(in oklab, var(--textGreenColor) 100%, transparent);
+  }
+  33% {
+    box-shadow: 0 0 8px color-mix(in oklab, var(--textRedColor) 100%, var(--textGreenColor) 100%);
+  }
+
+  59% {
+    box-shadow: 0 0 11px color-mix(in oklab, var(--textRedColor) 100%, var(--textGreenColor) 100%);
+  }
+  66% {
+    box-shadow: 0 0 11px color-mix(in oklab, var(--textRedColor) 100%, transparent);
+  }
+
+  93% {
+    box-shadow: 0 0 8px color-mix(in oklab, var(--textRedColor) 100%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0px color-mix(in oklab, var(--textRedColor) 0%, transparent);
+  }
+}
+
 .border-top {
   border-top: solid 1px $card-border-color;
 }

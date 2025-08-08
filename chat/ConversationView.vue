@@ -152,7 +152,7 @@
             </template>
         </div>
         <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
-            :classes="'form-control chat-text-box' + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
+            :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
             :hasToolbar="settings.bbCodeBar" ref="textBox" style="position:relative;margin-top:5px"
             :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
             :characterName="ownName"
@@ -290,6 +290,10 @@
         isChannel = Conversation.isChannel;
         isPrivate = Conversation.isPrivate;
         showNonMatchingAds = true;
+
+        waitingForSecondEnter = false;
+        waitingForSecondEnterClass: 'second-enter-send-allowed' | '' = '';
+        waitingForSecondEnterTimeout?: ReturnType<typeof setTimeout>;
 
         userMemo: string | null = null;
         editorMemo: string = '';
@@ -511,11 +515,47 @@
                     this.conversation.loadLastSent();
                 }
                 else if (getKey(e) === Keys.Enter) {
+                    // Handles the situations where you insert a newline:
+                    // - Shift+Enter when "enter to send" is enabled
+                    // - solo Enter when "enter to send" is disabled
                     if (e.shiftKey === this.settings.enterSend)
                         return;
 
                     e.preventDefault();
-                    await this.conversation.send();
+
+                    // Block sending when no real content;
+                    // Stops double-enter visual feedback and potential chat spam.
+                    if (!this.conversation.enteredText.trim())
+                        return;
+
+                    // Handles Shift+Enter when "enter to send" is disabled.
+                    // Handles solo Enter when "enter to send" is enabled.
+                    if (!this.settings.enterSend || !this.settings.secondEnterSend) {
+                        await this.conversation.send();
+                        return;
+                    }
+                    // Below here is only solo Enter with "enter to send" + "second enter" enabled.
+
+                    // Welcome to the "I flub a lot of messages so I require confirmation before sending one" zone.
+                    if (this.waitingForSecondEnter) {
+                        await this.conversation.send();
+                        this.waitingForSecondEnter = false;
+                        this.waitingForSecondEnterClass = '';
+
+                        if (this.waitingForSecondEnterTimeout) {
+                            clearTimeout(this.waitingForSecondEnterTimeout);
+                            this.waitingForSecondEnterTimeout = undefined;
+                        }
+                    }
+                    else {
+                        this.waitingForSecondEnter = true;
+                        this.waitingForSecondEnterClass = 'second-enter-send-allowed';
+                        this.waitingForSecondEnterTimeout = setTimeout(() => {
+                            this.waitingForSecondEnter = false;
+                            this.waitingForSecondEnterClass = '';
+                            this.waitingForSecondEnterTimeout = undefined;
+                        }, 3000);
+                    }
                 }
             }
         }

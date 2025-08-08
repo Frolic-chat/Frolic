@@ -234,6 +234,7 @@ export namespace Settings {
         readonly fontSize: number;
         readonly showNeedsReply: boolean;
         readonly enterSend: boolean;
+        readonly secondEnterSend: boolean;
         readonly colorBookmarks: boolean;
         readonly bbCodeBar: boolean;
 

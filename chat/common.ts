@@ -48,6 +48,7 @@ export class Settings implements ISettings {
     fontSize = 14;
     showNeedsReply = false;
     enterSend = true;
+    secondEnterSend = false;
     colorBookmarks = false;
     bbCodeBar = true;
 
