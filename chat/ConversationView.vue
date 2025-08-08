@@ -510,7 +510,7 @@
                 if (this.tabOptions !== undefined)
                     this.tabOptions = undefined;
 
-                if (getKey(e) === Keys.ArrowUp && this.conversation.enteredText.length === 0
+                if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
                     this.conversation.loadLastSent();
                 }
