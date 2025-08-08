@@ -1123,7 +1123,12 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('TPN', (data) => {
         const conv = state.privateMap[data.character.toLowerCase()];
-        if(conv !== undefined) conv.typingStatus = data.status;
+        if (conv) {
+            conv.typingStatus = data.status;
+        }
+        else if (data.status === 'typing' && !core.cache.profileCache.getSync(data.character)) {
+            core.cache.addProfile(data.character.toLowerCase());
+        }
     });
     connection.onMessage('CBU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
