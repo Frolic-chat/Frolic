@@ -14,3 +14,8 @@ export const Domain = 'https://www.f-list.net/';
  * Should be kept identical to f-list's `f-list.js`
  */
 export const StaticDomain = 'https://static.f-list.net/';
+
+/**
+ * The earliest-known canonical user-matching regex from Maya herself.
+ */
+export const UsernameRegex = /^[a-zA-Z0-9_\-\s]+$/;
