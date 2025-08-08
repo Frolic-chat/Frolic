@@ -9,36 +9,6 @@ import { CharacterCacheRecord } from '../../learn/profile-cache';
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('event-bus');
 
-/**
- * Prior undocumented emissions:
- * 'conversation-load-more': { conversation: conversation}
- * 'configuration-update' Settings
- * 'core-connected': Settings
- * 'word-definition': { lookupWord, x: props.x, y: props.y }
- */
-
-/**
- * 'imagepreview-dismiss': {url: string}
- * 'imagepreview-show': {url: string}
- * 'imagepreview-toggle-sticky': {url: string}
- *
- * 'own-profile-update': {characterProfile: CharacterProfile (site/character_page/interfaces)}
- * 'character-data': {character: Character}
- * 'character-score': {character: Character, score: number, isFiltered: boolean}
- *
- * 'private-message': {message: Message}
- * 'channel-ad': {message: Message, channel: Conversation, profile: ComplexCharacter | undefined}
- * 'channel-message': {message: Message, channel: Conversation}
- *
- * 'select-conversation': { conversation: Conversation }
- *
- * 'note-counts-update': {},
- *
- * 'character-memo': { character: string, memo: CharacterMemo }
- *
- * 'error': { source: string, type?: string, message: string }
- */
-
 export interface EmptyEvent {}
 
 export interface EventBusEvent { [key: string]: any }
@@ -109,22 +79,22 @@ export type EventCallback = (data: any) => void | Promise<void>;
 class EventBusManager {
     private callbacks: Record<string, EventCallback[]> = {};
 
-    $on(event: 'core-connected', callback: (e: Settings) => void | Promise<void>): void;
-    $on(event: 'configuration-update', callback: (e: Settings) => void | Promise<void>): void;
-    $on(event: 'error', callback: (e: ErrorEvent) => void | Promise<void>): void;
+    $on(event: 'core-connected',         callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
-    $on(event: 'word-definition', callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
+    $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
 
-    $on(event: 'own-profile-update', callback: (e: CharacterDataEvent) => void | Promise<void>): void;
-    $on(event: 'note-counts-update', callback: () => void | Promise<void>): void;
-    $on(event: 'character-data', callback: (e: CharacterDataEvent) => void | Promise<void>): void;
-    $on(event: 'character-score', callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
-    $on(event: 'character-memo', callback: (e: MemoEvent) => void | Promise<void>): void;
+    $on(event: 'own-profile-update',     callback: (e: CharacterDataEvent) => void | Promise<void>): void;
+    $on(event: 'note-counts-update',     callback: () => void | Promise<void>): void;
+    $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
+    $on(event: 'character-score',        callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
+    $on(event: 'character-memo',         callback: (e: MemoEvent) => void | Promise<void>): void;
 
-    $on(event: 'channel-message', callback: (e: ChannelMessageEvent) => void | Promise<void>): void;
-    $on(event: 'channel-ad', callback: (e: ChannelAdEvent) => void | Promise<void>): void;
-    $on(event: 'private-message', callback: (e: PrivateMessageEvent) => void | Promise<void>): void;
-    $on(event: 'select-conversation', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
+    $on(event: 'channel-message',        callback: (e: ChannelMessageEvent) => void | Promise<void>): void;
+    $on(event: 'channel-ad',             callback: (e: ChannelAdEvent) => void | Promise<void>): void;
+    $on(event: 'private-message',        callback: (e: PrivateMessageEvent) => void | Promise<void>): void;
+    $on(event: 'select-conversation',    callback: (e: SelectConversationEvent) => void | Promise<void>): void;
     $on(event: 'conversation-load-more', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
 
     $on(event: 'imagepreview-show' | 'imagepreview-dismiss', callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
@@ -205,38 +175,37 @@ class EventBusManager {
     }
 
 
-    $emit(event: 'core-connected', data: Settings): void;
-    $emit(event: 'configuration-update', data: Settings): void;
-    $emit(event: 'error', data: ErrorEvent): void;
+    $emit(event: 'core-connected',         data: Settings): void;
+    $emit(event: 'configuration-update',   data: Settings): void;
+    $emit(event: 'error',                  data: ErrorEvent): void;
 
-    $emit(event: 'word-definition', data: WordDefinitionEvent): void;
+    $emit(event: 'word-definition',        data: WordDefinitionEvent): void;
 
-    $emit(event: 'own-profile-update', data: CharacterDataEvent): void;
-    $emit(event: 'note-counts-update', data: NoteCountsEvent): void;
-    $emit(event: 'character-data', data: CharacterDataEvent): void;
-    $emit(event: 'character-score', data: CharacterScoreEvent): void;
-    $emit(event: 'character-memo', data: MemoEvent): void;
+    $emit(event: 'own-profile-update',     data: CharacterDataEvent): void;
+    $emit(event: 'note-counts-update',     data: NoteCountsEvent): void;
+    $emit(event: 'character-data',         data: CharacterDataEvent): void;
+    $emit(event: 'character-score',        data: CharacterScoreEvent): void;
+    $emit(event: 'character-memo',         data: MemoEvent): void;
 
-    $emit(event: 'channel-message', data: ChannelMessageEvent): void;
-    $emit(event: 'channel-ad', data: ChannelAdEvent): void;
-    $emit(event: 'private-message', data: PrivateMessageEvent): void;
-    $emit(event: 'select-conversation', data: SelectConversationEvent): void;
+    $emit(event: 'channel-message',        data: ChannelMessageEvent): void;
+    $emit(event: 'channel-ad',             data: ChannelAdEvent): void;
+    $emit(event: 'private-message',        data: PrivateMessageEvent): void;
+    $emit(event: 'select-conversation',    data: SelectConversationEvent): void;
     $emit(event: 'conversation-load-more', data: SelectConversationEvent): void;
 
     $emit(event: 'imagepreview-show' | 'imagepreview-dismiss', data: ImagePreviewEvent): void;
     $emit(event: 'imagepreview-toggle-sticky', data: ImageToggleEvent): void;
     $emit(event: string, data?: EventBusEvent): void {
-        (this.callbacks[event] || []).forEach(cb => cb(data));
+        if (event in this.callbacks) this.callbacks[event].forEach(cb => cb(data));
     }
 
 
     /**
      * This is used in one place in Chat.vue for connection closing.
      */
-    clear(): void {
-        this.callbacks = {};
-    }
+    clear() { this.callbacks = {} }
 }
 
+// This should be turned into a module; with the initialization in well-defined place.
 export const EventBus = new EventBusManager();
 log.verbose('init.eventbus');
