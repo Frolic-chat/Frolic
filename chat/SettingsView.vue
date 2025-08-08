@@ -63,12 +63,13 @@
                     <input type="checkbox" id="logMessages" v-model="logMessages"/>
                     {{l('settings.logMessages')}}
                 </label>
-            </div>
-            <div class="form-group">
-                <label v-show="logMessages" class="control-label" for="logChannels">
-                    <input type="checkbox" id="logChannels" v-model="logChannels"/>
-                    {{l('settings.logChannels')}}
-                </label>
+                <template v-if="logMessages">
+                    <br>
+                    <label class="control-label" for="logChannels">
+                        <input type="checkbox" id="logChannels" v-model="logChannels" :disabled="!logMessages"/>
+                        {{l('settings.logChannels')}}
+                    </label>
+            </template>
             </div>
             <div class="form-group">
                 <label class="control-label" for="logAds">
@@ -81,9 +82,10 @@
                     <input type="checkbox" id="expensiveMemberList" v-model="expensiveMemberList"/>
                     {{l('settings.expensiveMemberList')}}
                 </label>
-                <div v-if="expensiveMemberList">
+                <template v-if="expensiveMemberList">
+                    <br>
                     <small>{{ l('settings.expensiveMemberList.selectedInfo') }}</small>
-                </div>
+                </template>
             </div>
             <div class="form-group">
                 <label class="control-label" for="fontSize">{{l('settings.fontSize')}}</label>
@@ -96,12 +98,13 @@
                     <input type="checkbox" id="playSound" v-model="playSound"/>
                     {{l('settings.playSound')}}
                 </label>
-            </div>
-            <div class="form-group">
-                <label class="control-label" for="alwaysNotify">
-                    <input type="checkbox" id="alwaysNotify" v-model="alwaysNotify" :disabled="!playSound"/>
-                    {{l('settings.alwaysNotify')}}
-                </label>
+                <template v-if="playSound">
+                    <br>
+                    <label class="control-label" for="alwaysNotify">
+                        <input type="checkbox" id="alwaysNotify" v-model="alwaysNotify" :disabled="!playSound"/>
+                        {{l('settings.alwaysNotify')}}
+                    </label>
+                </template>
             </div>
             <div class="form-group">
                 <label class="control-label" for="notifications">
@@ -197,11 +200,12 @@
                     <input type="checkbox" id="experimentalOrientationMatching" v-model="experimentalOrientationMatching"/>
                     <b> {{ l('general.experiment') }}</b> {{ l('settings.experiment.orientationMatching') }}
                 </label>
-                <div v-if="experimentalOrientationMatching">
+                <template v-if="experimentalOrientationMatching">
+                    <br>
                     <small>{{ l('settings.experiment.orientationMatching.selectedInfo') }}</small>
                     <br>
                     <small>{{ l('general.feedback') }}</small>
-                </div>
+                </template>
             </div>
 
             <div class="form-group">
@@ -209,10 +213,6 @@
                     <input type="checkbox" id="relaxPostLengthMatching" v-model="relaxPostLengthMatching"/>
                     {{ l('settings.match.relaxlength') }}
                 </label>
-                <small v-if="relaxPostLengthMatching">
-                    <br />
-                    {{ l('settings.match.relaxlength.selectedInfo') }}
-                </small>
             </div>
 
 <!--            <div class="form-group">-->
