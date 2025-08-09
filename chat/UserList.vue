@@ -270,6 +270,13 @@ export default class UserList extends Vue {
 
     .users {
         overflow: auto;
+
+        > div {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+        }
     }
 
     .nav li:first-child a {
