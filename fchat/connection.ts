@@ -315,7 +315,7 @@ export default class Connection implements Interfaces.Connection {
     //tslint:enable
 
     private async getTicket(password: string): Promise<string> {
-        log.info('Acquiring new API ticket');
+        log.verbose('Acquiring new API ticket');
         const oldLastApiTicketFetch = lastApiTicketFetch;
 
         log.debug(
