@@ -194,13 +194,14 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
             return null;
         }
 
-        const match = description.match(/\[url=(.*?)]\s*?Rising\s*?Portrait\s*?\[\/url]/i);
-
-        if (match && match[1]) {
-            return match[1].trim();
+        const _match = description.match(/\[i=hqp:\/\/([^\]]+)]/i);
+        if (_match?.[1].trim()) {
+            log.verbose("Very cool portrait!", _match[1].trim());
+            return 'https://' + _match[1].trim();
         }
 
-        return null;
+        const match = description.match(/\[url=([^\]]+)]\s*?Rising\s*?Portrait\s*?\[\/url]/i);
+        return match?.[1].trim() ?? null;
     }
 
     updateOverrides(c: ComplexCharacter): void {

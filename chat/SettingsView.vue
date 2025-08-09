@@ -1,7 +1,7 @@
 <template>
     <modal :action="l('settings.action')" @submit="submit" @open="load()" id="settings" dialogClass="w-100">
         <tabs style="flex-shrink:0;margin-bottom:10px" v-model="selectedTab"
-            :tabs="[l('settings.tabs.general'), l('settings.tabs.notifications'), l('settings.tabs.bonus'), l('settings.tabs.filters'), l('settings.tabs.hideAds'), l('settings.tabs.import')]"></tabs>
+            :tabs="[l('settings.tabs.general'), l('settings.tabs.notifications'), l('settings.tabs.bonus'), l('settings.tabs.filters'), l('settings.tabs.hideAds'), l('settings.tabs.hqp'), l('settings.tabs.import')]"></tabs>
         <div v-show="selectedTab === '0'">
             <div class="form-group">
                 <label class="control-label" for="disallowedTags">{{l('settings.disallowedTags')}}</label>
@@ -418,7 +418,34 @@
             </template>
             <template v-else>{{l('settings.hideAds.empty')}}</template>
         </div>
-        <div v-show="selectedTab === '5'" style="display:flex;padding-top:10px">
+        <div v-show="selectedTab === '5'">
+            <h5>{{ l('settings.hqp.title') }}</h5>
+            <div>{{ l('settings.hqp.desc1') }}</div>
+            <div class="warning" style="margin-top: 10px">
+                <h5>{{ l('settings.hqp.alert') }}</h5>
+                <div>{{ l('settings.hqp.desc2') }}</div>
+            </div>
+            <div>
+                {{ l('settings.hqp.allowedDomains') }}
+                <ul>
+                    <li>static.f-list.net {{ l('settings.hqp.flist') }}</li>
+                    <li>freeimage.host</li>
+                    <li>iili.io</li>
+                    <li>e621.net</li>
+                    <li>redgifs</li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <textarea class="hqp-input form-control" v-model="normalLink" @keydown.enter.prevent.stop="" rows="1" :placeholder="l('settings.hqp.input.ph')"></textarea>
+                <div class="form-label">{{ l('settings.hqp.copy')}}</div>
+                <div v-if="hqpError">
+                    {{ l('settings.hqp.error') }}
+                    <div class="hqp-error">{{ l(hqpError) }}</div>
+                </div>
+                <textarea class="hqp-input form-control" @click="selectAllIfValid" :value="hqpLink" rows="1" :placeholder="l('settings.hqp.output.ph')" readonly="true"></textarea>
+            </div>
+        </div>
+        <div v-show="selectedTab === '6'" style="display:flex;padding-top:10px">
             <select id="import" class="form-control" v-model="importCharacter" style="flex:1;margin-right:10px">
                 <option value="">{{l('settings.import.selectCharacter')}}</option>
                 <option v-for="character in availableImports" :value="character">{{character}}</option>
@@ -444,7 +471,10 @@
     import { SmartFilterSettings, SmartFilterSelection, smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
     import _ from 'lodash';
     import { matchesSmartFilters } from '../learn/filter/smart-filter';
+    import { ProfileCache } from '../learn/profile-cache';
     import { EventBus } from './preview/event-bus';
+
+    type hqpErrorString = 'settings.hqp.errorUrl' | 'settings.hqp.errorDomain' | 'settings.hqp.errorBrace' | '';
 
     @Component({
         components: {modal: Modal, tabs: Tabs}
@@ -706,6 +736,36 @@
         setSmartFilter(key: keyof SmartFilterSelection, v: Event): void {
             this.risingFilter.smartFilters[key] = (v.target as HTMLInputElement).checked;
         }
+
+        normalLink = '';
+        get hqpLink() {
+            return this.normalLink
+                ? '[i=' + this.normalLink.replace(/^https:\/\//, 'hqp://') + '][/i]'
+                : '';
+        };
+
+        selectAllIfValid(e: MouseEvent) {
+            if (this.hqpError)
+                return;
+            else if (e.target instanceof HTMLTextAreaElement)
+                e.target.select();
+        }
+
+        get hqpError() {
+            if (!this.normalLink)
+                return '' as hqpErrorString;
+
+            if (!this.normalLink.startsWith('https://'))
+                return 'settings.hqp.errorUrl' as hqpErrorString;
+
+            if (this.normalLink.includes(']'))
+                return 'settings.hqp.errorBrace' as hqpErrorString;
+
+            if (!ProfileCache.isSafeRisingPortraitURL(this.normalLink))
+                return 'settings.hqp.errorDomain' as hqpErrorString;
+
+            return '' as hqpErrorString;
+        }
     }
 </script>
 
@@ -743,5 +803,12 @@
 
     #settings .form-group.filters.age  input {
       margin-left: 5px;
+    }
+
+    #settings .hqp-error {
+        color: var(--danger);
+    }
+    #settings .hqp-input {
+        resize: none;
     }
 </style>
