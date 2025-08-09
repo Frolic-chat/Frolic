@@ -260,7 +260,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         let score = (!match || match.score === null) ? Scoring.NEUTRAL : match.score;
 
         if (score === 0) {
-            log.info('cache.profile.store.zero.score', { name: c.character.name });
+            log.verbose('cache.profile.store.zero.score', { name: c.character.name });
         }
 
         this.updateOverrides(c);

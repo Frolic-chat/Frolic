@@ -242,7 +242,7 @@ export class IndexedStore implements PermanentIndexedStore {
         const getAllKeysRequest = idx.getAllKeys(IDBKeyRange.upperBound(expirationTime));
         const result = await promisifyRequest<IDBValidKey[]>(getAllKeysRequest);
 
-        //log.info('character.cache.expire', {daysToExpire, totalRecords, removableRecords: result.length});
+        //log.verbose('character.cache.expire', {daysToExpire, totalRecords, removableRecords: result.length});
 
         return new Promise(
           (resolve, reject) => {

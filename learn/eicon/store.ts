@@ -138,13 +138,11 @@ export class EIconStore {
      */
     private async save(): Promise<void> {
         if (this.lookup.length) {
-            log.info(
-                'eicons.save', {
-                    records: this.lookup.length,
-                    asOfTimestamp: this.asOfTimestamp,
-                    file: this.getStoreFilename(),
-                }
-            );
+            log.verbose('eicons.save', {
+                records: this.lookup.length,
+                asOfTimestamp: this.asOfTimestamp,
+                file: this.getStoreFilename(),
+            });
 
             try {
                 fs.writeFileSync(
@@ -177,7 +175,7 @@ export class EIconStore {
      * "array of eicon names".
      */
     private async load(): Promise<void> {
-        log.info('eicons.load', { store: this.getStoreFilename() });
+        log.verbose('eicons.load', { store: this.getStoreFilename() });
 
         try {
             const data = JSON.parse(fs.readFileSync(this.getStoreFilename(), 'utf-8'));

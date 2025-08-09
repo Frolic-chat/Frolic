@@ -19,7 +19,7 @@ export default async function checkForGitRelease(semVer: string, url: string, be
                 continue;
 
             if (release.tag_name == semVer) {
-                log.info(`Using latest Frolic version: ${semVer}`);
+                log.verbose(`Using latest Frolic version: ${semVer}`);
                 return false;
             }
             else if (release.tag_name >= semVer) {
