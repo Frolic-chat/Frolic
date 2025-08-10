@@ -506,8 +506,7 @@
                 }
             }
             else {
-                if (this.tabOptions !== undefined)
-                    this.tabOptions = undefined;
+                if (this.tabOptions) this.tabOptions = undefined;
 
                 if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
