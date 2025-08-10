@@ -89,7 +89,7 @@
                                 <span style="flex:1"></span>
                                 <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
                                     @click="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
-                                <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
+                                <span v-if="!conversation.isPinned" class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
                             </div>
                         </div>
                     </a>
@@ -117,7 +117,7 @@
                             @click.stop="conversation.toggleAutomatedAds()"></span>
                             <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')"
                                 @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
-                            <span class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
+                            <span v-if="!conversation.isPinned" class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
                         </span>
                     </a>
                 </div>
