@@ -249,6 +249,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
     }
 
     async close(): Promise<void> {
+        this.setOwnTyping('clear');
         state.privateConversations.splice(state.privateConversations.indexOf(this), 1);
         delete state.privateMap[this.character.name.toLowerCase()];
         await state.savePinned();
