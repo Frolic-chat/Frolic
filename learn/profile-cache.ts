@@ -162,6 +162,13 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
     static isSafeRisingPortraitURL(url: string): boolean {
+        if (url.match(/^https:\/\/(?:static\.f-list\.net|(?:[a-zA-Z0-9\-.]+\.)?(?:imgur\.com|freeimage\.host|iili\.io|redgifs\.com|e621\.net))\//)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
         if (url.match(/^https?:\/\/static\.f-list\.net\//i)) {
             return true;
         }
