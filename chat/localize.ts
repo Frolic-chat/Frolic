@@ -236,6 +236,7 @@ SELECT THE TAB YOU WISH TO REPORT, LOGS ARE AUTOMATICALLY ATTACHED[/color]`,
     'settings.hqp.errorBrace': "Your link can't contain a closing square-brace ].",
     'settings.hqp.output.ph': '[i=hqp://example.com/myimage.png][/i]',
     'settings.import': 'Import Settings',
+    'settings.import.desc': 'Select a character and click "Import" to copy your settings from another character.',
     'settings.import.selectCharacter': 'Select a character',
     'settings.import.confirm': `You are importing settings from your character {0}.
 This will overwrite any and all settings, pinned conversations and conversation settings of character {1}.

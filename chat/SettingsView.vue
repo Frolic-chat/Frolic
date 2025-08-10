@@ -445,14 +445,17 @@
                 <textarea class="hqp-input form-control" @click="selectAllIfValid" :value="hqpLink" rows="1" :placeholder="l('settings.hqp.output.ph')" readonly="true"></textarea>
             </div>
         </div>
-        <div v-show="selectedTab === '6'" style="display:flex;padding-top:10px">
-            <select id="import" class="form-control" v-model="importCharacter" style="flex:1;margin-right:10px">
-                <option value="">{{l('settings.import.selectCharacter')}}</option>
-                <option v-for="character in availableImports" :value="character">{{character}}</option>
-            </select>
-            <button class="btn btn-secondary" @click="doImport" :disabled="!importCharacter">
-                {{l('settings.import')}}
-            </button>
+        <div v-show="selectedTab === '6'">
+            <div class="form-label">{{ l('settings.import.desc') }}</div>
+            <div class="form-group d-flex">
+                <select id="import" class="form-control" v-model="importCharacter" style="flex:1;margin-right:10px">
+                    <option value="">{{l('settings.import.selectCharacter')}}</option>
+                    <option v-for="character in availableImports" :value="character">{{character}}</option>
+                </select>
+                <button class="btn btn-secondary" @click="doImport" :disabled="!importCharacter">
+                    {{l('settings.import')}}
+                </button>
+            </div>
         </div>
     </modal>
 </template>
