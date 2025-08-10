@@ -45,14 +45,13 @@
         @Prop({ default: false })
         readonly multiple: boolean = false;
         @Prop
-        // @ts-ignore
-        readonly value?: Multiselect<typeof this.multiple>;
+
+        readonly value?: Multiselect<FilterableSelect['multiple']>;
         @Prop
         readonly title?: string;
 
         filter = '';
-        // @ts-ignore
-        selected?: Multiselect<typeof this.multiple>;
+        selected?: Multiselect<FilterableSelect['multiple']>;
 
         @Watch('value')
         watchValue(newValue: object | object[] | undefined): void {
@@ -65,6 +64,7 @@
          * It eliminates the need for the parent to have their own detector.
          */
         select(item: object): void {
+            // `if (this.multiple)` should force object[] =\
             if (Array.isArray(this.selected)) {
                 const i = this.selected.indexOf(item);
 
@@ -78,8 +78,7 @@
             this.$emit('input', this.selected);
         }
 
-        // This is only called from a place where `this.selected` is guaranteed
-        // to be an object[], but casting leaves a bad feeling.
+        // This is only called where `this.selected` is an object[], but casting leaves a bad feeling.
         isSelected(option: object): boolean {
             if (Array.isArray(this.selected))
                 return this.selected.includes(option);

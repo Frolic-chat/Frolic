@@ -153,7 +153,7 @@
         </div>
         <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
             :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
-            :hasToolbar="settings.bbCodeBar" ref="textBox" style="position:relative;margin-top:5px"
+            :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
             :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
             :characterName="ownName"
             :type="'big'"
@@ -275,6 +275,7 @@
         messageCount = 0;
         searchTimer = 0;
         messageView!: HTMLElement;
+        textBox!: Editor;
         resizeHandler!: EventListener;
         keydownHandler!: EventListener;
         keypressHandler!: EventListener;
@@ -332,6 +333,9 @@
         mounted(): void {
             this.updateOwnName();
 
+            this.messageView = <HTMLElement>this.$refs['messages'];
+            this.textBox = <Editor>this.$refs['mainInput'];
+
             this.extraButtons = [{
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
                 tag: '?',
@@ -343,7 +347,7 @@
                 const selection = document.getSelection();
                 if((selection === null || selection.isCollapsed) && !anyDialogsShown &&
                     (document.activeElement === document.body || document.activeElement === null || document.activeElement.tagName === 'A'))
-                    (<Editor>this.$refs['textBox']).focus();
+                    this.textBox.focus();
             });
             window.addEventListener('keydown', this.keydownHandler = ((e: KeyboardEvent) => {
                 if(getKey(e) === Keys.KeyF && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
@@ -355,7 +359,6 @@
                 if(Date.now() - this.lastSearchInput > 500 && this.search !== this.searchInput)
                     this.search = this.searchInput;
             }, 500);
-            this.messageView = <HTMLElement>this.$refs['messages'];
             this.$watch('conversation.nextAd', (value: number) => {
                 const setAdCountdown = () => {
                     const diff = ((<Conversation.ChannelConversation>this.conversation).nextAd - Date.now()) / 1000;
@@ -415,7 +418,9 @@
         get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {
             if(this.search === '') return this.conversation.messages;
             const filter = new RegExp(this.search.replace(/[^\w]/gi, '\\$&'), 'i');
-            return this.conversation.messages.filter((x) => filter.test(x.text) || (filter.test(_.get(x, 'sender.name', '') as string)));
+            return this.conversation.messages
+                .filter(x => filter.test(x.text) || filter.test('sender' in x ? x.sender.name : ''));
+                // When will typescript just let me use x.sender?.name......
         }
 
         async sendButton(): Promise<void> {
@@ -426,15 +431,17 @@
         async conversationChanged(): Promise<void> {
             this.updateOwnName();
 
-            if(!anyDialogsShown) (<Editor>this.$refs['textBox']).focus();
+            if (!anyDialogsShown) this.textBox.focus();
             this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
             this.scrolledDown = true;
+
             this.refreshAutoPostingTimer();
+
             this.userMemo = null;
 
             if (this.isPrivate(this.conversation)) {
-              const c = await core.cache.profileCache.get(this.conversation.name);
-              this.userMemo = c?.character?.memo?.memo ?? null;
+                const c = await core.cache.profileCache.get(this.conversation.name);
+                this.userMemo = c?.character?.memo?.memo ?? null;
             }
         }
 
@@ -468,7 +475,7 @@
                 this.scrolledDown = true;
             }));
 
-            if(e && !anyDialogsShown) (<Editor>this.$refs['textBox']).focus();
+            if(e && !anyDialogsShown) this.textBox.focus();
         }
 
         /**
@@ -477,7 +484,7 @@
          * This will set `scrolledUp` if it detected you at the top of chat history - it also tries to load more messages. It will also set `scrolledDown` if your scrolled-by content is within 15 px of the loaded chat history. (It is possible that both are set at the same time.)
          */
         onMessagesScroll(): void {
-            if(this.ignoreScroll) {
+            if (this.ignoreScroll) {
                 this.ignoreScroll = false;
                 return;
             }
@@ -509,18 +516,17 @@
         }
 
         async onKeyDown(e: KeyboardEvent): Promise<void> {
-            const editor = <Editor>this.$refs['textBox'];
             if(getKey(e) === Keys.Tab) {
                 if(e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
                 e.preventDefault();
                 if(this.conversation.enteredText.length === 0 || this.isConsoleTab) return;
                 if(this.tabOptions === undefined) {
-                    const selection = editor.getSelection();
+                    const selection = this.textBox.getSelection();
                     if(selection.text.length === 0) {
-                        const match = /\b[\w]+$/.exec(editor.text.substring(0, selection.end));
+                        const match = /\b[\w]+$/.exec(this.textBox.text.substring(0, selection.end));
                         if(match === null) return;
                         selection.start = match.index < 0 ? 0 : match.index;
-                        selection.text = editor.text.substring(selection.start, selection.end);
+                        selection.text = this.textBox.text.substring(selection.start, selection.end);
                         if(selection.text.length === 0) return;
                     }
                     const search = new RegExp(`^${selection.text.replace(/[^\w]/gi, '\\$&')}`, 'i');
@@ -533,7 +539,7 @@
                     this.tabOptionSelection = selection;
                 }
                 if(this.tabOptions.length > 0) {
-                    const selection = editor.getSelection();
+                    const selection = this.textBox.getSelection();
                     if(selection.end !== this.tabOptionSelection.end) return;
                     if(this.tabOptionsIndex >= this.tabOptions.length) this.tabOptionsIndex = 0;
                     const name = this.tabOptions[this.tabOptionsIndex];
@@ -545,8 +551,7 @@
                 }
             }
             else {
-                if (this.tabOptions !== undefined)
-                    this.tabOptions = undefined;
+                if (this.tabOptions) this.tabOptions = undefined;
 
                 if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
@@ -647,7 +652,7 @@
             const conv = (<Conversation.ChannelConversation>this.conversation);
             if(conv.channel.mode === 'both') {
                 conv.isSendingAds = is;
-                (<Editor>this.$refs['textBox']).focus();
+                this.textBox.focus();
             }
         }
 
