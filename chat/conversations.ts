@@ -79,7 +79,9 @@ abstract class Conversation implements Interfaces.Conversation {
     }
 
     async send(): Promise<void> {
-        if (this.enteredText.trim().length === 0)
+        // This is a safety check; technically if we reached this point, we should send the message.
+        // However, parsing requires there be an actual message, so we can't avoid this.
+        if (!this.enteredText.trim())
             return;
 
         if(isCommand(this.enteredText)) {
@@ -969,18 +971,18 @@ export default function(this: any): Interfaces.State {
         await conversation.addMessage(message);
         EventBus.$emit('channel-message', { message, channel: conversation });
 
-        function shouldNotifyOnFriendMessage(): boolean {
+        const shouldNotifyOnFriendMessage = () => {
             if (!conversation)
                 return false;
 
-            return ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Friends   ||
-                     conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both      )
-                || ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
-                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Friends   ||
-                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both      )
+            return (conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Friends   ||
+                    conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both      )
+                || (conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
+                    core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Friends   ||
+                    core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both      )
         }
 
-        function shouldNotifyOnBookmarkMessage(): boolean {
+        const shouldNotifyOnBookmarkMessage = () => {
             if (!conversation)
                 return false;
 
@@ -996,7 +998,7 @@ export default function(this: any): Interfaces.State {
             words.push(...core.state.settings.highlightWords);
 
         if ((conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight)
-         ||  conversation.settings.highlight === Interfaces.Setting.True) {
+        ||  conversation.settings.highlight === Interfaces.Setting.True) {
             words.push(core.connection.character);
         }
 
@@ -1010,8 +1012,8 @@ export default function(this: any): Interfaces.State {
                 ? data.character.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
                 : null;
 
-        if (msgResults !== null || nameResults !== null) {
-            const results = msgResults !== null ? msgResults : nameResults;
+        if (msgResults || nameResults) {
+            const results = msgResults ?? nameResults;
             await core.notifications.notify(conversation, data.character, l('chat.highlight', results![0], conversation.name, message.text), characterImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
