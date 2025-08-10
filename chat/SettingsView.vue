@@ -297,7 +297,7 @@
                 <label class="control-label" for="risingCharacterTheme">
                     {{l('rising.theme.select')}}
                     <select id="risingCharacterTheme" class="form-control" v-model="risingCharacterTheme" style="flex:1;margin-right:10px">
-                        <option value=undefined>{{l('rising.theme.default')}}</option>
+                        <option value="">{{l('rising.theme.default')}}</option>
                         <option disabled>---</option>
                         <option v-for="theme in risingAvailableThemes" :value="theme">
                             {{theme}}
@@ -601,7 +601,12 @@
                 exceptionNames: [ ...settings.risingFilter.exceptionNames ],
              };
 
-            this.risingAvailableThemes = fs.readdirSync(path.join(__dirname, 'themes')).filter((x) => x.slice(-4) === '.css').map((x) => x.slice(0, -4));
+            this.risingAvailableThemes = fs.readdirSync(path.join(__dirname, 'themes'))
+                .filter(file => file.slice(-4) === '.css')
+                .map(file => file.slice(0, -4));
+                // In the event we want to capitalize the entries...
+                //.map(name => name.charAt(0).toUpperCase() + name.slice(1));
+
             this.risingCharacterTheme = settings.risingCharacterTheme;
         }
 
