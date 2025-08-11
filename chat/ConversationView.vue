@@ -132,7 +132,7 @@
             </a>
         </div>
         <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messages"
-             @scroll="onMessagesScroll" style="flex:1;overflow:auto;margin-top:2px">
+             @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="flex:1;overflow:auto;margin-top:2px">
             <template v-for="message in messages">
                 <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id"
                     :classes="message == conversation.lastRead ? 'last-read' : ''">
@@ -382,6 +382,7 @@
         hideSearch(): void {
             this.showSearch = false;
             this.searchInput = '';
+            this.scrollMessageView();
         }
 
         updateOwnName(): void {
@@ -436,6 +437,17 @@
             }
         }
 
+        scrollMessageView(e?: KeyboardEvent) {
+            this.ignoreScroll = true;
+            this.$nextTick(() => setTimeout(() => {
+                this.ignoreScroll = true;
+                this.messageView.scrollTop = this.messageView.scrollHeight;
+                this.scrolledDown = true;
+            }));
+
+            if(e && !anyDialogsShown) (<Editor>this.$refs['textBox']).focus();
+        }
+
         onMessagesScroll(): void {
             if(this.ignoreScroll) {
                 this.ignoreScroll = false;
@@ -464,7 +476,6 @@
         }
 
         @Watch('conversation.typingStatus')
-
         typingStatusChanged(_str: string, oldValue: string): void {
             if(oldValue === 'clear') this.keepScroll();
         }
@@ -512,6 +523,9 @@
                 if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
                     this.conversation.loadLastSent();
+                }
+                else if (getKey(e) === Keys.Escape) {
+                    this.scrollMessageView();
                 }
                 else if (getKey(e) === Keys.Enter) {
                     // Handles the situations where you insert a newline:
