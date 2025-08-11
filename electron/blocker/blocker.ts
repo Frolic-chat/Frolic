@@ -52,6 +52,9 @@ export class BlockerIntegration {
 
       const session = electron.session.fromPartition('persist:adblocked', { cache: true });
 
+      // Block downloads
+      session.on('will-download', e => e.preventDefault());
+
       log.debug('adblock.session.created');
 
       blocker.enableBlockingInSession(session);
