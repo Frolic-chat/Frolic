@@ -278,19 +278,38 @@
         resizeHandler!: EventListener;
         keydownHandler!: EventListener;
         keypressHandler!: EventListener;
+
+        /**
+         * True if the user is scrolled to the bottom of the page.
+         * But how does this interact with this.scrolledUp?
+         */
         scrolledDown = true;
+
+        /**
+         * Set when you are scrolled up enough to load more messages.
+         */
         scrolledUp = false;
+
+        /**
+         * Used to prevent the automatic scroll handler from reacting to your deliberate scroll.
+         * Toggle it on, and it will toggle it off when it "eats" the scroll event you caused.
+         */
         ignoreScroll = false;
+
         adCountdown = 0;
         adsMode = l('channel.mode.ads');
         autoPostingUpdater = 0;
         adAutoPostUpdate: string | null = null;
         adAutoPostNextAd: string | null = null;
         adsRequireSetup = false;
-        isChannel = Conversation.isChannel;
-        isPrivate = Conversation.isPrivate;
         showNonMatchingAds = true;
 
+        isChannel = Conversation.isChannel;
+        isPrivate = Conversation.isPrivate;
+
+        /**
+         * Group of info for the settings option "Require a second Enter to send your messages"
+         */
         waitingForSecondEnter = false;
         waitingForSecondEnterClass: 'second-enter-send-allowed' | '' = '';
         waitingForSecondEnterTimeout?: ReturnType<typeof setTimeout>;
@@ -427,6 +446,10 @@
             this.messageCount = newValue.length;
         }
 
+        /**
+         * Keeps the current scroll level when elements might cause it to change. For example:
+         * Resizing the window; the text input box growing larger; other player's typing indicator being shown or hidden; an error or info message appearing or hiding; receiving a new message.
+         */
         keepScroll(): void {
             if(this.scrolledDown) {
                 this.ignoreScroll = true;
@@ -448,6 +471,11 @@
             if(e && !anyDialogsShown) (<Editor>this.$refs['textBox']).focus();
         }
 
+        /**
+         * Tracks when the user scrolls. Because this triggers off of any scroll event, it will "correct" your own attempts to set the scroll distance. You should set `ignoreScroll` before attempting to modify the scroll. This function will `eat` the ignore, so set it every time you want to avoid the auto-correct.
+         *
+         * This will set `scrolledUp` if it detected you at the top of chat history - it also tries to load more messages. It will also set `scrolledDown` if your scrolled-by content is within 15 px of the loaded chat history. (It is possible that both are set at the same time.)
+         */
         onMessagesScroll(): void {
             if(this.ignoreScroll) {
                 this.ignoreScroll = false;
