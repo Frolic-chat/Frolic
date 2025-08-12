@@ -650,7 +650,7 @@
             const conv = (<Conversation.ChannelConversation>this.conversation);
             if(conv.channel.mode === 'both') {
                 conv.isSendingAds = is;
-                (<Editor>this.$refs['textBox']).focus();
+                this.textBox.focus();
             }
         }
 
