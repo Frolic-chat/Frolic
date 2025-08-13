@@ -132,7 +132,7 @@
             </a>
         </div>
         <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messages"
-             @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="flex:1;overflow:auto;margin-top:2px">
+             @scrollend="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="flex:1;overflow:auto;margin-top:2px">
             <template v-for="message in messages">
                 <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id"
                     :classes="message == conversation.lastRead ? 'last-read' : ''">
@@ -297,6 +297,16 @@
          */
         ignoreScroll = false;
 
+        /**
+         * A more direct way to track ignoreScroll. This also eats scroll events but isn't canceled automatically; you have to turn it off when you're done handling scrolling yourself.
+         */
+        manualScrolling = false;
+
+        /**
+         * Used to track when a "new messages" situation is a new message in current conversation, or because you switched conversations.
+         */
+        roomScrollTracker: ConversationView['conversation']['key'] = '';
+
         adCountdown = 0;
         adsMode = l('channel.mode.ads');
         autoPostingUpdater = 0;
@@ -331,6 +341,8 @@
 
         @Hook('mounted')
         mounted(): void {
+            this.roomScrollTracker = this.conversation.key;
+
             this.updateOwnName();
 
             this.extraButtons = [{
@@ -401,6 +413,7 @@
         }
 
         hideSearch(): void {
+            console.warn('hiding search display');
             this.showSearch = false;
             this.searchInput = '';
             this.scrollMessageView();
@@ -426,13 +439,36 @@
             return this.conversation.send();
         }
 
-        @Watch('conversation')
+        @Watch('conversation.messages')
+        updateMessageOrConversation(newValue: Conversation.Message[]): void {
+            console.warn('message or conversation update?', {
+                key: this.conversation.key,
+                tracker: this.roomScrollTracker,
+            });
+
+            if (this.roomScrollTracker === this.conversation.key) {
+                this.messageAdded(newValue);
+            }
+            else {
+                this.conversationChanged();
+                this.roomScrollTracker = this.conversation.key;
+            }
+        }
+
         async conversationChanged(): Promise<void> {
             this.updateOwnName();
 
             if (!anyDialogsShown) this.textBox.focus();
-            this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
-            this.scrolledDown = true;
+
+            console.warn("Conversation changed: set.", { scrolledUp: this.scrolledUp, scrolledDown: this.scrolledDown, ignoreScroll: this.ignoreScroll, scrollTop: this.messageView.scrollTop, scrollHeight: this.messageView.scrollHeight });
+
+            this.manualScrolling = true;
+            this.$nextTick(() => setTimeout(() => {
+                this.messageView.scrollTop = this.messageView.scrollHeight;
+                this.scrolledDown = true;
+                //this.$nextTick(() => this.$nextTick(() => this.manualScrolling = false));
+                this.$nextTick(() => this.manualScrolling = false);
+            }));
 
             this.refreshAutoPostingTimer();
 
@@ -444,11 +480,18 @@
             }
         }
 
-        @Watch('conversation.messages')
         messageAdded(newValue: Conversation.Message[]): void {
+            console.warn("messageAdded (keepScroll incoming)");
             this.keepScroll();
-            if(!this.scrolledDown && newValue.length === this.messageCount)
-                this.messageView.scrollTop -= (this.messageView.firstElementChild!).clientHeight;
+
+            // When we're scrolled up(?????) and a message is added... push us up by 1??
+            // Only happens when a message is moved from live history to log
+            if(!this.scrolledDown && newValue.length === this.messageCount) {
+                const firstMessage = this.messageView.firstElementChild;
+                console.warn("messageAdded: subtracting first-element clientheight from top.", { top: this.messageView.scrollTop, child: firstMessage!.clientHeight });
+
+                this.messageView.scrollTop -= firstMessage!.clientHeight;
+            }
             this.messageCount = newValue.length;
         }
 
@@ -457,16 +500,19 @@
          * Resizing the window; the text input box growing larger; other player's typing indicator being shown or hidden; an error or info message appearing or hiding; receiving a new message.
          */
         keepScroll(): void {
-            if(this.scrolledDown) {
-                this.ignoreScroll = true;
-                this.$nextTick(() => setTimeout(() => {
-                    this.ignoreScroll = true;
-                    this.messageView.scrollTop = this.messageView.scrollHeight;
-                }, 0));
-            }
+            // if(this.scrolledDown) {
+            //     console.warn("keepScroll: begin.", { scrolledUp: this.scrolledUp, scrolledDown: this.scrolledDown, ignoreScroll: this.ignoreScroll, scrollTop: this.messageView.scrollTop, scrollHeight: this.messageView.scrollHeight });
+            //     this.ignoreScroll = true;
+            //     this.$nextTick(() => setTimeout(() => {
+            //         console.warn("keepScroll: end.", { scrolledUp: this.scrolledUp, scrolledDown: this.scrolledDown, ignoreScroll: this.ignoreScroll, scrollTop: this.messageView.scrollTop, scrollHeight: this.messageView.scrollHeight });
+            //         this.ignoreScroll = true;
+            //         this.messageView.scrollTop = this.messageView.scrollHeight;
+            //     }, 0));
+            // }
         }
 
         scrollMessageView(e?: KeyboardEvent) {
+            console.warn('scrollMessageView');
             this.ignoreScroll = true;
             this.$nextTick(() => setTimeout(() => {
                 this.ignoreScroll = true;
@@ -482,35 +528,93 @@
          * This will set `scrolledUp` if it detected you at the top of chat history - it also tries to load more messages. It will also set `scrolledDown` if your scrolled-by content is within 15 px of the loaded chat history. (It is possible that both are set at the same time.)
          */
         onMessagesScroll(): void {
-            if (this.ignoreScroll) {
-                this.ignoreScroll = false;
+            if (this.manualScrolling) {
+                console.warn("onMessagesScroll: Manually eating scroll.");
                 return;
             }
-            if(this.messageView.scrollTop < 20) {
-                if(!this.scrolledUp) {
-                    const firstMessage = this.messageView.firstElementChild;
-                    if(this.conversation.loadMore() && firstMessage !== null) {
-                        this.messageView.style.overflow = 'hidden';
-                        this.$nextTick(() => {
-                            this.messageView.scrollTop = (<HTMLElement>firstMessage).offsetTop;
-                            this.messageView.style.overflow = 'auto';
-                        });
-                    }
-                }
-                this.scrolledUp = true;
-            } else this.scrolledUp = false;
-            this.scrolledDown = this.messageView.scrollTop + this.messageView.offsetHeight >= this.messageView.scrollHeight - 15;
+
+            if (this.ignoreScroll) {
+                console.warn("onMessagesScroll: Eating a scroll.");
+                this.$nextTick(() => this.ignoreScroll = false);
+                return;
+            }
+
+            // At the top but not scrolled up? "Scroll up." (load more messages)
+            if (this.messageView.scrollTop < 20) {
+                console.warn("onMessagesScroll: Scroll top; loading more.");
+                // if(!this.scrolledUp) { // Can't this accidentally miss?
+                //     const firstMessage = this.messageView.firstElementChild;
+                //     if(this.conversation.loadMore() && firstMessage) {
+                //         console.warn("onMessagesScroll: Setting top to: " + (<HTMLElement>firstMessage).offsetTop);
+                //         this.messageView.style.overflow = 'hidden';
+                //         this.ignoreScroll = true; // Maybe unnecessary. Maybe not.
+                //         this.$nextTick(() => {
+                //             this.ignoreScroll = true; // Maybe unnecessary. Maybe not.
+                //             this.messageView.scrollTop = (<HTMLElement>firstMessage).offsetTop;
+                //             this.messageView.style.overflow = 'auto';
+                //         });
+                //     }
+                // }
+                // this.scrolledUp = true;
+            }
+            else {
+                //this.scrolledUp = false;
+            }
+
+            // If content scrolled past greater than total scrollable minus 15px, then we're at the bottom.
+            // 15 = magic - top margin is 2px, no other margins.
+            //const contentSoFar = this.messageView.scrollTop + this.messageView.offsetHeight;
+            //this.scrolledDown = contentSoFar >= this.messageView.scrollHeight - 15;
+
+            console.warn("ConversationView: onMessagesScroll done", { manual: this.manualScrolling, scrolledDown: this.scrolledDown });
         }
 
         @Watch('conversation.errorText')
         @Watch('conversation.infoText')
         textChanged(newValue: string, oldValue: string): void {
-            if(oldValue.length === 0 && newValue.length > 0) this.keepScroll();
+            console.warn("Infotext scroll event");
+            if(!oldValue && newValue) this.keepScroll();
         }
 
         @Watch('conversation.typingStatus')
-        typingStatusChanged(_str: string, oldValue: string): void {
-            if(oldValue === 'clear') this.keepScroll();
+        typingStatusChanged(newValue: Conversation.TypingStatus | undefined, oldValue: Conversation.TypingStatus | undefined): void {
+            console.warn("typing status scroll event", { oldValue, newValue });
+
+            // Channel -> channel shouldn't even trigger this watcher.
+            if (!oldValue && !newValue)
+                return;
+
+            // Channel -> idle PM; don't do anything.
+            if (!oldValue && newValue === 'clear')
+                return;
+
+            // Channel -> typing/paused PM
+            if (!oldValue && newValue && newValue !== 'clear')
+                this.keepScroll();
+
+
+            // PM -> Channel but no message
+            if (oldValue === 'clear' && !newValue)
+                return;
+
+            // PM -> Channel and clear message
+            if (oldValue && oldValue !== 'clear' && !newValue)
+                this.keepScroll();
+
+
+            // PM typing -> Pm not typing, or finished typing
+            if (oldValue && oldValue !== 'clear' && newValue === 'clear')
+                this.keepScroll();
+
+            // PM not typing -> PM typing, or started typing
+            if (oldValue === 'clear' && newValue && newValue !== 'clear')
+                this.keepScroll();
+
+            // PM: Typing -> typing. Theoretically you shouldn't get this since it's not a change.
+            if (oldValue && oldValue !== 'clear' && newValue && newValue !== 'clear')
+                return;
+
+                console.error("Strange typingStatusChanged effect.", { oldValue, newValue });
         }
 
         async onKeyDown(e: KeyboardEvent): Promise<void> {
