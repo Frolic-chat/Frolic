@@ -1,6 +1,6 @@
 <template>
     <div class="bbcode-editor" style="display:flex;flex-wrap:wrap;justify-content:flex-end">
-        <slot></slot>
+        <slot name="default"></slot>
         <a tabindex="0" class="btn btn-light bbcode-btn btn-sm" role="button" @click="showToolbar = true" @blur="showToolbar = false"
             style="border-bottom-left-radius:0;border-bottom-right-radius:0" v-if="hasToolbar">
             <i class="fa fa-code"></i>
@@ -19,8 +19,9 @@
 
             <EIconSelector :onSelect="onSelectEIcon" ref="eIconSelector"></EIconSelector>
 
-            <div class="btn-group toolbar-buttons" style="flex-wrap:wrap">
-                <div v-if="!!characterName" class="character-btn">
+            <div class="btn-group toolbar-buttons">
+                <slot name="toolbar-start"></slot>
+                <div v-if="!!characterName" class="btn btn-light btn-sm character-btn">
                   <icon :character="characterName"></icon>
                 </div>
 
@@ -31,6 +32,7 @@
                     :title="preview ? 'Close Preview' : 'Preview'">
                     <i class="fa fa-fw fa-eye"></i>
                 </div>
+                <slot name="toolbar-end"></slot>
             </div>
             <button type="button" class="close" aria-label="Close" style="margin-left:10px" @click="showToolbar = false">&times;</button>
         </div>
@@ -432,18 +434,17 @@
     }
 </script>
 <style lang="scss">
-  .bbcode-editor .bbcode-toolbar .character-btn {
-    width: 30px;
-    height: 30px;
-    overflow: hidden;
-
+  .bbcode-toolbar .character-btn {
     a {
       width: 100%;
       height: 100%;
+      display: inline-block;
 
       img {
-        width: inherit;
-        height: inherit;
+        /* Sized like a fa icon */
+        width: 1.25em;
+        height: 1.25em;
+        vertical-align: sub;
       }
     }
   }
@@ -454,8 +455,16 @@
       }
 
     .toolbar-buttons {
+      flex-wrap: wrap;
+      width: 100%;
+
       .btn.toggled {
         background-color: var(--secondary) !important;
+      }
+      .btn {
+        flex-grow: 0.1;
+        flex-shrink: 0;
+        max-width: 50px;
       }
     }
 

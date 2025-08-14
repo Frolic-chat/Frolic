@@ -158,28 +158,29 @@
             :characterName="ownName"
             :type="'big'"
             >
-
-            <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-                <user :character="conversation.character" :match="false" :bookmark="false"></user>
-                &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
-            </span>
-            <div v-show="conversation.infoText" class="chat-info-text">
-                <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
-                <span style="flex:1;margin-left:5px">
-                    {{conversation.infoText}}
+            <template v-slot:default>
+                <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
+                    <user :character="conversation.character" :match="false" :bookmark="false"></user>
+                    &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
                 </span>
-            </div>
-            <div v-show="conversation.errorText" class="chat-info-text">
-                <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
-                <span class="redText" style="flex:1;margin-left:5px">
-                    {{conversation.errorText}}
-                </span>
-            </div>
-            <div class="bbcode-editor-controls">
-                <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)" style="margin-right:5px">
+                <div v-show="conversation.infoText" class="chat-info-text">
+                    <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
+                    <span style="flex:1;margin-left:5px">
+                        {{conversation.infoText}}
+                    </span>
+                </div>
+                <div v-show="conversation.errorText" class="chat-info-text">
+                    <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
+                    <span class="redText" style="flex:1;margin-left:5px">
+                        {{conversation.errorText}}
+                    </span>
+                </div>
+            </template>
+            <template v-slot:toolbar-end>
+                <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
                     {{ getByteLength(conversation.enteredText) }} / {{ conversation.maxMessageLength }}
                 </div>
-                <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-right:5px">
+                <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
                     <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
                         <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
                             class="nav-link" @click.prevent="setSendingAds(false)">
@@ -193,10 +194,10 @@
                         </a>
                     </li>
                 </ul>
-                <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton">
+                <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
                     {{l('chat.send')}}
                 </div>
-            </div>
+            </template>
         </bbcode-editor>
         <command-help ref="helpDialog"></command-help>
         <settings ref="settingsDialog" :conversation="conversation"></settings>
@@ -818,6 +819,11 @@
     @import "~bootstrap/scss/variables";
     @import "~bootstrap/scss/mixins/breakpoints";
 
+    .toolbar-buttons .message-length {
+        margin-left: auto;
+        align-content: center;
+    }
+
     #conversation {
         .header {
             @media (min-width: breakpoint-min(md)) {
@@ -830,8 +836,8 @@
 
         .btn-toolbar {
             .btn-group {
-                margin-left: 0.3rem;
-                margin-right: 0.3rem;
+                margin-left: 3px;
+                margin-right: 3px;
 
                 &:last-child {
                     margin-right: 0;
