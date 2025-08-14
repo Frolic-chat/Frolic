@@ -18,6 +18,10 @@ const userPostfix: {[key: number]: string | undefined} = {
     render(this: MessageView, createElement: CreateElement): VNode {
         const message = this.message;
 
+        const emitExpand = () => {
+            this.$emit('expand');
+        }
+
         const children: VNodeChildrenArrayContents =
             [createElement('span', {staticClass: 'message-time'}, `${formatTime(message.time)}`)];
 
@@ -76,7 +80,10 @@ const userPostfix: {[key: number]: string | undefined} = {
 
                                     expand.className = 'expand fas fa-caret-down';
 
-                                    expand.addEventListener('click', function(): void { this.parentElement!.className += ' expanded'; });
+                                    expand.addEventListener('click', function(): void {
+                                        this.parentElement!.className += ' expanded';
+                                        emitExpand();
+                                    });
 
                                     elm.appendChild(expand);
                                 }

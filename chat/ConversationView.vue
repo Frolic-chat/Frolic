@@ -134,7 +134,7 @@
         <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messages"
              @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="flex:1;overflow:auto;margin-top:2px">
             <template v-for="message in messages">
-                <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id"
+                <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded"
                     :classes="message == conversation.lastRead ? 'last-read' : ''">
                 </message-view>
                 <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
@@ -619,6 +619,9 @@
             await core.settingsStore.set('hideNonMatchingAds', !this.showNonMatchingAds);
         }
 
+        messageViewExpanded(): void {
+            this.scrolledDown = false;
+        }
 
         /* tslint:disable */
         getMessageWrapperClasses(): any {
