@@ -61,3 +61,7 @@
   min-width: 0;
   -webkit-overflow-scrolling: touch;
 }
+
+*:focus:not(:focus-visible) {
+  outline: initial;
+}

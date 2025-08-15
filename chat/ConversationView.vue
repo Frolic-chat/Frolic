@@ -837,6 +837,10 @@
             }
         }
 
+        .messages:focus {
+            outline: initial;
+        }
+
         .btn-toolbar {
             .btn-group {
                 margin-left: 3px;
