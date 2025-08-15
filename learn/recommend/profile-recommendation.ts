@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Axios from 'axios';
 import { CharacterAnalysis, Matcher } from '../matcher';
 import { FurryPreference, Kink, mammalSpecies, Species } from '../matcher-types';
@@ -60,7 +59,7 @@ export class ProfileRecommendationAnalyzer {
 
         const result = await Axios.head(portraitUrl);
 
-        if (_.trim(result.headers['etag'] || '', '"').trim().toLowerCase() === '639d154d-16c3') {
+        if (result.headers.etag && result.headers.etag.replace(/(?:^"+)|(?:"+$)/, '').trim().toLowerCase() === '639d154d-16c3') {
             this.add(`ADD_AVATAR`, ProfileRecommendationLevel.CRITICAL, l('phelper.addAvatar1'), l('phelper.addAvatar2'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Avatar');
         }
     }
@@ -108,13 +107,10 @@ export class ProfileRecommendationAnalyzer {
     }
 
     protected checkCustomKinks(): void {
-        const counts = _.reduce(this.profile.character.customs, (accum, kink) => {
+        const counts = Object.values(this.profile.character.customs).reduce((accum, kink) => {
             if (kink) {
                 accum.total += 1;
-
-                if (kink.description) {
-                    accum.filled += 1;
-                }
+                if (kink.description) accum.filled += 1;
             }
 
             return accum;
@@ -135,10 +131,8 @@ export class ProfileRecommendationAnalyzer {
     protected checkKinkCounts(): void {
         const kinks = Matcher.getAllStandardKinks(this.profile.character);
 
-        const counts = _.reduce(kinks, (accum, kinkLevel) => {
-            if (_.isString(kinkLevel) && kinkLevel) {
-                accum[kinkLevel as keyof typeof accum] += 1;
-            }
+        const counts = Object.values(kinks).reduce((accum, kinkLevel) => {
+            accum[kinkLevel as keyof typeof accum] += 1;
 
             return accum;
         },

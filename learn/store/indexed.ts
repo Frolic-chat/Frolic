@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../../site/character_page/interfaces';
 import { CharacterAnalysis } from '../matcher';
 import { PermanentIndexedStore, ProfileRecord } from './types';
@@ -104,7 +102,7 @@ export class IndexedStore implements PermanentIndexedStore {
         const ca = new CharacterAnalysis(c.character);
 
         // fix to clean out extra customs that somehow sometimes appear:
-        if (Array.isArray(c.character.customs) || !_.isPlainObject(c.character.customs)) {
+        if (Array.isArray(c.character.customs) || (c.character.customs !== null && !(typeof c.character.customs === 'object'))) {
             // log.debug('character.customs.strange.indexed.prepareProfileData', {name: c.character.name, c, customs: c.character.customs});
             c.character.customs = {};
         }
@@ -128,16 +126,14 @@ export class IndexedStore implements PermanentIndexedStore {
             images: null,
             friends: null,
             groups: null
-
-            // lastCounted: null,
-            // guestbookCount: null,
-            // friendCount: null,
-            // groupCount: null
         };
 
-        return (existing)
-            ? _.merge(existing, data, _.pick(existing, ['firstSeen', 'lastMetaFetched', 'guestbook', 'images', 'friends', 'groups']))
-            : data;
+        if (!existing)
+            return data;
+
+        // What does the first dump of existing do?? It seems like all modern data in the structure is going to get overwritten. But residual ancient data still persists?
+        const { firstSeen, lastMetaFetched, guestbook, images, friends, groups } = existing;
+        return  { ...existing, ...data, firstSeen, lastMetaFetched, guestbook, images, friends, groups };
     }
 
 

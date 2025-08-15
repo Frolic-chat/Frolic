@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export interface FoundWord {
   word: string;
   start: number;
@@ -40,16 +38,24 @@ export class WordPosSearch {
   generateListener(): ((e: MouseEvent) => void) {
     return (e: MouseEvent): void => {
       try {
-        if (!e.target) {
-          return;
+        if (!e.target)
+            return;
+
+        if (!(e.target as Node).childNodes?.length) {
+            this.lastClicked = null;
+        }
+        else {
+            this.lastClicked = [ ...(e.target as Node).childNodes ].reduce(
+                // TS can't assume accum from return value of findClickedWord =\
+                (accum: FoundWord | null, node) => accum ?? this.findClickedWord(node as any, e.clientX, e.clientY),
+                null
+            );
         }
 
-        this.lastClicked = _.reduce(
-          (e.target as any).childNodes || [],
-          (accum: FoundWord | null, node) => (accum ? accum : this.findClickedWord(node as any, e.clientX, e.clientY)),
-          null
-        );
-      } catch (err) {
+
+
+      }
+      catch (err) {
         console.log('wordpos.event', err);
       }
     };
