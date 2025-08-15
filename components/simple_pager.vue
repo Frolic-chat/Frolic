@@ -25,10 +25,9 @@
 
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
-    import cloneDeep = require('lodash/cloneDeep'); //tslint:disable-line:no-require-imports
     import Vue from 'vue';
 
-    type ParamDictionary = {[key: string]: number | undefined};
+    type ParamDictionary = Record<string, number | undefined>;
     interface RouteParams {
         name?: string
         params?: ParamDictionary
@@ -64,19 +63,24 @@
         }
 
         get prevRoute(): RouteParams {
-            if(this.route.params !== undefined && this.route.params[this.paramName] !== undefined) {
-                const newPage = this.route.params[this.paramName]! - 1;
-                const clone = cloneDeep(this.route) as RouteParams;
-                clone.params![this.paramName] = newPage;
+            if (this.route.params?.[this.paramName] !== undefined) {
+                // @ts-expect-error How can any of this be possibly undefined?
+                const newPage = this.route.params[this.paramName] - 1;
+                const clone = structuredClone(this.route);
+                // @ts-ignore How can any of this be possibly undefined?
+                clone.params[this.paramName] = newPage;
+
                 return clone;
             }
-            return {};
+            else {
+                return {};
+            }
         }
 
         get nextRoute(): RouteParams {
             if(this.route.params !== undefined && this.route.params[this.paramName] !== undefined) {
                 const newPage = this.route.params[this.paramName]! + 1;
-                const clone = cloneDeep(this.route) as RouteParams;
+                const clone = structuredClone(this.route);
                 clone.params![this.paramName] = newPage;
                 return clone;
             }

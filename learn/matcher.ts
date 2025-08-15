@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Character, CharacterInfotag, KinkChoice } from '../interfaces';
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('matcher');
@@ -1466,18 +1465,19 @@ export class Matcher {
     }
 
     static generateSpeciesMappingCache(mapping: SpeciesMap): SpeciesMappingCache {
-        return _.mapValues(
-            mapping,
-            (speciesPhraseList: string[]) => _.map(
-                speciesPhraseList,
-                (mappedPhrase: string) => {
-                    const phrasePlural = `${mappedPhrase}s`; // this is weak: elf -> elves doesn't occur
+        return Object.fromEntries(
+            Object.entries(mapping).map(([key, speciesPhraseList]) => [
+                key,
+                speciesPhraseList.map(mappedPhrase => {
+                    // this is weak: elf -> elves doesn't occur
+                    const phrasePlural = `${mappedPhrase}s`;
+
                     return {
                         mappedPhrase,
                         regexp: RegExp(`(^|\\b)(${mappedPhrase}|${phrasePlural})($|\\b)`),
                     };
-                }
-            )
+                })
+            ])
         );
     }
 
@@ -1491,7 +1491,7 @@ export class Matcher {
 
         const finalSpecies = (skipAscii ? species : anyAscii(species)).toLowerCase().trim();
 
-        Object.entries(mapping).forEach(([speciesId, matchers]: [string, SpeciesMappingCache[keyof SpeciesMappingCache]]) => {
+        Object.entries(mapping).forEach(([speciesId, matchers]) => {
             matchers.forEach(matcher => {
                 if (matcher.mappedPhrase.length > match.length && matcher.regexp.test(finalSpecies)) {
                     match = matcher.mappedPhrase;

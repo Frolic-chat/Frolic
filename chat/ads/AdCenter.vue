@@ -36,7 +36,6 @@
     import { Dialog } from '../../helpers/dialog';
     import InputTag from 'vue-input-tag';
     import { Ad } from './ad-center';
-    import _ from 'lodash';
 
     @Component({
         components: {modal: Modal, editor: Editor, tagEditor: InputTag},
@@ -48,7 +47,7 @@
         core = core;
 
         load(): void {
-            this.ads = _.cloneDeep(core.adCenter.get());
+            this.ads = structuredClone(core.adCenter.get());
 
             if (this.ads.length === 0) {
               this.addAd();
