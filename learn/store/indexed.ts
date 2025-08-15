@@ -201,16 +201,14 @@ export class IndexedStore implements PermanentIndexedStore {
             return;
         }
 
-        const data = _.merge(
-            existing,
-            {
-                lastMetaFetched: Math.round(Date.now() / 1000),
-                guestbook,
-                friends,
-                groups,
-                images
-            }
-        );
+        const data = {
+            ...existing,
+            lastMetaFetched: Math.round(Date.now() / 1000),
+            guestbook,
+            friends,
+            groups,
+            images
+        };
 
         const tx = this.db.transaction(IndexedStore.STORE_NAME, 'readwrite');
         const store = tx.objectStore(IndexedStore.STORE_NAME);

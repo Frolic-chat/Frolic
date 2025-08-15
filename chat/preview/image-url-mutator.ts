@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import Axios from 'axios';
 import { domain } from '../../bbcode/core';
 
@@ -61,34 +60,29 @@ export class ImageUrlMutator {
         // );
 
         this.add(
-           /^https?:\/\/.*twitter\.com\/(.*)/,
+           /^https?:\/\/(.*\.)?(?:twitter|x)\.com\/(.*)/,
            async(url: string, match: RegExpMatchArray): Promise<string> => {
                 const path = match[1];
 
                 try {
-                    const result = await Axios.get(
-                        `https://api.fxtwitter.com/${path}`
-                    );
-                    const imageUrl = _.get(result, 'data.tweet.media.photos.0.url', null);
+                    const result = await Axios.get(`https://api.fxtwitter.com/${path}`);
 
-                    if (!imageUrl) {
-                        const videoUrl = _.get(result, 'data.tweet.media.videos.0.url', null);
-                        if (!videoUrl) {
-                            return url;
-                        }
+                    const imageUrl: string | null = result.data?.tweet?.media?.photos?.[0]?.url ?? null;
+                    if (imageUrl) {
+                        if (this.debug) console.log('Twitter', url, imageUrl);
+                        return imageUrl;
+                    }
 
-                        if (this.debug)
-                            console.log('Twitter', url, videoUrl);
-
+                    const videoUrl: string | null = result.data?.tweet?.media?.video?.[0]?.url ?? null;
+                    if (videoUrl) {
+                        if (this.debug) console.log('Twitter', url, videoUrl);
                         return videoUrl;
                     }
 
-                    if (this.debug)
-                        console.log('Twitter', url, imageUrl);
-
-                    return imageUrl;
-
-                } catch (err) {
+                    // else
+                    return url;
+                }
+                catch (err) {
                     console.error('Twitter Failure', url, err);
                     return url;
                 }
@@ -169,19 +163,15 @@ export class ImageUrlMutator {
             const galleryId = match[2];
 
             try {
-              const result = await Axios.get(
-                  `https://e621.net/posts/${galleryId}.json`,
-                  {
-                      // headers: {
-                      //     'User-Agent': 'Frolic-Client/1.0'
-                      // }
-                  }
-              );
+              const result = await Axios.get(`https://e621.net/posts/${galleryId}.json`, {
+                  // headers: { 'User-Agent': 'Frolic-Client/1.0' }
+              });
 
-              const imageUrl = _.get(result, 'data.post.file.url') as string;
+              const imageUrl: string | null = result.data?.post?.file?.url ?? null;
 
               return imageUrl || url;
-            } catch(err) {
+            }
+            catch(err) {
               console.error('E621 API Failure', url, err);
               return url;
             }
@@ -196,29 +186,26 @@ export class ImageUrlMutator {
                 const galleryId = match[4];
 
                 try {
-                    const result = await Axios.get(
-                        `https://api.imgur.com/3/gallery/${galleryId}/images`,
-                        {
-                            headers: {
-                                Authorization: `Client-ID ${ImageUrlMutator.IMGUR_CLIENT_ID}`
-                            }
+                    const result = await Axios.get(`https://api.imgur.com/3/gallery/${galleryId}/images`, {
+                        headers: {
+                            Authorization: `Client-ID ${ImageUrlMutator.IMGUR_CLIENT_ID}`
                         }
-                    );
+                    });
 
-                    const imageUrl = _.get(result, 'data.data.0.link', null);
+                    const imageUrl: string | null = result.data?.data?.[0]?.link ?? null;
 
-                    if (!imageUrl) {
+                    if (!imageUrl)
                         return url;
-                    }
 
-                    const imageCount = _.get(result, 'data.data.length', 1);
+                    const imageCount: number = result.data?.data?.length ?? 1;
 
                     if (this.debug)
                         console.log('Imgur gallery', url, imageUrl, imageCount);
 
                     return this.getOptimizedImgurUrlFromUrl(`${imageUrl}?flist_gallery_image_count=${imageCount}`);
 
-                } catch (err) {
+                }
+                catch (err) {
                     console.error('Imgur Gallery Failure', url, err);
                     return url;
                 }
@@ -232,29 +219,26 @@ export class ImageUrlMutator {
                 const albumId = match[4];
 
                 try {
-                    const result = await Axios.get(
-                        `https://api.imgur.com/3/album/${albumId}/images`,
-                        {
-                            headers: {
-                                Authorization: `Client-ID ${ImageUrlMutator.IMGUR_CLIENT_ID}`
-                            }
+                    const result = await Axios.get(`https://api.imgur.com/3/album/${albumId}/images`, {
+                        headers: {
+                            Authorization: `Client-ID ${ImageUrlMutator.IMGUR_CLIENT_ID}`
                         }
-                    );
+                    });
 
-                    const imageUrl = _.get(result, 'data.data.0.link', null);
+                    const imageUrl: string | null = result.data?.data?.[0]?.link ?? null;
 
-                    if (!imageUrl) {
+                    if (!imageUrl)
                         return url;
-                    }
 
-                    const imageCount = _.get(result, 'data.data.length', 1);
+                    const imageCount: number = result.data?.data?.length ?? 1;
 
                     if (this.debug)
                         console.log('Imgur album', url, imageUrl, imageCount);
 
                     return this.getOptimizedImgurUrlFromUrl(`${imageUrl}?flist_gallery_image_count=${imageCount}`);
 
-                } catch (err) {
+                }
+                catch (err) {
                     console.error('Imgur Album Failure', url, err);
                     return url;
                 }
@@ -269,22 +253,20 @@ export class ImageUrlMutator {
                 const imageId = match[4];
 
                 try {
-                    const result = await Axios.get(
-                        `https://api.imgur.com/3/image/${imageId}`,
-                        {
-                            headers: {
-                                Authorization: `Client-ID ${ImageUrlMutator.IMGUR_CLIENT_ID}`
-                            }
+                    const result = await Axios.get(`https://api.imgur.com/3/image/${imageId}`, {
+                        headers: {
+                            Authorization: `Client-ID ${ImageUrlMutator.IMGUR_CLIENT_ID}`
                         }
-                    );
+                    });
 
-                    const imageUrl = _.get(result, 'data.data.link', url);
+                    const imageUrl: string = result.data?.data?.link ?? url;
 
                     if (this.debug)
                         console.log('Imgur image', url, imageUrl);
 
-                    return this.getOptimizedImgurUrlFromUrl(imageUrl as string);
-                } catch (err) {
+                    return this.getOptimizedImgurUrlFromUrl(imageUrl);
+                }
+                catch (err) {
                     console.error('Imgur Image Failure', url, err);
                     return url;
                 }
@@ -303,7 +285,7 @@ export class ImageUrlMutator {
         const ext = match[2];
         const rest = match[3];
 
-        const finalExt = ((ext === '.gif') || (ext === '.gifv'))
+        const finalExt = (ext === '.gif' || ext === '.gifv')
           ? '.mp4'
           : ext;
 
@@ -329,7 +311,7 @@ export class ImageUrlMutator {
 
 
     async resolve(url: string): Promise<string> {
-        const match = _.find(this.solvers, (s: UrlSolver) => url.match(s.matcher)) as (UrlSolver | undefined);
+        const match = this.solvers.find(s => url.match(s.matcher));
 
         return this.attachSuppressor(
           match
@@ -342,11 +324,11 @@ export class ImageUrlMutator {
 
 
     attachSuppressor(url: string): string {
+      // We must assume a well-formed url here.
       const host = domain(url);
 
-      if (_.indexOf(ImageUrlMutator.SUPPRESSOR_DOMAINS, host) < 0) {
+      if (!host || !ImageUrlMutator.SUPPRESSOR_DOMAINS.includes(host))
         return url;
-      }
 
       const u = new URL(url);
 

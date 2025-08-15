@@ -488,10 +488,10 @@
     import {Conversation} from './interfaces';
     import l from './localize';
     import { SmartFilterSettings, SmartFilterSelection, smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
-    import _ from 'lodash';
     import { matchesSmartFilters } from '../learn/filter/smart-filter';
     import { ProfileCache } from '../learn/profile-cache';
     import { EventBus } from './preview/event-bus';
+    import { deepEqual } from '../helpers/utils';
 
     type hqpErrorString = 'settings.hqp.errorUrl' | 'settings.hqp.errorDomain' | 'settings.hqp.errorBrace' | '';
 
@@ -712,11 +712,11 @@
 
             const newRisingFilter = JSON.parse(JSON.stringify(core.state.settings.risingFilter));
 
-            if (!_.isEqual(oldRisingFilter, newRisingFilter)) {
+            if (!deepEqual(oldRisingFilter, newRisingFilter))
                 this.rebuildFilters();
-            }
 
-            if(this.notifications) await core.notifications.requestPermission();
+            if (this.notifications)
+                await core.notifications.requestPermission();
 
             EventBus.$emit('configuration-update', core.state.settings);
             EventBus.$emit('own-profile-update', { profile: core.characters.ownProfile });

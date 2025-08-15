@@ -34,11 +34,11 @@ import { Component, Hook, Prop } from '@f-list/vue-ts';
     import {Character} from './interfaces';
     import { Conversation } from '../../chat/interfaces';
     import core from '../../chat/core';
-    import * as _ from 'lodash';
     import { AdCachedPosting } from '../../learn/ad-cache';
     import MessageView from '../../chat/message_view';
 
     import {formatTime} from '../../chat/common';
+    import { lastElement } from '../../helpers/utils';
 
     @Component({
       components: {
@@ -72,7 +72,13 @@ import { Component, Hook, Prop } from '@f-list/vue-ts';
       async loadAds(): Promise<void> {
         const cache = core.cache.adCache.get(this.character.character.name);
 
-        this.ads = _.uniq(((cache) ? _.takeRight(cache.posts, 5).reverse() : [])) as AdCachedPosting[];
+        // Bug: This log has always been able to return fewer than five posts, even if there could be more.
+        this.ads = cache
+            ? [ // De-duplication via converting to LUT
+              ...new Map(cache.posts.slice(-5).reverse().map(post => [post, true]))
+                  .keys()
+            ]
+            : [];
       }
 
       async loadConversation(): Promise<void> {
@@ -84,10 +90,12 @@ import { Component, Hook, Prop } from '@f-list/vue-ts';
           return;
         }
 
-        const messages = await core.logs.getLogs(ownName, logKey, _.last(logDates) as Date);
+        const messages = await core.logs.getLogs(ownName, logKey, lastElement(logDates));
         const matcher = /\[AUTOMATED MESSAGE]/;
 
-        this.conversation = _.takeRight(_.filter(messages, (m) => !matcher.exec(m.text)), 5);
+        this.conversation = messages
+            .filter(m => !matcher.exec(m.text))
+            .slice(-5);
       }
     }
 </script>

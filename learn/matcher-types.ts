@@ -447,13 +447,8 @@ export const mammalSpecies: Species[] = [
     Species.Hippopotamidae, Species.Pinniped, Species.Hybrid, Species.Xenarthra
 ];
 
-export interface SpeciesMap {
-    [key: number]: string[];
-}
-
-export interface SpeciesStrMap {
-    [key: number]: string;
-}
+export type SpeciesMap = Record<number, string[]>;
+export type SpeciesStrMap = Record<number, string>;
 
 /**
  * Used in the profile display; not used in the tooltip.
@@ -1178,9 +1173,7 @@ export interface SpeciesMappingCacheRecord {
 }
 
 
-export interface SpeciesMappingCache {
-    [key: number]: SpeciesMappingCacheRecord[];
-}
+export type SpeciesMappingCache = Record<number, SpeciesMappingCacheRecord[]>;
 
 
 export const kinkMatchWeights = {

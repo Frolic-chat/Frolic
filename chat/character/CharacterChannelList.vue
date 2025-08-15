@@ -19,8 +19,6 @@
 
 
 <script lang="ts">
-
-import * as _ from 'lodash';
 import l from '../localize';
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
@@ -59,13 +57,9 @@ export default class CharacterChannelList extends CustomDialog {
             return;
         }
 
-        this.channels = _.sortBy(
-            _.filter(
-                core.conversations.channelConversations,
-                (cc: ChannelConversation) => !!cc.channel.members[this.character.name]
-            ),
-            'name'
-        );
+        this.channels = core.conversations.channelConversations
+            .filter(cc => !!cc.channel.members[this.character.name])
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     jumpToChannel(channel: ChannelConversation): void {

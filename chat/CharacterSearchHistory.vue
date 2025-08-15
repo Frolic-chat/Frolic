@@ -31,7 +31,6 @@
     import CustomDialog from '../components/custom_dialog';
     import core from './core';
     import { BBCodeView } from '../bbcode/view';
-    import * as _ from 'lodash';
     import { ExtendedSearchData, SearchData } from './interfaces';
     import l from './localize';
 
@@ -59,22 +58,17 @@
             if (this.curSearch) {
                 const cleanedSearch = JSON.stringify(this.curSearch, null, 0);
 
-                const index = _.findIndex(
-                    this.history,
-                  (c) => (JSON.stringify(c, null, 0) === cleanedSearch)
-                );
+                const index = this.history.findIndex(c => (JSON.stringify(c, null, 0) === cleanedSearch));
 
-                if (index >= 0) {
+                if (index >= 0)
                     this.selectedSearch = index;
-                }
             }
         }
 
 
         selectStatus(): void {
-            if (this.selectedSearch !== null) {
-                this.callback(_.merge({species: [], bodytypes: []}, this.history[this.selectedSearch]) as ExtendedSearchData);
-            }
+            if (this.selectedSearch !== null)
+                this.callback({ species: [], ...this.history[this.selectedSearch] });
         }
 
 

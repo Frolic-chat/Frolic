@@ -38,7 +38,6 @@
 
 <script lang="ts">
     import { Component, Hook, Prop } from '@f-list/vue-ts';
-    import * as _ from 'lodash';
     import Vue from 'vue';
     import * as Utils from '../utils';
     import { Matcher, MatchReport, MatchResult, Score } from '../../learn/matcher';
@@ -92,26 +91,22 @@
         }
 
         haveScores(result: MatchResult): boolean {
-            return !_.every(
-                result.scores,
-                (s: Score) => (s.score === Scoring.NEUTRAL)
-            );
+            return Object.values(result.scores)
+                .some(s => s.score !== Scoring.NEUTRAL);
         }
 
         shouldShowScore(score: Score): boolean {
-            return (score.score !== Scoring.NEUTRAL);
+            return score.score !== Scoring.NEUTRAL;
         }
 
         getScores(result: MatchResult): Score[] {
             return Object.keys(result.scores)
-                    .filter(key => !result.omittedScores.includes(Number(key) as TagId))
-                    .map(key => result.scores[Number(key)]);
+                .filter(key => !result.omittedScores.includes(Number(key) as TagId))
+                .map(key => result.scores[Number(key)]);
         }
 
         getSpeciesStr(m: MatchResult): string {
-          const t = Matcher.getTagValue(TagId.Species, m.you);
-
-          return _.get(t, 'string', 'unknown');
+            return  Matcher.getTagValue(TagId.Species, m.you)?.string ?? 'unknown';
         }
 
         async toggleMinimize(): Promise<void> {

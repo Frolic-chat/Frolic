@@ -30,7 +30,6 @@
     import CustomDialog from '../components/custom_dialog';
     import core from './core';
     import { BBCodeView } from '../bbcode/view';
-    import * as _ from 'lodash';
     import { Dialog } from '../helpers/dialog';
     import l from './localize';
 
@@ -58,14 +57,10 @@
             if ((this.curStatus) && (this.curStatus.trim() !== '')) {
                 const cleanedStatus = this.curStatus.toLowerCase().trim();
 
-                const index = _.findIndex(
-                    this.history,
-                  (c: string) => (c.toString().toLowerCase().trim() === cleanedStatus)
-                );
+                const index = this.history.findIndex(c => (c.toLowerCase().trim() === cleanedStatus));
 
-                if (index >= 0) {
+                if (index >= 0)
                     this.selectedStatus = index;
-                }
             }
         }
 

@@ -74,8 +74,6 @@
 </template>
 
 <script lang="ts">
-    import * as _ from 'lodash';
-
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
     import Vue from 'vue';
 
@@ -233,10 +231,8 @@
 
                 await methods.fieldsGet();
 
-                if (
-                  ((this.selfCharacter === undefined) && (Utils.settings.defaultCharacter >= 0))
-                  || (_.get(this.selfCharacter, 'character.name') !== core.characters.ownCharacter.name)
-                ) {
+                if ((this.selfCharacter === undefined && Utils.settings.defaultCharacter >= 0)
+                ||  this.selfCharacter?.character.name !== core.characters.ownCharacter.name) {
                     due.push(this.loadSelfCharacter());
                 }
 
@@ -244,7 +240,8 @@
                     due.push(this._getCharacter(skipCache));
 
                 await Promise.all(due);
-            } catch(e) {
+            }
+            catch(e) {
                 console.error(e);
 
                 this.error = Utils.isJSONError(e) ? <string>e.response.data.error : (<Error>e).message;
@@ -257,13 +254,14 @@
 
         async updateGuestbook(): Promise<void> {
             try {
-                if ((!this.character) || (!_.get(this.character, 'settings.guestbook'))) {
+                if (!this.character || !this.character.settings.guestbook) {
                     this.guestbook = null;
                     return;
                 }
 
                 this.guestbook = await methods.guestbookPageGet(this.character.character.id, 1);
-            } catch (err) {
+            }
+            catch (err) {
                 console.error(err);
                 this.guestbook = null;
             }

@@ -1,6 +1,5 @@
 import { ImageUrlMutator } from '../image-url-mutator';
 import { ImagePreviewHelper } from './helper';
-import * as _ from 'lodash';
 
 export class ExternalImagePreviewHelper extends ImagePreviewHelper {
     protected lastExternalUrl: string | undefined = undefined;
@@ -189,7 +188,7 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
 
     renderStyle(): Record<string, any> {
         return this.isVisible()
-            ? _.merge({ display: 'flex' }, this.determineScalingRatio())
+            ? { display: 'flex', ...this.determineScalingRatio() }
             : { display: 'none' };
     }
 }
