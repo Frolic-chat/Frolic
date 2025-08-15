@@ -1,6 +1,4 @@
 /* tslint:disable:quotemark */
-
-import * as _ from 'lodash';
 import * as urlHelper from 'url';
 
 import { domain as extractDomain } from '../../bbcode/core';
@@ -85,14 +83,11 @@ export class ImageDomMutator {
         if (urlDomain in this.hostMutators)
             return this.hostMutators[urlDomain];
 
-        return _.find(
-            this.regexMutators,
-            (m: DomMutator) => {
-                const match = m.match;
-
-                return (match instanceof RegExp) ? (urlDomain.match(match) !== null) : (match === urlDomain);
-            }
-        );
+        return this.regexMutators.find(m => {
+            return m.match instanceof RegExp
+                ? urlDomain.match(m.match)
+                : m.match === urlDomain;
+        });
     }
 
     protected wrapJs(mutatorJs: string): string {

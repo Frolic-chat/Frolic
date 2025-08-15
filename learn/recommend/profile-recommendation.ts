@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import Axios from 'axios';
-
 import { CharacterAnalysis, Matcher } from '../matcher';
 import { FurryPreference, Kink, mammalSpecies, Species } from '../matcher-types';
 import { characterImage } from '../../chat/common';
@@ -85,7 +84,7 @@ export class ProfileRecommendationAnalyzer {
     }
 
     protected checkInlineImage(): void {
-        if (_.keys(this.profile.character.inlines).length < 1) {
+        if (Object.keys(this.profile.character.inlines).length < 1) {
             this.add(`ADD_INLINE_IMAGE`, ProfileRecommendationLevel.NOTE, l('phelper.addInline1'), l('phelper.addInline2'), 'https://wiki.f-list.net/Frequently_Asked_Questions#How_do_I_add_an_inline_image_to_my_profile.3F');
         }
     }
@@ -119,7 +118,8 @@ export class ProfileRecommendationAnalyzer {
             }
 
             return accum;
-        }, { filled: 0, total: 0 });
+        },
+        { filled: 0, total: 0 });
 
         if (counts.total === 0) {
             this.add(`ADD_CUSTOM_KINK`, ProfileRecommendationLevel.CRITICAL, l('phelper.addCustom1'), l('phelper.addCustom2'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Custom_Kinks');
@@ -141,15 +141,18 @@ export class ProfileRecommendationAnalyzer {
             }
 
             return accum;
-        }, { favorite: 0, yes: 0, maybe: 0, no: 0 });
+        },
+        { favorite: 0, yes: 0, maybe: 0, no: 0 });
 
         const minCountPerType = 5;
         const totalCount = counts.favorite + counts.yes + counts.maybe + counts.no;
 
         if (totalCount < 10) {
                 this.add(`ADD_MORE_KINKS`, ProfileRecommendationLevel.CRITICAL, l('phelper.addKinks1'), l('phelper.addKinks2'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Kinks');
-        } else {
-            _.each(counts, (count, key) => {
+        }
+        else {
+            // Needs fix for crushing KinkChoice into string
+            Object.entries(counts).forEach(([key, count]) => {
                 if (count < minCountPerType) {
                     this.add(`ADD_MORE_KINKS_${key.toString().toUpperCase()}`, ProfileRecommendationLevel.CRITICAL, l('phelper.addKinks3', key), l('phelper.addKinks4', minCountPerType, key), 'https://wiki.f-list.net/Guide:_Character_Profiles#Kinks');
                 }

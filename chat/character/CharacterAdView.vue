@@ -22,8 +22,6 @@
 
 
 <script lang="ts">
-
-import * as _ from 'lodash';
 import l from '../localize';
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
@@ -67,7 +65,9 @@ export default class CharacterAdView extends CustomDialog {
 
         const cache = core.cache.adCache.get(this.character.name);
 
-        this.messages = ((cache) ? _.takeRight(cache.posts, 10).reverse() : []) as AdCachedPosting[];
+        this.messages = cache
+            ? cache.posts.slice(-10).reverse()
+            : [];
     }
 
 

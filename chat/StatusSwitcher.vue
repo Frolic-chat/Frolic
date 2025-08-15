@@ -40,7 +40,6 @@
     import l from './localize';
     import {getStatusIcon} from './UserView.vue';
     import StatusPicker from './StatusPicker.vue';
-    import * as _ from 'lodash';
 
     @Component({
         components: {modal: Modal, editor: Editor, dropdown: Dropdown, 'status-picker': StatusPicker}
@@ -96,9 +95,9 @@
             }
 
             const curHistory: string[] = (await core.settingsStore.get('statusHistory')) || [];
-            const statusMessageClean = statusMessage.toString().trim().toLowerCase();
-            const filteredHistory: string[] = _.reject(curHistory, (c: string) => (c.toString().trim().toLowerCase() === statusMessageClean));
-            const newHistory: string[] = _.take(_.concat([statusMessage], filteredHistory), 10);
+            const statusMessageClean = statusMessage.trim().toLowerCase();
+            const filteredHistory = curHistory.filter(c => (c.trim().toLowerCase() !== statusMessageClean));
+            const newHistory = [ statusMessage, ...filteredHistory ].slice(0, 10);
 
             await core.settingsStore.set('statusHistory', newHistory);
         }

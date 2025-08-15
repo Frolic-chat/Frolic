@@ -61,7 +61,7 @@ export interface Character extends SimpleCharacter {
     name:            string
     title:           string
     description:     string
-    kinks:           {[key: number]: KinkChoice | number | undefined}
+    kinks:           Record<number, KinkChoice | number | undefined>
     inlines:         {[key: string]: InlineImage}
     customs:         {[key: string]: CustomKink | undefined}
     infotags:        {[key: number]: CharacterInfotag | undefined}
@@ -74,6 +74,10 @@ export interface Character extends SimpleCharacter {
     online_chat?:    boolean
 }
 
+/**
+ * Be careful when comparing this to some API response data;
+ * 'fave' is used in some instances.
+ */
 export type KinkChoice = 'favorite' | 'yes' | 'maybe' | 'no';
 
 /**

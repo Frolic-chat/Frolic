@@ -70,7 +70,6 @@
 </template>
 
 <script lang="ts">
-    import * as _ from 'lodash';
     import {Component, Prop, Watch, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../../chat/core';
@@ -101,53 +100,44 @@
         highlighting: {[key: string]: boolean} = {};
         comparison: {[key: string]: KinkChoice} = {};
 
-        _ = _;
-
         expandedCustoms = false;
-
 
         toggleExpandedCustomKinks(): void {
             this.expandedCustoms = !this.expandedCustoms;
         }
 
-
         // iterateThroughAllKinks(c: Character, cb: (
 
-
-        resolveKinkChoice(c: Character, kinkValue: string | number | undefined): string | null {
-            if (typeof kinkValue === 'string') {
+        resolveKinkChoice(c: Character, kinkValue: KinkChoice | number | undefined): KinkChoice | null {
+            if (typeof kinkValue === 'string')
                 return kinkValue;
-            }
 
             if (typeof kinkValue === 'number') {
                 const custom = c.character.customs[kinkValue];
 
-                if (custom) {
+                if (custom)
                     return custom.choice;
-                }
             }
 
             return null;
         }
 
         convertCharacterKinks(c: Character): CharacterKink[] {
-            return _.filter(
-                _.map(
-                    c.character.kinks,
-                    (kinkValue: string | number | undefined, kinkId: string) => {
-                        const resolvedChoice = this.resolveKinkChoice(c, kinkValue);
+            // @ts-ignore Old webpack TS can't figure out structure without null is CharacterKink
+            // Even new ts can't do `.filter(v -> v) to filter out nulls.
+            return Object.entries(c.character.kinks)
+                .map(([kinkId, kinkValue]) => {
+                    const resolvedChoice = this.resolveKinkChoice(c, kinkValue);
 
-                        if (!resolvedChoice)
-                            return null;
+                    if (!resolvedChoice)
+                        return null;
 
-                        return {
-                            id: parseInt(kinkId, 10),
-                            choice: resolvedChoice as KinkChoice
-                        };
-                    }
-                ),
-                (v) => (v !== null)
-            ) as CharacterKink[];
+                    return {
+                        id: Number(kinkId),
+                        choice: resolvedChoice,
+                    };
+                })
+                .filter(v => v !== null);
         }
 
         async compareKinks(overridingCharacter?: Character, forced: boolean = false): Promise<void> {
@@ -205,7 +195,7 @@
 
         @Watch('character')
         async characterChanged(): Promise<void> {
-            if ((this.character) && (this.character.is_self))
+            if (this.character?.is_self)
                 return;
 
             this.expandedCustoms = this.autoExpandCustoms;
@@ -218,13 +208,10 @@
         get kinkGroups(): KinkGroup[] {
             const groups = Store.shared.kinkGroups;
 
-            return _.sortBy(
-                _.filter(
-                    groups,
-                    (g) => (!_.isUndefined(g))
-                ),
-                'name'
-            ) as KinkGroup[];
+            // What is the point of filtering for undefined when the interface doesn't allow there to be any?
+            return Object.values(groups)
+                .filter(g => g)
+                .sort((a, b) => a.name.localeCompare(b.name));
         }
 
         get compareButtonText(): string {

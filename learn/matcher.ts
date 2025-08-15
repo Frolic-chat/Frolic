@@ -1267,8 +1267,8 @@ export class Matcher {
     }
 
 
-    private getKinkMatchScore(aValue: string, bValue: string): number {
-        return _.get(kinkMatchScoreMap, `${aValue}.${bValue}`, 0) * 7; // forces range above 1.0
+    private getKinkMatchScore(aValue: KinkChoice, bValue: KinkChoice): number {
+        return (kinkMatchScoreMap[aValue]?.[bValue] ?? 0) * 7; // forces range above 1.0
     }
 
 
@@ -1528,30 +1528,33 @@ export class Matcher {
 
     static getAllSpecies(c: Character): Species[] {
         const species = Matcher.getAllSpeciesAsStr(c);
-        return _.filter(_.map(species, s => Matcher.getMappedSpecies(s)), s => s !== null) as Species[];
+        // The typeguard is for Old webpack TS; modern works fine.
+        return species
+            .map(s => Matcher.getMappedSpecies(s))
+            .filter((s): s is Species => s !== null);
     }
 
     static getAllSpeciesAsStr(c: Character): string[] {
         const mySpecies = Matcher.getTagValue(TagId.Species, c);
 
-        if (!mySpecies || !mySpecies.string)
+        if (!mySpecies?.string)
             return [];
 
         const speciesStr = mySpecies.string.toLowerCase().replace(/optionally|alternatively/g, ',')
                 .replace(/[)(]/g, ' ').trim();
         const matches = speciesStr.split(/[,]? or |,/);
 
-        return _.filter(_.map(matches, m => m.toLowerCase().trim()), m => m !== '');
+        return matches
+            .map(m => m.toLowerCase().trim())
+            .filter(m => m !== '');
     }
 
     static strToGender(fchatGenderStr: string | undefined): Gender | null {
-        if (fchatGenderStr === undefined) {
+        if (!fchatGenderStr)
             return null;
-        }
 
-        if (fchatGenderStr in fchatGenderMap) {
+        if (fchatGenderStr in fchatGenderMap)
             return fchatGenderMap[fchatGenderStr];
-        }
 
         return null;
     }
@@ -1566,12 +1569,11 @@ export class Matcher {
             return null;
         }
 
-        const yourScores = skipYours ? [] : _.values(m.you.scores);
-        const theirScores = skipTheirs ? [] : _.values(m.them.scores);
+        const yourScores  = skipYours  ? [] : Object.values(m.you.scores);
+        const theirScores = skipTheirs ? [] : Object.values(m.them.scores);
 
-        return _.reduce(
-            _.concat(yourScores, theirScores),
-            (accum: number, score: Score) => accum + (score.score === scoreLevel ? 1 : 0),
+        return [ ...yourScores, ...theirScores ].reduce(
+            (accum, score) => accum + (score.score === scoreLevel ? 1 : 0),
             0
         );
     }
@@ -1585,19 +1587,18 @@ export class Matcher {
             return 0;
         }
 
-        const yourScores = skipYours ? [] : _.values(m.you.scores);
-        const theirScores = skipTheirs ? [] : _.values(m.them.scores);
+        const yourScores  = skipYours  ? [] : Object.values(m.you.scores);
+        const theirScores = skipTheirs ? [] : Object.values(m.them.scores);
 
-        return _.reduce(
-            _.concat(yourScores, theirScores),
-            (accum: number, score: Score) => accum + (score.score > scoreLevel && score.score !== Scoring.NEUTRAL ? 1 : 0),
+        return [ ...yourScores, ...theirScores ].reduce(
+            (accum, score) => accum + (score.score > scoreLevel && score.score !== Scoring.NEUTRAL ? 1 : 0),
             0
         );
     }
 
     static countScoresTotal(m: MatchReport): number {
-        return _.values(m.you.scores).length
-            + _.values(m.them.scores).length;
+        return Object.values(m.you.scores).length
+             + Object.values(m.them.scores).length;
     }
 
     static age(c: Character): number | null {
