@@ -236,7 +236,6 @@
     import {isCommand} from './slash_commands';
     import UserView from './UserView.vue';
     import CharacterChannelList from './character/CharacterChannelList.vue';
-    import * as _ from 'lodash';
     import Dropdown from '../components/Dropdown.vue';
     import { EventBus, MemoEvent } from './preview/event-bus';
     import { MemoManager } from './character/memo';

@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 import core from '../chat/core';
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../site/character_page/interfaces';
 import { AsyncCache } from './async-cache';

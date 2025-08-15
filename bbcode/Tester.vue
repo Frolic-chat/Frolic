@@ -10,7 +10,6 @@
 
 
 <script lang="ts">
-    import * as _ from 'lodash';
     import { Component } from '@f-list/vue-ts';
     import Vue from 'vue';
 

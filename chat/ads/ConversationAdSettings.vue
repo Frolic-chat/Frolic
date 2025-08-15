@@ -38,7 +38,6 @@
     import core from '../core';
     import { Dialog } from '../../helpers/dialog';
     import AdCenterDialog from './AdCenter.vue';
-    import _ from 'lodash';
 
     @Component({
         components: {modal: Modal, editor: Editor}

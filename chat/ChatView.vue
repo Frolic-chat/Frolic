@@ -201,7 +201,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import UserMenu from './UserMenu.vue';
     import ImagePreview from './preview/ImagePreview.vue';
     import PrivateConversation = Conversation.PrivateConversation;
-    import * as _ from 'lodash';
     import NoteStatus from '../site/NoteStatus.vue';
     import { Dialog } from '../helpers/dialog';
     import AdCenterDialog from './ads/AdCenter.vue';
@@ -414,10 +413,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
             const cls = { [styling[status].color]: true };
 
-            _.forEach(
-                styling[status].icon,
-                (name: string) => cls[name] = true
-            );
+            styling[status].icon.forEach(name => cls[name] = true);
 
             return cls;
         }

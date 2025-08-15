@@ -13,7 +13,6 @@
 </template>
 
 <script lang="ts">
-import _ from 'lodash';
 import { Component, Hook } from '@f-list/vue-ts';
 import Vue from 'vue';
 import core from '../chat/core';

@@ -35,7 +35,6 @@
 
 <script lang="ts">
     import Sortable from 'sortablejs';
-    import _ from 'lodash';
 
     import {Component, Hook} from '@f-list/vue-ts';
     import * as electron from 'electron';
