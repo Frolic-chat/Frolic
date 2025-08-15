@@ -6,13 +6,13 @@
   "license": "MIT",
   "main": "main.js",
   "devDependencies": {
+    "@electron/packager": "^18.4.2",
     "@electron/remote": "^2.0.11",
     "@f-list/fork-ts-checker-webpack-plugin": "^3.1.1",
     "@f-list/vue-ts": "^1.0.3",
     "@fortawesome/fontawesome-free": "^5.15.1",
     "@types/bluebird": "3.5.42",
     "@types/lodash": "4.14.162",
-    "@types/node": "16.18.32",
     "@types/node-fetch": "^2.6.11",
     "@types/qs": "^6.9.5",
     "@types/request-promise": "^4.1.46",
@@ -30,12 +30,10 @@
     "date-fns": "2.29.3",
     "electron": "^37.0",
     "electron-log": "^5.0.0",
-    "electron-packager": "^15.4.0",
     "electron-rebuild": "^3.2.7",
     "electron-settings": "~4.0.2",
     "extract-loader": "^5.1.0",
     "file-loader": "^6.2.0",
-    "lodash": "^4.17.20",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
     "qs": "^6.9.4",
     "raven-js": "^3.27.2",
@@ -80,8 +78,7 @@
     "vue-loader": "15.9.8",
     "vue-template-compiler": "2.6.12",
     "@types/bluebird": "3.5.32",
-    "@types/har-format": "1.2.10",
-    "@types/node": "16.18.32"
+    "@types/har-format": "1.2.10"
   },
   "scripts": {
     "watch": "cd electron && yarn watch",
