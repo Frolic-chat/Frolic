@@ -29,7 +29,6 @@
     import {methods} from './data_store';
     import {Character} from './interfaces';
     import core from '../../chat/core';
-    import _ from 'lodash';
 
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('character_page/images');

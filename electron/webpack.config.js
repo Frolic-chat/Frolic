@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');

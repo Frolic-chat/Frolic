@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Cache } from './cache';
 
 export interface AdCachedPosting {
@@ -32,7 +31,7 @@ export class AdCacheRecord {
             }
         );
 
-        this.posts = _.takeRight(this.posts, 25);
+        this.posts = this.posts.slice(-25);
     }
 
 

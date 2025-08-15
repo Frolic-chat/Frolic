@@ -3,7 +3,6 @@ const path = require('path');
 const pkg = require(path.join(__dirname, 'package.json'));
 const fs = require('fs');
 const child_process = require('child_process');
-const _ = require('lodash');
 const axios = require('axios');
 
 const distDir = path.join(__dirname, 'dist');
