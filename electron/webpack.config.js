@@ -47,11 +47,13 @@ const mainConfig = {
         extensions: ['.ts', '.js']
     },
     optimization: {
-        minimize: false,
+        minimize: true,
         moduleIds: 'named',
         chunkIds: 'named',
     },
-  }, rendererConfig = {
+};
+
+const rendererConfig = {
     entry: {
         chat: [path.join(__dirname, 'chat.ts'), path.join(__dirname, 'index.html')],
         window: [path.join(__dirname, 'window.ts'), path.join(__dirname, 'window.html'), path.join(__dirname, 'build', 'tray@2x.png')],
@@ -160,61 +162,55 @@ const mainConfig = {
     },
     optimization: {
         splitChunks: {chunks: 'all', minChunks: 2, name: 'common'},
-        minimize: false,
+        minimize: true,
         moduleIds: 'named',
         chunkIds: 'named',
     }
 };
 
-
-const storeWorkerEndpointConfig = _.assign(
-    _.cloneDeep(mainConfig),
-    {
-        entry: [path.join(__dirname, '..', 'learn', 'store', 'worker', 'store.worker.endpoint.ts')],
-        output: {
-            path: __dirname + '/app',
-            filename: 'storeWorkerEndpoint.js',
-            globalObject: 'this'
-        },
-
-        target: 'electron-renderer',
-
-        node: {
-            global: true,
-        },
-
-        module: {
-            rules: [
-                {
-                    test: /\.ts$/,
-                    loader: 'ts-loader',
-                    options: {
-                        configFile: __dirname + '/tsconfig-renderer.json',
-                        transpileOnly: true,
-                        getCustomTransformers: () => ({before: [vueTransformer]})
-                    }
-                },
-            ]
-        },
-
-        optimization: {
-            minimize: false,
-            moduleIds: 'named',
-            chunkIds: 'named',
-        },
-
-        plugins: [
-            new ForkTsCheckerWebpackPlugin({
-                async: false,
-                tslint: path.join(__dirname, '../tslint.json'),
-                tsconfig: './tsconfig-renderer.json',
-                vue: true,
-                ignoreLintWarnings: true,
-            })
+const storeWorkerEndpointConfig = {
+    entry: [path.join(__dirname, '..', 'learn', 'store', 'worker', 'store.worker.endpoint.ts')],
+    output: {
+        path: __dirname + '/app',
+        filename: 'storeWorkerEndpoint.js',
+        globalObject: 'this'
+    },
+    context: __dirname,
+    target: 'electron-renderer',
+    module: {
+        rules: [
+            {
+                test: /\.ts$/,
+                loader: 'ts-loader',
+                options: {
+                    configFile: __dirname + '/tsconfig-renderer.json',
+                    transpileOnly: true,
+                    getCustomTransformers: () => ({before: [vueTransformer]})
+                }
+            },
         ]
-    }
-);
-
+    },
+    node: {
+        global: true,
+    },
+    plugins: [
+        new ForkTsCheckerWebpackPlugin({
+            async: false,
+            tslint: path.join(__dirname, '../tslint.json'),
+            tsconfig: './tsconfig-renderer.json',
+            vue: true,
+            ignoreLintWarnings: true,
+        })
+    ],
+    resolve: {
+        extensions: ['.ts', '.js']
+    },
+    optimization: {
+        minimize: true,
+        moduleIds: 'named',
+        chunkIds: 'named',
+    },
+};
 
 module.exports = function(mode) {
     const themesDir = path.join(__dirname, '../scss/themes/chat');
