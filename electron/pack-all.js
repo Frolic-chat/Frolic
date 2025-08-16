@@ -1,11 +1,11 @@
 /* global process, console */
-process.env.DEBUG = 'electron-windows-installer:main';
+//process.env.DEBUG = 'electron-windows-installer:main';
 import path from 'path';
 import * as fs from 'fs';
 import { spawn, spawnSync } from 'child_process';
 import axios from 'axios';
 
-import electronPackager from 'electron-packager';
+import packager from '@electron/packager';
 import { createWindowsInstaller } from 'electron-winstaller';
 
 import pkg from './package.json' with { type: 'json' };
@@ -38,7 +38,7 @@ includedPaths.forEach(p => {
     fs.copyFileSync(canonPath, path.join(modules, to));
 });
 
-const appPaths = await electronPackager({
+const appPaths = await packager({
     dir: path.join(import.meta.dirname, 'app'),
     out: distDir,
     overwrite: true,
