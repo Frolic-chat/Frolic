@@ -43,7 +43,7 @@ export class Settings implements ISettings {
     joinMessages = false;
     alwaysNotify = false;
     logMessages = true; // All messages
-    logChannels = false;
+    logChannels = true;
     logAds = false;
     expensiveMemberList = false;
     fontSize = 14;
