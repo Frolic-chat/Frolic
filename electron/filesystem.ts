@@ -1,7 +1,6 @@
 import * as remote from '@electron/remote';
 import * as fs from 'fs';
 import * as path from 'path';
-import {promisify} from 'util';
 import {Message as MessageImpl} from '../chat/common';
 import core from '../chat/core';
 import {Character, Conversation, Logs as Logging, Settings} from '../chat/interfaces';
@@ -15,7 +14,6 @@ declare module '../chat/interfaces' {
 }
 
 const dayMs = 86400000;
-const read = promisify(fs.read);
 
 function writeFile(p: fs.PathLike | number, data: string | NodeJS.ArrayBufferView,
                    options?: fs.WriteFileOptions): void {
@@ -246,12 +244,14 @@ export class Logs implements Logging {
         if(dateOffset === undefined) return [];
         const messages: Conversation.Message[] = [];
         const pos = index.offsets[dateOffset];
-        const fd = fs.openSync(getLogFile(character, key), 'r');
+        const fh = await fs.promises.open(getLogFile(character, key), 'r');
         try {
-            const end = dateOffset + 1 < index.offsets.length ? index.offsets[dateOffset + 1] : (fs.fstatSync(fd)).size;
+            const end = dateOffset + 1 < index.offsets.length
+                ? index.offsets[dateOffset + 1]
+                : (await fh.stat()).size;
             const length = end - pos;
             const buffer = Buffer.allocUnsafe(length);
-            await read(fd, buffer, 0, length, pos);
+            await fh.read(buffer, 0, length, pos);
             let offset = 0;
             while(offset < length) {
                 const deserialized = deserializeMessage(buffer, offset);
@@ -264,7 +264,7 @@ export class Logs implements Logging {
             alert(l('logs.corruption.desktop'));
             return [];
         } finally {
-            fs.closeSync(fd);
+            await fh.close();
         }
     }
 

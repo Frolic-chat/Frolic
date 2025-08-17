@@ -1,7 +1,6 @@
 import {addMinutes} from 'date-fns';
 import * as fs from 'fs';
 import * as path from 'path';
-import {promisify} from 'util';
 import {Settings} from '../chat/common';
 import {Conversation} from '../chat/interfaces';
 import {isAction} from '../chat/slash_commands';
@@ -242,7 +241,6 @@ const knownOfficialChannels = ['Canon Characters', 'Monster\'s Lair', 'German IC
     'Canon Characters OOC', 'Dragons', 'Helpdesk'];
 
 export async function importCharacter(ownCharacter: string, progress: (progress: number) => void): Promise<void> {
-    const write = promisify(fs.write);
     const dir = getSettingsDir(ownCharacter);
     if (dir === undefined)
         return;
@@ -287,8 +285,8 @@ export async function importCharacter(ownCharacter: string, progress: (progress:
         if (fs.existsSync(logFile))          fs.unlinkSync(logFile);
         if (fs.existsSync(`${logFile}.idx`)) fs.unlinkSync(`${logFile}.idx`);
 
-        let logFd,
-            indexFd;
+        let logFh,
+            indexFh;
         const logIndex = {};
         let size = 0;
         const files = fs.readdirSync(subdirPath);
@@ -346,17 +344,17 @@ export async function importCharacter(ownCharacter: string, progress: (progress:
                                 continue;
                             }
 
-                            if (indexFd === undefined || logFd === undefined) {
-                                logFd = fs.openSync(logFile, 'a');
-                                indexFd = fs.openSync(`${logFile}.idx`, 'a');
+                            if (indexFh === undefined || logFh === undefined) {
+                                logFh = await fs.promises.open(logFile, 'a');
+                                indexFh = await fs.promises.open(`${logFile}.idx`, 'a');
                             }
 
                             const indexBuffer = checkIndex(logIndex, message, key, name, size);
                             if(indexBuffer !== undefined)
-                                await write(indexFd, indexBuffer);
+                                await indexFh.write(indexBuffer);
 
                             const serialized = serializeMessage(message);
-                            await write(logFd, serialized.serialized);
+                            await logFh.write(serialized.serialized);
 
                             size += serialized.size;
                             if (char === '\r') ++index;
@@ -371,7 +369,7 @@ export async function importCharacter(ownCharacter: string, progress: (progress:
             }
         }
 
-        if (indexFd !== undefined) fs.closeSync(indexFd);
-        if (logFd !== undefined)   fs.closeSync(logFd);
+        if (indexFh !== undefined) await indexFh.close();
+        if (logFh   !== undefined) await logFh.close();
     }
 }
