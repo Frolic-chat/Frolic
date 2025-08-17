@@ -319,3 +319,11 @@ Otherwise, this would result in an infinite recursion.
 
 // Note the "never" return type can't be included, because unions with never
 // do not include it.
+
+/**
+ * Useful to avoid non-null assertions. Just x ?? `err()`
+ * <T> maintains the potential to truly assert T is truly itself; however this never returns, so never asserts.
+ */
+export function err<T>(msg: string): NonNullable<T> { throw msg ?? "Object is null or undefined when that shouldn't be possible." };
+// Example:
+// const elem = document.getElementById('something') ?? err();
