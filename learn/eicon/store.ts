@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as remote from '@electron/remote';
+import { ipcRenderer } from 'electron';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('eicon/store');
@@ -113,6 +113,8 @@ function ImplicitlyVersion1(d: any): boolean {
  * Initialize a local reference of the store using {@link EIconStore.getSharedStore}.
  */
 export class EIconStore {
+    private _storeFilename?: string | undefined;
+
     /**
      * The primary structure of the eicon store. Holds the list of eicons that's
      * saved & loaded, shuffled, searched, and paged through.
@@ -137,16 +139,22 @@ export class EIconStore {
      * error is caught, logged, and ignored.
      */
     private async save(): Promise<void> {
+        const filename = await this.getStoreFilename();
+        if (!filename) {
+            log.error('eicons.save.failure.filename', "Can't save eicon store because no storeFilename failed to resolve.");
+            return;
+        }
+
         if (this.lookup.length) {
             log.verbose('eicons.save', {
                 records: this.lookup.length,
                 asOfTimestamp: this.asOfTimestamp,
-                file: this.getStoreFilename(),
+                file: filename,
             });
 
             try {
                 fs.writeFileSync(
-                    this.getStoreFilename(),
+                    filename,
                     JSON.stringify({
                         version: CURRENT_STORE_VERSION,
                         asOfTimestamp: this.asOfTimestamp,
@@ -159,8 +167,6 @@ export class EIconStore {
                 log.error('eicons.save.failure', { e });
             }
         }
-
-        remote.ipcMain.emit('eicons.reload', { asOfTimestamp: this.asOfTimestamp });
     }
 
     /**
@@ -175,10 +181,16 @@ export class EIconStore {
      * "array of eicon names".
      */
     private async load(): Promise<void> {
-        log.verbose('eicons.load', { store: this.getStoreFilename() });
+        const filename = await this.getStoreFilename();
+        if (!filename) {
+            log.error('eicons.load.failure.filename', "Eicon store failed to load because storeFilename didn't resolve.");
+            return;
+        }
+
+        log.verbose('eicons.load', { store: filename });
 
         try {
-            const data = JSON.parse(fs.readFileSync(this.getStoreFilename(), 'utf-8'));
+            const data = JSON.parse(fs.readFileSync(filename, 'utf-8'));
 
             /** Handling old formats is a must.
              *
@@ -241,14 +253,25 @@ export class EIconStore {
      *
      * @returns The full path to the eicon db file.
      */
-    private getStoreFilename(): string {
-        const baseDir = remote.app.getPath('userData');
-        const settingsDir = path.join(baseDir, 'data');
+    private async getStoreFilename(): Promise<string | undefined> {
+        if (!this._storeFilename) {
+            const baseDir = await ipcRenderer.invoke('app-getPath', 'userData');
 
-        if (CURRENT_STORE_VERSION)
-            return path.join(settingsDir, `eicons-${CURRENT_STORE_VERSION}.json`);
-        else
-            return path.join(settingsDir, 'eicons.json');
+            if (baseDir) {
+                const settingsDir = path.join(baseDir, 'data');
+
+                const finalPath = CURRENT_STORE_VERSION
+                    ? path.join(settingsDir, `eicons-${CURRENT_STORE_VERSION}.json`)
+                    : path.join(settingsDir, 'eicons.json')
+
+                this._storeFilename = finalPath;
+            }
+            else {
+                this._storeFilename = undefined;
+            }
+        }
+
+        return this._storeFilename;
     }
 
     /**

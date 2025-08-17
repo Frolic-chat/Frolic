@@ -823,6 +823,28 @@ function onReady(): void {
     //#endregion
 
 
+    Electron.ipcMain.handle('app-getPath', async (_e, appPath: string) => {
+        await null;
+        // Ideally argument is `Parameters<typeof app.getPath>[0]`
+        try { // ex: 'userData'
+            //if ([ "home", "appData", "userData", "sessionData", "temp", "exe", "module", "desktop", "documents", "downloads", "music", "pictures", "videos", "recent", "logs", "crashDumps" ].includes(path))
+            if (typeof appPath === 'string') {
+                switch (appPath) {
+                //case 'temp':
+                case 'appData':
+                case 'sessionData':
+                //case 'logs':
+                case 'userData':
+                    return app.getPath(appPath);
+                }
+            }
+        }
+        catch {}
+
+        return undefined;
+    });
+
+
     Electron.ipcMain.on('tab-added', (_e, id: number) => {
         const webContents = Electron.webContents.fromId(id);
         if (!webContents) {
