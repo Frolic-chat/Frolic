@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('css-minimizer-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@f-list/vue-ts/transform').default;
 const CopyPlugin = require('copy-webpack-plugin');
@@ -47,7 +47,7 @@ const mainConfig = {
         extensions: ['.ts', '.js']
     },
     optimization: {
-        minimize: true,
+        //minimize: true,
         moduleIds: 'named',
         chunkIds: 'named',
     },
@@ -162,7 +162,7 @@ const rendererConfig = {
     },
     optimization: {
         splitChunks: {chunks: 'all', minChunks: 2, name: 'common'},
-        minimize: true,
+        //minimize: true,
         moduleIds: 'named',
         chunkIds: 'named',
     }
@@ -206,7 +206,7 @@ const storeWorkerEndpointConfig = {
         extensions: ['.ts', '.js']
     },
     optimization: {
-        minimize: true,
+        //minimize: true,
         moduleIds: 'named',
         chunkIds: 'named',
     },
