@@ -92,7 +92,7 @@ const strings: {[key: string]: string | undefined} = {
     'userlist.profile': 'Full Profile',
     'confirmYes': 'Yes',
     'confirmNo': 'No',
-    'login.account': 'Username',
+    'login.account': 'Account',
     'login.password': 'Password',
     'login.host': 'Host',
     'login.advanced': 'Show advanced settings',
