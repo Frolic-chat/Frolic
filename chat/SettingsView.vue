@@ -310,13 +310,13 @@
         <div v-show="selectedTab === '3'">
             <div class="warning">
               <h5>{{l('rising.header.dangerZone')}}</h5>
-              <div>{{l('rising.filter.warning')}}</div>
-              <div>{{l('rising.filter.naToFriends')}}</div>
-              <div>{{l('rising.filter.beta')}}</div>
+              <p>{{ l('rising.header.desc') }}</p>
+              <p>{{l('rising.filter.warning')}}</p>
             </div>
 
             <div>
                 <h5>{{ l('rising.header.visibility') }}</h5>
+                <p>{{ l('rising.header.naTo') }}</p>
                 <p><small>{{ l('rising.header.visibilityCaveat') }}</small></p>
             </div>
 
@@ -334,21 +334,37 @@
                 <label class="control-label" for="risingFilter.hideChannelMembers">
                     <input type="checkbox" id="risingFilter.hideChannelMembers" v-model="risingFilter.hideChannelMembers"/>
                     {{l('rising.filter.hideMembers')}}
+                    <template v-if="risingFilter.hideChannelMembers">
+                        <br>
+                        <small>{{ l('settings.hideChannelMembers.selectedInfo') }}</small>
+                    </template>
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePublicChannelMessages">
                     <input type="checkbox" id="risingFilter.hidePublicChannelMessages" v-model="risingFilter.hidePublicChannelMessages"/>
                     {{l('rising.filter.hidePubChat')}}
+                    <template v-if="risingFilter.hidePublicChannelMessages">
+                        <br>
+                        <small>{{ l('settings.hideChannelMessages.selectedInfo') }}</small>
+                    </template>
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePrivateChannelMessages">
                     <input type="checkbox" id="risingFilter.hidePrivateChannelMessages" v-model="risingFilter.hidePrivateChannelMessages"/>
                      {{l('rising.filter.hidePrivChat')}}
+                     <template v-if="risingFilter.hidePrivateChannelMessages">
+                        <br>
+                        <small>{{ l('settings.hideChannelMessages.selectedInfo') }}</small>
+                    </template>
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePrivateMessages">
                     <input type="checkbox" id="risingFilter.hidePrivateMessages" v-model="risingFilter.hidePrivateMessages"/>
                      {{l('rising.filter.hidePMs')}}
+                    <template v-if="risingFilter.hidePrivateMessages">
+                        <br>
+                        <small>{{ l('settings.hidePrivateMessages.selectedInfo') }}</small>
+                    </template>
                 </label>
 
                 <label class="control-label" for="risingFilter.showFilterIcon">
