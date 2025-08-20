@@ -327,3 +327,11 @@ Otherwise, this would result in an infinite recursion.
 export function err<T>(msg: string): NonNullable<T> { throw msg ?? "Object is null or undefined when that shouldn't be possible." };
 // Example:
 // const elem = document.getElementById('something') ?? err();
+
+/**
+ * Asynchronous sleep operation - delay current thread by given ms.
+ * @param ms Time to sleep in milliseconds
+ */
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

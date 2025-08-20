@@ -25,7 +25,6 @@
     "any-ascii": "^0.3.0",
     "async": "^0.9.0",
     "axios": "^1.9.0",
-    "bluebird": "~3.7.2",
     "bootstrap": "^4.6.2",
     "copy-webpack-plugin": "^6.2.1",
     "css-loader": "^5.0.0",

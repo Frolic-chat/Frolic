@@ -1,6 +1,7 @@
 import throat from 'throat';
-import Bluebird from 'bluebird';
 import { IpcMainEvent } from 'electron';
+
+import { sleep } from '../../helpers/utils';
 
 import Logger from 'electron-log/main';
 const log = Logger.scope('AdCoordinatorHost');
@@ -20,7 +21,7 @@ export class AdCoordinatorHost {
 
         log.debug('adid.request.host', {adId, sinceLastPost, waitTime});
 
-        await Bluebird.delay(waitTime);
+        await sleep(waitTime);
 
         log.debug('adid.request.host.grant', {adId, sinceLastPost, waitTime});
 

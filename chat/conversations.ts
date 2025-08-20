@@ -4,6 +4,7 @@ import {decodeHTML} from '../fchat/common';
 import { AdManager } from './ads/ad-manager';
 import { characterImage, ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
+import { sleep } from '../helpers/utils';
 import { Channel, Character, Conversation as Interfaces } from './interfaces';
 import isChannel = Interfaces.isChannel;
 import l from './localize';
@@ -11,7 +12,6 @@ import {CommandContext, isAction, isCommand, isWarn, parse as parseCommand} from
 import MessageType = Interfaces.Message.Type;
 import {EventBus} from './preview/event-bus';
 import throat from 'throat';
-import Bluebird from 'bluebird';
 
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('chat/conversations');
@@ -170,11 +170,8 @@ abstract class Conversation implements Interfaces.Conversation {
     public static async testPostDelay(): Promise<void> {
         const lastPostDelta = Date.now() - core.cache.getLastPost().getTime();
 
-        // console.log('Last Post Delta', lastPostDelta, ((lastPostDelta < Conversation.POST_DELAY) && (lastPostDelta > 0)));
-
-        if ((lastPostDelta < Conversation.POST_DELAY) && (lastPostDelta > 0)) {
-            await Bluebird.delay(Conversation.POST_DELAY - lastPostDelta);
-        }
+        if (lastPostDelta < Conversation.POST_DELAY && lastPostDelta > 0)
+            await sleep(Conversation.POST_DELAY - lastPostDelta);
     }
 
     isSendingAutomatedAds(): boolean {
@@ -494,7 +491,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         }
 
         await Conversation.conversationThroat(
-          async() => {
+            async() => {
                 await Conversation.testPostDelay();
 
                 core.connection.send(isAd ? 'LRP' : 'MSG', {channel: this.channel.id, message});
@@ -516,7 +513,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                       }
                     };
                 }
-          }
+            }
         );
     }
 
@@ -537,12 +534,10 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             async() => {
                 const throatTime = Date.now();
 
-                await Promise.all(
-                    [
-                        await Conversation.testPostDelay(),
-                        await core.adCoordinator.requestTurnToPostAd()
-                    ]
-                );
+                await Promise.all([
+                    await Conversation.testPostDelay(),
+                    await core.adCoordinator.requestTurnToPostAd()
+                ]);
 
                 const delayTime = Date.now();
 
@@ -786,7 +781,7 @@ export async function shouldFilterPrivate(fromChar: Character.Character, origina
         cachedProfile.match.autoResponded = true;
 
         await Conversation.conversationThroat(
-          async() => {
+            async() => {
                 log.debug('filter.autoresponse', { name: fromChar.name });
 
                 await Conversation.testPostDelay();
@@ -816,7 +811,7 @@ export async function shouldFilterPrivate(fromChar: Character.Character, origina
                       }
                     );
                 }
-              }
+            }
         );
     }
 
