@@ -1,7 +1,7 @@
 <template>
    <modal :buttons="false" ref="dialog" style="width:98%" dialogClass="">
         <template slot="title">
-            <user :character="character">{{character.name}}</user>{{ l('characterRelation.title') }}
+            <user :character="character" :reusable="true">{{character.name}}</user>{{ l('characterRelation.title') }}
         </template>
 
         <div ref="pageBody">
