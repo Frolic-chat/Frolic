@@ -1124,7 +1124,7 @@ export default function(this: any): Interfaces.State {
         if (conv) {
             conv.typingStatus = data.status;
         }
-        else if (data.status === 'typing' && !core.cache.profileCache.getSync(data.character)) {
+        else if (data.status === 'typing' && core.state.settings.risingAdScore && !core.cache.profileCache.getSync(data.character)) {
             core.cache.addProfile(data.character.toLowerCase());
         }
     });
