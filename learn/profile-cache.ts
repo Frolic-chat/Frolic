@@ -147,10 +147,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     async registerMeta(name: string, meta: MetaRecord): Promise<void> {
         const record = await this.get(name);
 
-        if (!record) {
-            // coward's way out
-            return;
-        }
+        if (!record)
+            return; // coward's way out
 
         record.meta = meta;
 

@@ -500,14 +500,15 @@
     })
     export default class SettingsView extends CustomDialog {
         l = l;
+        friendchooser = Conversation.RelationChooser;
         availableImports: ReadonlyArray<string> = [];
         selectedTab = '0';
+
         importCharacter = '';
         playSound!: boolean;
         clickOpensMessage!: boolean;
         disallowedTags!: string;
         notifications!: boolean;
-        friendchooser = Conversation.RelationChooser;
         notifyFriendSignIn!: Conversation.RelationChooser;
         notifyOnFriendMessage!: Conversation.RelationChooser;
         highlight!: boolean;

@@ -131,7 +131,12 @@ function recalculateSorterGenderPriorities({ profile }: CharacterDataEvent): voi
 EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
 
 @Component({
-    components: {characterPage, user: UserView, sidebar: Sidebar, tabs: Tabs}
+    components: {
+        characterPage,
+        user: UserView,
+        sidebar: Sidebar,
+        tabs: Tabs,
+    }
 })
 export default class UserList extends Vue {
     tab = '0';

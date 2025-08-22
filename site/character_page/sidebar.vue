@@ -162,11 +162,7 @@
         getAvatarUrl(): string {
           const onlineCharacter = core.characters.get(this.character.character.name);
 
-          if (onlineCharacter && onlineCharacter.overrides.avatarUrl) {
-            return onlineCharacter.overrides.avatarUrl;
-          }
-
-          return Utils.avatarURL(this.character.character.name);
+        return onlineCharacter?.overrides.avatarUrl ?? Utils.avatarURL(this.character.character.name);
         }
 
         badgeClass(badgeName: string): string {
@@ -258,6 +254,10 @@
                 : [];
         }
 
+        /**
+         * Uncertain whether this can run where the Store is undefined.
+         * @param id infotag Id dictated by server
+         */
         getInfotag(id: number): Infotag {
             return Store.shared!.infotags[id];
         }
