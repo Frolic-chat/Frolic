@@ -5,10 +5,10 @@
             <dropdown linkClass="custom-select">
                 <span slot="title">
                     <span class="fa fa-fw" :class="getStatusIcon(status)"></span>
-                    {{l('status.' + status)}}
+                    {{ l(`status.${status}`) }}
                 </span>
                 <a href="#" class="dropdown-item" v-for="item in statuses" @click.prevent="status = item">
-                    <span class="fa fa-fw" :class="getStatusIcon(item)"></span>{{l('status.' + item)}}
+                    <span class="fa fa-fw" :class="getStatusIcon(item)"></span>{{ l(`status.${item}`) }}
                 </a>
             </dropdown>
         </div>

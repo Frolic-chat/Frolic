@@ -4,7 +4,7 @@
             <div style="min-height: 65px;padding:5px;overflow:auto" class="list-group-item" @click.stop>
                 <img :src="characterImage" style="width:60px;height:60px;margin-right:5px;float:left" v-if="showAvatars"/>
                 <h5 style="margin:0;line-height:1">{{character.name}}</h5>
-                {{l('status.' + character.status)}}
+                {{ l(`status.${character.status}`) }}
             </div>
             <bbcode id="userMenuStatus" :text="character.statusText" v-show="character.statusText" class="list-group-item"
                 style="max-height:200px;overflow:auto;clear:both"></bbcode>
@@ -33,7 +33,7 @@
             </a>
             <a tabindex="-1" href="#" @click.prevent="setBookmarked()" class="list-group-item list-group-item-action">
                 <span class="far fa-fw fa-bookmark"></span>
-                {{l('user.' + (character.isBookmarked ? 'unbookmark' : 'bookmark'))}}
+                {{ l(character.isBookmarked ? 'user.unbookmark' : 'user.bookmark') }}
             </a>
             <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
                 <span class="far fa-fw fa-ad"></span>
@@ -41,7 +41,7 @@
             </a>
             <a tabindex="-1" href="#" @click.prevent="setHidden()" class="list-group-item list-group-item-action" v-show="!isChatOp">
                 <span class="fa fa-fw fa-eye-slash"></span>
-                {{l('user.' + (isHidden ? 'unhide' : 'hide'))}}
+                {{ l(isHidden ? 'user.unhide' : 'user.hide') }}
             </a>
             <a tabindex="-1" href="#" @click.prevent="report()" class="list-group-item list-group-item-action" style="border-top-width:1px">
                 <span class="fa fa-fw fa-exclamation-triangle"></span>
@@ -49,7 +49,7 @@
             </a>
             <a tabindex="-1" href="#" @click.prevent="setIgnored()" class="list-group-item list-group-item-action">
                 <span class="fa fa-fw fa-minus-circle"></span>
-                {{l('user.' + (character.isIgnored ? 'unignore' : 'ignore'))}}
+                {{ l(character.isIgnored ? 'user.unignore' : 'user.ignore') }}
             </a>
             <a tabindex="-1" href="#" @click.prevent="channelKick()" class="list-group-item list-group-item-action" v-show="isChannelMod">
                 <span class="fa fa-fw fa-ban"></span>

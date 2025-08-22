@@ -215,7 +215,7 @@ export class ProfileRecommendationAnalyzer {
                 const likedAnthros = this.getLikedAnimals();
 
                 likedAnthros.forEach(species => {
-                    this.add('KINK_MISMATCH_HUMANS_ONLY_ANTHRO', ProfileRecommendationLevel.NOTE, l('phelper.mismatch'), l('phelper.mismatchHumansOnly1', Matcher.getSpeciesName(species)));
+                    this.add('KINK_MISMATCH_HUMANS_ONLY_ANTHRO', ProfileRecommendationLevel.NOTE, l('phelper.mismatch'), l('phelper.mismatchHumansOnly', Matcher.getSpeciesName(species)));
                 });
             }
         }

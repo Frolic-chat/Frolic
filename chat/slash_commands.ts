@@ -52,15 +52,19 @@ export function parse(this: void | never, input: string, context: CommandContext
             values[i] = value;
             switch(param.type) {
                 case ParamType.String:
-                    if(i === command.params.length - 1) values[i] = args.substring(index);
+                    if (i === command.params.length - 1)
+                        values[i] = args.substring(index);
+
                     break;
                 case ParamType.Enum:
                     // For status command, do case-insensitive matching
                     if (name === 'status' && !i) {
                         const options = param.options ?? [];
                         const matchedOption = options.find(opt => opt.toLowerCase() === value.toLowerCase());
-                        if (matchedOption) values[i] = matchedOption;
-                        else return l('commands.invalidParam', l(`commands.${name}.param${i}`));
+                        if (matchedOption)
+                            values[i] = matchedOption;
+                        else
+                            return l('commands.invalidParam', l(`commands.status.param${i}`));
                     }
                     else if (!(param.options ?? []).includes(value))
                         return l('commands.invalidParam', l(`commands.${name}.param${i}`));

@@ -1197,7 +1197,7 @@ export default function(this: any): Interfaces.State {
     connection.onMessage('RTB', async(data, time) => {
         let url = 'https://www.f-list.net/';
         let text: string, character: string;
-        if(data.type === 'comment') { //tslint:disable-line:prefer-switch
+        if (data.type === 'comment') {
             switch(data.target_type) {
                 case 'newspost':
                     url += `newspost/${data.target_id}/#Comment${data.id}`;
@@ -1211,10 +1211,16 @@ export default function(this: any): Interfaces.State {
                 case 'feature':
                     url += `vote.php?id=${data.target_id}/#${data.id}`;
             }
-            const key = `events.rtbComment${(data.parent_id !== 0 ? 'Reply' : '')}`;
+
+            const key = data.parent_id
+                ? 'events.rtbCommentReply'
+                : 'events.rtbComment';
+
             text = l(key, `[user]${data.name}[/user]`, l(`events.rtbComment_${data.target_type}`), `[url=${url}]${data.target}[/url]`);
+
             character = data.name;
-        } else if(data.type === 'note') {
+        }
+        else if (data.type === 'note') {
             // tslint:disable-next-line:no-unsafe-any
             core.siteSession.interfaces.notes.incrementNotes();
             text = l('events.rtb_note', `[user]${data.sender}[/user]`, `[url=${url}view_note.php?note_id=${data.id}]${data.subject}[/url]`);

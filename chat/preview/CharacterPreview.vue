@@ -53,7 +53,7 @@
         </div>
 
         <div class="status-message" v-if="statusMessage">
-          <h4>{{ l('characterPreview.status') }} <span v-if="latestAd && (statusMessage === latestAd.message)">{{ l('characterPreview.status2') }}</span></h4>
+          <h4>{{ l('character.status') }} <span v-if="latestAd && (statusMessage === latestAd.message)">{{ l('characterPreview.status2') }}</span></h4>
           <bbcode :text="statusMessage"></bbcode>
         </div>
 
