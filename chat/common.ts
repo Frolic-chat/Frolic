@@ -36,6 +36,14 @@ export function characterImage(this: any | never, character: string): string {
     return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
 }
 
+export function characterGender(this: any | never, character: string | Character): Character.Gender | undefined {
+    const c = typeof character === 'string'
+        ? core.characters.get(character)
+        : character;
+
+    return c.overrides.gender ?? c.gender;
+}
+
 export class Settings implements ISettings {
     playSound = true;
     notifyVolume = 100;
