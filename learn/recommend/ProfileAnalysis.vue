@@ -34,6 +34,7 @@ import Vue from 'vue';
 import core from '../../chat/core';
 import { ProfileRecommendation, ProfileRecommendationAnalyzer } from './profile-recommendation';
 import { CharacterAnalysis } from '../matcher';
+import { Character as CharacterPage } from '../../site/character_page/interfaces';
 import { methods } from '../../site/character_page/data_store';
 import l from '../../chat/localize';
 
@@ -43,13 +44,21 @@ export default class ProfileAnalysis extends Vue {
   analyzing = false;
   l = l;
 
-  async analyze() {
+  /**
+   * Analyze and report on a character. Currently only useful to analyze yourself.
+   * @param profile A character page from the API
+   */
+  async analyze(profile?: CharacterPage): Promise<void>;
+  async analyze(profile: CharacterPage | undefined = core.characters.ownProfile) {
+    if (!profile || this.analyzing)
+        return;
+
     this.analyzing = true;
     this.recommendations = [];
 
-    const char = await methods.characterData(core.characters.ownProfile.character.name, core.characters.ownProfile.character.id, true);
-    const profile = new CharacterAnalysis(char.character);
-    const analyzer = new ProfileRecommendationAnalyzer(profile);
+    const char = await methods.characterData(profile.character.name, profile.character.id, true);
+    const matcher = new CharacterAnalysis(char.character);
+    const analyzer = new ProfileRecommendationAnalyzer(matcher);
 
     this.recommendations = await analyzer.analyze();
 
