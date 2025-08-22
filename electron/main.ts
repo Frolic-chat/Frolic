@@ -173,16 +173,11 @@ async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
 }
 
 /**
- * Opens a link; optionally in incognito mode. Incognito is only available if
- * a browser is set in the "Custom browser" settings.
+ * Opens a link; optionally in incognito mode. Incognito is only available if a browser is set in the "Custom browser" settings.
  *
- * This function handles both standard links that pass through {@link openLinkExternally}
- * and links from the "Open in Incognito mode" right-click menu option.
+ * This function handles both standard links that pass through {@link openLinkExternally} and links from the "Open in Incognito mode" right-click menu option.
  *
- * Normally, we can fall back to {@link electron.shell.openExternal} when
- * there's no custom browser. However, when incognito mode is requested, abort
- * if we aren't able to honor the player's privacy so we don't add anything
- * spicy to the player's browser history.
+ * Normally, we can fall back to {@link electron.shell.openExternal} when there's no custom browser. However, when incognito mode is requested, abort if we aren't able to honor the player's privacy so we don't add anything spicy to the player's browser history.
  *
  * @param url Url of the page to open; no internal validation is performed.
  * @param incognito True to use incognito mode (and error if we can't).
@@ -533,6 +528,7 @@ function onReady(): void {
     //tslint:disable-next-line:no-floating-promises
     addSpellcheckerItems(spellcheckerMenu);
 
+    //region Themes
     const themes = fs.readdirSync(path.join(__dirname, 'themes'))
             .filter(x => x.slice(-4) === '.css')
             .map(x => x.slice(0, -4));
@@ -542,11 +538,13 @@ function onReady(): void {
         setGeneralSettings(settings);
     };
 
+
     const setSystemLogLevel = (logLevel: LogLevelOption) => {
         settings.risingSystemLogLevel = logLevel;
         setGeneralSettings(settings);
     };
 
+    //region Main Menu
     Electron.Menu.setApplicationMenu(Electron.Menu.buildFromTemplate([
         updateMenuItem,
         {

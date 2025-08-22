@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import Logger from 'electron-log/main';
 const log = Logger.scope('window_state');
 
-interface SavedWindowState {
+export interface SavedWindowState {
     x?: number
     y?: number
     height: number
