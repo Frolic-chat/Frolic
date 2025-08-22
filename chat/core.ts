@@ -30,6 +30,9 @@ class State implements StateInterface {
     hiddenUsers: string[] = [];
     favoriteEIcons: Record<string, boolean> = {};
 
+    /**
+     * This should absolutely be fixed to grant a basic, safe settings structure instead of throwing an error. It's bad form to state in typescript the settings always exist and then throw an error if they don't, and it has caused issues before witht he log viewer which can be used when not logged in.
+     */
     get settings(): Settings {
         if (this._settings === undefined)
             throw new Error('Settings load failed.');

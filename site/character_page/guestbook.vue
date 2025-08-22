@@ -42,8 +42,10 @@
     export default class GuestbookView extends Vue {
         @Prop({required: true})
         readonly character!: Character;
+
         @Prop
         readonly oldApi?: true;
+
         loading = true;
         error = '';
         authenticated = Store.authenticated;

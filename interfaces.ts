@@ -1,3 +1,8 @@
+/**
+ * The most simple character structure, used primarily for listing your characters on the log-in selector.
+ *
+ * Character name, unique ID, and whether or not the character exists.
+ */
 export interface SimpleCharacter {
     id:      number
     name:    string

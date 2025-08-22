@@ -238,7 +238,6 @@ export namespace Settings {
         readonly enterSend: boolean;
         readonly secondEnterSend: boolean;
         readonly colorBookmarks: boolean;
-        readonly bbCodeBar: boolean;
 
         readonly risingAdScore: boolean;
         readonly risingLinkPreview: boolean;
@@ -261,6 +260,11 @@ export namespace Settings {
         readonly risingFilter: SmartFilterSettings;
 
         readonly risingCharacterTheme: string | undefined;
+
+        /**
+         * Legacy: deprecate by removing from place of use, but retain it in settings for backporting capability; as long as we want to suporrt that.
+         */
+        readonly bbCodeBar: boolean;
     }
 }
 

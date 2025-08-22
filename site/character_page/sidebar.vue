@@ -2,7 +2,6 @@
     <div id="character-page-sidebar" class="card bg-light">
         <div class="card-body">
             <img :src="getAvatarUrl()" class="character-avatar" style="width: 100%; height: auto;">
-
             <div v-if="character.character.title" class="character-title">{{ character.character.title }}</div>
             <character-action-menu :character="character" @rename="showRename()" @delete="showDelete()"
                 @block="showBlock()"></character-action-menu>
@@ -160,13 +159,9 @@
         readonly avatarUrl = Utils.avatarURL;
 
         getAvatarUrl(): string {
-          const onlineCharacter = core.characters.get(this.character.character.name);
+            const onlineCharacter = core.characters.get(this.character.character.name);
 
-          if (onlineCharacter && onlineCharacter.overrides.avatarUrl) {
-            return onlineCharacter.overrides.avatarUrl;
-          }
-
-          return Utils.avatarURL(this.character.character.name);
+            return onlineCharacter?.overrides.avatarUrl ?? Utils.avatarURL(this.character.character.name);
         }
 
         badgeClass(badgeName: string): string {
@@ -236,6 +231,7 @@
             try {
                 // just calls queryApi, like the usermenu does, so the rest of the logic should be the same.
                 await methods.bookmarkUpdate(this.character.character.id, !this.character.bookmarked);
+
                 this.character.bookmarked = !this.character.bookmarked;
 
                 void core.cache.profileCache.register(this.character);
@@ -258,6 +254,10 @@
                 .sort((a, b) => a.name < b.name ? -1 : 1);
         }
 
+        /**
+         * Uncertain whether this can run where the Store is undefined.
+         * @param id infotag Id dictated by server
+         */
         getInfotag(id: number): Infotag {
             return Store.shared.infotags[id];
         }

@@ -2,6 +2,9 @@ import {
     Character as CharacterInfo, CharacterImage, CharacterSettings, KinkChoice, SharedDefinitions, SimpleCharacter
 } from '../../interfaces';
 
+/**
+ * Contains the kink/infotag translations.
+ */
 export interface SharedStore {
     shared: SharedDefinitions
     authenticated: boolean
