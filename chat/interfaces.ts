@@ -213,6 +213,7 @@ export namespace Settings {
     export interface Settings {
         readonly playSound: boolean;
         readonly clickOpensMessage: boolean;
+        readonly showStatusInProfile: boolean;
         readonly disallowedTags: ReadonlyArray<string>;
         readonly notifications: boolean;
         readonly notifyFriendSignIn: Conversation.RelationChooser;

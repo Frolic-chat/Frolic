@@ -507,6 +507,7 @@
         importCharacter = '';
         playSound!: boolean;
         clickOpensMessage!: boolean;
+        showStatusInProfile!: boolean;
         disallowedTags!: string;
         notifications!: boolean;
         notifyFriendSignIn!: Conversation.RelationChooser;
@@ -565,6 +566,7 @@
             const settings = core.state.settings;
             this.playSound = settings.playSound;
             this.clickOpensMessage = settings.clickOpensMessage;
+            this.showStatusInProfile = settings.showStatusInProfile;
             this.disallowedTags = settings.disallowedTags.join(',');
             this.notifications = settings.notifications;
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
@@ -658,6 +660,7 @@
             core.state.settings = {
                 playSound: this.playSound,
                 clickOpensMessage: this.clickOpensMessage,
+                showStatusInProfile: this.showStatusInProfile,
                 disallowedTags: this.disallowedTags.split(',').map((x) => x.trim()).filter((x) => x.length),
                 notifications: this.notifications,
                 notifyOnFriendMessage: this.notifyOnFriendMessage,

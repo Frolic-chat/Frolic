@@ -35,6 +35,7 @@ export function getByteLength(this: any | never, str: string): number {
 export class Settings implements ISettings {
     playSound = true;
     clickOpensMessage = false;
+    showStatusInProfile = true;
     disallowedTags: string[] = [];
     notifications = true;
     notifyFriendSignIn = Conversation.RelationChooser.NoOne;
