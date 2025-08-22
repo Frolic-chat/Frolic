@@ -102,8 +102,6 @@
 
                 <i class="fas fa-circle-notch fa-spin profileRefreshSpinner" v-show="isRefreshingProfile()"></i>
 
-                <bbcode :text="profileStatus" v-show="!!profileStatus" class="status-text"></bbcode>
-
                 <div class="profile-title-right">
                   <button class="btn" @click="prevProfile" :disabled="!prevProfileAvailable()"><i class="fas fa-arrow-left"></i></button>
                   <button class="btn" @click="nextProfile" :disabled="!nextProfileAvailable()"><i class="fas fa-arrow-right"></i></button>

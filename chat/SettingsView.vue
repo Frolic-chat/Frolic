@@ -522,6 +522,7 @@
         playSound!: boolean;
         notifyVolume!: number;
         clickOpensMessage!: boolean;
+        showStatusInProfile!: boolean;
         disallowedTags!: string;
         notifications!: boolean;
         notifyFriendSignIn!: Conversation.RelationChooser;
@@ -583,6 +584,7 @@
             this.playSound = settings.playSound;
             this.notifyVolume = settings.notifyVolume;
             this.clickOpensMessage = settings.clickOpensMessage;
+            this.showStatusInProfile = settings.showStatusInProfile;
             this.disallowedTags = settings.disallowedTags.join(',');
             this.notifications = settings.notifications;
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
@@ -683,6 +685,7 @@
                 playSound: this.playSound,
                 notifyVolume: this.notifyVolume,
                 clickOpensMessage: this.clickOpensMessage,
+                showStatusInProfile: this.showStatusInProfile,
                 disallowedTags: this.disallowedTags.split(',').map((x) => x.trim()).filter((x) => x.length),
                 notifications: this.notifications,
                 notifyOnFriendMessage: this.notifyOnFriendMessage,

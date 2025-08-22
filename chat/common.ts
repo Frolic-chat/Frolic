@@ -48,6 +48,7 @@ export class Settings implements ISettings {
     playSound = true;
     notifyVolume = 100;
     clickOpensMessage = false;
+    showStatusInProfile = true;
     disallowedTags: string[] = [];
     notifications = true;
     notifyFriendSignIn = Conversation.RelationChooser.NoOne;

@@ -214,6 +214,7 @@ export namespace Settings {
         readonly playSound: boolean;
         readonly notifyVolume: number;
         readonly clickOpensMessage: boolean;
+        readonly showStatusInProfile: boolean;
         readonly disallowedTags: ReadonlyArray<string>;
         readonly notifications: boolean;
         readonly notifyFriendSignIn: Conversation.RelationChooser;
