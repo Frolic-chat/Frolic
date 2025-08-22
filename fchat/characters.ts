@@ -30,8 +30,8 @@ export interface CharacterOverrides {
 class State implements Interfaces.State {
     characters: {[key: string]: Character | undefined} = {};
 
-    ownCharacter: Character = <any>undefined; /*tslint:disable-line:no-any*///hack
-    ownProfile: CharacterProfile = <any>undefined; /*tslint:disable-line:no-any*///hack
+    ownCharacter: Character = new Character('');
+    ownProfile?: CharacterProfile;
 
     friends: Character[] = [];
     bookmarks: Character[] = [];
@@ -220,10 +220,12 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
             await state.resolveOwnProfile();
 
-            // tslint:disable-next-line no-unnecessary-type-assertion
-            core.cache.setProfile(state.ownProfile as CharacterProfile);
+            if (state.ownProfile) {
+                core.cache.setProfile(state.ownProfile);
 
-            EventBus.$emit('own-profile-update', { profile: state.ownProfile });
+                EventBus.$emit('own-profile-update', { profile: state.ownProfile });
+            }
+            // What should we do if we fail to resolve our own profile? Force disconnect?
         }
 
         character.name = data.identity;
