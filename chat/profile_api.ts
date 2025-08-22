@@ -29,6 +29,14 @@ import core from './core';
 import { EventBus } from './preview/event-bus';
 import * as FLIST from '../constants/flist';
 
+type ApiFields = {
+    listItems:     { [key: string]: ListItem     }
+    kinks:         { [key: string]: Kink         }
+    kinkGroups:    { [key: string]: KinkGroup    }
+    infotags:      { [key: string]: Infotag      }
+    infotagGroups: { [key: string]: InfotagGroup }
+}
+
 const parserSettings = {
     siteDomain:         FLIST.Domain,
     staticDomain:       FLIST.StaticDomain,
@@ -65,7 +73,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
         character_list: { id: number, name: string }[],
         current_user: {
             inline_mode:    number,
-            animated_icons: boolean
+            animated_icons: boolean,
         },
         custom_kinks: {
             [key: number]: {
@@ -73,7 +81,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
                 choice:     'favorite' | 'yes' | 'maybe' | 'no',
                 name:        string,
                 description: string,
-                children:    number[]
+                children:    number[],
             }
         },
         custom_title: string,
@@ -83,7 +91,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
         memo?:        {id: number, memo: string},
         settings:     CharacterSettings,
         timezone:     number,
-    }>('character-data.php', {name});
+    }>('character-data.php', { name });
 
     const newKinks: {[key: string]: KinkChoiceFull} = {};
 
@@ -156,7 +164,7 @@ async function fieldsGet(): Promise<void> {
     if (Store.shared !== undefined) return; //tslint:disable-line:strict-type-predicates
 
     try {
-        const fields = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
+        const response = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
             listitems:      {[key: string]: ListItem}
             kinks:          {[key: string]: Kink & {group_id: number}}
             kink_groups:    {[key: string]: KinkGroup}
@@ -164,72 +172,73 @@ async function fieldsGet(): Promise<void> {
             infotag_groups: {[key: string]: InfotagGroup & {id: string}}
         };
 
-        const kinks: {  listItems:     {[key: string]: ListItem}
-                        kinks:         {[key: string]: Kink}
-                        kinkGroups:    {[key: string]: KinkGroup}
-                        infotags:      {[key: string]: Infotag}
-                        infotagGroups: {[key: string]: InfotagGroup}
-        } = {kinks: {}, kinkGroups: {}, infotags: {}, infotagGroups: {}, listItems: {}};
+        const new_api: ApiFields = {
+            kinks: {},
+            kinkGroups: {},
+            infotags: {},
+            infotagGroups: {},
+            listItems: {},
+        };
 
-        for (const id in fields.kinks) {
-            const oldKink = fields.kinks[id];
+        for (const id in response.kinks) {
+            const oldKink = response.kinks[id];
 
-            kinks.kinks[oldKink.id] = {
+            new_api.kinks[oldKink.id] = {
                 id:          oldKink.id,
                 name:        oldKink.name,
                 description: oldKink.description,
-                kink_group:  oldKink.group_id
+                kink_group:  oldKink.group_id,
             };
         }
 
-        for (const id in fields.kink_groups) {
-            const oldGroup = fields.kink_groups[id];
+        for (const id in response.kink_groups) {
+            const oldGroup = response.kink_groups[id];
 
-            kinks.kinkGroups[oldGroup.id] = {
+            new_api.kinkGroups[oldGroup.id] = {
                 id:          oldGroup.id,
                 name:        oldGroup.name,
                 description: '',
-                sort_order:  oldGroup.id
+                sort_order:  oldGroup.id,
             };
         }
 
-        for (const id in fields.infotags) {
-            const oldInfotag = fields.infotags[id];
+        for (const id in response.infotags) {
+            const oldInfotag = response.infotags[id];
 
-            kinks.infotags[oldInfotag.id] = {
+            new_api.infotags[oldInfotag.id] = {
                 id:            oldInfotag.id,
                 name:          oldInfotag.name,
                 type:          oldInfotag.type,
                 validator:     oldInfotag.list,
                 search_field:  '',
                 allow_legacy:  true,
-                infotag_group: parseInt(oldInfotag.group_id, 10)
+                infotag_group: parseInt(oldInfotag.group_id, 10),
             };
         }
 
-        for (const id in fields.listitems) {
-            const oldListItem = fields.listitems[id];
+        for (const id in response.listitems) {
+            const oldListItem = response.listitems[id];
 
-            kinks.listItems[oldListItem.id] = {
+            new_api.listItems[oldListItem.id] = {
                 id:         oldListItem.id,
                 name:       oldListItem.name,
                 value:      oldListItem.value,
-                sort_order: oldListItem.id
+                sort_order: oldListItem.id,
             };
         }
 
-        for (const id in fields.infotag_groups) {
-            const oldGroup = fields.infotag_groups[id];
+        for (const id in response.infotag_groups) {
+            const oldGroup = response.infotag_groups[id];
 
-            kinks.infotagGroups[oldGroup.id] = {
+            new_api.infotagGroups[oldGroup.id] = {
                 id:          parseInt(oldGroup.id, 10),
                 name:        oldGroup.name,
                 description: oldGroup.description,
-                sort_order:  oldGroup.id
+                sort_order:  oldGroup.id,
             };
         }
 
-        Store.shared = kinks;
+        Store.shared = new_api;
     }
     catch(e) {
         Utils.ajaxError(e, 'Error loading character fields');

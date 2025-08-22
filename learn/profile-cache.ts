@@ -37,6 +37,9 @@ export interface CharacterMatchSummary {
     autoResponded?: boolean;
 }
 
+/**
+ * The "cache record" holds information about when the character was added to the cache. This information can be useful for deciding when to refresh a character profile or to remove them entirely.
+ */
 export interface CharacterCacheRecord {
     character: ComplexCharacter;
     lastFetched: Date;
@@ -147,10 +150,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     async registerMeta(name: string, meta: MetaRecord): Promise<void> {
         const record = await this.get(name);
 
-        if (!record) {
-            // coward's way out
-            return;
-        }
+        if (!record)
+            return; // coward's way out
 
         record.meta = meta;
 

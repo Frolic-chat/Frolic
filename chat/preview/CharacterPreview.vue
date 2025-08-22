@@ -280,14 +280,12 @@ export default class CharacterPreview extends Vue {
 
 
   load(characterName: string, force: boolean = false): void {
-    if (
-      (this.characterName === characterName)
-      && (!force)
-      && (this.match)
-      && (this.character)
-      && (this.ownCharacter)
-      && (this.ownCharacter.character.name === core.characters.ownProfile.character.name)
-    ) {
+    if (this.characterName === characterName
+    &&  !force
+    &&  this.match
+    &&  this.character
+    &&  this.ownCharacter && core.characters.ownProfile
+    &&  this.ownCharacter.character.name === core.characters.ownProfile.character.name) {
       this.updateOnlineStatus();
       this.updateAdStatus();
       return;

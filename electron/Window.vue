@@ -321,11 +321,7 @@
         }
 
         getAvatarImage(tab: Tab) {
-          if (tab.avatarUrl) {
-            return tab.avatarUrl;
-          }
-
-          return 'https://static.f-list.net/images/avatar/' + (tab.user || '').toLowerCase() + '.png';
+          return tab.avatarUrl || 'https://static.f-list.net/images/avatar/' + (tab.user || '').toLowerCase() + '.png';
         }
 
         /**

@@ -200,7 +200,7 @@
 
 
             webview.addEventListener('did-fail-load', e => {
-                if (e.errorCode !== -3) {
+                if (e.errorCode !== -3 && e.errorCode !== -2) {
                     // -3 is a weird error code, not sure why it occurs
                     this.setState('error');
                 }

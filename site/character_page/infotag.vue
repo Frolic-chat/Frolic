@@ -22,8 +22,10 @@
     export default class InfotagView extends Vue {
         @Prop({required: true})
         readonly infotag!: Infotag;
+
         @Prop({required: true})
         readonly data!: CharacterInfotag;
+
         @Prop({required: true})
         private readonly characterMatch!: MatchReport;
 
