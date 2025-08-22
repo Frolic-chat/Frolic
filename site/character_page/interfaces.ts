@@ -6,7 +6,7 @@ import {
  * Contains the kink/infotag translations.
  */
 export interface SharedStore {
-    shared: SharedDefinitions
+    shared?: SharedDefinitions
     authenticated: boolean
 }
 
@@ -15,7 +15,7 @@ export interface StoreMethods {
 
     characterBlock?(id: number, block: boolean, reason?: string): Promise<void>
     characterCustomKinkAdd(id: number, name: string, description: string, choice: KinkChoice): Promise<void>
-    characterData(name: string | undefined, id: number | undefined, skipEvent: boolean | undefined): Promise<Character>
+    characterData(name: string | undefined, store: SharedDefinitions | undefined, skipEvent: boolean | undefined): Promise<Character>
     characterDelete(id: number): Promise<void>
     characterDuplicate(id: number, name: string): Promise<void>
     characterFriends(id: number): Promise<FriendsByCharacter>
@@ -26,7 +26,12 @@ export interface StoreMethods {
     contactMethodIconUrl(name: string): string
     sendNoteUrl(character: CharacterInfo): string
 
-    fieldsGet(): Promise<void>
+    /**
+     * Populate mappings from the profile API.
+     *
+     * Creates mappings for listitems, kinks, kink_groups, infotags, and infotag_groups. They get put into Store.shared, but that's bad practice.
+     */
+    fieldsGet(store: SharedDefinitions | undefined): Promise<boolean>
 
     friendDissolve(friend: Friend): Promise<void>
     friendRequest(target: number, source: number): Promise<Friend | number>
@@ -105,7 +110,7 @@ export interface CharacterMemo {
 }
 
 /**
- * Character page API response, formatted bizarrely.
+ * Character page API response (including the public character page as `character`).
  */
 export interface Character {
     readonly is_self: boolean

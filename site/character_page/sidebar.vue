@@ -249,9 +249,12 @@
         }
 
         get contactMethods(): {id: number, value?: string}[] {
-            return Object.keys(Store.shared.infotags).map(x => Store.shared.infotags[x])
-                .filter(x => x.infotag_group === CONTACT_GROUP_ID && this.character.character.infotags[x.id] !== undefined)
-                .sort((a, b) => a.name < b.name ? -1 : 1);
+            return Store.shared
+                ? Object.keys(Store.shared.infotags)
+                    .map(x => Store.shared!.infotags[x])
+                    .filter(x => x.infotag_group === CONTACT_GROUP_ID && this.character.character.infotags[x.id] !== undefined)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                : [];
         }
 
         /**
@@ -259,7 +262,7 @@
          * @param id infotag Id dictated by server
          */
         getInfotag(id: number): Infotag {
-            return Store.shared.infotags[id];
+            return Store.shared!.infotags[id];
         }
 
         get authenticated(): boolean {
