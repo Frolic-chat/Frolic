@@ -2,7 +2,7 @@ import {Component} from 'vue';
 import {SharedStore, StoreMethods} from './interfaces';
 
 export let Store: SharedStore = {
-    shared: undefined!,
+    shared: undefined,
     authenticated: false
 };
 

@@ -80,7 +80,7 @@
 import { Component, Hook, Prop } from '@f-list/vue-ts';
 import Vue from 'vue';
 import core from '../core';
-import { methods } from '../../site/character_page/data_store';
+import { methods, Store } from '../../site/character_page/data_store';
 import {Character as ComplexCharacter} from '../../site/character_page/interfaces';
 import { Matcher, MatchReport, Score } from '../../learn/matcher';
 import { Character as CharacterStatus } from '../../fchat';
@@ -479,7 +479,7 @@ export default class CharacterPreview extends Vue {
         return cache.character;
       }
 
-      return methods.characterData(characterName, this.id, false);
+      return methods.characterData(characterName, Store.shared, false);
   }
 }
 </script>

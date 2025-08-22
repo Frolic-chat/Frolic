@@ -2,7 +2,7 @@ import Axios from 'axios';
 import Vue from 'vue';
 import Editor from '../bbcode/Editor.vue';
 import { BBCodeView } from '../bbcode/view';
-import {InlineDisplayMode} from '../interfaces';
+import { InlineDisplayMode, SharedDefinitions } from '../interfaces';
 import {StandardBBCodeParser} from '../bbcode/standard';
 import CharacterLink from '../components/character_link.vue';
 import CharacterSelect from '../components/character_select.vue';
@@ -17,7 +17,7 @@ import {
     Kink, KinkChoice, KinkGroup,
     ListItem,
 } from '../interfaces';
-import {registerMethod, Store} from '../site/character_page/data_store';
+import { registerMethod } from '../site/character_page/data_store';
 import {
     Character,
     Friend, FriendRequest, FriendsByCharacter,
@@ -52,12 +52,17 @@ const characterDataThroat = throat(2);
  * @param skipEvent (Default: false) Do not emit the `character-data` {@link EventBus | `EventBus`} event.
  * @returns
  */
-async function characterData(name: string | undefined, id: number = -1, skipEvent: boolean = false): Promise<Character> {
+async function characterData(name: string | undefined, store: SharedDefinitions | undefined, skipEvent: boolean = false): Promise<Character> {
     // console.log('CharacterDataquery', name);
-    return characterDataThroat(async() => executeCharacterData(name, id, skipEvent));
+    return characterDataThroat(async() => executeCharacterData(name, store, skipEvent));
 }
 
-async function executeCharacterData(name: string | undefined, _id: number = -1, skipEvent: boolean = false): Promise<Character> {
+async function executeCharacterData(name: string | undefined, store: SharedDefinitions | undefined, skipEvent: boolean = false): Promise<Character> {
+    if (!store) await fieldsGet(store);
+    if (!store)
+        throw ""; // unreachable, as fieldsGet throws if it fails.
+
+    // Uncaught?
     const data = await core.connection.queryApi<CharacterInfo & {
         is_self: boolean,
         badges: string[],
@@ -107,7 +112,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
 
     for(const key in data.infotags) {
         const characterInfotag = data.infotags[key];
-        const infotag = Store.shared.infotags[key];
+        const infotag = store.infotags[key];
         if(!infotag) continue;
         newInfotags[key] = infotag.type === 'list' ? {list: parseInt(characterInfotag, 10)} : {string: characterInfotag};
     }
@@ -152,8 +157,9 @@ function contactMethodIconUrl(name: string): string {
     return `${Utils.staticDomain}images/social/${name}.png`;
 }
 
-async function fieldsGet(): Promise<void> {
-    if (Store.shared !== undefined) return; //tslint:disable-line:strict-type-predicates
+async function fieldsGet(store: SharedDefinitions | undefined): Promise<boolean> {
+    if (store)
+        return true;
 
     try {
         const fields = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
@@ -229,7 +235,9 @@ async function fieldsGet(): Promise<void> {
             };
         }
 
-        Store.shared = kinks;
+        store = new_api;
+
+        return true;
     }
     catch(e) {
         Utils.ajaxError(e, 'Error loading character fields');
