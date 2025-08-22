@@ -1,5 +1,4 @@
-/*tslint:disable:max-line-length object-literal-sort-keys object-literal-key-quotes*/
-const strings: {[key: string]: string | undefined} = {
+const strings = {
     'action.resetZoom': 'Reset Zoom',
     'action.zoomIn': 'Zoom In',
     'action.zoomOut': 'Zoom Out',
@@ -366,7 +365,7 @@ Once this process has started, do not interrupt it or your logs will get corrupt
     'characterPreview.perfect': 'Unicorn',
     'characterPreview.yearsOld': '{0} years old ',
     'characterPreview.memo': 'Memo',
-    'characterPreview.status': 'Status',
+    'character.status': 'Status',
     'characterPreview.status2': '& Latest Ad',
     'characterPreview.messages': 'Latest Messages',
     'characterPreview.ad': 'Latest Ad',
@@ -734,13 +733,29 @@ Hold shift to refetch ALL eicons`,
     'phelper.mismatchHumansOnly': 'Your "humans-only" profile has a positive "furry" kink ({0}). If you are open to playing with anthros, consider updating your preference from "humans only" to "furs and humans"',
     'phelper.addSpeciesPref1': 'Add preferred species',
     'phelper.addSpeciesPref2': 'Specifying which anthro species you like (e.g. "equines", or "canines") in your kinks can improve your matches.',
-};
+} as const;
 
-export default function l(key: string, ...args: (string | number)[]): string {
+/**
+ * These types exist specifically to give auto-suggestion to the rest of the codebase. Since you can't actually stuff `string & {}` into the localization strings, we have to cast any `l()` argument to `keys` to avoid type complaints.
+ */
+export type keys = keyof typeof strings;
+type localizationKey = keys | string & {};
+
+/**
+ * Supposedly a localization database, but where's access to other languages?
+ *
+ * Make sure to add any new string to the {@link strings | localization db}.
+ * @param key Technically any string; but please use one of the auto-suggested keys. Using a key that doesn't exist causes a runtime error.
+ * @param args Arguments to fill in the `{0}`, `{1}`, etc. fields in the localized string.
+ * @returns A complete string
+ */
+export default function l(key: localizationKey, ...args: (string | number)[]): string {
     let i = args.length;
-    let str = strings[key];
-    if(str === undefined) {
-        if(process.env.NODE_ENV !== 'production') throw new Error(`String ${key} does not exist.`);
+    let str: string = strings[key as keys];
+    if (!str) {
+        if(process.env.NODE_ENV !== 'production')
+            throw new Error(`String ${key} does not exist.`);
+
         return '';
     }
     while(i-- > 0)
