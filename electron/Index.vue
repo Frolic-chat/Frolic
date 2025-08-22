@@ -158,7 +158,7 @@
     import {SimpleCharacter} from '../interfaces';
     // import { BetterSqliteStore } from '../learn/store/better-sqlite3';
     // import { Sqlite3Store } from '../learn/store/sqlite3';
-    import CharacterPage from '../site/character_page/character_page.vue';
+    import CharacterPage from '../site/character_page/character_sheet.vue';
     import WordDefinition from '../learn/dictionary/WordDefinition.vue';
     import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
     import {GeneralSettings} from './common';
