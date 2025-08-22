@@ -1,5 +1,5 @@
 <template>
-   <modal :buttons="false" ref="dialog" style="width:98%" dialogClass="">
+   <modal :buttons="false" ref="dialog" dialogClass="mw-100"><!-- style="width:98%" -->
         <template slot="title">
             <user :character="character" :reusable="true">{{character.name}}</user>{{ l('characterRelation.title') }}
         </template>
