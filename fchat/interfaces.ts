@@ -186,7 +186,7 @@ export namespace Character {
         readonly friendList: ReadonlyArray<string>
         readonly bookmarkList: ReadonlyArray<string>
 
-        readonly ownProfile: CharacterProfile;
+        readonly ownProfile?: CharacterProfile;
 
         validateCharacter(name: string): ValidatedCharacter;
         get(name: string): Character;
