@@ -295,15 +295,22 @@
                 filter: '.addTab'
             });
 
-            window.onbeforeunload = () => {
-                const isConnected = this.tabs.reduce((cur, tab) => cur || tab.user !== undefined, false);
+            window.onbeforeunload = e => {
+                const isConnected = this.tabs.some(tab => tab.user !== undefined);
 
-                if (process.env.NODE_ENV !== 'production' || !isConnected) {
+                // process.env.NODE_ENV !== 'production' ||
+                if (!isConnected) {
                     this.destroyAllTabs();
                     return;
                 }
 
-                if (!this.settings.closeToTray) {
+                if (this.settings.closeToTray) {
+                    e.preventDefault();
+                    browserWindow.hide();
+                    e.returnValue = false;
+                    return false;
+                }
+                else {
                     return setImmediate(() => {
                         if (confirm(l('chat.confirmLeave'))) {
                             this.destroyAllTabs();
@@ -311,9 +318,6 @@
                         }
                     });
                 }
-
-                browserWindow.hide();
-                return false;
             };
 
             this.isMaximized = browserWindow.isMaximized();
