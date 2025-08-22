@@ -8,14 +8,19 @@ import { EventBus } from '../chat/preview/event-bus';
 import l from '../chat/localize';
 
 class Character implements Interfaces.Character {
-    gender: Interfaces.Gender = 'None';
+    get gender() { return this.overrides.gender ?? this.overrides.genderInfotag }
+    set gender(g: Interfaces.Gender) { this.overrides.genderInfotag = g }
+
     status: Interfaces.Status = 'offline';
     statusText = '';
     isFriend = false;
     isBookmarked = false;
     isChatOp = false;
     isIgnored = false;
-    overrides: CharacterOverrides = {};
+    overrides: CharacterOverrides = {
+        genderInfotag: 'None',
+        // `avatar` as getter/setter. Check blacklist and if blacklisted use normal.
+    };
 
     constructor(public name: string) {
     }
@@ -23,8 +28,16 @@ class Character implements Interfaces.Character {
 
 export interface CharacterOverrides {
     avatarUrl?: string;
+    avatar?: string;
+    avatarBlacklisted?: boolean;
     gender?: Interfaces.Gender;
+    genderInfotag: Interfaces.Gender; // from profile
     status?: Interfaces.Status;
+    // Placeholders:
+    orientation?: null;
+    orientationInfotag?: null; // from profile
+    species?: null;
+    speciesInfotag?: null; // from profile
 }
 
 class State implements Interfaces.State {
