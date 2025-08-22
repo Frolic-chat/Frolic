@@ -13,6 +13,14 @@ export function characterImage(this: any | never, character: string): string {
     return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
 }
 
+export function characterGender(this: any | never, character: string | Character): Character.Gender | undefined {
+    const c = typeof character === 'string'
+        ? core.characters.get(character)
+        : character;
+
+    return c.overrides.gender ?? c.gender;
+}
+
 export function getByteLength(this: any | never, str: string): number {
     let byteLen = 0;
     for(let i = 0; i < str.length; i++) {
