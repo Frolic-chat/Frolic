@@ -194,14 +194,16 @@ export default class UserView extends Vue {
             return true;
     }
 
-    smartFilterIcon: string | undefined = '';
+    smartFilterIcon: string | undefined;
     getSmartFilterIcon(): UserView['smartFilterIcon'] {
-        if (core.state.settings.risingFilter.showFilterIcon && this.cache?.match.isFiltered && !(this.character.isFriend || this.character.isBookmarked)) {
-            return 'user-filter fas fa-filter';
+        try {
+            if (core.state.settings.risingFilter.showFilterIcon && this.cache?.match.isFiltered && !(this.character.isFriend || this.character.isBookmarked)) {
+                return 'user-filter fas fa-filter';
+            }
         }
-        else {
-            return;
-        }
+        catch {}
+
+        return;
     }
 
     userClass = '';
