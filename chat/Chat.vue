@@ -96,12 +96,15 @@
     export default class Chat extends Vue {
         @Prop({required: true})
         readonly ownCharacters!: SimpleCharacter[];
+
         @Prop({required: true})
         readonly defaultCharacter!: number;
-        //tslint:disable-next-line:strict-boolean-expressions
-        selectedCharacter = this.ownCharacters.find((x) => x.id === this.defaultCharacter) || this.ownCharacters[0];
+
+        selectedCharacter = this.ownCharacters.find(x => x.id === this.defaultCharacter) || this.ownCharacters[0];
+
         @Prop
         readonly version?: string;
+
         error = '';
         connecting = false;
         connected = false;

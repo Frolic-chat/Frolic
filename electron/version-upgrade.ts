@@ -27,8 +27,5 @@ export default function (start: string, end: string): string {
  * upgrades were applied. Otherwise, return `false`.
  */
 const routines: { [key: string]: () => boolean } = {
-    '0.7.8': () => {
-        log.debug('routines.0.7.8');
-        return true;
-    },
+
 }
