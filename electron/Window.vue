@@ -2,7 +2,7 @@
     <div style="display: flex;flex-direction:column;height:100%" :class="getThemeClass()" @auxclick.prevent>
         <div v-html="styling"></div>
         <div style="display:flex;align-items:stretch;border-bottom-width:1px" class="border-bottom" id="window-tabs">
-            <h4 style="padding:2px 0">🌻 Frolic!</h4>
+            <h4 style="padding:2px 0">🌼 Frolic!</h4>
             <div class="btn" :class="'btn-' + (hasUpdate ? 'info' : 'light')" @click="openMenu" id="settings">
                 <i :class="hasUpdate ? 'far fa-sun' : 'fa fa-cog'"></i>
             </div>
@@ -318,6 +318,24 @@
                         }
                     });
                 }
+
+                // This may be the recommended way to do this now, given deprecated returnValue and e.preventDefault not seeming to work reliably.
+                // var BrowserWindow = require('browser-window');
+                // var mainWindow = new BrowserWindow({ width: 850, height: 450 });
+
+                // mainWindow.on('minimize', e => {
+                //     e.preventDefault();
+                //     mainWindow.hide();
+                // });
+
+                // mainWindow.on('close', e => {
+                //     if(!application.isQuiting){
+                //         e.preventDefault();
+                //         mainWindow.hide();
+                //     }
+
+                //     return false;
+                // });
             };
 
             this.isMaximized = browserWindow.isMaximized();
