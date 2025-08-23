@@ -4,7 +4,7 @@
         <slot v-else slot="title" :option="selected">{{label}}</slot>
 
         <div style="padding:10px;">
-            <input v-model="filter" class="form-control" :placeholder="placeholder" @mousedown.stop/>
+            <input v-model="filter" class="form-control" :placeholder="placeholder" @click.stop @mousedown.stop/>
         </div>
         <div class="dropdown-items">
             <template v-if="multiple">
