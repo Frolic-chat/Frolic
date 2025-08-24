@@ -295,7 +295,7 @@
                 filter: '.addTab'
             });
 
-            window.onbeforeunload = e => {
+            window.onbeforeunload = (e: BeforeUnloadEvent) => { // Useless type for old webpack TS
                 const isConnected = this.tabs.some(tab => tab.user !== undefined);
 
                 // process.env.NODE_ENV !== 'production' ||
