@@ -3,8 +3,7 @@
         <div class="infotag-group col-sm-3" v-for="group in groups" :key="group.id" style="margin-top:5px">
             <div class="infotag-title">{{group.name}}</div>
             <hr>
-            <infotag :infotag="infotag" v-for="infotag in getInfotags(group.id)" :key="infotag.id" :characterMatch="characterMatch"
-                :data="character.character.infotags[infotag.id]"></infotag>
+            <infotag :infotag="infotag" v-for="infotag in getInfotags(group.id)" :key="infotag.id" :characterMatch="characterMatch" :data="character.character.infotags[infotag.id]" :definitions="definitions"></infotag>
         </div>
     </div>
 </template>
@@ -12,8 +11,7 @@
 <script lang="ts">
     import {Component, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
-    import {Infotag, InfotagGroup} from '../../interfaces';
-    import {Store} from './data_store';
+    import { Infotag, InfotagGroup, SharedDefinitions } from '../../interfaces';
     import InfotagView from './infotag.vue';
     import { MatchReport } from '../../learn/matcher';
     import {Character} from './interfaces';
@@ -28,14 +26,21 @@
         @Prop({required: true})
         readonly characterMatch!: MatchReport;
 
+        /**
+         * As long as the character page won't show based on the store not being loaded, we can rely on definitions being complete.
+         */
+        @Prop({ required: true })
+        readonly definitions!: SharedDefinitions;
+
 
         get groups(): {readonly [key: string]: Readonly<InfotagGroup>} {
-            return Store.shared.infotagGroups;
+            return this.definitions.infotagGroups;
         }
 
         getInfotags(group: number): Infotag[] {
-            return Object.keys(Store.shared.infotags).map((x) => Store.shared.infotags[x])
-                .filter((x) => x.infotag_group === group && this.character.character.infotags[x.id] !== undefined);
+            return Object.keys(this.definitions.infotags)
+                .map(x => this.definitions.infotags[x])
+                .filter(x => x.infotag_group === group && this.character.character.infotags[x.id]);
         }
     }
 </script>

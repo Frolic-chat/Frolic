@@ -11,7 +11,7 @@
             <div class="alert alert-info" v-show="posts.length === 0">No guestbook posts.</div>
             <guestbook-post :character="character" :post="post" :can-edit="canEdit" v-for="post in posts" :key="post.id"
                 @reload="getPage"></guestbook-post>
-            <div v-if="authenticated && !oldApi" class="form-horizontal">
+            <div v-if="!oldApi" class="form-horizontal">
                 <bbcode-editor v-model="newPost.message" :maxlength="5000" classes="form-control"></bbcode-editor>
                 <input type="checkbox" id="guestbookPostPrivate" v-model="newPost.privatePost"/>
                 <label class="control-label" for="guestbookPostPrivate">Private(only visible to owner)</label><br/>
@@ -30,7 +30,7 @@
     import {Component, Prop, Watch} from '@f-list/vue-ts';
     import Vue from 'vue';
     import * as Utils from '../utils';
-    import {methods, Store} from './data_store';
+    import { methods } from './data_store';
     import {Character, GuestbookPost, Guestbook} from './interfaces';
 
     import GuestbookPostView from './guestbook_post.vue';
@@ -48,7 +48,6 @@
 
         loading = true;
         error = '';
-        authenticated = Store.authenticated;
         posts: GuestbookPost[] = [];
         unapprovedOnly = false;
         page = 1;

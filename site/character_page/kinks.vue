@@ -5,7 +5,7 @@
                 <button class="btn btn-primary" @click="toggleExpandedCustomKinks" :disabled="loading">{{(expandedCustoms ? 'Collapse' : 'Expand')}} Custom Kinks</button>
             </div>
 
-            <div v-if="shared.authenticated" class="quick-compare-block form-inline">
+            <div v-if="definitions" class="quick-compare-block form-inline">
                 <character-select v-model="characterToCompare"></character-select>
                 <button class="btn btn-outline-secondary" @click="compareKinks()" :disabled="loading || !characterToCompare">
                     {{ compareButtonText }}
@@ -65,7 +65,7 @@
                 </div>
             </div>
         </div>
-        <context-menu v-if="shared.authenticated && !oldApi" prop-name="custom" ref="context-menu"></context-menu>
+        <context-menu v-if="definitions && !oldApi" prop-name="custom" ref="context-menu"></context-menu>
     </div>
 </template>
 
@@ -73,11 +73,11 @@
     import {Component, Prop, Watch, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../../chat/core';
-    import {Kink, KinkChoice, KinkGroup} from '../../interfaces';
+    import { Kink, KinkChoice, KinkGroup, SharedDefinitions } from '../../interfaces';
     import * as Utils from '../utils';
     import CopyCustomMenu from './copy_custom_menu.vue';
-    import {methods, Store} from './data_store';
-    import {Character, CharacterKink, DisplayKink} from './interfaces';
+    import { methods } from './data_store';
+    import { Character, CharacterKink, DisplayKink } from './interfaces';
     import KinkView from './kink.vue';
 
     @Component({
@@ -91,7 +91,12 @@
         @Prop({required: true})
         readonly autoExpandCustoms!: boolean;
 
-        shared = Store;
+        /**
+         * As long as the character page won't show based on the store not being loaded, we can rely on definitions being complete.
+         */
+        @Prop({ required: true })
+        readonly definitions!: SharedDefinitions;
+
         characterToCompare = Utils.settings.defaultCharacter;
         highlightGroup: number | undefined;
 
@@ -173,8 +178,8 @@
             this.highlighting = {};
             if(group === null) return;
             const toAssign: {[key: string]: boolean} = {};
-            for(const kinkId in Store.shared.kinks) {
-                const kink = Store.shared.kinks[kinkId];
+            for(const kinkId in this.definitions.kinks) {
+                const kink = this.definitions.kinks[kinkId];
                 if(kink.kink_group === group)
                     toAssign[kinkId] = true;
             }
@@ -206,7 +211,7 @@
         }
 
         get kinkGroups(): KinkGroup[] {
-            const groups = Store.shared.kinkGroups;
+            const groups = this.definitions.kinkGroups;
 
             // What is the point of filtering for undefined when the interface doesn't allow there to be any?
             return Object.values(groups)
@@ -221,7 +226,7 @@
         }
 
         get groupedKinks(): {[key in KinkChoice]: DisplayKink[]} {
-            const kinks = Store.shared.kinks;
+            const kinks = this.definitions.kinks;
             const characterKinks = this.character.character.kinks;
             const characterCustoms = this.character.character.customs;
             const displayCustoms: {[key: string]: DisplayKink | undefined} = {};
@@ -291,7 +296,8 @@
         }
 
         contextMenu(event: TouchEvent): void {
-            if(this.shared.authenticated && !this.oldApi) (<CopyCustomMenu>this.$refs['context-menu']).outerClick(event);
+            if (this.definitions && !this.oldApi)
+                (<CopyCustomMenu>this.$refs['context-menu']).outerClick(event);
         }
     }
 </script>

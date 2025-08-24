@@ -6,7 +6,7 @@
             <character-action-menu :character="character" @rename="showRename()" @delete="showDelete()"
                 @block="showBlock()"></character-action-menu>
 
-            <div v-if="authenticated" class="d-flex justify-content-between flex-wrap character-links-block">
+            <div class="d-flex justify-content-between flex-wrap character-links-block">
                 <template v-if="character.is_self">
                     <a :href="editUrl" class="edit-link"><i class="fa fa-fw fa-pencil-alt"></i>{{ l('profile.edit') }}</a>
                     <a @click="showDelete" class="delete-link"><i class="fa fa-fw fa-trash"></i>{{ l('profile.delete') }}</a>
@@ -31,7 +31,7 @@
                 </div>
             </div>
 
-            <a v-if="authenticated && !character.is_self" :href="noteUrl" class="character-page-note-link btn" style="padding:0 4px">
+            <a v-if="!character.is_self" :href="noteUrl" class="character-page-note-link btn" style="padding:0 4px">
                 <i class="far fa-envelope fa-fw"></i>{{ l('profile.sendNote') }}</a>
             <div v-if="character.character.online_chat" @click="showInChat()" class="character-page-online-chat">{{ l('profile.online') }}</div>
 
@@ -85,7 +85,7 @@
             <delete-dialog :character="character" ref="delete-dialog"></delete-dialog>
             <rename-dialog :character="character" ref="rename-dialog"></rename-dialog>
             <duplicate-dialog :character="character" ref="duplicate-dialog"></duplicate-dialog>
-            <report-dialog v-if="!oldApi && authenticated && !character.is_self" :character="character" ref="report-dialog"></report-dialog>
+            <report-dialog v-if="!oldApi && !character.is_self" :character="character" ref="report-dialog"></report-dialog>
             <friend-dialog :character="character" ref="friend-dialog"></friend-dialog>
             <block-dialog :character="character" ref="block-dialog"></block-dialog>
         </template>
@@ -96,15 +96,15 @@
     import {Component, Prop} from '@f-list/vue-ts';
     import Vue, {Component as VueComponent, ComponentOptions, CreateElement, VNode} from 'vue';
     import DateDisplay from '../../components/date_display.vue';
-    import {Infotag} from '../../interfaces';
+    import { SharedDefinitions } from '../../interfaces';
     import * as Utils from '../utils';
     import ContactMethodView from './contact_method.vue';
-    import {methods, registeredComponents, Store} from './data_store';
+    import { methods, registeredComponents } from './data_store';
     import DeleteDialog from './delete_dialog.vue';
     import DuplicateDialog from './duplicate_dialog.vue';
     import FriendDialog from './friend_dialog.vue';
     import InfotagView from './infotag.vue';
-    import {Character, CONTACT_GROUP_ID, SharedStore} from './interfaces';
+    import { Character, CONTACT_GROUP_ID } from './interfaces';
     import { MatchReport } from '../../learn/matcher';
     import MemoDialog from './memo_dialog.vue';
     import ReportDialog from './report_dialog.vue';
@@ -154,7 +154,12 @@
         @Prop({required: true})
         readonly characterMatch!: MatchReport;
 
-        readonly shared: SharedStore = Store;
+        /**
+         * As long as the character page won't show based on the store not being loaded, we can rely on definitions being complete.
+         */
+        @Prop({ required: true })
+        readonly definitions!: SharedDefinitions;
+
         readonly quickInfoIds: ReadonlyArray<number> = [1, 3, 2, 49, 9, 29, 15, 41, 25]; // Do not sort these.
         readonly avatarUrl = Utils.avatarURL;
 
@@ -248,25 +253,18 @@
             return methods.sendNoteUrl(this.character.character);
         }
 
-        get contactMethods(): {id: number, value?: string}[] {
-            return Store.shared
-                ? Object.keys(Store.shared.infotags)
-                    .map(x => Store.shared!.infotags[x])
+        get contactMethods() {
+            return Object.keys(this.definitions.infotags)
+                    .map(x => this.definitions.infotags[x])
                     .filter(x => x.infotag_group === CONTACT_GROUP_ID && this.character.character.infotags[x.id] !== undefined)
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                : [];
+                    .sort((a, b) => a.name.localeCompare(b.name));
         }
 
         /**
-         * Uncertain whether this can run where the Store is undefined.
          * @param id infotag Id dictated by server
          */
-        getInfotag(id: number): Infotag {
-            return Store.shared!.infotags[id];
-        }
-
-        get authenticated(): boolean {
-            return Store.authenticated;
+        getInfotag(id: number) {
+            return this.definitions.infotags[id];
         }
 
         memo(memo: object): void {

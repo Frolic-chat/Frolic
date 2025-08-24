@@ -28,6 +28,7 @@ import * as Utils from '../site/utils';
 import core from './core';
 import { EventBus } from './preview/event-bus';
 import * as FLIST from '../constants/flist';
+import { Store } from '../site/character_page/data_store';
 
 type ApiFields = {
     listItems:     { [key: string]: ListItem     }
@@ -56,19 +57,25 @@ const characterDataThroat = throat(2);
  *
  * All values are passed to {@link executeCharacterData | `executeCharacterData`}. `id` is unused.
  * @param name Character name
- * @param id (Default: -1) Unused
+ * @param definitions Custom kink definitions to use? Otherwise, {@link Store.shared} is used.
  * @param skipEvent (Default: false) Do not emit the `character-data` {@link EventBus | `EventBus`} event.
  * @returns
  */
-async function characterData(name: string | undefined, store: SharedDefinitions | undefined, skipEvent: boolean = false): Promise<Character> {
+async function characterData(name: string | undefined, definitions: SharedDefinitions | undefined = Store.shared, skipEvent: boolean = false): Promise<Character> {
     // console.log('CharacterDataquery', name);
-    return characterDataThroat(async() => executeCharacterData(name, store, skipEvent));
+    return characterDataThroat(async() => executeCharacterData(name, definitions, skipEvent));
 }
 
-async function executeCharacterData(name: string | undefined, store: SharedDefinitions | undefined, skipEvent: boolean = false): Promise<Character> {
-    if (!store) await fieldsGet(store);
-    if (!store)
-        throw ""; // unreachable, as fieldsGet throws if it fails.
+async function executeCharacterData(name: string | undefined, definitions: SharedDefinitions | undefined, skipEvent: boolean = false): Promise<Character> {
+    if (!definitions) {
+        if (!Store.shared)
+            await fieldsGet();
+
+        if (!Store.shared)
+            throw "";
+
+        definitions = Store.shared;
+    }
 
     // Uncaught?
     const data = await core.connection.queryApi<CharacterInfo & {
@@ -120,7 +127,7 @@ async function executeCharacterData(name: string | undefined, store: SharedDefin
 
     for(const key in data.infotags) {
         const characterInfotag = data.infotags[key];
-        const infotag = store.infotags[key];
+        const infotag = definitions.infotags[key];
         if(!infotag) continue;
         newInfotags[key] = infotag.type === 'list' ? {list: parseInt(characterInfotag, 10)} : {string: characterInfotag};
     }
@@ -165,9 +172,15 @@ function contactMethodIconUrl(name: string): string {
     return `${Utils.staticDomain}images/social/${name}.png`;
 }
 
-async function fieldsGet(store: SharedDefinitions | undefined): Promise<boolean> {
-    if (store)
-        return true;
+/**
+ * Fields do not change regularly so a basic cache is a perfectly fine way to do it.
+ *
+ * It would probably be better if this was some sort of class (random raw data management is bad design.)
+ * @returns The cached definitions, or new ones if they weren't cached yet.
+ */
+async function fieldsGet(): Promise<SharedDefinitions | undefined> {
+    if (Store.shared)
+        return Store.shared;
 
     try {
         const response = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
@@ -244,13 +257,13 @@ async function fieldsGet(store: SharedDefinitions | undefined): Promise<boolean>
             };
         }
 
-        store = new_api;
+        Store.shared = new_api;
 
-        return true;
+        return Store.shared;
     }
     catch(e) {
         Utils.ajaxError(e, 'Error loading character fields');
-        throw e;
+        return undefined;
     }
 }
 

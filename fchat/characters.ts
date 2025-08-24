@@ -1,5 +1,5 @@
 import core from '../chat/core';
-import { methods, Store } from '../site/character_page/data_store';
+import { methods } from '../site/character_page/data_store';
 import {decodeHTML} from './common';
 import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
@@ -154,9 +154,9 @@ class State implements Interfaces.State {
     }
 
     async resolveOwnProfile(): Promise<void> {
-        await methods.fieldsGet(Store.shared);
+        await methods.fieldsGet();
 
-        this.ownProfile = await methods.characterData(this.ownCharacter.name, Store.shared, false);
+        this.ownProfile = await methods.characterData(this.ownCharacter.name);
     }
 }
 
