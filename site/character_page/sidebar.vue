@@ -240,7 +240,8 @@
                 this.character.bookmarked = !this.character.bookmarked;
 
                 void core.cache.profileCache.register(this.character);
-            } catch(e) {
+            }
+            catch(e) {
                 Utils.ajaxError(e, 'Unable to change bookmark state.');
             }
         }
