@@ -15,6 +15,9 @@
     </div>
     <div class="col-md-4 col-lg-3 col-xl-2" v-if="!loading && character && character.character && characterMatch && selfCharacter">
         <sidebar :character="character" :characterMatch="characterMatch" @memo="memo" @bookmarked="bookmarked" :oldApi="oldApi"></sidebar>
+        <!-- template exclusively for typing, definitions already defined in profileIsReady -->
+        <template v-if="definitions">
+        </template>
     </div>
     <div v-if="profileIsReady" class="col-md-8 col-lg-9 col-xl-10 profile-body">
         <div id="characterView">
@@ -114,10 +117,10 @@ import { StandardBBCodeParser } from '../../bbcode/standard';
 import { BBCodeView} from '../../bbcode/view';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
 import * as Utils from '../utils';
-import { methods, Store } from './data_store';
+import { methods } from './data_store';
 import { Character as ChatCharacter } from '../../fchat';
-import { Character, CharacterGroup, Guestbook, SharedStore } from './interfaces';
-import { CharacterImage, SimpleCharacter } from '../../interfaces';
+import { Character, CharacterGroup, Guestbook } from './interfaces';
+import { Character as ProfilePage, CharacterImage, SimpleCharacter, SharedDefinitions } from '../../interfaces';
 
 import DateDisplay from '../../components/date_display.vue';
 import Tabs from '../../components/tabs';
@@ -165,9 +168,6 @@ export default class CharacterPage extends Vue {
     @Prop({ default: undefined })
     readonly name?: string;
 
-    @Prop({ required: true })
-    readonly authenticated!: boolean;
-
     @Prop()
     readonly oldApi: boolean = false;
 
@@ -175,8 +175,8 @@ export default class CharacterPage extends Vue {
     readonly imagePreview: boolean = false;
 
     l = l;
+    definitions?: SharedDefinitions;
 
-    shared: SharedStore = Store;
     character?: Character;
     chatCharacter?: ChatCharacter;
     loading = true;
@@ -196,6 +196,10 @@ export default class CharacterPage extends Vue {
 
     selfCharacter: Character | undefined;
     characterMatch: MatchReport | undefined;
+    async associateWithStore(): Promise<void> {
+        if (!this.definitions) // success is proxy for store existing.
+            this.definitions = await methods.fieldsGet();
+    }
 
     get showMatch() {
         return core.state.settings.risingAdScore;
@@ -212,12 +216,7 @@ export default class CharacterPage extends Vue {
     }
 
     get profileIsReady() {
-        return !this.loading && this.character && this.character.character && this.characterMatch && this.selfCharacter;
-    }
-
-    @Hook('beforeMount')
-    beforeMount(): void {
-        this.shared.authenticated = this.authenticated;
+        return !this.loading && this.character && this.character.character && this.definitions && this.matchReport && this.selfCharacter;
     }
 
     @Hook('mounted')
@@ -275,30 +274,32 @@ export default class CharacterPage extends Vue {
         this.refreshing = false;
         this.error = '';
 
-        if (!this.name?.length)
-            return;
-
+        // Initialization:
         try {
-            const due: Promise<void>[] = [];
-
-            await methods.fieldsGet(Store.shared);
-
-            if ((!this.selfCharacter && Utils.settings.defaultCharacter >= 0)
-            ||  this.selfCharacter?.character.name !== core.characters.ownCharacter.name) {
-                due.push(this.loadSelfCharacter());
-            }
-
-            if (mustLoad || !this.character)
-                due.push(this._getCharacter(skipCache));
-
-            await Promise.all(due);
+            await this.associateWithStore();
         }
         catch (e) {
             console.error(e);
-
             this.error = Utils.isJSONError(e) ? <string>e.response.data.error : (<Error>e).message;
             Utils.ajaxError(e, 'Failed to load character information.');
+
+            return;
         }
+
+        if (!this.name?.length)
+            return;
+
+        const due: Promise<void>[] = [];
+
+        if ((!this.selfCharacter && Utils.settings.defaultCharacter >= 0)
+        ||  this.selfCharacter?.character.name !== core.characters.ownCharacter.name) {
+            due.push(this.loadSelfCharacter());
+        }
+
+        if (mustLoad || !this.character)
+            due.push(this.getCharacter(this.name, skipCache));
+
+        await Promise.all(due);
 
         this.loading = false;
     }

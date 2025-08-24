@@ -5,7 +5,8 @@ const ulslog = Logger.scope('UserListSorter');
 
 import anyAscii from 'any-ascii';
 
-import { Store } from '../site/character_page/data_store';
+import { Store, methods as characterPageMethods } from '../site/character_page/data_store';
+import { SharedDefinitions } from '../interfaces';
 
 import { Settings } from '../chat/interfaces';
 import { EventBus } from '../chat/preview/event-bus';
@@ -226,6 +227,8 @@ export class Matcher {
 
     private static settings: Settings | null = null;
 
+    private definitions?: SharedDefinitions;
+
     // Sadly, this method doesn't receive the settings object by reference, so it needs EventBus for 'configuration-update' to receive the updated values, instead of just once on load.
     static importSettings(settings: Settings): void {
         Matcher.settings = settings;
@@ -238,6 +241,11 @@ export class Matcher {
 
         this.yourAnalysis  = yourAnalysis  || new CharacterAnalysis(you);
         this.theirAnalysis = theirAnalysis || new CharacterAnalysis(them);
+
+        if (Store.shared)
+            this.definitions = Store.shared
+        else
+            setImmediate(async () => this.definitions = await characterPageMethods.fieldsGet());
     }
 
     static generateReport(you: Character, them: Character): MatchReport {
@@ -1171,6 +1179,9 @@ export class Matcher {
 
 
     private resolveKinkBucketScore(bucket: 'all' | 'favorite' | 'yes' | 'maybe' | 'no' | 'positive' | 'negative'): KinkBucketScore {
+        if (!this.definitions)
+            setImmediate(async () => this.definitions = await characterPageMethods.fieldsGet());
+
         const yourKinks = Matcher.getAllStandardKinks(this.you);
         const theirKinks = Matcher.getAllStandardKinks(this.them);
 
@@ -1184,7 +1195,7 @@ export class Matcher {
                     : yourKinkId;
 
                 const isExcluded = yourKinkId in kinkComparisonExclusions
-                    || Store.shared.kinks[yourKinkId] && Store.shared.kinks[yourKinkId].kink_group in kinkComparisonExclusionGroups;
+                    || this.definitions?.kinks[yourKinkId] && this.definitions.kinks[yourKinkId].kink_group in kinkComparisonExclusionGroups;
 
                 const isBucketMatch = yourKinkValue === bucket
                     || bucket === 'all'

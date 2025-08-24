@@ -56,7 +56,7 @@ export default class ProfileAnalysis extends Vue {
     this.analyzing = true;
     this.recommendations = [];
 
-    const char = await methods.characterData(profile.character.name, profile.character.id, true);
+    const char = await methods.characterData(profile.character.name, undefined, true);
     const matcher = new CharacterAnalysis(char.character);
     const analyzer = new ProfileRecommendationAnalyzer(matcher);
 

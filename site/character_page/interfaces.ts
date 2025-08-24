@@ -4,7 +4,6 @@ import {
 
 export interface SharedStore {
     shared?: SharedDefinitions
-    authenticated: boolean
 }
 
 export interface StoreMethods {
@@ -12,7 +11,19 @@ export interface StoreMethods {
 
     characterBlock?(id: number, block: boolean, reason?: string): Promise<void>
     characterCustomKinkAdd(id: number, name: string, description: string, choice: KinkChoice): Promise<void>
-    characterData(name: string | undefined, store: SharedDefinitions | undefined, skipEvent: boolean | undefined): Promise<Character>
+
+    /**
+     * This is the, "I need the data returned right now" version of `CacheManager.addProfile`. Where that function adds the profile fetching to a queue (which calls characterData then adds the character profile to the profile cache), this function directly returns the character profile.
+     *
+     * All values are passed to `executeCharacterData`.
+     * @param name Character name
+     * @param definitions Custom kink definitions to use? Otherwise, {@link Store.shared} is used.
+     * @param skipEvent (Default: false) Do not emit the `character-data` {@link EventBus | `EventBus`} event.
+     * @returns
+     */
+    characterData(name: string): Promise<Character>;
+    characterData(name: string, store: SharedDefinitions | undefined, skipEvent?: boolean): Promise<Character>;
+    characterData(name: string | undefined, store?: SharedDefinitions | undefined, skipEvent?: boolean): Promise<Character>
     characterDelete(id: number): Promise<void>
     characterDuplicate(id: number, name: string): Promise<void>
     characterFriends(id: number): Promise<FriendsByCharacter>
@@ -28,7 +39,7 @@ export interface StoreMethods {
      *
      * Creates mappings for listitems, kinks, kink_groups, infotags, and infotag_groups. They get put into Store.shared, but that's bad practice.
      */
-    fieldsGet(store: SharedDefinitions | undefined): Promise<boolean>
+    fieldsGet(): Promise<SharedDefinitions | undefined>
 
     friendDissolve(friend: Friend): Promise<void>
     friendRequest(target: number, source: number): Promise<Friend | number>

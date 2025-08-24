@@ -10,9 +10,8 @@
     import {Component, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../../chat/core';
-    import {CharacterInfotag, Infotag, ListItem} from '../../interfaces';
+    import { CharacterInfotag, Infotag, ListItem, SharedDefinitions } from '../../interfaces';
     import {formatContactLink, formatContactValue} from './contact_utils';
-    import {Store} from './data_store';
     import {CONTACT_GROUP_ID} from './interfaces';
     import { MatchReport } from '../../learn/matcher';
     import { CssClassMap } from './match-report.vue';
@@ -26,6 +25,12 @@
         readonly data!: CharacterInfotag;
         @Prop({required: true})
         private readonly characterMatch!: MatchReport;
+
+        /**
+         * As long as the character page won't show based on the store not being loaded, we can rely on definitions being complete.
+         */
+        @Prop({ required: true })
+        readonly definitions!: SharedDefinitions;
 
 
         readonly contactGroupId = CONTACT_GROUP_ID;
@@ -83,7 +88,7 @@
                         return this.data.string !== undefined ? this.data.string : '';
                     return this.data.number!.toPrecision();
             }
-            const listitem = <ListItem | undefined>Store.shared.listItems[this.data.list!];
+            const listitem = <ListItem | undefined>this.definitions.listItems[this.data.list!];
             if(typeof listitem === 'undefined')
                 return '';
             return listitem.value;

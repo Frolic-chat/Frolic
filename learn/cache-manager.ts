@@ -128,7 +128,7 @@ export class CacheManager {
         try {
             await methods.fieldsGet();
 
-            const c = await methods.characterData(name, -1, true);
+            const c = await methods.characterData(name, undefined, true);
             const r = await this.profileCache.register(c);
 
             this.updateAdScoringForProfile(c, r.match.matchScore, r.match.isFiltered);
