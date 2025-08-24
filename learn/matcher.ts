@@ -1229,10 +1229,9 @@ export class Matcher {
 
         result.weighted = result.count === 0 || Math.abs(result.score) < 1
             ? 0
-            : Math.log(result.total) * Math.log(Math.abs(result.score)) * Math.sign(result.score)
+            : Math.log(result.total) * Math.log(Math.abs(result.score)) * Math.sign(result.score);
                 // (Math.log(result.count) / Math.log(kinkMatchWeights.logBase)) // log 8 base
                 // * (result.score / result.count)
-        ;
 
         return result;
     }

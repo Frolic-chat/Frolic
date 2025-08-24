@@ -2,7 +2,6 @@
     <div id="character-page-sidebar" class="card bg-light">
         <div class="card-body">
             <img :src="getAvatarUrl()" class="character-avatar" style="width: 100%; height: auto;">
-
             <div v-if="character.character.title" class="character-title">{{ character.character.title }}</div>
             <character-action-menu :character="character" @rename="showRename()" @delete="showDelete()"
                 @block="showBlock()"></character-action-menu>
@@ -165,9 +164,9 @@
         readonly avatarUrl = Utils.avatarURL;
 
         getAvatarUrl(): string {
-          const onlineCharacter = core.characters.get(this.character.character.name);
+            const onlineCharacter = core.characters.get(this.character.character.name);
 
-        return onlineCharacter?.overrides.avatarUrl ?? Utils.avatarURL(this.character.character.name);
+            return onlineCharacter?.overrides.avatarUrl ?? Utils.avatarURL(this.character.character.name);
         }
 
         badgeClass(badgeName: string): string {
@@ -235,9 +234,13 @@
 
         async toggleBookmark(): Promise<void> {
             try {
+                // just calls queryApi
                 await methods.bookmarkUpdate(this.character.character.id, !this.character.bookmarked);
+
                 this.character.bookmarked = !this.character.bookmarked;
-            } catch(e) {
+                void core.cache.profileCache.register(this.character);
+            }
+            catch(e) {
                 Utils.ajaxError(e, 'Unable to change bookmark state.');
             }
         }

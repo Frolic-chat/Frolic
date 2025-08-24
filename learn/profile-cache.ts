@@ -37,6 +37,9 @@ export interface CharacterMatchSummary {
     autoResponded?: boolean;
 }
 
+/**
+ * The "cache record" holds information about when the character was added to the cache. This information can be useful for deciding when to refresh a character profile or to remove them entirely.
+ */
 export interface CharacterCacheRecord {
     character: ComplexCharacter;
     lastFetched: Date;

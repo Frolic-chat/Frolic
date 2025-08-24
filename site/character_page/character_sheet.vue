@@ -13,10 +13,10 @@
         </div>
         <div class="alert alert-danger" v-show="error">{{error}}</div>
     </div>
-    <div class="col-md-4 col-lg-3 col-xl-2" v-if="!loading && character && character.character && characterMatch && selfCharacter">
-        <sidebar :character="character" :characterMatch="characterMatch" @memo="memo" @bookmarked="bookmarked" :oldApi="oldApi"></sidebar>
+    <div class="col-md-4 col-lg-3 col-xl-2" v-if="profileIsReady">
         <!-- template exclusively for typing, definitions already defined in profileIsReady -->
         <template v-if="definitions">
+            <sidebar :character="character" :characterMatch="matchReport" :definitions="definitions" @memo="memo" :oldApi="oldApi"></sidebar>
         </template>
     </div>
     <div v-if="profileIsReady" class="col-md-8 col-lg-9 col-xl-10 profile-body">
@@ -36,14 +36,14 @@
                     {{ l('characterSheet.globalBlock') }}
                     <br/> {{ character.block_reason }}
                 </div>
-                <!-- Legacy style a && a.b because no ts in templates :) -->
+                <!-- Legacy style a && a.b because no ?. in templates :) -->
                 <div v-if="character.memo && character.memo.memo" id="headerCharacterMemo" class="alert alert-info">
                     Memo: {{ character.memo.memo }}
                 </div>
                 <div v-if="showStatus" class="card bg-light alert-emulator">
                     <div class="card-body">
                         <h3 class="card-title">
-                            {{ l('characterSheet.status') }} {{  }}
+                            {{ l('characterSheet.status') }}
                         </h3>
                         <bbcode-status :text="statusText" class="status-text"></bbcode-status>
                     </div>
@@ -63,7 +63,7 @@
                     <div class="card-body">
                         <div class="tab-content">
                             <div role="tabpanel" v-show="tab === '0'" id="overview">
-                                <match-report :characterMatch="characterMatch" v-if="showMatch"></match-report>
+                                <match-report :characterMatch="matchReport" v-if="showMatch"></match-report>
 
                                 <div style="margin-bottom:10px" class="character-description">
                                     <bbcode :text="character.character.description"></bbcode>
@@ -72,7 +72,7 @@
                                 <character-kinks :character="character" :oldApi="oldApi" ref="tab0" :autoExpandCustoms="autoExpandCustoms"></character-kinks>
                             </div>
                             <div role="tabpanel" v-show="tab === '1'" id="infotags">
-                                <character-infotags :character="character" ref="tab1" :characterMatch="characterMatch"></character-infotags>
+                                <character-infotags :character="character" ref="tab1" :characterMatch="matchReport"></character-infotags>
                             </div>
                             <div role="tabpanel" v-show="tab === '2'" v-if="!oldApi">
                                 <character-groups :character="character" ref="tab2"></character-groups>
@@ -177,8 +177,6 @@ export default class CharacterPage extends Vue {
     l = l;
     definitions?: SharedDefinitions;
 
-    character?: Character;
-    chatCharacter?: ChatCharacter;
     loading = true;
     refreshing = false;
     error = '';
@@ -195,7 +193,10 @@ export default class CharacterPage extends Vue {
     images: CharacterImage[] | null = null;
 
     selfCharacter: Character | undefined;
-    characterMatch: MatchReport | undefined;
+    character:     Character | undefined;
+    chatProperties: ChatCharacter | undefined;
+    matchReport: MatchReport | undefined;
+
     async associateWithStore(): Promise<void> {
         if (!this.definitions) // success is proxy for store existing.
             this.definitions = await methods.fieldsGet();
@@ -206,11 +207,11 @@ export default class CharacterPage extends Vue {
     }
 
     get statusText() {
-        return this.chatCharacter?.statusText;
+        return this.chatProperties?.statusText;
     }
 
     get showStatus() {
-        return this.chatCharacter?.statusText
+        return this.chatProperties?.statusText
             ? core.state.settings.showStatusInProfile
             : false;
     }
@@ -334,18 +335,16 @@ export default class CharacterPage extends Vue {
     }
 
     async updateFriends(): Promise<void> {
-        try {
-            if (
-                (!this.character)
-                || (!this.character.is_self) && (!this.character.settings.show_friends)
-            ) {
-                this.friends = null;
-                return;
-            }
+        if (!this.character || !this.character.is_self && !this.character.settings.show_friends) {
+            this.friends = null;
+            return;
+        }
 
+        try {
             this.friends = await methods.friendsGet(this.character.character.id);
-        } catch (err) {
-            console.error('Update friends', err);
+        }
+        catch (e) {
+            console.error('Update friends', e);
             this.friends = null;
         }
     }
@@ -361,8 +360,9 @@ export default class CharacterPage extends Vue {
                 log.debug('updateImages.noCharacters');
                 this.images = null;
             }
-        } catch (err) {
-            console.error('updateImages.error', err);
+        }
+        catch (e) {
+            console.error('updateImages.error', e);
             this.images = null;
         }
     }
@@ -370,14 +370,12 @@ export default class CharacterPage extends Vue {
     async updateMeta(name: string): Promise<void> {
         log.debug('updateMeta.start', name);
 
-        await Promise.all(
-            [
-                this.updateImages(),
-                this.updateGuestbook(),
-                this.updateFriends(),
-                this.updateGroups()
-            ]
-        );
+        await Promise.all([
+            this.updateImages(),
+            this.updateGuestbook(),
+            this.updateFriends(),
+            this.updateGroups()
+        ]);
 
         log.debug('updateMeta.updatesFinished', name);
 
@@ -398,23 +396,11 @@ export default class CharacterPage extends Vue {
         void core.cache.profileCache.register(this.character!);
     }
 
-    bookmarked(state: boolean): void {
-        Vue.set(this.character!, 'bookmarked', state);
-
-        void core.cache.profileCache.register(this.character!);
-    }
-
     protected async loadSelfCharacter(): Promise<void> {
-        // console.log('SELF');
-
-        // const ownChar = core.characters.ownCharacter;
-
-        // this.selfCharacter = await methods.characterData(ownChar.name, -1);
         this.selfCharacter = core.characters.ownProfile;
 
-        // console.log('SELF LOADED');
-
-        this.updateMatches();
+        if (this.selfCharacter && this.character)
+            this.updateMatches(this.selfCharacter.character, this.character.character);
     }
 
     private async fetchCharacterCache(): Promise<CharacterCacheRecord | null> {
@@ -425,8 +411,8 @@ export default class CharacterPage extends Vue {
         return await core.cache.profileCache.get(this.name);
     }
 
-    private async _getCharacter(skipCache: boolean = false): Promise<void> {
-        log.debug('profile.getCharacter', { name: this.name } );
+    private async getCharacter(name: string, skipCache: boolean = false): Promise<void> {
+        log.debug('profile.getCharacter', { name } );
 
         this.character = undefined;
         this.friends = null;
@@ -434,7 +420,7 @@ export default class CharacterPage extends Vue {
         this.guestbook = null;
         this.images = null;
 
-        if (!this.name) {
+        if (!name) {
             log.debug('profile.getCharacter.noName');
             return;
         }
@@ -443,11 +429,9 @@ export default class CharacterPage extends Vue {
 
         this.character = cache && !skipCache
             ? cache.character
-            : await methods.characterData(this.name, undefined, undefined);
+            : await methods.characterData(name, undefined, undefined);
 
         bodyParser.inlines = this.character.character.inlines;
-
-        this.chatCharacter = core.characters.get(this.name);
 
         if (cache?.meta) {
             this.guestbook = cache.meta.guestbook;
@@ -463,19 +447,20 @@ export default class CharacterPage extends Vue {
             // Shouldn't this be where we decide to `refreshCharacter`?
         }
         else {
-            log.debug('profile._getCharacter', {
+            log.debug('profile.getCharacter', {
                 timestamp: cache?.meta?.lastMetaFetched,
                 diff: Date.now() - (cache?.meta?.lastMetaFetched?.getTime() || 0)
             });
 
-            // No await on purpose:
-            // tslint:disable-next-line no-floating-promises
-            this.updateMeta(this.name)
-                .catch(err => log.error('profile._getCharacter.updateMeta.error', err));
+            void this.updateMeta(name)
+                .catch(err => log.error('profile.getCharacter.updateMeta.error', err));
         }
 
+        this.updateChatProperties(name);
+
         // console.log('LoadChar', this.name, this.character);
-        this.updateMatches();
+        if (this.selfCharacter && this.character)
+            this.updateMatches(this.selfCharacter.character, this.character.character);
 
         // old profile cache, let's refresh
         if (cache?.lastFetched) {
@@ -520,24 +505,22 @@ export default class CharacterPage extends Vue {
 
             this.character = character;
 
-            this.updateMatches();
+            if (this.selfCharacter)
+                this.updateMatches(this.selfCharacter.character, this.character.character);
 
-            // No awaits on these on purpose:
-            // tslint:disable-next-line no-floating-promises
-            this.updateMeta(this.name);
+            void this.updateMeta(this.name);
         }
         finally {
             this.refreshing = false;
         }
     }
 
-    private updateMatches(): void {
-        if (!this.selfCharacter || !this.character)
-            return;
+    private updateMatches(me: ProfilePage, them: ProfilePage): void {
+        this.matchReport = Matcher.identifyBestMatchReport(me, them);
+    }
 
-        this.characterMatch = Matcher.identifyBestMatchReport(this.selfCharacter.character, this.character.character);
-
-        // console.log('Match', this.selfCharacter.character.name, this.character.character.name, this.characterMatch);
+    private updateChatProperties(name: string) {
+        this.chatProperties = core.characters.get(name);
     }
 }
 </script>
