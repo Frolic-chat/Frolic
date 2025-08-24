@@ -51,7 +51,7 @@ import { isImportantToChannel } from './conversations';
 import l from './localize';
 import Sidebar from './Sidebar.vue';
 import UserView from './UserView.vue';
-import characterPage from '../site/character_page/character_page.vue';
+import characterPage from '../site/character_page/character_sheet.vue';
 import { profileLink } from './common';
 
 import { UserListSorter } from '../learn/matcher';
