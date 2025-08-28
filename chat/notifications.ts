@@ -3,7 +3,7 @@
 import core from './core';
 import {Conversation, Notifications as Interface} from './interfaces';
 
-const codecs: {[key: string]: string} = {mpeg: 'mp3'};
+const codecs = { mpeg: 'mp3' } as const;
 
 export default class Notifications implements Interface {
     isInBackground = false;
@@ -28,11 +28,10 @@ export default class Notifications implements Interface {
         }
     }
 
-    getOptions(conversation: Conversation, body: string, icon: string):
-        NotificationOptions & {badge: string, silent: boolean, renotify: boolean} {
+    getOptions(conversation: Conversation, body: string, icon: string): NotificationOptions & { renotify: boolean } {
 
         //tslint:disable-next-line:no-require-imports no-unsafe-any
-        const badge = <string>require(`./assets/ic_notification.png`).default;
+        const badge = <string>require('../electron/build/blossom.png').default;
 
         return {
             body, icon: core.state.settings.showAvatars ? icon : undefined, badge, silent: true,  data: {key: conversation.key},
@@ -57,12 +56,14 @@ export default class Notifications implements Interface {
             const audio = document.createElement('audio');
             audio.preload = 'auto';
             audio.id = id;
-            for(const name in codecs) {
+
+            Object.entries(codecs).forEach(([ codec, format ]) => {
                 const src = document.createElement('source');
-                src.type = `audio/${name}`;
-                src.src = <string>require(`./assets/${sound}.${codecs[name]}`).default; // tslint:disable-line: no-unsafe-any
+                src.type = `audio/${codec}`;
+                src.src = <string>require(`./assets/${sound}.${format}`);
                 audio.appendChild(src);
-            }
+            });
+
             document.body.appendChild(audio);
             audio.volume = 0;
             audio.muted = true;

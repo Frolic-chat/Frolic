@@ -8,9 +8,14 @@ const CopyPlugin = require('copy-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const mainConfig = {
-    entry: [path.join(__dirname, 'main.ts'), path.join(__dirname, 'package.json')],
+    entry: [
+        path.join(__dirname, 'main.ts'),
+        path.join(__dirname, 'package.json'),
+        path.join(__dirname, 'build', 'tray@2x.png'),
+        path.join(__dirname, 'build', 'tray-badge@2x.png'),
+    ],
     output: {
-        path: __dirname + '/app',
+        path: path.join(__dirname, 'app'),
         filename: 'main.js'
     },
     context: __dirname,
@@ -21,15 +26,29 @@ const mainConfig = {
                 test: /\.ts$/,
                 loader: 'ts-loader',
                 options: {
-                    configFile: __dirname + '/tsconfig-main.json',
-                    transpileOnly: true
-                }
+                    configFile: path.join(__dirname, 'tsconfig-main.json'),
+                    transpileOnly: true,
+                },
             },
-            {test: path.join(__dirname, 'package.json'), loader: 'file-loader', options: {name: 'package.json'}, type: 'javascript/auto'},
-            {test: /\.html$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
-            {test: /\.raw\.js$/, loader: 'raw-loader'},
-            {test: /(badge|ic_notification|icon|tray.*)\.(png|ico)$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
-            {test: /lotus\d+\.(png|ico)$/, loader: 'file-loader', options: {name: 'icons/[name].[ext]'}}
+            {
+                test: path.join(__dirname, 'package.json'),
+                type: 'asset/resource',
+                generator: { filename: '[base]' },
+            },
+            {
+                test: /\.html$/,
+                type: 'asset/resource',
+                generator: { filename: '[base]' },
+            },
+            {
+                test: /\.raw\.js$/,
+                loader: 'raw-loader',
+            },
+            {
+                test: /(badge|icon|tray)?(@2x)?\.(png|ico)$/,
+                type: 'asset/resource',
+                generator: { filename: 'system/[base]' },
+            },
         ]
     },
     node: {
@@ -39,7 +58,7 @@ const mainConfig = {
     plugins: [
         new ForkTsCheckerWebpackPlugin({
             async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
+            tslint: path.join(__dirname, '..', 'tslint.json'),
             tsconfig: './tsconfig-main.json',
             ignoreLintWarnings: true,
         })
@@ -56,9 +75,18 @@ const mainConfig = {
 
 const rendererConfig = {
     entry: {
-        chat: [path.join(__dirname, 'chat.ts'), path.join(__dirname, 'index.html')],
-        window: [path.join(__dirname, 'window.ts'), path.join(__dirname, 'window.html'), path.join(__dirname, 'build', 'tray@2x.png')],
-        browser_option: [path.join(__dirname, 'browser_option.ts'), path.join(__dirname, 'browser_option.html'), path.join(__dirname, 'build', 'tray@2x.png')]
+        chat: [
+            path.join(__dirname, 'chat.ts'),
+            path.join(__dirname, 'index.html'),
+        ],
+        window: [
+            path.join(__dirname, 'window.ts'),
+            path.join(__dirname, 'window.html'),
+        ],
+        browser_option: [
+            path.join(__dirname, 'browser_option.ts'),
+            path.join(__dirname, 'browser_option.html'),
+        ],
     },
     output: {
         path: __dirname + '/app',
@@ -83,17 +111,71 @@ const rendererConfig = {
                 loader: 'ts-loader',
                 options: {
                     appendTsSuffixTo: [/\.vue$/],
-                    configFile: __dirname + '/tsconfig-renderer.json',
+                    configFile: path.join(__dirname, 'tsconfig-renderer.json'),
                     transpileOnly: true,
                     getCustomTransformers: () => ({before: [vueTransformer]})
                 }
             },
-            {test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
-            {test: /\.(woff2?)$/, loader: 'file-loader'},
-            {test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
-            {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
-            {test: /\.mp3$/, loader: 'file-loader', options: {name: 'sounds/[name].[ext]'}},
-            {test: /\.(png|ico|html)$/, loader: 'file-loader', options: {name: '[name].[ext]'}},
+            //{test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
+            {
+                test: /\.woff2?$/,
+                loader: 'file-loader',
+                options: {
+                    outputPath: 'assets/fonts',
+                    name: '[name].[ext]',
+                },
+            },
+            // {
+            //     test: /\.woff2?$/,
+            //     type: 'asset/resource',
+            //     generator: { filename: 'assets/fonts/[base]' },
+            // },
+            {
+                test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+                loader: 'file-loader',
+                options: {
+                    outputPath: 'assets/fonts',
+                    name: '[name].[ext]',
+                },
+            },
+            // {
+            //     test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+            //     type: 'asset/resource',
+            //     generator: { filename: 'assets/fonts/[base]' },
+            // },
+            {
+                test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+                type: 'asset/resource',
+                generator: { filename: 'assets/[base]' },
+            },
+            {
+                test: /\.mp3$/,
+                type: 'asset/resource',
+                generator: { filename: 'assets/sounds/[base]' },
+            },
+            {
+                test: /blossom\.png$/,
+                loader: 'file-loader',
+                options: {
+                    outputPath: 'system',
+                    name: '[name].[ext]'
+                },
+            },
+            // {
+            //     test: /(ic_notification|tray(@2x)?)\.(png|ico)$/,
+            //     type: 'asset/resource',
+            //     generator: { filename: 'system/[base]' },
+            // },
+            {
+                test: /\.html$/,
+                loader: 'file-loader',
+                options: { name: '[name].[ext]' }
+            },
+            // {
+            //     test: /\.html$/,
+            //     type: 'asset/resource',
+            //     generator: { filename: '[base]' },
+            // },
             {
                 test: /\.vue\.scss/,
                 // loader: ['vue-style-loader', {loader: 'css-loader', options: {esModule: false}},'sass-loader']
@@ -119,7 +201,7 @@ const rendererConfig = {
                     {loader: 'css-loader', options: {esModule: false}}
                 ]
             },
-            {test: /\.raw\.js$/, loader: 'raw-loader'}
+            {test: /\.raw\.js$/, loader: 'raw-loader'},
         ]
     },
     node: {
@@ -140,18 +222,13 @@ const rendererConfig = {
                 patterns: [
                     {
                         from: path.resolve(__dirname, '..', 'chat', 'preview', 'assets', '**', '*').replace(/\\/g, '/'),
-                        to: path.join('preview', 'assets'),
+                        to: path.join('assets', 'preview'),
                         context: path.resolve(__dirname, '..', 'chat', 'preview', 'assets')
                     },
                     {
                         from: path.resolve(__dirname, '..', 'assets', '**', '*').replace(/\\/g, '/'),
                         to: path.join('assets'),
                         context: path.resolve(__dirname, '..', 'assets')
-                    },
-                    {
-                        from: path.resolve(__dirname, 'build', 'icons', '*').replace(/\\/g, '/'),
-                        to: path.join('icons'),
-                        context: path.resolve(__dirname, 'build', 'icons')
                     }
                 ]
             }
@@ -172,7 +249,7 @@ const rendererConfig = {
 const storeWorkerEndpointConfig = {
     entry: [path.join(__dirname, '..', 'learn', 'store', 'worker', 'store.worker.endpoint.ts')],
     output: {
-        path: __dirname + '/app',
+        path: path.join(__dirname, 'app'),
         filename: 'storeWorkerEndpoint.js',
         globalObject: 'this'
     },
@@ -184,7 +261,7 @@ const storeWorkerEndpointConfig = {
                 test: /\.ts$/,
                 loader: 'ts-loader',
                 options: {
-                    configFile: __dirname + '/tsconfig-renderer.json',
+                    configFile: path.join(__dirname, 'tsconfig-renderer.json'),
                     transpileOnly: true,
                     getCustomTransformers: () => ({before: [vueTransformer]})
                 }
@@ -197,8 +274,8 @@ const storeWorkerEndpointConfig = {
     plugins: [
         new ForkTsCheckerWebpackPlugin({
             async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-renderer.json',
+            tslint: path.join(__dirname, '..', 'tslint.json'),
+            tsconfig: path.join(__dirname, 'tsconfig-renderer.json'),
             vue: true,
             ignoreLintWarnings: true,
         })
@@ -225,9 +302,27 @@ module.exports = function(mode) {
             {
                 test: absPath,
                 use: [
-                    {loader: 'file-loader', options: {name: 'themes/[name].css'}},
-                    'extract-loader',
-                    {loader: 'css-loader', options: {esModule: false}},
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            outputPath: 'themes',
+                            name: '[name].css',
+                        },
+                    },
+                    {
+                        loader: 'extract-loader',
+                        // webpack doesn't know we're changing the directory relationship between the css files and their referenced fonts, so we tell it here:
+                        // options: {
+                        //     publicPath: '../',
+                        // },
+                        // However, for some reason this breaks everything, while leaving webpack to figure it out only breaks SOME things.
+                    },
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            esModule: false,
+                        },
+                    },
                     {
                         loader: 'sass-loader',
                         options: {
@@ -274,24 +369,26 @@ module.exports = function(mode) {
 
         rendererConfig.plugins.push(new OptimizeCssAssetsPlugin());
 
-        mainConfig.plugins.push(new BundleAnalyzerPlugin({
-            openAnalyzer: true,
-            analyzerPort: 8880,
-            generateStatsFile: true,
-            statsFilename: 'stats-main.json',
-        }));
-        rendererConfig.plugins.push(new BundleAnalyzerPlugin({
-            openAnalyzer: true,
-            analyzerPort: 8881,
-            generateStatsFile: true,
-            statsFilename: 'stats-renderer.json',
-        }));
-        storeWorkerEndpointConfig.plugins.push(new BundleAnalyzerPlugin({
-            openAnalyzer: true,
-            analyzerPort: 8882,
-            generateStatsFile: true,
-            statsFilename: 'stats-storeworker.json',
-        }))
+        if (process.argv.includes('analyze')) {
+            mainConfig.plugins.push(new BundleAnalyzerPlugin({
+                openAnalyzer: false,
+                analyzerPort: 8880,
+                generateStatsFile: true,
+                statsFilename: path.join('..', 'stats-main.json'),
+            }));
+            rendererConfig.plugins.push(new BundleAnalyzerPlugin({
+                openAnalyzer: false,
+                analyzerPort: 8881,
+                generateStatsFile: true,
+                statsFilename: path.join('..', 'stats-renderer.json'),
+            }));
+            storeWorkerEndpointConfig.plugins.push(new BundleAnalyzerPlugin({
+                openAnalyzer: false,
+                analyzerPort: 8882,
+                generateStatsFile: true,
+                statsFilename: path.join('..', 'stats-storeworker.json'),
+            }));
+        }
     } else {
         mainConfig.devtool = 'source-map';
         rendererConfig.devtool = 'source-map';

@@ -5,7 +5,7 @@ export class Dialog {
   static confirmDialog(message: string): boolean {
     const result = remote.dialog.showMessageBoxSync({
       message,
-      title: 'Frolic',
+      title: l('title'),
       type: 'question',
       buttons: [l('confirmYes'), l('confirmNo')],
       defaultId: 1,

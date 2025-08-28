@@ -3,7 +3,7 @@
   "version": "0.7.9",
   "author": "Frolic team & all other contributors",
   "description": "🌺 Frolic! F-Chat Client",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "main": "main.js",
   "devDependencies": {
     "@electron/packager": "^18.4.2",
@@ -32,6 +32,7 @@
     "date-fns": "2.29.3",
     "electron": "^37.0",
     "electron-log": "^5.0.0",
+    "electron-packager-languages": "^0.6.0",
     "electron-settings": "~4.0.2",
     "extract-loader": "^5.1.0",
     "file-loader": "^6.2.0",
@@ -84,7 +85,6 @@
   "scripts": {
     "watch": "cd electron && yarn watch",
     "start": "cd electron && yarn start",
-    "pack-all": "cd electron && yarn pack-all",
-    "devtools": "node ./node_modules/.bin/vue-devtools"
+    "build": "cd electron && yarn build"
   }
 }

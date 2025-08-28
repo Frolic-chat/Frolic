@@ -12,8 +12,7 @@ node_modules/
 .DS_Store
 
 
-
-test.ts
-/electron/test.js
+test.js
+stats-*.json
 
 .vscode/settings.json

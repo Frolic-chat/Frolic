@@ -1,3 +1,22 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+/**
+ * @license
+ * This file is part of Frolic!
+  * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with this program; if not, see <https://www.gnu.org/licenses>.
+ *
+ * This license header applies to this file and all of the non-third-party assets it includes.
+ * @file The entry point for the store worker thread of Frolic.
+ * @copyright 2021 F-Chat Rising Contributors, 2025 Frolic Contributors
+ * @author F-Chat Rising Contributors, Frolic Contributors
+ * @version 0.7.10
+ * @see {@link https://github.com/frolic-chat/frolic|GitHub repo}
+ */
 import { IndexedStore } from '../indexed';
 import { IndexedRequest, ProfileStoreCommand } from './types';
 
