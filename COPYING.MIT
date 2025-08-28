@@ -1,6 +1,17 @@
 MIT License
 
-Copyright (c) 2018-2025 respective contributors listed in `CONTRIBUTORS.md`
+Copyright (c) 2018-2025 respective contributors listed below:
+* [Fire Under the Mountain](https://github.com/FireUnderTheMountain)
+* [Mr Stallion, esq.](https://github.com/hearmeneigh)
+* [FatCatClient](https://github.com/FatCatClient)
+* [twilight-sparkle-irl](https://github.com/twilight-sparkle-irl)
+* [ButterCheezii](https://github.com/ButterCheezii)
+* [WhiteHusky](https://github.com/WhiteHusky)
+* [Abeehiltz](https://github.com/Abeehiltz)
+* [greyhoof](https://github.com/greyhoof)
+* [Nensec](https://github.com/Nensec)
+* [F-List Team](https://github.com/f-list)
+* Maya Wolf <maya@f-list.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,10 +30,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-
----
-
-Additional software source code in the "devtools" directory is subject
-to the GNU GPLv3 license. See the header in any of the files in "devtools"
-for information.

@@ -31,5 +31,8 @@ To learn more about Frolic, here are some pages you might want to visit:
 
 In depth documentation about Frolic can be found on the [Frolic wiki](https://frolic-chat.github.io/wiki.html).
 
+## License
+Frolic is free software! That means you may copy, modify, and distribute it under the terms of the GNU Affero General Public License. Please see [COPYING.md](./COPYING.md) for details.
+
 ## If you're interested in working with Frolic's code
 [Development details](https://frolic-chat.github.io/wiki/development/development.html) and the [Project Goals/Code of Conduct](https://frolic-chat.github.io/wiki/development/CODE_OF_CONDUCT.html) are what you should read.

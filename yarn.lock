@@ -2659,6 +2659,13 @@ electron-log@^5.0.0:
   resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-5.4.3.tgz#02a90baf4256950ca416095db6e5745268584d20"
   integrity sha512-sOUsM3LjZdugatazSQ/XTyNcw8dfvH1SYhXWiJyfYodAAKOZdHs0txPiLDXFzOZbhXgAgshQkshH2ccq0feyLQ==
 
+electron-packager-languages@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/electron-packager-languages/-/electron-packager-languages-0.6.0.tgz#76986053d82d61525a5fde40fd9e96a7acef00d3"
+  integrity sha512-vdSTJ6nH93RFo2YnoFbQDb9IAgMTG8ixYOQZuunpFVIUhKpPrRhmbQOuTBk7zJt5eaKUhMZixMD87WQynnM5iQ==
+  dependencies:
+    rimraf "^2.6.2"
+
 electron-settings@~4.0.2:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/electron-settings/-/electron-settings-4.0.4.tgz#b2e6f17a7b0a03cbaf64be28aa460b533d24e8ad"
@@ -5825,6 +5832,13 @@ reusify@^1.0.4:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/reusify/-/reusify-1.1.0.tgz#0fe13b9522e1473f51b558ee796e08f11f9b489f"
   integrity sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==
+
+rimraf@^2.6.2:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.7.1.tgz#35797f13a7fdadc566142c29d4f07ccad483e3ec"
+  integrity sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w==
+  dependencies:
+    glob "^7.1.3"
 
 rimraf@^3.0.2:
   version "3.0.2"

@@ -1,3 +1,4 @@
+const semver = require('semver');
 import Axios from 'axios';
 
 import Logger from 'electron-log/main';
@@ -22,7 +23,7 @@ export default async function checkForGitRelease(semVer: string, url: string, be
                 log.verbose(`Using latest Frolic version: ${semVer}`);
                 return false;
             }
-            else if (release.tag_name >= semVer) {
+            else if (semver.gt(release.tag_name, semVer)) {
                 log.info(`Update available: ${semVer} -> ${release.tag_name}`);
                 return true;
             }

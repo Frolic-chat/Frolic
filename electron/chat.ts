@@ -1,5 +1,17 @@
 /**
- * @license
+ * @license AGPL-3.0-or-later
+ * This file is part of Frolic!
+ * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with this program; if not, see <https://www.gnu.org/licenses>.
+ *
+ *
+ * Frolic incorporates Expat (MIT) licensed code. Below is the original license text, included per its terms. This is NOT permission to use non-Expat licensed code under Expat license terms.
+ *
  * MIT License
  *
  * Copyright (c) 2018 F-List
@@ -23,11 +35,11 @@
  * SOFTWARE.
  *
  * This license header applies to this file and all of the non-third-party assets it includes.
- * @file The entry point for the Electron renderer of F-Chat 3.0.
- * @copyright 2018 F-List
- * @author Maya Wolf <maya@f-list.net>
- * @version 3.0
- * @see {@link https://github.com/f-list/exported|GitHub repo}
+ * @file The entry point for the Electron renderer of Frolic.
+ * @copyright 2018 F-List, 2019 F-Chat Rising Contributors, 2025 Frolic Contributors
+ * @author Maya Wolf <maya@f-list.net>, F-Chat Rising Contributors, Frolic Contributors
+ * @version 0.7.10
+ * @see {@link https://github.com/frolic-chat/frolic|GitHub repo}
  */
 
 import * as electron from 'electron';

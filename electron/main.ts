@@ -1,5 +1,18 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * @license
+ * This file is part of Frolic!
+ * Copyright (C) 2018 F-List, 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with this program; if not, see <https://www.gnu.org/licenses>.
+ *
+ *
+ * Frolic incorporates Expat (MIT) licensed code. Below is the original license text, included per its terms. This is NOT permission to use non-Expat licensed code under Expat license terms.
+ *
  * MIT License
  *
  * Copyright (c) 2018 F-List
@@ -23,11 +36,11 @@
  * SOFTWARE.
  *
  * This license header applies to this file and all of the non-third-party assets it includes.
- * @file The entry point for the Electron main thread of F-Chat 3.0.
- * @copyright 2018 F-List
- * @author Maya Wolf <maya@f-list.net>
- * @version 3.0
- * @see {@link https://github.com/f-list/exported|GitHub repo}
+ * @file The entry point for the Electron main thread of Frolic.
+ * @copyright 2018 F-List, 2019 F-Chat Rising Contributors, 2025 Frolic Contributors
+ * @author Maya Wolf <maya@f-list.net>, F-Chat Rising Contributors, Frolic Contributors
+ * @version 0.7.10
+ * @see {@link https://github.com/frolic-chat/frolic|GitHub repo}
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -65,12 +78,16 @@ import checkForGitRelease from './main/updater';
 import versionUpgradeRoutines from './main/version-upgrade';
 
 import InitIcon from './main/icon';
-const icon: string = InitIcon(platform);
-
+const icon = {
+    main:      InitIcon(platform, 'icon',       path.join(__dirname, 'system')),
+    mainBadge: InitIcon(platform, 'badge',      path.join(__dirname, 'system')),
+    tray:      InitIcon(platform, 'tray',       path.join(__dirname, 'system')),
+    trayBadge: InitIcon(platform, 'tray-badge', path.join(__dirname, 'system')),
+}
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-const windows: Electron.BrowserWindow[] = [];
+let PrimaryWindow: Electron.BrowserWindow | undefined;
 const characters: string[] = [];
 let tabCount = 0;
 
@@ -110,10 +127,8 @@ if (!settings.hwAcceleration) {
 export function updateSpellCheckerLanguages(langs: string[]): void {
     Electron.session.defaultSession.setSpellCheckerLanguages(langs);
 
-    for (const w of windows) {
-        w.webContents.session.setSpellCheckerLanguages(langs);
-        w.webContents.send('update-dictionaries', langs);
-    }
+    PrimaryWindow?.webContents.session.setSpellCheckerLanguages(langs);
+    PrimaryWindow?.webContents.send('update-dictionaries', langs);
 }
 
 
@@ -307,29 +322,61 @@ function setUpWebContents(webContents: Electron.WebContents): void {
     });
 }
 
-const tabMap: { [key: string]: Electron.WebContents } = {};
-let tray: Electron.Tray;
+const tabMap: Map<string, Electron.WebContents> = new Map();
+let tray: Electron.Tray | undefined;
 
 function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
-    const tabItems: Electron.MenuItemConstructorOptions[] = Object.entries(tabMap)
+    const tabItems: Electron.MenuItemConstructorOptions[] = Array.from(tabMap)
         .map(([tabId, webContents]) => ({
             label: tabId,
             click: () => {
-                // Example: focus this tab, or any action you want
-                windows.forEach(winow => {
-                    winow.webContents.focus();
-                    winow.show();
-                    winow.webContents.send('show-tab', webContents.id);
-                });
+                if (PrimaryWindow?.isMinimized())
+                    PrimaryWindow.restore();
+                else if (PrimaryWindow && !PrimaryWindow.isVisible())
+                    PrimaryWindow?.show();
+                else
+                    PrimaryWindow?.focus();
+
+                PrimaryWindow?.webContents.focus();
+                PrimaryWindow?.webContents.send('show-tab', webContents.id);
 
                 webContents.focus();
             }
          }));
 
     return [
-        { label: l('title'), enabled: false },
+        {
+            label: l('title'),
+            click: () => {
+                if ((process.platform === 'win32' && PrimaryWindow?.isVisible())
+                ||  (process.platform === 'linux' && PrimaryWindow?.isFocused())) {
+                    if (settings.closeToTray)
+                        PrimaryWindow.hide();
+                    else
+                        PrimaryWindow.minimize();
+                }
+                else {
+                    if (PrimaryWindow?.isMinimized())
+                        PrimaryWindow.restore()
+                    else if (PrimaryWindow && !PrimaryWindow.isVisible())
+                        PrimaryWindow.show();
+                    else
+                        PrimaryWindow?.focus();
+
+                    PrimaryWindow?.webContents.focus();
+                }
+            },
+        },
+        { type: 'separator' },
         ...tabItems,
-        { label: l('action.quit'), click: () => Electron.app.quit() }
+        { type: 'separator' },
+        {
+            label: l('action.quit'),
+            click: () => {
+                PrimaryWindow?.webContents.send('quit');
+                Electron.app.quit();
+            },
+        }
     ];
 }
 
@@ -344,7 +391,7 @@ function createWindow(): Electron.BrowserWindow | undefined {
         ...lastState,
         center: lastState.x === undefined,
         show: false,
-        icon: icon,
+        icon: icon.main,
         webPreferences: {
             webviewTag: true,
             nodeIntegration: true,
@@ -367,18 +414,14 @@ function createWindow(): Electron.BrowserWindow | undefined {
 
     remoteMain.enable(window.webContents);
 
-    windows.push(window);
-
     window.webContents.on('will-attach-webview', () => {
-            const all = Electron.webContents.getAllWebContents();
-            all.forEach(item => remoteMain.enable(item));
+            Electron.webContents.getAllWebContents()
+                .forEach(item => remoteMain.enable(item));
     });
 
     updateSupportedLanguages(Electron.session.defaultSession.availableSpellCheckerLanguages);
 
     const safeLanguages = getSafeLanguages(settings.spellcheckLang);
-
-    // console.log('CREATEWINDOW', safeLanguages);
     Electron.session.defaultSession.setSpellCheckerLanguages(safeLanguages);
     window.webContents.session.setSpellCheckerLanguages(safeLanguages);
 
@@ -406,7 +449,7 @@ function createWindow(): Electron.BrowserWindow | undefined {
 
     // Save window state when it is being closed.
     window.on('close', () => windowState.setSavedWindowState(window, windowStatePath));
-    window.on('closed', () => windows.splice(windows.indexOf(window), 1));
+    window.on('minimize', () => {})
     window.once('ready-to-show', () => {
         window.show();
         if (lastState.maximized) window.maximize();
@@ -415,7 +458,29 @@ function createWindow(): Electron.BrowserWindow | undefined {
     if (!tray) {
         tray = new Electron.Tray(icon.tray);
         tray.setToolTip(l('title'));
-        tray.on('click', _e => tray.popUpContextMenu());
+        tray.setIgnoreDoubleClickEvents(true);
+
+        tray.on('click', _e => tray?.popUpContextMenu());
+        // None of this works anyways lmao...
+        tray.on('right-click', _e => {
+            // isFocused only works on linux - windows unfocuses when you click the tray.
+            if (window.isFocused()) {
+                if (settings.closeToTray)
+                    window.hide();
+                else
+                    window.minimize();
+            }
+            else {
+                if (window.isMinimized())
+                    window.restore()
+                else if (!window.isVisible())
+                    window.show();
+                else
+                    window.focus();
+
+                window.webContents.focus();
+            }
+        });
 
         tray.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
         log.debug('init.window.add.tray');
@@ -438,7 +503,7 @@ function openBrowserSettings(): Electron.BrowserWindow | undefined {
     const windowProperties: Electron.BrowserWindowConstructorOptions = {
         center: true,
         show: false,
-        icon: icon,
+        icon: icon.main,
         frame: false,
         width: 650,
         height: desiredHeight,
@@ -498,18 +563,10 @@ function onReady(): void {
     }
 
     function updateAllZoom(c: Electron.WebContents[]   = [],
-                           b: Electron.BrowserWindow[] = [],
                            zoomLevel: number
                         ): void {
         c.forEach(w => w.send('update-zoom', zoomLevel));
-        b.forEach(w => w.webContents.send('update-zoom', zoomLevel));
-    }
-
-    const updateMenuItem = {
-        label: l('action.updateAvailable'),
-        id: 'update',
-        visible: false,
-        click: () => openURLExternally(FROLIC.GitHubReleasesUrl),
+        PrimaryWindow?.webContents.send('update-zoom', zoomLevel);
     }
 
     const viewItem = {
@@ -520,7 +577,7 @@ function onReady(): void {
                 label: l('action.resetZoom'),
                 click: () => {
                     zoomLevel = 0;
-                    updateAllZoom(Electron.webContents.getAllWebContents(), windows, zoomLevel);
+                    updateAllZoom(Electron.webContents.getAllWebContents(), zoomLevel);
                 },
                 accelerator: 'CmdOrCtrl+0'
             },
@@ -532,7 +589,7 @@ function onReady(): void {
                     // Will we ever be in a situation where it's otherwise?
                     if (w instanceof Electron.BrowserWindow) {
                         zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
-                        updateAllZoom(Electron.webContents.getAllWebContents(), windows, zoomLevel);
+                        updateAllZoom(Electron.webContents.getAllWebContents(), zoomLevel);
                     }
                 },
                 accelerator: 'CmdOrCtrl+='
@@ -546,7 +603,7 @@ function onReady(): void {
                     if (w instanceof Electron.BrowserWindow) {
                         zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
 
-                        updateAllZoom(Electron.webContents.getAllWebContents(), windows, zoomLevel);
+                        updateAllZoom(Electron.webContents.getAllWebContents(), zoomLevel);
                     }
                 },
                 accelerator: 'CmdOrCtrl+-'
@@ -559,8 +616,13 @@ function onReady(): void {
         viewItem.submenu.unshift({role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}, {type: 'separator'});
     const spellcheckerMenu = new Electron.Menu();
 
-    //tslint:disable-next-line:no-floating-promises
     addSpellcheckerItems(spellcheckerMenu);
+
+    const setSystemLogLevel = (logLevel: LogLevelOption) => {
+        settings.risingSystemLogLevel = logLevel;
+        setGeneralSettings(settings);
+    };
+
 
     //region Themes
     const themes = fs.readdirSync(path.join(__dirname, 'themes'))
@@ -573,30 +635,70 @@ function onReady(): void {
     };
 
 
-    const setSystemLogLevel = (logLevel: LogLevelOption) => {
-        settings.risingSystemLogLevel = logLevel;
-        setGeneralSettings(settings);
+    //region Updater
+    const updateCheckTimer = setInterval(
+        async () => {
+            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+
+            if (hasUpdate) {
+                clearInterval(updateCheckTimer);
+
+                const menu = Electron.Menu.getApplicationMenu();
+                const item = menu?.getMenuItemById(updateReadyMenuItem.id);
+                if (item) item.visible = true;
+
+                PrimaryWindow?.webContents.send('update-available', true);
+            }
+        },
+        FROLIC.UpdateCheckInterval
+    );
+
+    setTimeout(
+        async () => {
+            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+
+            if (hasUpdate) {
+                clearInterval(updateCheckTimer);
+
+                const menu = Electron.Menu.getApplicationMenu()!;
+                const item = menu.getMenuItemById(updateReadyMenuItem.id);
+                if (item) item.visible = true;
+
+                PrimaryWindow?.webContents.send('update-available', true);
+            }
+        },
+        6000 // 6 seconds
+    );
+
+    const updateReadyMenuItem = {
+        label: l('action.updateAvailable'),
+        id: 'update',
+        visible: false,
+        click: () => openURLExternally(FROLIC.GitHubReleasesUrl),
     };
 
+
     //region Main Menu
+    const licenseDir = path.join(app.getAppPath(), 'licenses');
+    const licenseMenuItem = {
+        label: l('action.viewLicense'),
+        click: () => Electron.shell.openPath(licenseDir),
+    };
+
     Electron.Menu.setApplicationMenu(Electron.Menu.buildFromTemplate([
-        updateMenuItem,
+        updateReadyMenuItem,
+        {
+            label: l('action.newTab'),
+            click: (_m, w) => {
+                if (hasCompletedUpgrades && tabCount < 3 && w instanceof Electron.BrowserWindow)
+                    w.webContents.send('open-tab');
+            },
+            accelerator: 'CmdOrCtrl+t'
+        },
+        { type: 'separator' },
         {
             label: `&${l('title')}`,
             submenu: [
-                {
-                    label: l('action.newWindow'),
-                    click: () => { if (hasCompletedUpgrades) createWindow() },
-                    accelerator: 'CmdOrCtrl+n'
-                },
-                {
-                    label: l('action.newTab'),
-                    click: (_m, w) => {
-                        if (hasCompletedUpgrades && tabCount < 3 && w instanceof Electron.BrowserWindow)
-                            w.webContents.send('open-tab');
-                    },
-                    accelerator: 'CmdOrCtrl+t'
-                },
                 {
                     label: "hidden switch-tab accelerator",
                     accelerator: 'Ctrl+Tab',
@@ -635,7 +737,7 @@ function onReady(): void {
                                 cancelId: 1
                             });
                             if (button === 0) {
-                                for(const w of windows) w.webContents.send('quit');
+                                PrimaryWindow?.webContents.send('quit');
 
                                 settings.logDirectory = dir[0];
                                 setGeneralSettings(settings);
@@ -708,7 +810,7 @@ function onReady(): void {
                         checked: settings.risingSystemLogLevel === level,
                         label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
                         click: () => setSystemLogLevel(level as LogLevelOption),
-                        type: <'radio'>'radio'
+                        type: 'radio',
                     })),
                 },
                 {
@@ -733,31 +835,6 @@ function onReady(): void {
                     },
                     accelerator: 'CmdOrCtrl+p'
                 },
-
-
-                {type: 'separator'},
-                {role: 'minimize'},
-                {
-                    accelerator: platform === 'darwin' ? 'Cmd+Q' : undefined,
-                    label: l('action.quit'),
-                    click: (_m, window) => {
-                        if (characters.length === 0)
-                            return app.quit();
-
-                        if (!window)
-                            return;
-
-                        const button = Electron.dialog.showMessageBoxSync(window, {
-                            message: l('chat.confirmLeave'),
-                            buttons: [l('confirmYes'), l('confirmNo')],
-                            cancelId: 1
-                        });
-                        if (button === 0) {
-                            for (const w of windows) w.webContents.send('quit');
-                            app.quit();
-                        }
-                    }
-                }
             ]
         },
         {
@@ -776,14 +853,7 @@ function onReady(): void {
         {
             label: `&${l('help')}`,
             submenu: [
-                {
-                    label: l('help.fchat'),
-                    click: () => openURLExternally('https://github.com/Frolic-chat/Frolic/blob/master/README.md')
-                },
-                // {
-                //     label: l('help.feedback'),
-                //     click: () => openURLExternally('')
-                // },
+                licenseMenuItem,
                 {
                     label: l('help.rules'),
                     click: () => openURLExternally('https://wiki.f-list.net/Rules')
@@ -801,43 +871,31 @@ function onReady(): void {
                     click: showPatchNotes
                 }
             ]
+        },
+        {type: 'separator'},
+        {role: 'minimize'},
+        {
+            accelerator: platform === 'darwin' ? 'Cmd+Q' : undefined,
+            label: l('action.quit'),
+            click: (_m, window) => {
+                if (characters.length === 0)
+                    return app.quit();
+
+                if (!window)
+                    return;
+
+                const button = Electron.dialog.showMessageBoxSync(window, {
+                    message: l('chat.confirmLeave'),
+                    buttons: [l('confirmYes'), l('confirmNo')],
+                    cancelId: 1
+                });
+                if (button === 0) {
+                    PrimaryWindow?.webContents.send('quit');
+                    app.quit();
+                }
+            }
         }
     ]));
-
-    //region Updater
-    const updateCheckTimer = setInterval(
-        async () => {
-            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
-
-            if (hasUpdate) {
-                clearInterval(updateCheckTimer);
-
-                const menu = Electron.Menu.getApplicationMenu()!;
-                const item = menu.getMenuItemById(updateMenuItem.id);
-                if (item) item.visible = true;
-
-                for (const w of windows) w.webContents.send('update-available', true);
-            }
-        },
-        FROLIC.UpdateCheckInterval
-    );
-
-    setTimeout(
-        async () => {
-            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
-
-            if (hasUpdate) {
-                clearInterval(updateCheckTimer);
-
-                const menu = Electron.Menu.getApplicationMenu()!;
-                const item = menu.getMenuItemById(updateMenuItem.id);
-                if (item) item.visible = true;
-
-                for (const w of windows) w.webContents.send('update-available', true);
-            }
-        },
-        6000 // 6 seconds
-    );
 
 
     //#region SecureStore
@@ -885,19 +943,24 @@ function onReady(): void {
         }
 
         setUpWebContents(webContents);
+
         ++tabCount;
-        if(tabCount === 3)
-            for(const w of windows) w.webContents.send('allow-new-tabs', false);
+        if (tabCount === 3)
+            PrimaryWindow?.webContents.send('allow-new-tabs', false);
     });
     Electron.ipcMain.on('tab-closed', () => {
+        PrimaryWindow?.webContents.send('allow-new-tabs', true);
+
         --tabCount;
-        for(const w of windows) w.webContents.send('allow-new-tabs', true);
+        if (!tabCount)
+            PrimaryWindow?.webContents.send('open-tab');
     });
     Electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
         settings.account = account;
         settings.host = host;
         setGeneralSettings(settings);
     });
+
     Electron.ipcMain.on('connect', (e, character: string) => { //hack
         if (characters.includes(character)) { // Logged in already!
             log.debug('ipcMain.connect.alreadyLoggedIn');
@@ -913,50 +976,61 @@ function onReady(): void {
         }
 
     });
+    Electron.ipcMain.on('disconnect', (_e, character: string) => {
+        const index = characters.indexOf(character);
+        if (index !== -1) characters.splice(index, 1);
+    });
 
     Electron.ipcMain.on('connect', (e, character: string) => {
         if (e.sender) {
-        //browserWindows.tabAddHandler(webContents, settings);
-        tabMap[character] = e.sender;
-        tray.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
+            //browserWindows.tabAddHandler(webContents, settings);
+            tabMap.set(character, e.sender);
+            tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
         }
     }
     );
     Electron.ipcMain.on('disconnect', (_e, character: string) => {
-        delete tabMap[character];
-        tray.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
+        tabMap.delete(character);
+        tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
     });
 
     Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
         // setGeneralSettings(settings);
-        for (const w of windows) w.webContents.session.addWordToSpellCheckerDictionary(word);
+        PrimaryWindow?.webContents.session.addWordToSpellCheckerDictionary(word);
     });
     Electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
         // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
         // setGeneralSettings(settings);
-    });
-    Electron.ipcMain.on('disconnect', (_e, character: string) => {
-        const index = characters.indexOf(character);
-        if (index !== -1) characters.splice(index, 1);
     });
 
 
     const adCoordinator = new AdCoordinatorHost();
     Electron.ipcMain.on('request-send-ad', (e, adId: string) => adCoordinator.processAdRequest(e, adId));
 
+    // region Badge
     const emptyBadge = Electron.nativeImage.createEmpty();
-    const badge = Electron.nativeImage.createFromPath(
-        path.join(__dirname, <string>require('./build/badge.png').default)
-    );
 
     // Badge windows with alerts
     function badgeWindow(e: Electron.IpcMainEvent, hasNew: boolean) {
-        app.dock?.setBadge(hasNew ? '!' : '');
+        if (platform === 'darwin') {
+            app.dock?.setBadge(hasNew ? '!' : '');
+        }
+        else {
+            const window = Electron.BrowserWindow.fromWebContents(e.sender);
 
-        const window = Electron.BrowserWindow.fromWebContents(e.sender);
-        window?.setOverlayIcon(hasNew ? badge : emptyBadge, hasNew ? 'New messages' : '');
+            if (hasNew) {
+                window?.setIcon(icon.mainBadge);
+                window?.setOverlayIcon(emptyBadge, 'New messages');
+                tray?.setImage(icon.trayBadge);
+            }
+            else {
+                window?.setIcon(icon.main);
+                window?.setOverlayIcon(emptyBadge, '');
+                tray?.setImage(icon.tray);
+            }
+        }
     }
     Electron.ipcMain.on('has-new', badgeWindow);
 
@@ -1014,7 +1088,7 @@ function onReady(): void {
         openURLExternally(url, incognito);
     });
 
-    createWindow();
+    PrimaryWindow = createWindow();
 }
 
 // Twitter fix
@@ -1024,8 +1098,9 @@ app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
 const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
 if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
     app.quit();
-else
+else {
+    app.on('second-instance', () => PrimaryWindow?.show());
     app.on('ready', onReady);
+}
 
-app.on('second-instance', createWindow);
 app.on('window-all-closed', () => app.quit());

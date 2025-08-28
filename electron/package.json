@@ -5,16 +5,14 @@
   "description": "🌺 Frolic! F-Chat Client",
   "main": "main.js",
   "id": "fchat",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
-    "build": "node ../webpack development",
+    "build:dev": "node ../webpack development",
     "build:dist": "node ../webpack production",
+    "build": "yarn build:dist && node ./pack",
     "watch": "node ../webpack watch",
     "start": "../node_modules/.bin/electron app",
     "startDebugMain": "export ELECTRON_ENABLE_LOGGING=1 && ../node_modules/.bin/electron  --serve --inspect-brk=9229 app",
-    "startDebugRender": "export ELECTRON_ENABLE_LOGGING=1 && ../node_modules/.bin/electron --remote-debugging-port=9229 app",
-    "pack": "node ./pack",
-    "pack-all": "node ./pack-all",
-    "devtools": "node ../node_modules/.bin/vue-devtools"
+    "startDebugRender": "export ELECTRON_ENABLE_LOGGING=1 && ../node_modules/.bin/electron --remote-debugging-port=9229 app"
   }
 }
