@@ -166,8 +166,8 @@
     import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
     import {GeneralSettings} from './common';
     import * as FLIST from '../constants/flist';
-    import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './filesystem';
-    import * as SlimcatImporter from './importer';
+    import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './renderer/filesystem';
+    import * as SlimcatImporter from './renderer/importer';
     import { EventBus, ErrorEvent } from '../chat/preview/event-bus';
 
     import BBCodeTester from '../bbcode/Tester.vue';

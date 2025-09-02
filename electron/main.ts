@@ -38,7 +38,7 @@ import * as Electron from 'electron';
 const app = Electron.app; // Module to control application life.
 
 // `InitLogger` runs the electron-log init, so has to run before any use of the logger.
-import InitLogger from './logger';
+import InitLogger from './main/logger';
 InitLogger(app.getPath('logs'));
 
 import Logger from 'electron-log/main';
@@ -55,16 +55,16 @@ import { FindExeFileFromName } from '../helpers/utils';
 import l from '../chat/localize';
 import {GeneralSettings} from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
-import * as windowState from './window_state';
-import SecureStore from './secure-store';
+import * as windowState from './main/window_state';
+import SecureStore from './main/secure-store';
 import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
 import { IncognitoArgFromBrowserPath } from '../constants/general';
-import checkForGitRelease from './updater';
-import versionUpgradeRoutines from './version-upgrade';
+import checkForGitRelease from './main/updater';
+import versionUpgradeRoutines from './main/version-upgrade';
 
-import InitIcon from './icon';
+import InitIcon from './main/icon';
 const icon: string = InitIcon(platform);
 
 

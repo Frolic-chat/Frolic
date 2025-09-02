@@ -1,3 +1,5 @@
+// Used in both renderer and main, needs redesign.
+
 export function getSafeLanguages(langs: string | string[] | undefined): string[] {
     const initialLanguages = (typeof langs === 'string')
                                 ? ([langs.replace('_', '-')])

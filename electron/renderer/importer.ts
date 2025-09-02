@@ -1,10 +1,10 @@
 import {addMinutes} from 'date-fns';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Settings} from '../chat/common';
-import {Conversation} from '../chat/interfaces';
-import {isAction} from '../chat/slash_commands';
-import {GeneralSettings} from './common';
+import {Settings} from '../../chat/common';
+import {Conversation} from '../../chat/interfaces';
+import {isAction} from '../../chat/slash_commands';
+import {GeneralSettings} from '../common';
 import {checkIndex, getLogDir, Message as LogMessage, serializeMessage, SettingsStore} from './filesystem';
 
 function getRoamingDir(): string | undefined {

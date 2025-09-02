@@ -51,9 +51,9 @@ import Socket from '../chat/WebSocket';
 import Connection from '../fchat/connection';
 import {Keys} from '../keys';
 import {GeneralSettings /*, nativeRequire*/ } from './common';
-import {Logs, SettingsStore} from './filesystem';
+import {Logs, SettingsStore} from './renderer/filesystem';
 import Notifications from './notifications';
-import * as SlimcatImporter from './importer';
+import * as SlimcatImporter from './renderer/importer';
 
 // This is a noble attempt but none of the components show unless I tag directly into the html.
 // import { connect as vueDevToolsInit } from '@vue/devtools';

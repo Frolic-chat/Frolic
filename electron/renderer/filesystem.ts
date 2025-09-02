@@ -1,13 +1,14 @@
 import * as remote from '@electron/remote';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Message as MessageImpl} from '../chat/common';
-import core from '../chat/core';
-import {Character, Conversation, Logs as Logging, Settings} from '../chat/interfaces';
-import l from '../chat/localize';
-import {GeneralSettings} from './common';
+import {Message as MessageImpl} from '../../chat/common';
+import core from '../../chat/core';
+import {Character, Conversation, Logs as Logging, Settings} from '../../chat/interfaces';
+import l from '../../chat/localize';
+import {GeneralSettings} from '../common';
 
-declare module '../chat/interfaces' {
+// ?? ? ???
+declare module '../../chat/interfaces' {
     interface State {
         generalSettings?: GeneralSettings
     }
