@@ -5,6 +5,7 @@ const OptimizeCssAssetsPlugin = require('css-minimizer-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@f-list/vue-ts/transform').default;
 const CopyPlugin = require('copy-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const mainConfig = {
     entry: [path.join(__dirname, 'main.ts'), path.join(__dirname, 'package.json')],
@@ -272,6 +273,25 @@ module.exports = function(mode) {
         storeWorkerEndpointConfig.devtool = false;
 
         rendererConfig.plugins.push(new OptimizeCssAssetsPlugin());
+
+        mainConfig.plugins.push(new BundleAnalyzerPlugin({
+            openAnalyzer: true,
+            analyzerPort: 8880,
+            generateStatsFile: true,
+            statsFilename: 'stats-main.json',
+        }));
+        rendererConfig.plugins.push(new BundleAnalyzerPlugin({
+            openAnalyzer: true,
+            analyzerPort: 8881,
+            generateStatsFile: true,
+            statsFilename: 'stats-renderer.json',
+        }));
+        storeWorkerEndpointConfig.plugins.push(new BundleAnalyzerPlugin({
+            openAnalyzer: true,
+            analyzerPort: 8882,
+            generateStatsFile: true,
+            statsFilename: 'stats-storeworker.json',
+        }))
     } else {
         mainConfig.devtool = 'source-map';
         rendererConfig.devtool = 'source-map';
