@@ -19,8 +19,6 @@ import Vue from 'vue';
 import { Component, Hook, Prop } from '@f-list/vue-ts';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
-import anyAscii from 'any-ascii';
-
 import Logger from 'electron-log/renderer';
 const log = Logger.scope('WordDefinition');
 
@@ -86,9 +84,9 @@ export default class WordDefinition extends Vue {
 
 
   getCleanedWordDefinition(expression = this.expression): string {
-    return anyAscii(expression || '')
+    return (expression || '')
       .toLowerCase()
-      .replace(/[^a-z0-9\-]/g, ' ')
+      //.replace(/[^a-z0-9\-]/g, ' ')
       .replace(/  +/g, ' ')
       .trim();
   }
