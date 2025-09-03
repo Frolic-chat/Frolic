@@ -1,5 +1,10 @@
 // Used in both renderer and main, needs redesign.
 
+/**
+ * Filters a language list through a list of supportedLanguages,
+ * @param langs Array of standardized language strings (ie en-GB)
+ * @returns List of languages your system supports or `[ 'en-GB' ]` if empty
+ */
 export function getSafeLanguages(langs: string | string[] | undefined): string[] {
     const initialLanguages = (typeof langs === 'string')
                                 ? ([langs.replace('_', '-')])

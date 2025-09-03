@@ -42,6 +42,12 @@ interface Index {
     [key: string]: IndexItem | undefined
 }
 
+/**
+ * Derives a log directory from the generalSettings, character name, and literal "logs".
+ * @param this unused
+ * @param character Character name (used as directory)
+ * @returns Directory path
+ */
 export function getLogDir(this: void, character: string): string {
     const dir = path.join(core.state.generalSettings!.logDirectory, character, 'logs');
     fs.mkdirSync(dir, {recursive: true});
