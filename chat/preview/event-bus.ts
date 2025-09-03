@@ -6,8 +6,8 @@ import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('event-bus');
+// import Logger from 'electron-log/renderer';
+// const log = Logger.scope('event-bus');
 
 export interface EmptyEvent {}
 
@@ -156,22 +156,22 @@ class EventBusManager {
         // this.callbacks[event].push(once);
 
         const onceWrapper: EventCallback = (data: any) => {
-            log.debug('eventbus.once.resolving');
+            //log.debug('eventbus.once.resolving');
 
             Promise.resolve(callback(data))
                 .then(() => {
                     this.$off(event, onceWrapper);
-                    log.debug('eventbus.once.resolved');
+                    //log.debug('eventbus.once.resolved');
                 });
         };
 
         // @ts-expect-error No overload for generic string; there's a fancy way to implement $on/$once argument syncing that we can do later to fix this.
         this.$on(event, onceWrapper);
 
-        log.debug('eventbus.once', {
-            event: event,
-            events: this.callbacks[event].length,
-        });
+        // log.debug('eventbus.once', {
+        //     event: event,
+        //     events: this.callbacks[event].length,
+        // });
     }
 
 
@@ -208,4 +208,4 @@ class EventBusManager {
 
 // This should be turned into a module; with the initialization in well-defined place.
 export const EventBus = new EventBusManager();
-log.verbose('init.eventbus');
+//log.verbose('init.eventbus');

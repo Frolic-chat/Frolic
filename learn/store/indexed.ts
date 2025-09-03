@@ -3,10 +3,6 @@ import { CharacterAnalysis } from '../matcher';
 import { PermanentIndexedStore, ProfileRecord } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('store/indexed');
-
-
 async function promisifyRequest<T>(req: IDBRequest): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         req.onsuccess = () => resolve(<T>req.result);
@@ -86,7 +82,7 @@ export class IndexedStore implements PermanentIndexedStore {
 
         // fix to clean out extra customs that somehow sometimes appear:
         if (Array.isArray(data.profileData.character.customs)) {
-            log.warn('character.customs.strange.indexed.getProfile', {name: data.profileData.character.name, data, customs: data.profileData.character.customs});
+            console.warn('character.customs.strange.indexed.getProfile', {name: data.profileData.character.name, data, customs: data.profileData.character.customs});
             data.profileData.character.customs = {};
             await this.storeProfile(data.profileData);
         }
