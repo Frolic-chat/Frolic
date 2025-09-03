@@ -147,7 +147,6 @@
     import * as fs from 'fs';
     import * as path from 'path';
     import * as qs from 'querystring';
-    import Raven from 'raven-js';
     // import {promisify} from 'util';
     import Vue from 'vue';
     import Chat from '../chat/Chat.vue';
@@ -447,8 +446,6 @@
                         () => core.conversations.hasNew,
                         newValue => parent.send('has-new', webContents.id, newValue),
                     );
-
-                    Raven.setUserContext({ username: core.connection.character });
                 });
                 core.connection.onEvent('closed', () => {
                     if (this.character === undefined)
@@ -457,7 +454,6 @@
                     electron.ipcRenderer.send('disconnect', this.character);
                     this.character = undefined;
                     parent.send('disconnect', webContents.id);
-                    Raven.setUserContext();
                 });
 
                 core.connection.setCredentials(this.settings.account, this.password);

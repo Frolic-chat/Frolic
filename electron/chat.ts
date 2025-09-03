@@ -58,7 +58,6 @@ import {getKey} from '../chat/common';
 import { EventBus } from '../chat/preview/event-bus';
 import {init as initCore} from '../chat/core';
 import l from '../chat/localize';
-// import {setupRaven} from '../chat/vue-raven';
 import Socket from '../chat/WebSocket';
 import Connection from '../fchat/connection';
 import {Keys} from '../keys';
@@ -89,8 +88,6 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
 Axios.defaults.params = {__fchat: `desktop/${remote.app.getVersion()}`};
 
 if(process.env.NODE_ENV === 'production') {
-    // setupRaven('https://a9239b17b0a14f72ba85e8729b9d1612@sentry.f-list.net/2', remote.app.getVersion());
-
     remote.getCurrentWebContents().on('devtools-opened', () => {
         console.log(`%c${l('consoleWarning.head')}`, 'background: red; color: yellow; font-size: 30pt');
         console.log(`%c${l('consoleWarning.body')}`, 'font-size: 16pt; color:red');
