@@ -207,7 +207,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         else {
             // TODO: Robust error handler.
             Electron.dialog.showMessageBox({
-                title: 'Frolic - Browser Failure',
+                title: 'Frolic! - Browser Failure',
                 message: l('chat.noBrowser'),
                 type: 'warning',
                 buttons: [],
@@ -236,7 +236,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     catch {
         // TODO: Robust error handler.
         Electron.dialog.showMessageBox({
-            title: 'Frolic - Browser Failure',
+            title: 'Frolic! - Browser Failure',
             message: l('chat.brokenBrowser'),
             type: 'warning',
             buttons: [],
@@ -256,7 +256,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         else {
             // TODO: Robust error handler.
             Electron.dialog.showMessageBox({
-                title: 'Frolic - Browser Failure',
+                title: 'Frolic! - Browser Failure',
                 message: l('chat.noBrowser'),
                 type: 'warning',
                 buttons: [],
