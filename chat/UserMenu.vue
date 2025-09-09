@@ -1,7 +1,6 @@
 <template>
     <div>
-        <div id="userMenu" class="list-group" v-show="showContextMenu" :style="position" v-if="character"
-            style="position:fixed;padding:10px 10px 5px;display:block;width:220px;z-index:1100" ref="menu">
+        <div id="userMenu" class="list-group" v-show="showContextMenu" :style="position" v-if="character" ref="menu">
             <div style="min-height: 65px;padding:5px;overflow:auto" class="list-group-item" @click.stop>
                 <img :src="characterImage" style="width:60px;height:60px;margin-right:5px;float:left" v-if="showAvatars"/>
                 <h5 style="margin:0;line-height:1">{{character.name}}</h5>
@@ -284,6 +283,13 @@ import { MemoManager } from './character/memo';
 </script>
 
 <style lang="scss">
+    #userMenu {
+        position: fixed;
+        display: block;
+        padding: 10px 10px 5px;
+        width: 220px;
+        z-index: 1100;
+    }
     #userMenu .list-group-item {
         padding: 3px;
     }
@@ -295,5 +301,6 @@ import { MemoManager } from './character/memo';
 
     .usermenu-backdrop.modal-backdrop.show {
         opacity: 0;
+        z-index: 1099;
     }
 </style>
