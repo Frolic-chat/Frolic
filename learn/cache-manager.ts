@@ -33,6 +33,7 @@ export interface ProfileCacheQueueEntry {
     score: number;
     channelId?: string;
     retryCount: number;
+    //fromCharacterPage?: boolean;
 }
 
 
@@ -84,6 +85,8 @@ export class CacheManager {
 
     /**
      * Add a user to the queue for fetching profiles from the server.
+     *
+     * Use addProfile instead. This should be private.
      * @param name Character name
      * @param skipCacheCheck The cache can be skipped to hard-reload character data
      * @param channelId Provide a channel id to allow dropping this character from the queue if we un-focus the channel. (Useful to mitigate background noise from characters your no longer care about)
@@ -124,6 +127,12 @@ export class CacheManager {
     }
 
 
+    /**
+     * The solution if `getSync` and `get` fail. An async function that just wraps the character API call and invokes the cacher + matcher on the profile. Theoretically, this should be a total replacement for directly using the character_page API.
+     * @param name Character name
+     * @param skipCacheCheck The cache can be skipped to hard-reload character data
+     * @param channelId Provide a channel id to allow dropping this character from the queue if we un-focus the channel. (Useful to mitigate background noise from characters your no longer care about)
+     */
     async fetchProfile(name: string): Promise<ComplexCharacter | null> {
         try {
             await methods.fieldsGet();
