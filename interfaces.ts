@@ -57,7 +57,7 @@ export interface Infotag {
 }
 
 /**
- * Public character page.
+ * Public character page. Why does this extend SimpleCharacter?
  *
  * @see [file://site/character_page/interfaces.ts](site/character_page/interfaces.ts)
  */
