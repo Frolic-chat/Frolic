@@ -10,7 +10,7 @@ type ReleaseInfo = {
     prerelease: boolean | undefined;
 };
 
-export default async function checkForGitRelease(semVer: string, url: string, beta: boolean): Promise<boolean> {
+export default async function checkForGitRelease(semVer: string, url: string, beta: boolean = false): Promise<boolean> {
     try {
         const releases = (await Axios.get<ReleaseInfo[]>(url)).data;
 
