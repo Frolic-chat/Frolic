@@ -1,27 +1,51 @@
 /***
  * This script is injected on every web page ImagePreview loads
  */
-
 const { ipcRenderer, contextBridge } = require('electron');
+
+let _volume = 10;
+
+ipcRenderer.on('volume-from-main', (_e, volume) => {
+    if (typeof volume === 'number') {
+        _volume = volume;
+        // console.debug('volume is a number. Working fine.', volume, '=>', _volume);
+    }
+    else if (typeof volume === 'string') {
+        const vn = Number(volume);
+
+        if (typeof vn === 'number' && !isNaN(vn)) {
+            _volume = vn;
+            // console.debug('volume was a string and now is a number. Working fine.', vn, '=>', _volume);
+        }
+        else {
+            console.error(`volume-from-main couldn't coerce a string (${volume}) to a number (${vn}).`);
+        }
+    }
+    else {
+        console.error(`volume-from-main received volume that wasn't a number or a string: ${volume} is ${typeof volume}`);
+    }
+});
+
+contextBridge.exposeInMainWorld('volume', {
+    value: () => _volume
+});
+
 
 function cleanValue(val) {
     // overkill, contextBridge already does this; just here to throw
     return JSON.parse(JSON.stringify(val));
 }
 
-contextBridge.exposeInMainWorld(
-    'rising',
-    {
-        sendToHost: (channel, ...args) => {
-            const cleanedArgs = args.map(v => cleanValue(v));
-            const cleanedChannel = cleanValue(channel);
+contextBridge.exposeInMainWorld('rising', {
+    sendToHost: (channel, ...args) => {
+        const cleanedArgs = args.map(v => cleanValue(v));
+        const cleanedChannel = cleanValue(channel);
 
-            // console.log('REAL.IPC', cleanedChannel, cleanedArgs);
+        // console.log('REAL.IPC', cleanedChannel, cleanedArgs);
 
-            ipcRenderer.sendToHost(cleanedChannel, ...cleanedArgs);
-        }
+        ipcRenderer.sendToHost(cleanedChannel, ...cleanedArgs);
     }
-);
+});
 
 
 const previewInitiationTime = Date.now();
@@ -130,8 +154,7 @@ const previewInitiationTime = Date.now();
             console.log('DOM fully loaded and parsed', Date.now());
             clear();
 
-            // const ipcRenderer = require('electron').ipcRenderer;
-            // ipcRenderer.sendToHost('state.dom-loaded');
+            ipcRenderer.sendToHost('webview.dom-loaded');
         });
     } catch(e) {
         console.error('browser.pre', e);

@@ -232,9 +232,11 @@
         async connect(): Promise<void> {
             this.connecting = true;
 
-            // skipping await
-            // tslint:disable-next-line: no-floating-promises
             core.notifications.initSounds(['attention', 'login', 'logout', 'modalert', 'newnote', 'silence']);
+
+            EventBus.$on('core-connected', s => core.notifications.applyGlobalAudioVolume(s.notifyVolume));
+            // Updating on config change is done inside SettingsView.
+
             core.connection.connect(this.selectedCharacter.name);
         }
 

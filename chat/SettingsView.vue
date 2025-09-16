@@ -105,6 +105,13 @@
                         {{l('settings.alwaysNotify')}}
                     </label>
                 </template>
+                <template v-if="playSound">
+                    <br>
+                    <label class="control-label" for="notifyVolume">
+                        {{ l('settings.notifyVolume', notifyVolume) }}
+                    </label>
+                    <input type="range" class="form-control-range" id="notifyVolume" v-model="notifyVolume">
+                </template>
             </div>
             <div class="form-group">
                 <label class="control-label" for="notifications">
@@ -230,6 +237,13 @@
                     <input type="checkbox" id="risingLinkPreview" v-model="risingLinkPreview"/>
                     {{l('rising.preview.showLinkPopup')}}
                 </label>
+                <template v-if="risingLinkPreview">
+                    <br>
+                    <label class="control-label" for="linkPreviewVolume">
+                        {{ l('settings.linkPreviewVolume', linkPreviewVolume) }}
+                    </label>
+                    <input type="range" class="form-control-range" id="linkPreviewVolume" v-model="linkPreviewVolume">
+                </template>
             </div>
 
             <div class="form-group">
@@ -504,6 +518,7 @@
         selectedTab = '0';
         importCharacter = '';
         playSound!: boolean;
+        notifyVolume!: number;
         clickOpensMessage!: boolean;
         disallowedTags!: string;
         notifications!: boolean;
@@ -534,6 +549,7 @@
 
         risingAdScore!: boolean;
         risingLinkPreview!: boolean;
+        linkPreviewVolume!: number;
         risingAutoCompareKinks!: boolean;
 
         risingAutoExpandCustomKinks!: boolean;
@@ -561,7 +577,9 @@
 
         async load(): Promise<void> {
             const settings = core.state.settings;
+
             this.playSound = settings.playSound;
+            this.notifyVolume = settings.notifyVolume;
             this.clickOpensMessage = settings.clickOpensMessage;
             this.disallowedTags = settings.disallowedTags.join(',');
             this.notifications = settings.notifications;
@@ -594,6 +612,7 @@
 
             this.risingAdScore = settings.risingAdScore;
             this.risingLinkPreview = settings.risingLinkPreview;
+            this.linkPreviewVolume = settings.linkPreviewVolume;
             this.risingAutoCompareKinks = settings.risingAutoCompareKinks;
 
             this.risingAutoExpandCustomKinks = settings.risingAutoExpandCustomKinks;
@@ -652,8 +671,14 @@
             const minAge = this.getAsNumber(this.risingFilter.minAge);
             const maxAge = this.getAsNumber(this.risingFilter.maxAge);
 
+            if (this.notifyVolume !== core.state.settings.notifyVolume)
+                core.notifications.applyGlobalAudioVolume(this.notifyVolume);
+
+            // linkPreviewVolume is propogated to ImagePreview via EventBus 'configuration-update' event.
+
             core.state.settings = {
                 playSound: this.playSound,
+                notifyVolume: this.notifyVolume,
                 clickOpensMessage: this.clickOpensMessage,
                 disallowedTags: this.disallowedTags.split(',').map((x) => x.trim()).filter((x) => x.length),
                 notifications: this.notifications,
@@ -682,6 +707,7 @@
 
                 risingAdScore: this.risingAdScore,
                 risingLinkPreview: this.risingLinkPreview,
+                linkPreviewVolume: this.linkPreviewVolume,
                 risingAutoCompareKinks: this.risingAutoCompareKinks,
 
                 risingAutoExpandCustomKinks: this.risingAutoExpandCustomKinks,

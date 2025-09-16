@@ -26,6 +26,7 @@ export function getByteLength(this: any | never, str: string): number {
 
 export class Settings implements ISettings {
     playSound = true;
+    notifyVolume = 100;
     clickOpensMessage = false;
     disallowedTags: string[] = [];
     notifications = true;
@@ -55,6 +56,7 @@ export class Settings implements ISettings {
 
     risingAdScore = true;
     risingLinkPreview = true;
+    linkPreviewVolume = 0;
     risingAutoCompareKinks = true;
 
     risingAutoExpandCustomKinks = true;

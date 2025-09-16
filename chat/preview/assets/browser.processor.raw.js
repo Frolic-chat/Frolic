@@ -15,6 +15,9 @@ const sizePairs = [
 ];
 
 
+/**
+ * The `settings` passed to this constructor don't matter - this whole block is overwritten by a regex in `image-dom-mutator` to import specific settings from the renderer process.
+ */
 class FListImagePreviewDomMutator {
     constructor(settings) {
         /* ## SETTINGS_START ## */
@@ -194,7 +197,7 @@ class FListImagePreviewDomMutator {
 
 
     async attemptPlay(img, lessStrict) {
-        this.debug('attemptPlay', img, lessStrict);
+        //this.debug('attemptPlay', img, lessStrict);
 
         try {
             if (
@@ -206,17 +209,15 @@ class FListImagePreviewDomMutator {
             )
             {
                 img.onpause = () => {
-                    img.muted = true;
                     img.loop = true;
                     img.play();
                 };
 
-                img.muted = true;
+                img.volume = window.volume.value() / 100;
                 img.loop = true;
 
                 const result = await img.play();
 
-                img.muted = true;
                 img.loop = true;
 
                 this.debug('attemptPlay result', result);
@@ -313,11 +314,11 @@ class FListImagePreviewDomMutator {
             html {
                 ${this.getWrapperStyleOverrides()}
             }
-            
+
             body {
                 ${this.getWrapperStyleOverrides()}
             }
-        
+
             #flistWrapper img, #flistWrapper video {
                 ${this.getImageStyleOverrides()}
             }
