@@ -250,10 +250,10 @@
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'));
 
-            this.dates.forEach(async d => {
+            for (const d of this.dates) {
                 const messages = await core.logs.getLogs(char, convKey, d);
                 zip.addFile(`${formatDate(d)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
-            });
+            }
 
             this.download(`${fileName}.zip`, URL.createObjectURL(zip.build()));
         }
@@ -266,15 +266,15 @@
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'));
 
-            this.conversations.forEach(async c => {
+            for (const c of this.conversations) {
                 zip.addFile(`${c.name}/`, '');
                 const dates = await core.logs.getLogDates(char, c.key);
 
-                dates.forEach(async d => {
+                for (const d of dates) {
                     const messages = await core.logs.getLogs(char, c.key, d);
                     zip.addFile(`${c.name}/${formatDate(d)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
-                });
-            })
+                }
+            }
 
             this.download(`${char}.zip`, URL.createObjectURL(zip.build()));
         }
