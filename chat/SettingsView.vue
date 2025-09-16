@@ -114,10 +114,10 @@
             </div>
             <div class="form-group"><hr></div>
             <div class="form-group">
-                <label class="control-label" :for="notifyFriendSignIn">
+                <label class="control-label" for="notifyFriendSignIn">
                     {{l('settings.friendSignIn')}}
                 </label>
-                <select class="form-control" :id="notifyFriendSignIn" v-model="notifyFriendSignIn">
+                <select class="form-control" id="notifyFriendSignIn" v-model="notifyFriendSignIn">
                     <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
                     <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
                     <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
@@ -125,10 +125,10 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="control-label" :for="notifyOnFriendMessage">
+                <label class="control-label" for="notifyOnFriendMessage">
                     {{l('settings.friendMessageNotification')}}
                 </label>
-                <select class="form-control" :id="notifyOnFriendMessage" v-model="notifyOnFriendMessage">
+                <select class="form-control" id="notifyOnFriendMessage" v-model="notifyOnFriendMessage">
                     <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
                     <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
                     <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
