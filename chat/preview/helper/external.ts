@@ -26,6 +26,7 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
 
             // tslint:disable-next-line:no-floating-promises
             webview.stop();
+            webview.setAudioMuted(true);
 
             webview.loadURL('about:blank')
                 .catch(
@@ -109,7 +110,7 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
             this.ratio = null;
 
             webview.stop();
-            webview.setAudioMuted(true);
+            webview.setAudioMuted(false);
 
             // Broken promise chain on purpose
             // tslint:disable-next-line:no-floating-promises
@@ -122,15 +123,13 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
                         webview.stop();
 
                         await webview.loadURL(finalUrl);
-
-                        webview.setAudioMuted(true);
                     }
                 )
                 .catch(
                     (err: any) => {
                         // Standard error when closing the image viewer while it's trying to load an image.
-                        if (err.code !== "ERR_FAILED")
-                            console.warn('webview.loadURL() in show()', err);
+                        if (!err.message.includes('ERR_FAILED (-2)'))
+                            console.warn('webview.loadURL() in show()', typeof err, { err });
                     }
                 );
 

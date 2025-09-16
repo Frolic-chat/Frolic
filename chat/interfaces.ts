@@ -212,6 +212,7 @@ export namespace Settings {
 
     export interface Settings {
         readonly playSound: boolean;
+        readonly notifyVolume: number;
         readonly clickOpensMessage: boolean;
         readonly disallowedTags: ReadonlyArray<string>;
         readonly notifications: boolean;
@@ -241,6 +242,7 @@ export namespace Settings {
 
         readonly risingAdScore: boolean;
         readonly risingLinkPreview: boolean;
+        readonly linkPreviewVolume: number;
         readonly risingAutoCompareKinks: boolean;
 
         readonly risingAutoExpandCustomKinks: boolean;
@@ -269,7 +271,8 @@ export interface Notifications {
     notify(conversation: Conversation, title: string, body: string, icon: string, sound: string): Promise<void>
     playSound(sound: string): void
     requestPermission(): Promise<void>
-    initSounds(sounds: ReadonlyArray<string>): Promise<void>
+    initSounds(sounds: ReadonlyArray<string>): Promise<void[]>
+    applyGlobalAudioVolume(volume: number): Promise<void>
 }
 
 export interface State {

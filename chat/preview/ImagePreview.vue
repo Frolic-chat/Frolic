@@ -9,9 +9,9 @@
             <a @click="toggleStickyMode()" :class="{toggled: sticky}" :title="l('preview.sticky')"><i class="fa fa-thumbtack"></i></a>
         </div>
 
-        <!-- note: preload requires a webpack config CopyPlugin configuration -->
+        <!-- note: preload requires a webpack config CopyPlugin configuration, which means make sure the preload="" script points to the compiled location. :) -->
         <webview
-            preload="./preview/assets/browser.pre.js"
+            preload="./assets/preview/browser.pre.js"
             src="about:blank"
             webpreferences="autoplayPolicy=no-user-gesture-required,contextIsolation,sandbox,disableDialogs,disableHtmlFullScreenWindowResize,webSecurity,enableWebSQL=no,nodeIntegration=no,nativeWindowOpen=no,nodeIntegrationInWorker=no,nodeIntegrationInSubFrames=no,webviewTag=no"
             enableremotemodule="false"
@@ -88,11 +88,6 @@
             // new ChannelPreviewHelper(this)
           ]
         );
-
-        // externalPreviewHelper = new ExternalImagePreviewHelper(this);
-        // localPreviewHelper = new LocalImagePreviewHelper(this);
-        // externalPreviewStyle: Record<string, any> = {};
-        // localPreviewStyle: Record<string, any> = {};
 
         url: string | null = null;
         domain: string | undefined;
@@ -174,6 +169,9 @@
 
             const webview = this.getWebview();
 
+            EventBus.$on('core-connected',       s => webview.send('volume-from-main', s.linkPreviewVolume));
+            EventBus.$on('configuration-update', s => webview.send('volume-from-main', s.linkPreviewVolume));
+
             // clear preview cache, particularly cookies
             // setInterval(
             //     () => remote.webContents.fromId(webview.getWebContentsId()).session.clearStorageData({storages: ['cookies', 'indexdb']}),
@@ -245,6 +243,9 @@
                 if (e.channel === 'webview.img') {
                     // tslint:disable-next-line:no-unsafe-any
                     this.updatePreviewSize(parseInt(e.args[0], 10), parseInt(e.args[1], 10));
+                }
+                else if (e.channel === 'webview.dom-loaded') {
+                    webview.send('volume-from-main', core.state.settings.linkPreviewVolume);
                 }
             });
 
@@ -401,7 +402,7 @@
 
             const due = url === this.exitUrl && this.exitInterval
                 ? 0
-                : 200;
+                : 225;
 
             this.url = url;
             this.domain = domain(url);
@@ -556,13 +557,13 @@
 
         reset(): void {
             this.previewManager = new PreviewManager(
-              this,
-              [
-                new ExternalImagePreviewHelper(this),
-                new LocalImagePreviewHelper(this),
-                new CharacterPreviewHelper(this),
-                // new ChannelPreviewHelper(this)
-              ]
+                this,
+                [
+                    new ExternalImagePreviewHelper(this),
+                    new LocalImagePreviewHelper(this),
+                    new CharacterPreviewHelper(this),
+                    // new ChannelPreviewHelper(this)
+                ]
             );
 
             this.url = null;

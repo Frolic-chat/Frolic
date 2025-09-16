@@ -44,13 +44,13 @@ export default class Notifications implements Interface {
             return;
 
         const audio = <HTMLAudioElement>document.getElementById(`soundplayer-${sound}`);
-        audio.volume = 1;
+
         audio.muted = false;
 
         audio.play().catch(e => console.error(e));
     }
 
-    async initSounds(sounds: ReadonlyArray<string>): Promise<void> {
+    async initSounds(sounds: ReadonlyArray<string>): Promise<void[]> {
         const promises = [];
 
         for (const sound of sounds) {
@@ -78,7 +78,15 @@ export default class Notifications implements Interface {
 
             promises.push(audio.play().catch(e => console.error(e)));
         }
-        return <any>Promise.all(promises); //tslint:disable-line:no-any
+
+        return Promise.all(promises); //tslint:disable-line:no-any
+    }
+
+    async applyGlobalAudioVolume(volume: number): Promise<void> {
+        await Promise.resolve(); // no-op await
+
+        Array.from(document.getElementsByTagName('audio'))
+            .forEach(a => a.volume = volume / 100);
     }
 
     async requestPermission(): Promise<void> {
