@@ -40,23 +40,31 @@ export default class Notifications implements Interface {
     }
 
     playSound(sound: string): void {
-        if(!core.state.settings.playSound) return;
+        if (!core.state.settings.playSound)
+            return;
+
         const audio = <HTMLAudioElement>document.getElementById(`soundplayer-${sound}`);
         audio.volume = 1;
         audio.muted = false;
-        const promise = audio.play();
-        if(promise instanceof Promise) promise.catch((e) => console.error(e));
+
+        audio.play().catch(e => console.error(e));
     }
 
     async initSounds(sounds: ReadonlyArray<string>): Promise<void> {
         const promises = [];
-        for(const sound of sounds) {
+
+        for (const sound of sounds) {
             const id = `soundplayer-${sound}`;
-            if(document.getElementById(id) !== null) continue;
+
+            if (document.getElementById(id) !== null)
+                continue;
+
             const audio = document.createElement('audio');
+
             audio.preload = 'auto';
             audio.id = id;
 
+            // Technically useless as our only remaining format is mp3.
             Object.entries(codecs).forEach(([ codec, format ]) => {
                 const src = document.createElement('source');
                 src.type = `audio/${codec}`;
@@ -68,9 +76,7 @@ export default class Notifications implements Interface {
             audio.volume = 0;
             audio.muted = true;
 
-            const promise = audio.play();
-            if(promise instanceof Promise)
-                promises.push(promise.catch((e) => console.error(e)));
+            promises.push(audio.play().catch(e => console.error(e)));
         }
         return <any>Promise.all(promises); //tslint:disable-line:no-any
     }
