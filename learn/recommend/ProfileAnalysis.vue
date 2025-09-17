@@ -43,13 +43,23 @@ export default class ProfileAnalysis extends Vue {
   analyzing = false;
   l = l;
 
-  async analyze() {
+  /**
+   * Analyze and report on a character. Currently only useful to analyze yourself.
+   * @param profile A character page from the API
+   */
+  async analyze(character?: string): Promise<void> {
+    if (!character)
+        character = core.characters.ownProfile?.character.name;
+
+    if (!character)
+        return;
+
     this.analyzing = true;
     this.recommendations = [];
 
-    const char = await methods.characterData(core.characters.ownProfile.character.name, core.characters.ownProfile.character.id, true);
-    const profile = new CharacterAnalysis(char.character);
-    const analyzer = new ProfileRecommendationAnalyzer(profile);
+    const char = await methods.characterData(character, undefined, true);
+    const matcher = new CharacterAnalysis(char.character);
+    const analyzer = new ProfileRecommendationAnalyzer(matcher);
 
     this.recommendations = await analyzer.analyze();
 
