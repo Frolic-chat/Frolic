@@ -79,7 +79,13 @@ export type EventCallback = (data: any) => void | Promise<void>;
 class EventBusManager {
     private callbacks: Record<string, EventCallback[]> = {};
 
+    /**
+     * If you're propogating values that can change during runtime, you should look into 'configuration-update' as well.
+     */
     $on(event: 'core-connected',         callback: (e: Settings) => void | Promise<void>): void;
+    /**
+     * You probably also want to register 'core-connected' to detect the initial settings set, as well.
+     */
     $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 

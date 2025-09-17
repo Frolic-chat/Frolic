@@ -687,16 +687,16 @@ class State implements Interfaces.State {
 
     async reloadSettings(): Promise<void> {
         //tslint:disable:strict-boolean-expressions
-        this.pinned = await core.settingsStore.get('pinned') || {private: [], channels: []};
-        this.modes  = await core.settingsStore.get('modes') || {};
+        this.pinned = await core.settingsStore.get('pinned') || { private: [], channels: [] };
+        this.modes  = await core.settingsStore.get('modes')  || {};
 
         for (const conversation of this.channelConversations)
-            conversation._isPinned = this.pinned.channels.indexOf(conversation.channel.id) !== -1;
+            conversation._isPinned = this.pinned.channels.includes(conversation.channel.id);
 
         for (const conversation of this.privateConversations)
-            conversation._isPinned = this.pinned.private.indexOf(conversation.name) !== -1;
+            conversation._isPinned = this.pinned.private.includes(conversation.name);
 
-        this.recent         = await core.settingsStore.get('recent') || [];
+        this.recent         = await core.settingsStore.get('recent')         || [];
         this.recentChannels = await core.settingsStore.get('recentChannels') || [];
 
         const settings = <{[key: string]: ConversationSettings}> await core.settingsStore.get('conversationSettings') || {};
@@ -1293,8 +1293,18 @@ export default function(this: any): Interfaces.State {
         state.selectedConversation.infoText = data.message;
         return addEventMessage(new EventMessage(data.message, time));
     });
-    connection.onMessage('UPT', async(data, time) => addEventMessage(new EventMessage(l('events.uptime',
-        data.startstring, data.channels.toString(), data.users.toString(), data.accepted.toString(), data.maxusers.toString()), time)));
+    connection.onMessage('UPT', async(data, time) =>
+        addEventMessage(new EventMessage(
+                            l('events.uptime',
+                                data.startstring,
+                                data.channels.toString(),
+                                data.users.toString(),
+                                data.accepted.toString(),
+                                data.maxusers.toString()
+                            ),
+                            time,
+                       ))
+    );
     connection.onMessage('ZZZ', async(data, time) => {
         state.selectedConversation.infoText = data.message;
         return addEventMessage(new EventMessage(data.message, time));

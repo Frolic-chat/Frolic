@@ -202,6 +202,7 @@
             core.watch(
                 () => core.conversations.hasNew,
                 hasNew => {
+                    // Does this work?
                     document.title = (hasNew ? '💬 ' : '') + l(core.connection.isOpen ? 'title.connected' : 'title', core.connection.character);
                 }
             );
