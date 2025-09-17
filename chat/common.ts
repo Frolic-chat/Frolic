@@ -13,15 +13,9 @@ export function characterImage(this: any | never, character: string): string {
     return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
 }
 
+const encoder = new TextEncoder();
 export function getByteLength(this: any | never, str: string): number {
-    let byteLen = 0;
-    for(let i = 0; i < str.length; i++) {
-        let c = str.charCodeAt(i);
-        if(c > 0xD800 && c < 0xD8FF) //surrogate pairs
-            c = (c - 0xD800) * 0x400 + str.charCodeAt(++i) - 0xDC00 + 0x10000;
-        byteLen += c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : c < 0x200000 ? 4 : c < 0x4000000 ? 5 : 6;
-    }
-    return byteLen;
+    return encoder.encode(str).length;
 }
 
 export class Settings implements ISettings {
