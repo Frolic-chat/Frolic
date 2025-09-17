@@ -234,8 +234,11 @@
 
         async toggleBookmark(): Promise<void> {
             try {
+                // just calls queryApi, like the usermenu does, so the rest of the logic should be the same.
                 await methods.bookmarkUpdate(this.character.character.id, !this.character.bookmarked);
                 this.character.bookmarked = !this.character.bookmarked;
+
+                void core.cache.profileCache.register(this.character);
             } catch(e) {
                 Utils.ajaxError(e, 'Unable to change bookmark state.');
             }
