@@ -113,9 +113,30 @@ import { MemoManager } from './character/memo';
             core.connection.send('IGN', {action: this.character!.isIgnored ? 'delete' : 'add', character: this.character!.name});
         }
 
-        setBookmarked(): void {
-            core.connection.queryApi(`bookmark-${this.character!.isBookmarked ? 'remove' : 'add'}.php`, {name: this.character!.name})
-                .catch((e: object) => alert(errorToString(e)));
+        /**
+         * Should this be converted to use the profile_api directly, since we're copping so much functionality from it?
+         */
+        async setBookmarked(): Promise<void> {
+            if (!this.character)
+                return; // Sanity check
+
+            const name = this.character.name;
+            const state = this.character.isBookmarked;
+
+            try {
+                await core.connection.queryApi(`bookmark-${state ? 'remove' : 'add'}.php`, { name });
+
+                const c = await core.cache.profileCache.get(name);
+
+                if (c) {
+                    c.character.bookmarked = !state;
+
+                    void core.cache.profileCache.register(c.character);
+                }
+            }
+            catch (e) {
+                alert(errorToString(e));
+            }
         }
 
         setHidden(): void {
