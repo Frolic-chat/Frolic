@@ -314,9 +314,12 @@ Current log location: {1}`,
     'settings.browser.incognito.auto': 'Detect',
     'settings.browser.incognito.auto.warning': 'No known incognito mode for this browser.',
     'fixLogs.action': 'Fix corrupted logs',
-    'fixLogs.text': `There are a few reason log files can become corrupted - log files from old versions with bugs that have since been fixed or incomplete file operations caused by computer crashes are the most common.
-If one of your log files is corrupted, you may get an "Unknown Type" error when you log in or when you open a specific tab. You may also experience other issues.
+    'fixLogs.text': `Logs are only "corrupt" if you're having trouble viewing them in the app. If you can view your logs in the app but something is going wrong while exporting them, then your logs are fine! Please report the issue with exporting to the developers.
+
+If one of your log files is corrupted, you may get an "Unknown Type" error when you log in or when you open a specific tab. You may also experience other issues related to text scrollback and loading previous messages.
+
 This is not a tool you should use if you're not sure it's absolutely necessary. It will go through and rewrite all of your log files.
+
 Once this process has started, do not interrupt it or your logs will get corrupted even worse.`,
     'fixLogs.character': 'Character',
     'fixLogs.error': 'An error has occurred while attempting to fix your logs. Please ask in for further assistance in the Helpdesk channel.',
