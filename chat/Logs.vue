@@ -92,22 +92,20 @@
         const front = html ? '<div class="messages bbcode">' : '',
               back  = html ? '</div>'                        : '';
 
+        const char_transform = html
+            ? (c: string) => {
+                const gender = core.characters.get(c).gender?.toLowerCase() ?? 'none';
+                return `<span class="user-view gender-${gender}">${c}</span>`;
+            }
+            : undefined;
+        const text_transform = html
+            ? (t: string) => core.bbCodeParser.parseEverything(t).innerHTML
+            : undefined
+
         return front + messages.reduce((acc, x) =>
-                acc + messageToString(
-                    x,
-                    date => formatTime(date, true),
-                    html
-                        ? c => {
-                            const gender = core.characters.get(c).gender?.toLowerCase() ?? 'none';
-                            return `<span class="user-view gender-${gender}">${c}</span>`;
-                        }
-                        : undefined,
-                    html
-                        ? t => core.bbCodeParser.parseEverything(t).innerHTML
-                        : undefined
-                ),
-                start
-            ) + back;
+            acc + messageToString(x, date => formatTime(date, true), char_transform, text_transform),
+            start
+        ) + back;
     }
 
     @Component({
