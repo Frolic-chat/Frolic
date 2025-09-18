@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
     <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="logs-dialog">
         <template slot="title">
@@ -85,27 +86,28 @@
 
     function getLogs(messages: ReadonlyArray<Conversation.Message>, html: boolean): string {
         const start = html
-            ? `<meta charset="utf-8"><style>body { padding: 10px; }${document.getElementById('themeStyle')!.innerText}</style>`
+            ? `<meta charset="utf-8"><style>body { padding: 10px; } .messages sub, .messages sup { line-height: inherit } ${document.getElementById('themeStyle')!.innerText}</style>`
             : '';
 
-        return '<div class="messages bbcode">'
-            + messages.reduce((acc, x) =>
+        const front = html ? '<div class="messages bbcode">' : '',
+              back  = html ? '</div>'                        : '';
+
+        return front + messages.reduce((acc, x) =>
                 acc + messageToString(
                     x,
                     date => formatTime(date, true),
                     html
                         ? c => {
-                            const gender = core.characters.get(c).gender;
-                            return `<span class="user-view gender-${gender ? gender.toLowerCase() : 'none'}">${c}</span>`;
+                            const gender = core.characters.get(c).gender?.toLowerCase() ?? 'none';
+                            return `<span class="user-view gender-${gender}">${c}</span>`;
                         }
                         : undefined,
                     html
-                        ? t => `${core.bbCodeParser.parseEverything(t).innerHTML}`
+                        ? t => core.bbCodeParser.parseEverything(t).innerHTML
                         : undefined
                 ),
                 start
-            )
-            + '</div>';
+            ) + back;
     }
 
     @Component({

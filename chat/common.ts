@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import {isToday} from 'date-fns';
 import {Keys} from '../keys';
 import {Character, Conversation, Settings as ISettings} from './interfaces';
@@ -140,15 +141,32 @@ export function formatTime(this: any | never, date: Date, noDate: boolean = fals
 export function messageToString(
     this: any | never,
     msg: Conversation.Message,
-    timeFormatter: (date: Date) => string = formatTime,
-    characterTransform: (str: string) => string = (x) => x,
-    textTransform: (str: string) => string = (x) => x
+    timeFormatter:      (date: Date)  => string = formatTime,
+    characterTransform: (str: string) => string = x => x,
+    textTransform:      (str: string) => string = x => x
 ): string {
-    let text = `[${timeFormatter(msg.time)}] `;
-    if(msg.type !== Conversation.Message.Type.Event)
-        text += (msg.type === Conversation.Message.Type.Action ? '*' : '') + characterTransform(msg.sender.name) +
-            (msg.type === Conversation.Message.Type.Message ? ':' : '');
-    return `${text} ${textTransform(msg.text)}\r\n`;
+    const timestamp        = `[${timeFormatter(msg.time)}]`;
+    const action_indicator = msg.type === Conversation.Message.Type.Action  ? '*' : '';
+    let character_name     = '';
+    const name_msg_break   = msg.type === Conversation.Message.Type.Message ? ':' : '';
+    let body: string | undefined;
+
+    if (msg.type !== Conversation.Message.Type.Event) {
+        character_name = characterTransform(msg.sender.name);
+        body           = textTransform(msg.text.trim());
+    }
+    else { // Events frequently have a character.
+        const split = msg.text.match(/\[user\]([^\[]*)\[\/user\](.*)/);
+        if (split?.[1]) {
+            character_name = characterTransform(split[1]);
+            body           = textTransform(split[2].trim());
+        }
+        else {
+            body = textTransform(msg.text.trim());
+        }
+    }
+
+    return `${timestamp} ${action_indicator + character_name + name_msg_break} ${body}\r\n`;
 }
 
 export function getKey(e: KeyboardEvent): Keys {
