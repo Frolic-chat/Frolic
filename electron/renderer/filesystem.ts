@@ -38,6 +38,9 @@ interface IndexItem {
     offsets: number[]
 }
 
+/**
+ * `key` is the name of the index file with the .idx chopped off.
+ */
 interface Index {
     [key: string]: IndexItem | undefined
 }
