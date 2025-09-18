@@ -178,7 +178,7 @@
             </template>
             <template v-slot:toolbar-end>
                 <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
-                    {{ getByteLength(conversation.enteredText) }} / {{ conversation.maxMessageLength }}
+                    {{ messageLength }} / {{ conversation.maxMessageLength }}
                 </div>
                 <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
                     <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
@@ -207,7 +207,7 @@
         <ad-view ref="adViewer" v-if="isPrivate(conversation) && conversation.character" :character="conversation.character"></ad-view>
         <channel-list ref="channelList" v-if="isPrivate(conversation)" :character="conversation.character"></channel-list>
         <modal :action="l('user.memo.action')" ref="userMemoEditor" @submit="updateMemo" dialogClass="w-100">
-            <div style="float:right;text-align:right;">{{getByteLength(editorMemo)}} / 1000</div>
+            <div style="float:right;text-align:right;">{{ memoLength }} / 1000</div>
             <textarea class="form-control" v-model="editorMemo" maxlength="1000"></textarea>
         </modal>
     </div>
@@ -264,7 +264,6 @@
         descriptionExpanded = false;
         l = l;
         extraButtons: EditorButton[] = [];
-        getByteLength = getByteLength;
         tabOptions: string[] | undefined;
         tabOptionsIndex!: number;
         tabOptionSelection!: EditorSelection;
@@ -320,6 +319,9 @@
         memoManager?: MemoManager;
 
         ownName?: string;
+
+        get messageLength() { return getByteLength(this.conversation.enteredText) }
+        get memoLength()    { return getByteLength(this.editorMemo)               }
 
         @Hook('beforeMount')
         async onBeforeMount(): Promise<void> {

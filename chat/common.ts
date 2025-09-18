@@ -4,6 +4,11 @@ import {Keys} from '../keys';
 import {Character, Conversation, Settings as ISettings} from './interfaces';
 import core from './core';
 
+const encode = new TextEncoder().encode;
+export function getByteLength(s: string ): number {
+    return encode(s).length;
+}
+
 export function profileLink(this: any | never, character: string): string {
     return `https://www.f-list.net/c/${character}`;
 }
@@ -12,11 +17,6 @@ export function characterImage(this: any | never, character: string): string {
     const c = core.characters.get(character);
 
     return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
-}
-
-const encoder = new TextEncoder();
-export function getByteLength(this: any | never, str: string): number {
-    return encoder.encode(str).length;
 }
 
 export class Settings implements ISettings {

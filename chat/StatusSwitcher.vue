@@ -16,7 +16,7 @@
             <label class="control-label">{{l('chat.setStatus.message')}}</label>
             <editor id="text" v-model="text" classes="form-control" maxlength="255">
                 <div class="bbcode-editor-controls">
-                    {{getByteLength(text)}} / 255
+                    {{ textLength }} / 255
                 </div>
             </editor>
         </div>
@@ -34,7 +34,7 @@
     import Dropdown from '../components/Dropdown.vue';
     import Modal from '../components/Modal.vue';
     import {Editor} from './bbcode';
-    import {getByteLength} from './common';
+    import { getByteLength } from './common';
     import core from './core';
     import {Character, userStatuses} from './interfaces';
     import l from './localize';
@@ -49,7 +49,6 @@
         enteredText: string | undefined;
         statuses = userStatuses;
         l = l;
-        getByteLength = getByteLength;
         getStatusIcon = getStatusIcon;
 
         get status(): Character.Status {
@@ -66,6 +65,10 @@
 
         set text(text: string) {
             this.enteredText = text;
+        }
+
+        get textLength() {
+            return getByteLength(this.text);
         }
 
         get character(): Character {
