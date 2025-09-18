@@ -18,13 +18,15 @@ const electronPlat = [ 'linux', 'win32', 'darwin', 'mas' ];
 const electronArch = [ 'ia32', 'x64', 'armv7l', 'arm64', 'mips64el', 'universal' ];
 
 const DEFAULT_PLAT = [ process.platform ];
-const DEFAULT_ARCH = [ process.arch ];
+const DEFAULT_ARCH = [ process.arch     ];
 
 const platforms = process.argv.length > 2
+               && process.argv.filter(plat => electronPlat.includes(plat)).length
     ? process.argv.filter(plat => electronPlat.includes(plat))
     : DEFAULT_PLAT;
 
 const architectures = process.argv.length > 2
+                   && process.argv.filter(arch => electronArch.includes(arch)).length
     ? process.argv.filter(arch => electronArch.includes(arch))
     : DEFAULT_ARCH;
 
