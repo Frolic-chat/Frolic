@@ -80,6 +80,10 @@
     import Zip from './zip';
     import { Dialog } from '../helpers/dialog';
 
+    function isChannelKey(key: string): boolean {
+        return key.startsWith('#');
+    }
+
     function formatDate(this: void, date: Date): string {
         return format(date, 'yyyy-MM-dd');
     }
@@ -234,10 +238,23 @@
             if (!this.selectedConversation || !this.selectedDate || !this.messages.length)
                 return;
 
-            const html = Dialog.confirmDialog(l('logs.html'));
-            const name = `${this.selectedConversation.name}-${formatDate(new Date(this.selectedDate))}.${html ? 'html' : 'txt'}`;
+            const conv_key = this.selectedConversation.key;
+            const conv_name = this.selectedConversation.name;
 
-            this.download(name, `data:${encodeURIComponent(name)},${encodeURIComponent(getLogs(this.messages, html))}`);
+            const conv_title = isChannelKey(conv_key)
+                ? `${conv_name} (${conv_key})`
+                : conv_name;
+
+            const date = formatDate(new Date(this.selectedDate));
+
+            const html = Dialog.confirmDialog(l('logs.html'), {
+                yes: l('logs.exportHtml'),
+                no:  l('logs.exportPlaintext'),
+            });
+
+            const file_name = `${conv_title} - ${date}.${html ? 'html' : 'txt'}`;
+
+            this.download(file_name, `data:${encodeURIComponent(file_name)},${encodeURIComponent(getLogs(this.messages, html))}`);
         }
 
         async downloadConversation(): Promise<void> {
@@ -245,17 +262,27 @@
                 return;
 
             const char = this.selectedCharacter;
-            const convKey = this.selectedConversation.key;
-            const fileName = this.selectedConversation.name;
+            const conv_key = this.selectedConversation.key;
+            const conv_name = this.selectedConversation.name;
+
+            const folder_name = isChannelKey(conv_key)
+                ? `${conv_name} (${conv_key})`
+                : conv_name;
+
             const zip = new Zip();
-            const html = Dialog.confirmDialog(l('logs.html'));
+            const html = Dialog.confirmDialog(l('logs.html'), {
+                yes: l('logs.exportHtml'),
+                no:  l('logs.exportPlaintext'),
+            });
+
+            const ext = html ? 'html' : 'txt';
 
             for (const d of this.dates) {
-                const messages = await core.logs.getLogs(char, convKey, d);
-                zip.addFile(`${formatDate(d)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
+                const messages = await core.logs.getLogs(char, conv_key, d);
+                zip.addFile(`${folder_name}/${formatDate(d)}.${ext}`, getLogs(messages, html));
             }
 
-            this.download(`${fileName}.zip`, URL.createObjectURL(zip.build()));
+            this.download(`${folder_name} - up to ${formatDate(new Date())} (${ext}).zip`, URL.createObjectURL(zip.build()));
         }
 
         async downloadCharacter(): Promise<void> {
@@ -263,20 +290,29 @@
                 return;
 
             const char = this.selectedCharacter;
+
             const zip = new Zip();
-            const html = Dialog.confirmDialog(l('logs.html'));
+            const html = Dialog.confirmDialog(l('logs.html'), {
+                yes: l('logs.exportHtml'),
+                no:  l('logs.exportPlaintext'),
+            });
+
+            const ext = html ? 'html' : 'txt';
 
             for (const c of this.conversations) {
-                zip.addFile(`${c.name}/`, '');
+                const folder_name = isChannelKey(c.key)
+                    ? `${c.name} (${c.key})`
+                    : c.name;
+
                 const dates = await core.logs.getLogDates(char, c.key);
 
                 for (const d of dates) {
                     const messages = await core.logs.getLogs(char, c.key, d);
-                    zip.addFile(`${c.name}/${formatDate(d)}.${html ? 'html' : 'txt'}`, getLogs(messages, html));
+                    zip.addFile(`${folder_name}/${formatDate(d)}.${ext}`, getLogs(messages, html));
                 }
             }
 
-            this.download(`${char}.zip`, URL.createObjectURL(zip.build()));
+            this.download(`${char} - up to ${formatDate(new Date())} (${ext}).zip`, URL.createObjectURL(zip.build()));
         }
 
         async onOpen(): Promise<void> {
