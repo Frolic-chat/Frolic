@@ -1,10 +1,20 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+/**
+ * For reference of zip file specification, see:
+ * https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+ */
+import {getByteLength} from './common';
+const encoder = new TextEncoder();
 let crcTable!: number[];
 
 export default class Zip {
     private blob: BlobPart[] = [];
-    private files: {header: BlobPart[], offset: number, name: string}[] = [];
+    private files: {
+        header: BlobPart[],
+        offset: number,
+        name: string
+    }[] = [];
     private offset = 0;
-    private encoder = new TextEncoder();
 
     constructor() {
         if(crcTable !== undefined!) return;
@@ -27,23 +37,33 @@ export default class Zip {
     }
 
     addFile(name: string, content: string): void {
-        const nameBytes    = this.encoder.encode(name);
-        const contentBytes = this.encoder.encode(content);
+        const nameBytes    = encoder.encode(name);
+        const contentBytes = encoder.encode(content);
 
         const crc = this.crc32utf8(contentBytes);
 
         const file = {
             header: [
-                Uint16Array.of(0, 0, 0, 0, 0),
-                Uint32Array.of(crc, contentBytes.length, contentBytes.length),
-                Uint16Array.of(nameBytes.length, 0),
+                Uint16Array.of(0x0000,  // Version needed to extract,
+                               0x0800,  // General purpose bit flag,
+                               0x0000,  // Compression method,
+                               0x0000,  // Last mod file time,
+                               0x0000,  // Last mod file date,
+                              ),
+                Uint32Array.of(crc,                 // CRC32,
+                               contentBytes.length, // Compressed size,
+                               contentBytes.length, // Uncompressed size,
+                              ),
+                Uint16Array.of(nameBytes.length,    // File name length,
+                               0x0000,              // Extra field length,
+                              ),
             ],
             offset: this.offset,
-            name,
+            name, // Does this need fix?
         };
         this.blob.push(Uint32Array.of(0x04034B50));
         this.blob.push(...file.header);
-        this.blob.push(name, content);
+        this.blob.push(name, content); // Does this need fix?
         this.offset += nameBytes.length + contentBytes.length + 30;
         this.files.push(file);
     }
@@ -54,7 +74,7 @@ export default class Zip {
             this.blob.push(Uint16Array.of(0x4B50, 0x0201, 0));
             this.blob.push(...file.header);
             this.blob.push(Uint16Array.of(0, 0, 0, 0, 0), Uint32Array.of(file.offset), file.name);
-            this.offset += this.encoder.encode(file.name).length + 46;
+            this.offset += getByteLength(file.name) + 46; // Does this need fix?
         }
         this.blob.push(Uint16Array.of(0x4B50, 0x0605, 0, 0, this.files.length, this.files.length),
             Uint32Array.of(this.offset - start, start), Uint16Array.of(0));
