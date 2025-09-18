@@ -62,7 +62,7 @@
         </div>
         <div class="modal-backdrop show usermenu-backdrop" v-show="showContextMenu" v-if="character"></div>
         <modal :action="l('user.memo.action')" ref="memo" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
-            <div style="float:right;text-align:right;">{{memo ? getByteLength(memo) : 0}} / 1000</div>
+            <div style="float:right;text-align:right;">{{ memoLength }} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
         </modal>
         <ad-view ref="adViewDialog" :character="character" v-if="character"></ad-view>
@@ -92,7 +92,6 @@ import { MemoManager } from './character/memo';
         readonly reportDialog!: ReportDialog;
         l = l;
         showContextMenu = false;
-        getByteLength = getByteLength;
         character: Character | undefined;
         position = {left: '', top: ''};
         characterImage: string | undefined;
@@ -103,6 +102,10 @@ import { MemoManager } from './character/memo';
         memoLoading = false;
         match: MatchReport | null = null;
         memoManager?: MemoManager;
+
+        get memoLength() {
+            return this.memo ? getByteLength(this.memo) : 0;
+        }
 
         openConversation(jump: boolean): void {
             const conversation = core.conversations.getPrivate(this.character!);

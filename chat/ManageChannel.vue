@@ -17,7 +17,7 @@
             <label>{{l('manageChannel.description')}}</label>
             <bbcode-editor classes="form-control" id="description" v-model="description" style="position:relative" :maxlength="50000">
                 <div class="bbcode-editor-controls">
-                    {{getByteLength(description)}} / {{maxLength}}
+                    {{ descriptionLength }} / {{ maxLength }}
                 </div>
             </bbcode-editor>
         </div>
@@ -42,7 +42,7 @@
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
     import {Editor} from './bbcode';
-    import {getByteLength} from './common';
+    import { getByteLength } from './common';
     import core from './core';
     import {Channel, channelModes} from './interfaces';
     import l from './localize';
@@ -58,7 +58,6 @@
         mode = this.channel.mode;
         description = this.channel.description;
         l = l;
-        getByteLength = getByteLength;
         modAddName = '';
         opList = this.channel.opList.slice();
         maxLength = core.connection.vars.cds_max;
@@ -76,6 +75,10 @@
 
         get isChannelOwner(): boolean {
             return this.channel.owner === core.connection.character || core.characters.ownCharacter.isChatOp;
+        }
+
+        get descriptionLength() {
+            return getByteLength(this.description);
         }
 
         modAdd(): void {
