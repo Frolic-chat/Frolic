@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 const strings = {
     'action.resetZoom': 'Reset Zoom',
     'action.zoomIn': 'Zoom In',
@@ -169,6 +170,8 @@ Gear Menu -> Frolic -> Custom browser`,
     'logs.html': 'Chat logs can be exported as HTML or as plaintext with BBCode markup.',
     'logs.exportHtml': 'HTML',
     'logs.exportPlaintext': 'BBCode',
+    'logs.pleaseWait': 'Please wait...',
+    'logs.inProgress': "We're gathering your logs. This can take a long time for an extensive history!",
     'user.profile': 'Profile',
     'user.message': 'Open conversation',
     'user.messageJump': 'View conversation',

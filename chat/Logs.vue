@@ -62,6 +62,14 @@
             </div>
             <input class="form-control" v-model="filter" :placeholder="l('general.filter')" v-show="messages" type="text"/>
         </div>
+        <div v-show="waitingOnZipping" class="modal-backdrop log-zipper-pleasewait">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">{{ l('logs.pleaseWait') }}</h3>
+                    <p class="card-text">{{ l('logs.inProgress') }}</p>
+                </div>
+            </div>
+        </div>
     </modal>
 </template>
 
@@ -140,6 +148,7 @@
         windowStart = 0;
         windowEnd = 0;
         resizeListener?: () => void;
+        waitingOnZipping = false;
 
         get displayedMessages(): ReadonlyArray<Conversation.Message> {
             if (this.selectedDate)
@@ -234,9 +243,12 @@
             });
         }
 
-        downloadDay(): void {
+        async downloadDay(): Promise<void> {
             if (!this.selectedConversation || !this.selectedDate || !this.messages.length)
                 return;
+
+            this.waitingOnZipping = true;
+            await Promise.resolve();
 
             const conv_key = this.selectedConversation.key;
             const conv_name = this.selectedConversation.name;
@@ -255,11 +267,16 @@
             const file_name = `${conv_title} - ${date}.${html ? 'html' : 'txt'}`;
 
             this.download(file_name, `data:${encodeURIComponent(file_name)},${encodeURIComponent(getLogs(this.messages, html))}`);
+
+            this.waitingOnZipping = false;
         }
 
         async downloadConversation(): Promise<void> {
             if (!this.selectedConversation)
                 return;
+
+            this.waitingOnZipping = true;
+            await Promise.resolve();
 
             const char = this.selectedCharacter;
             const conv_key = this.selectedConversation.key;
@@ -283,11 +300,16 @@
             }
 
             this.download(`${folder_name} - up to ${formatDate(new Date())} (${ext}).zip`, URL.createObjectURL(zip.build()));
+
+            this.waitingOnZipping = false;
         }
 
         async downloadCharacter(): Promise<void> {
             if (!this.selectedCharacter || !Dialog.confirmDialog(l('logs.confirmExport', this.selectedCharacter)))
                 return;
+
+            this.waitingOnZipping = true;
+            await Promise.resolve();
 
             const char = this.selectedCharacter;
 
@@ -313,6 +335,8 @@
             }
 
             this.download(`${char} - up to ${formatDate(new Date())} (${ext}).zip`, URL.createObjectURL(zip.build()));
+
+            this.waitingOnZipping = false;
         }
 
         async onOpen(): Promise<void> {
@@ -462,5 +486,18 @@
     .logs-dialog .modal-body {
         display: flex;
         flex-direction: column;
+    }
+    .modal-backdrop.log-zipper-pleasewait {
+        z-index: 1051; /* Bootstrap language for "just above modal" */
+        /* opacity: 1;
+
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; */
+
+        background-color: color-mix(in oklab, var(--secondary) 24%, transparent);
+        pointer-events: all;
     }
 </style>
