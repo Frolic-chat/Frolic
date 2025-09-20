@@ -80,13 +80,20 @@
     import FilterableSelect from '../components/FilterableSelect.vue';
     import Modal from '../components/Modal.vue';
     import {Keys} from '../keys';
-    import {formatTime, getKey, messageToString} from './common';
+    import {formatTime, getKey, messageToString, sanitizeFilenameForWindows, sanitizeFilenameForUnixlike } from './common';
     import core from './core';
     import {Conversation, Logs as LogInterface} from './interfaces';
     import l from './localize';
     import MessageView from './message_view';
     import Zip from './zip';
     import { Dialog } from '../helpers/dialog';
+
+    function sanitizeFilename(s: string): string {
+        if (process.platform === 'win32')
+            return sanitizeFilenameForWindows(s);
+        else
+            return sanitizeFilenameForUnixlike(s);
+    }
 
     function isChannelKey(key: string): boolean {
         return key.startsWith('#');
@@ -254,8 +261,8 @@
             const conv_name = this.selectedConversation.name;
 
             const conv_title = isChannelKey(conv_key)
-                ? `${conv_name} (${conv_key})`
-                : conv_name;
+                ? sanitizeFilename(`${conv_name} (${conv_key})`)
+                : sanitizeFilename(conv_name);
 
             const date = formatDate(new Date(this.selectedDate));
 
@@ -283,8 +290,8 @@
             const conv_name = this.selectedConversation.name;
 
             const folder_name = isChannelKey(conv_key)
-                ? `${conv_name} (${conv_key})`
-                : conv_name;
+                ? sanitizeFilename(`${conv_name} (${conv_key})`)
+                : sanitizeFilename(conv_name);
 
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'), {
@@ -323,8 +330,8 @@
 
             for (const c of this.conversations) {
                 const folder_name = isChannelKey(c.key)
-                    ? `${c.name} (${c.key})`
-                    : c.name;
+                    ? sanitizeFilename(`${c.name} (${c.key})`)
+                    : sanitizeFilename(c.name);
 
                 const dates = await core.logs.getLogDates(char, c.key);
 

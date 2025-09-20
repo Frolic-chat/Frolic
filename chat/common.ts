@@ -9,6 +9,23 @@ export function getByteLength(s: string ): number {
     return encode(s).length;
 }
 
+/**
+ * Remove: \ / : * ? " < > | from the string to make it compatible with NTFS.
+ * @param fn A file name.
+ */
+export function sanitizeFilenameForWindows(fn: string): string {
+    return fn.replaceAll(/[\\/:*?"<>|]/, '_');
+}
+
+/**
+ * Remove: / to make the filename compatible with linux.
+ * NUL byte probably doesn't need to be escaped
+ * @param fn A file name.
+ */
+export function sanitizeFilenameForUnixlike(fn: string): string {
+    return fn.replaceAll(/[/\0]/, '_');
+}
+
 export function profileLink(this: any | never, character: string): string {
     return `https://www.f-list.net/c/${character}`;
 }
