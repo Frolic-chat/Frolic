@@ -1,5 +1,5 @@
 # License
-Frolic! Copyright (C) 2025 Respective contributors listed below
+Frolic! Copyright (C) 2025 [Fire Under the Mountain](https://github.com/FireUnderTheMountain)
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
@@ -7,37 +7,13 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU Affero General Public License along with this program; if not, see <https://www.gnu.org/licenses>.
 
-[Full GNU AGPL 3.0 license text](./COPYING.AGPL)
+**[Click to read the full GNU AGPL 3.0 license text.](./COPYING.AGPL)**
+
+Note that the GNU **Affero** GPL has additional terms over the standard GNU GPL for operating it over network infrastructure.
+
+This program incorporates Expat licensed code. You must agree to [the Expat license](./COPYING.MIT) to distribute those portions. The Expat requirements are a subset of the GNU AGPL requirements, so by abiding by the AGPL terms, you are abiding by the Expat terms as well.
 
 The AGPL license covers all of the code that contributes to Frolic. Additional assets may be subject to their own copyright.
-
-Please note that the GNU **Affero** GPL has additional terms over the standard GNU GPL for operating it over network infrastructure.
-
-# Contributors
-
-> Want to contribute? Please [continue here](https://frolic-chat.github.io/wiki/development/development.html).
-
-The following users made contributions to Frolic subject to the terms of the GNU Affero General Public License version 3 or later:
-* [Fire Under the Mountain](https://github.com/FireUnderTheMountain)
-
-The following users made contributions to Frolic or its predecessors subject to the terms of The Expat License, which is included in this repo as [`COPYING.MIT`](./COPYING.MIT):
-#### Frolic contributors:
-* [Fire Under the Mountain](https://github.com/FireUnderTheMountain)
-* [FatCatClient](https://github.com/FatCatClient)
-
-#### F-Chat Rising contributors:
-* [Mr Stallion, esq.](https://github.com/hearmeneigh)
-* [FatCatClient](https://github.com/FatCatClient)
-* [twilight-sparkle-irl](https://github.com/twilight-sparkle-irl)
-* [ButterCheezii](https://github.com/ButterCheezii)
-* [WhiteHusky](https://github.com/WhiteHusky)
-* [Abeehiltz](https://github.com/Abeehiltz)
-* [greyhoof](https://github.com/greyhoof)
-* [Nensec](https://github.com/Nensec)
-
-#### F-Chat contributors:
-* [F-List Team](https://github.com/f-list)
-* Maya Wolf <maya@f-list.net>
 
 # Other Notes
 ## Source Code
