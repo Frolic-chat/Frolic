@@ -80,13 +80,28 @@
     import FilterableSelect from '../components/FilterableSelect.vue';
     import Modal from '../components/Modal.vue';
     import {Keys} from '../keys';
-    import {formatTime, getKey, messageToString} from './common';
+    import {formatTime, getKey, messageToString, sanitizeFilenameForWindows, sanitizeFilenameForUnixlike } from './common';
     import core from './core';
     import {Conversation, Logs as LogInterface} from './interfaces';
     import l from './localize';
     import MessageView from './message_view';
     import Zip from './zip';
     import { Dialog } from '../helpers/dialog';
+
+    /**
+     * Sanitize invalid symbols from file and folder names. Useful to sanitize names inside of the zip files, as zip files are portable across operating systems.
+     *
+     * Filesystem-facing names do not need to be Windows-sanitized; electron presents the user with a dialog to save the file and won't allow you to save an invalid filename.
+     * @param s Filename to sanitize
+     * @param forWindows Default: true; keep true for any folder/file inside a zip file.
+     */
+    function sanitizeFilename(s: string, forWindows?: boolean): string;
+    function sanitizeFilename(s: string, forWindows: boolean = true): string {
+        if (forWindows || process.platform === 'win32')
+            return sanitizeFilenameForWindows(s);
+        else
+            return sanitizeFilenameForUnixlike(s);
+    }
 
     function isChannelKey(key: string): boolean {
         return key.startsWith('#');
@@ -250,12 +265,12 @@
             this.waitingOnZipping = true;
             await Promise.resolve();
 
-            const conv_key = this.selectedConversation.key;
-            const conv_name = this.selectedConversation.name;
+            const char = this.selectedCharacter;
+            const c    = this.selectedConversation;
 
-            const conv_title = isChannelKey(conv_key)
-                ? `${conv_name} (${conv_key})`
-                : conv_name;
+            const c_title = isChannelKey(c.key)
+                ? sanitizeFilename(`${c.name} (${c.key})`, false)
+                : sanitizeFilename(`${char} and ${c.name}`, false);
 
             const date = formatDate(new Date(this.selectedDate));
 
@@ -264,9 +279,12 @@
                 no:  l('logs.exportPlaintext'),
             });
 
-            const file_name = `${conv_title} - ${date}.${html ? 'html' : 'txt'}`;
+            const ext = html ? 'html' : 'txt';
 
-            this.download(file_name, `data:${encodeURIComponent(file_name)},${encodeURIComponent(getLogs(this.messages, html))}`);
+            const file_name = `${c_title} - ${date}.${ext}`;
+            const file_data = getLogs(this.messages, html);
+
+            this.download(file_name, `data:${encodeURIComponent(file_name)},${encodeURIComponent(file_data)}`);
 
             this.waitingOnZipping = false;
         }
@@ -279,12 +297,11 @@
             await Promise.resolve();
 
             const char = this.selectedCharacter;
-            const conv_key = this.selectedConversation.key;
-            const conv_name = this.selectedConversation.name;
+            const c = this.selectedConversation;
 
-            const folder_name = isChannelKey(conv_key)
-                ? `${conv_name} (${conv_key})`
-                : conv_name;
+            const folder_name = isChannelKey(c.key)
+                ? sanitizeFilename(`${c.name} (${c.key})`)
+                : sanitizeFilename(`${char} and ${c.name}`);
 
             const zip = new Zip();
             const html = Dialog.confirmDialog(l('logs.html'), {
@@ -295,11 +312,11 @@
             const ext = html ? 'html' : 'txt';
 
             for (const d of this.dates) {
-                const messages = await core.logs.getLogs(char, conv_key, d);
+                const messages = await core.logs.getLogs(char, c.key, d);
                 zip.addFile(`${folder_name}/${formatDate(d)}.${ext}`, getLogs(messages, html));
             }
 
-            this.download(`${folder_name} - up to ${formatDate(new Date())} (${ext}).zip`, URL.createObjectURL(zip.build()));
+            this.download(`${folder_name} up to ${formatDate(new Date())} (${ext}).zip`, URL.createObjectURL(zip.build()));
 
             this.waitingOnZipping = false;
         }
@@ -323,8 +340,8 @@
 
             for (const c of this.conversations) {
                 const folder_name = isChannelKey(c.key)
-                    ? `${c.name} (${c.key})`
-                    : c.name;
+                    ? sanitizeFilename(`${char} - ${c.name} (${c.key})`)
+                    : sanitizeFilename(`${char} and ${c.name}`);
 
                 const dates = await core.logs.getLogDates(char, c.key);
 
