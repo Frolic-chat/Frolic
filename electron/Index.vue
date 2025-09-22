@@ -93,7 +93,7 @@
             </div>
         </modal>
         <modal :buttons="false" ref="profileViewer" dialogClass="profile-viewer" >
-            <character-page :authenticated="true" :oldApi="true" :name="profileName" :imagePreview="true" ref="characterPage"></character-page>
+            <character-page :authenticated="true" :oldApi="true" :name="profileName" ref="characterPage"></character-page>
             <template slot="title">
                 {{profileName}}
                 <a class="btn" @click="openProfileInBrowser"><i class="fa fa-external-link-alt"></i></a>
@@ -160,7 +160,7 @@
     import {SimpleCharacter} from '../interfaces';
     // import { BetterSqliteStore } from '../learn/store/better-sqlite3';
     // import { Sqlite3Store } from '../learn/store/sqlite3';
-    import CharacterPage from '../site/character_page/character_page.vue';
+    import CharacterPage from '../site/character_page/character_sheet.vue';
     import WordDefinition from '../learn/dictionary/WordDefinition.vue';
     import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
     import {GeneralSettings} from './common';
@@ -538,9 +538,9 @@
         }
 
 
-        reloadCharacter(): void {
+        reloadCharacter(/* payload: MouseEvent */): void {
             // tslint:disable-next-line: no-any no-unsafe-any
-            (this.$refs.characterPage as any).reload();
+            (this.$refs.characterPage as any).reload(/* payload.shiftKey || payload.button === 2 */);
         }
 
 

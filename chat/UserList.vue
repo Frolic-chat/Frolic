@@ -36,7 +36,7 @@
             {{l('userlist.profile')}}
         </a>
 
-        <character-page :authenticated="true" :oldApi="true" :name="profileName" :imagePreview="true" ref="characterPage"></character-page>
+        <character-page :authenticated="true" :oldApi="true" :name="profileName" ref="characterPage"></character-page>
     </div>
 </sidebar>
 </template>
@@ -51,7 +51,7 @@ import { isImportantToChannel } from './conversations';
 import l from './localize';
 import Sidebar from './Sidebar.vue';
 import UserView from './UserView.vue';
-import characterPage from '../site/character_page/character_page.vue';
+import characterPage from '../site/character_page/character_sheet.vue';
 import { profileLink } from './common';
 
 import { UserListSorter } from '../learn/matcher';
