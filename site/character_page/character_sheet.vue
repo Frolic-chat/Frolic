@@ -438,7 +438,7 @@
                 // Shouldn't this be where we decide to `refreshCharacter`?
             }
             else {
-                void this.updateMeta(this.name)
+                void this.updateMeta(this.character.character.name)
                     .catch(err => log.error('profile._getCharacter.updateMeta.error', err));
             }
 
@@ -491,7 +491,8 @@
 
                 this.updateMatches();
 
-                void this.updateMeta(this.name);
+                // This one should not have been a problem because of the early return if bad name match.
+                void this.updateMeta(this.character.character.name);
             }
             finally {
                 this.refreshing = false;
