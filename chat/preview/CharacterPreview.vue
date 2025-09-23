@@ -444,7 +444,7 @@ export default class CharacterPreview extends Vue {
 
     this.age = a.age ? this.readable(`${a.age}`) : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || undefined;
     this.species = a.species ? this.readable(Species[a.species]) : (rawSpecies && rawSpecies.string) || undefined;
-    this.kemonomimi = a.isKemonomimi ? this.readable('kemomimi') : undefined;
+    this.kemonomimi = a.isKemonomimi && this.species && !this.species.endsWith('mimi') ? this.readable('kemomimi') : undefined;
     this.gender = (a.gender && a.gender !== Gender.None) ? this.readable(Gender[a.gender]) : undefined;
     this.furryPref = a.furryPreference ? this.readable(furryPreferenceMapping[a.furryPreference]) : undefined;
     this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch) ? this.readable(SubDomRole[a.subDomRole]) : undefined;
