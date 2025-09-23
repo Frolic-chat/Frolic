@@ -46,7 +46,7 @@ export interface StoreMethods {
 
     hasPermission?(permission: string): boolean
 
-    imagesGet(id: number): Promise<CharacterImage[]>
+    imagesGet(id: number): Promise<CharacterImage[] | false>
     imageUrl(image: CharacterImage): string
     imageThumbUrl(image: CharacterImage): string
 

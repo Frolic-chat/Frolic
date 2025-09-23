@@ -250,8 +250,13 @@ async function friendsGet(id: number): Promise<SimpleCharacter[]> {
     return (await core.connection.queryApi<{friends: SimpleCharacter[]}>('character-friends.php', {id})).friends;
 }
 
-async function imagesGet(id: number): Promise<CharacterImage[]> {
-    return (await core.connection.queryApi<{images: CharacterImage[]}>('character-images.php', {id})).images;
+/**
+ * Update 2025: `{ images: false, error: "" }` is a valid response for no pictures.
+ * @param id
+ * @returns `false` is a new return.
+ */
+async function imagesGet(id: number): Promise<CharacterImage[] | false> {
+    return (await core.connection.queryApi<{ images: (CharacterImage[] | false) }>('character-images.php', {id})).images;
 }
 
 async function guestbookGet(id: number, offset: number): Promise<Guestbook> {

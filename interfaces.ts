@@ -27,10 +27,13 @@ export interface CharacterImageNew {
     sort_order:  number | null
 }
 
+/**
+ * Most images seem like old images. Is this based on API call or use of old/new API, or who knows?? Maybe it's based on the cycle of the moon, or how good the coffee was this morning.
+ */
 export interface CharacterImageOld {
     id:          number
     extension:   string
-    hash:        string
+    hash?:       string
     height:      number
     width:       number
     description: string
