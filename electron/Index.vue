@@ -694,6 +694,8 @@
 </script>
 
 <style lang="scss">
+@import "~bootstrap/scss/bootstrap";
+
     html, body, #page {
         height: 100%;
     }

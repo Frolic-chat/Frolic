@@ -6,58 +6,58 @@
             <div class="form-group">
                 <label class="control-label" for="disallowedTags">{{l('settings.disallowedTags')}}</label>
                 <input id="disallowedTags" class="form-control" v-model="disallowedTags"/>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="clickOpensMessage">
                     <input type="checkbox" id="clickOpensMessage" v-model="clickOpensMessage"/>
                     {{l('settings.clickOpensMessage')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="enterSend">
                     <input type="checkbox" id="enterSend" v-model="enterSend"/>
                     {{l('settings.enterSend')}}
                 </label>
-                <br v-show="enterSend">
-                <label v-show="enterSend" class="control-label" for="secondEnterSend">
+                <br>
+                <label class="control-label" for="secondEnterSend">
                     <input type="checkbox" id="secondEnterSend" v-model="secondEnterSend" :disabled="!enterSend"/>
                     {{l('settings.secondEnterSend')}}
                 </label>
-            </div>
+            </div><!-- ?? -->
             <div class="form-group">
                 <label class="control-label" for="showAvatars">
                     <input type="checkbox" id="showAvatars" v-model="showAvatars"/>
                     {{l('settings.showAvatars')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="colorBookmarks">
                     <input type="checkbox" id="colorBookmarks" v-model="colorBookmarks"/>
                     {{l('settings.colorBookmarks')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="animatedEicons">
                     <input type="checkbox" id="animatedEicons" v-model="animatedEicons"/>
                     {{l('settings.animatedEicons')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="idleTimer">{{l('settings.idleTimer')}}</label>
                 <input id="idleTimer" class="form-control" type="number" v-model="idleTimer" min="0" max="1440"/>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="messageSeparators">
                     <input type="checkbox" id="messageSeparators" v-model="messageSeparators"/>
                     {{l('settings.messageSeparators')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="bbCodeBar">
                     <input type="checkbox" id="bbCodeBar" v-model="bbCodeBar"/>
                     {{l('settings.bbCodeBar')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="logMessages">
                     <input type="checkbox" id="logMessages" v-model="logMessages"/>
@@ -70,48 +70,45 @@
                         {{l('settings.logChannels')}}
                     </label>
             </template>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="logAds">
                     <input type="checkbox" id="logAds" v-model="logAds"/>
                     {{l('settings.logAds')}}
                 </label>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="expensiveMemberList">
                     <input type="checkbox" id="expensiveMemberList" v-model="expensiveMemberList"/>
                     {{l('settings.expensiveMemberList')}}
-                </label>
+                </label><!-- done -->
                 <template v-if="expensiveMemberList">
                     <br>
                     <small>{{ l('settings.expensiveMemberList.selectedInfo') }}</small>
                 </template>
-            </div>
+            </div><!-- done -->
             <div class="form-group">
                 <label class="control-label" for="fontSize">{{l('settings.fontSize')}}</label>
                 <input id="fontSize" type="number" min="10" max="24" class="form-control" v-model="fontSize"/>
             </div>
-        </div>
+        </div><!-- done -->
         <div v-show="selectedTab === '1'">
             <div class="form-group">
                 <label class="control-label" for="playSound">
                     <input type="checkbox" id="playSound" v-model="playSound"/>
                     {{l('settings.playSound')}}
                 </label>
-                <template v-if="playSound">
-                    <br>
-                    <label class="control-label" for="alwaysNotify">
-                        <input type="checkbox" id="alwaysNotify" v-model="alwaysNotify" :disabled="!playSound"/>
-                        {{l('settings.alwaysNotify')}}
-                    </label>
-                </template>
-                <template v-if="playSound">
-                    <br>
-                    <label class="control-label" for="notifyVolume">
-                        {{ l('settings.notifyVolume', notifyVolume) }}
-                    </label>
-                    <input type="range" class="form-control-range" id="notifyVolume" v-model="notifyVolume">
-                </template>
+                <br>
+                <label class="control-label" for="alwaysNotify">
+                    <input type="checkbox" id="alwaysNotify" v-model="alwaysNotify" :disabled="!playSound"/>
+                    {{l('settings.alwaysNotify')}}
+                </label>
+                <br>
+                <label class="control-label" for="notifyVolume">
+                    {{ l('settings.notifyVolume', notifyVolume) }}
+                </label>
+                <input type="range" class="form-control-range" id="notifyVolume"
+                :disabled="!playSound" v-model="notifyVolume">
             </div>
             <div class="form-group">
                 <label class="control-label" for="notifications">
@@ -125,20 +122,20 @@
                     {{l('settings.friendSignIn')}}
                 </label>
                 <select class="form-control" id="notifyFriendSignIn" v-model="notifyFriendSignIn">
-                    <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
-                    <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
-                    <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
-                    <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
+                    <option :value="friendchooser.Friends">{{l('settings.relation.friendsOnly')}}</option>
+                    <option :value="friendchooser.Bookmarks">{{l('settings.relation.bookmarksOnly')}}</option>
+                    <option :value="friendchooser.Both">{{l('settings.relation.friendsAndBookmarks')}}</option>
+                    <option :value="friendchooser.NoOne">{{l('settings.relation.noOne')}}</option>
                 </select>
             </div>
             <div class="form-group">
                 <label class="control-label" for="notifyOnFriendMessage">
-                    {{l('settings.friendMessageNotification')}}
+                    {{l('settings.notifyOnFriendMessage')}}
                 </label>
                 <select class="form-control" id="notifyOnFriendMessage" v-model="notifyOnFriendMessage">
-                    <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
+                    <option :value="friendchooser.Friends">{{l('settings.relation.friendsOnly')}}</option>
                     <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
-                    <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
+                    <option :value="friendchooser.Both">{{l('settings.relation.friendsAndBookmarks')}}</option>
                     <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
                 </select>
             </div>
@@ -217,17 +214,13 @@
                     <input type="checkbox" id="risingLinkPreview" v-model="risingLinkPreview"/>
                     {{l('rising.preview.showLinkPopup')}}
                 </label>
-                <template v-if="risingLinkPreview">
-                    <template v-if="linkPreviewVolume >= 1">
-                        <br>
-                        <small>{{ l('settings.linkPreviewVolume.warning') }}</small>
-                    </template>
+                    <br>
+                    <small>{{ l('settings.linkPreviewVolume.warning') }}</small>
                     <br>
                     <label class="control-label" for="linkPreviewVolume">
                         {{ l('settings.linkPreviewVolume', linkPreviewVolume) }}
                     </label>
-                    <input type="range" class="form-control-range" id="linkPreviewVolume" v-model="linkPreviewVolume">
-                </template>
+                <input type="range" class="form-control-range" id="linkPreviewVolume" :disabled="!risingLinkPreview" v-model="linkPreviewVolume">
             </div>
 
             <div class="form-group">
@@ -332,10 +325,8 @@
                 <label class="control-label" for="risingFilter.hideChannelMembers">
                     <input type="checkbox" id="risingFilter.hideChannelMembers" v-model="risingFilter.hideChannelMembers"/>
                     {{l('rising.filter.hideMembers')}}
-                    <template v-if="risingFilter.hideChannelMembers">
-                        <br>
-                        <small>{{ l('settings.hideChannelMembers.selectedInfo') }}</small>
-                    </template>
+                    <br>
+                    <small>{{ l('settings.hideChannelMembers.selectedInfo') }}</small>
                 </label>
 
                 <label class="control-label" for="risingFilter.hidePublicChannelMessages">
@@ -483,7 +474,7 @@
     import Tabs from '../components/tabs';
     import core from './core';
     import {Settings as SettingsInterface} from './interfaces';
-    import {Conversation} from './interfaces';
+    import { Relation } from './interfaces';
     import l from './localize';
     import { SmartFilterSettings, SmartFilterSelection, smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
     import { ProfileCache } from '../learn/profile-cache';
@@ -497,7 +488,7 @@
     })
     export default class SettingsView extends CustomDialog {
         l = l;
-        friendchooser = Conversation.RelationChooser;
+        friendchooser = Relation.Chooser;
         availableImports: ReadonlyArray<string> = [];
         selectedTab = '0';
 
@@ -507,11 +498,12 @@
         clickOpensMessage!: boolean;
         disallowedTags!: string;
         notifications!: boolean;
-        notifyFriendSignIn!: Conversation.RelationChooser;
-        notifyOnFriendMessage!: Conversation.RelationChooser;
+        notifyFriendSignIn!: Relation.Chooser;
+        notifyOnFriendMessage!: Relation.Chooser;
         highlight!: boolean;
         highlightWords!: string;
         highlightUsers!: boolean;
+        highlightUsernames!: string;
         showBroadcastsInPMs!: boolean;
         showAvatars!: boolean;
         animatedEicons!: boolean;
@@ -643,7 +635,7 @@
         }
 
         async submit(): Promise<void> {
-            const oldRisingFilter = JSON.parse(JSON.stringify(core.state.settings.risingFilter));
+            const oldRisingFilter = structuredClone(core.state.settings.risingFilter);
 
             const idleTimer = parseInt(this.idleTimer, 10);
             const fontSize = parseFloat(this.fontSize);
@@ -666,6 +658,7 @@
                 highlight: this.highlight,
                 highlightWords: this.highlightWords.split(',').map((x) => x.trim()).filter((x) => x.length),
                 highlightUsers: this.highlightUsers,
+                highlightUsernames: this.highlightWords.split(',').map(x => x.trim()).filter(x => x.length),
                 showBroadcastsInPMs: this.showBroadcastsInPMs,
                 showAvatars: this.showAvatars,
                 animatedEicons: this.animatedEicons,
@@ -714,7 +707,7 @@
 
             console.log('SETTINGS', minAge, maxAge, core.state.settings);
 
-            const newRisingFilter = JSON.parse(JSON.stringify(core.state.settings.risingFilter));
+            const newRisingFilter = structuredClone(core.state.settings.risingFilter);
 
             if (!deepEqual(oldRisingFilter, newRisingFilter))
                 core.cache.rebuildFilters();

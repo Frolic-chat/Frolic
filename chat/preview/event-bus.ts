@@ -76,6 +76,11 @@ export interface ErrorEvent {
     fatal?:  boolean,
 }
 
+export interface NotificationChangeEvent {
+    old: boolean,
+    new: boolean,
+}
+
 export type EventCallback = (data: any) => void | Promise<void>;
 
 class EventBusManager {
@@ -90,6 +95,7 @@ class EventBusManager {
      */
     $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
     $on(event: 'smartfilters-update',   callback: (e: SmartFilterSettings) => void | Promise<void>): void;
+    $on(event: 'notification-setting',   callback: (e: NotificationChangeEvent) => void | Promise<void>): void;
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
@@ -187,6 +193,7 @@ class EventBusManager {
     $emit(event: 'core-connected',         data: Settings): void;
     $emit(event: 'configuration-update',   data: Settings): void;
     $emit(event: 'smartfilters-update',    data: SmartFilterSettings): void;
+    $emit(event: 'notification-setting',   data: NotificationChangeEvent): void;
     $emit(event: 'error',                  data: ErrorEvent): void;
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;

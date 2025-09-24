@@ -1,0 +1,111 @@
+/**
+Copyright (c) 2015 Robert McIntosh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+.range {
+    display: table;
+    position: relative;
+    height: 25px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.range input[type="range"] {
+    appearance: none !important;
+
+    display: table-cell;
+    width: 100%;
+    background-color: transparent;
+    height: 100%;
+}
+.range input[type="range"]::-webkit-slider-thumb {
+    appearance: none !important;
+
+    width: 11px;
+    height: 27px;
+    color: var(--light);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 4px;
+    background-color: var(--gray-dark);
+}
+
+.range output {
+    display: table-cell;
+    padding: 3px 5px 2px;
+    min-width: 40px;
+    background-color: var(--gray-dark);
+    text-align: center;
+    text-decoration: none;
+    width: 1%;
+    white-space: nowrap;
+    vertical-align: middle;
+    border-left:  1px solid var(--secondary);
+    border-right: 1px solid var(--secondary);
+
+    transition: all 0.5s ease;
+
+    user-select: none;
+}
+.range input[type="range"] {
+    outline: none;
+}
+
+.range.range-primary input[type="range"]::-webkit-slider-thumb {
+    background-color: var(--primary);
+}
+.range.range-primary output {
+    background-color: var(--primary);
+}
+.range.range-primary input[type="range"] {
+    outline-color: var(--primary);
+}
+
+.range.range-success input[type="range"]::-webkit-slider-thumb {
+    background-color: var(--success);
+}
+.range.range-success output {
+    background-color: var(--success);
+}
+.range.range-success input[type="range"] {
+    outline-color: var(--success);
+}
+
+.range.range-info input[type="range"]::-webkit-slider-thumb {
+    background-color: var(--info);
+}
+.range.range-info output {
+    background-color: var(--info);
+}
+.range.range-info input[type="range"] {
+    outline-color: var(--info);
+}
+
+.range.range-warning input[type="range"]::-webkit-slider-thumb {
+    background-color: var(--warning);
+}
+.range.range-warning output {
+    background-color: var(--warning);
+}
+.range.range-warning input[type="range"] {
+    outline-color: var(--warning);
+}
+
+.range.range-danger input[type="range"]::-webkit-slider-thumb {
+    background-color: var(--danger);
+}
+.range.range-danger output {
+    background-color: var(--danger);
+}
+.range.range-danger input[type="range"] {
+    outline-color: var(--danger);
+}

@@ -2,11 +2,19 @@
 
 import core from './core';
 import {Conversation, Notifications as Interface} from './interfaces';
+import { EventBus } from './preview/event-bus';
 
 const codecs = { mpeg: 'mp3' } as const;
 
 export default class Notifications implements Interface {
     isInBackground = false;
+
+    constructor() {
+        EventBus.$on('notification-setting', async e => {
+            if (!e.old && e.new)
+                await this.requestPermission();
+        });
+    }
 
     protected shouldNotify(conversation: Conversation): boolean {
         return core.characters.ownCharacter.status !== 'dnd' && (this.isInBackground ||

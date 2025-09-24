@@ -5,7 +5,7 @@ import { AdManager } from './ads/ad-manager';
 import { characterImage, ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
 import { sleep } from '../helpers/utils';
-import { Channel, Character, Conversation as Interfaces } from './interfaces';
+import { Channel, Character, Conversation as Interfaces, Relation } from './interfaces';
 import isChannel = Interfaces.isChannel;
 import l from './localize';
 import {CommandContext, isAction, isCommand, isWarn, parse as parseCommand} from './slash_commands';
@@ -253,7 +253,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         state.privateConversations.splice(state.privateConversations.indexOf(this), 1);
         delete state.privateMap[this.character.name.toLowerCase()];
         await state.savePinned();
-        if(state.selectedConversation === this) state.show(state.consoleTab);
+        if(state.selectedConversation === this) state.showHome();
     }
 
     async sort(newIndex: number): Promise<void> {
@@ -601,6 +601,18 @@ class ConsoleConversation extends Conversation {
     protected doSend(): void {
         this.errorText = l('chat.consoleChat');
     }
+
+    show(): void {
+        state.showHome();
+    }
+
+    showHome(): void {
+        state.showHome();
+    }
+
+    showConsole(): void {
+        state.showConsole();
+    }
 }
 
 class State implements Interfaces.State {
@@ -680,10 +692,33 @@ class State implements Interfaces.State {
 
     show(conversation: Conversation): void {
         if(conversation === this.selectedConversation) return;
+
+        if (conversation === this.consoleTab) {
+            this.showHome();
+            return;
+        }
+
         this.selectedConversation.onHide();
         conversation.unread = Interfaces.UnreadState.None;
         this.selectedConversation = conversation;
         EventBus.$emit('select-conversation', { conversation });
+    }
+
+    /**
+     * The first half of console's `show()`. This is invoked from `consoleTab.show()`
+     */
+    showHome(): void {
+        this.selectedConversation.onHide();
+        this.selectedConversation = this.consoleTab;
+    }
+
+    /**
+     * The second half of console's `show()`.
+     * Perform the two actions we skipped from `showHome()`
+     */
+    showConsole(): void {
+        this.consoleTab.unread = Interfaces.UnreadState.None;
+        EventBus.$emit('select-conversation', { conversation: this.consoleTab });
     }
 
     async reloadSettings(): Promise<void> {
@@ -971,22 +1006,22 @@ export default function(this: any): Interfaces.State {
             if (!conversation)
                 return false;
 
-            return (conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Friends   ||
-                    conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both      )
-                || (conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
-                    core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Friends   ||
-                    core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both      )
+            return (conversation.settings.notifyOnFriendMessage === Relation.Chooser.Friends   ||
+                    conversation.settings.notifyOnFriendMessage === Relation.Chooser.Both      )
+                || (conversation.settings.notifyOnFriendMessage === Relation.Chooser.Default   &&
+                    core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Friends   ||
+                    core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both      )
         }
 
         const shouldNotifyOnBookmarkMessage = () => {
             if (!conversation)
                 return false;
 
-            return ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Bookmarks ||
-                     conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both    )
-                || ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
-                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Bookmarks ||
-                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both    )
+            return ( conversation.settings.notifyOnFriendMessage === Relation.Chooser.Bookmarks ||
+                     conversation.settings.notifyOnFriendMessage === Relation.Chooser.Both    )
+                || ( conversation.settings.notifyOnFriendMessage === Relation.Chooser.Default   &&
+                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Bookmarks ||
+                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both    )
         }
 
         const words = conversation.settings.highlightWords.slice();
@@ -1090,14 +1125,14 @@ export default function(this: any): Interfaces.State {
 
             function shouldNotifyOnFriendLogin(): boolean {
                 const settings = core.state.settings;
-                const chooser = Interfaces.RelationChooser;
+                const chooser = Relation.Chooser;
                 return settings.notifyFriendSignIn === chooser.Friends
                     || settings.notifyFriendSignIn === chooser.Both;
             }
 
             function shouldNotifyOnBookmarkLogin(): boolean {
                 const settings = core.state.settings;
-                const chooser = Interfaces.RelationChooser;
+                const chooser = Relation.Chooser;
                 return settings.notifyFriendSignIn === chooser.Bookmarks
                     || settings.notifyFriendSignIn === chooser.Both;
             }

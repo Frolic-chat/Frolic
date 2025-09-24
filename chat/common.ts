@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {isToday} from 'date-fns';
 import {Keys} from '../keys';
-import {Character, Conversation, Settings as ISettings} from './interfaces';
+import { Character, Conversation, Settings as ISettings, Relation } from './interfaces';
 import core from './core';
 
 import { SmartFilterSettings } from '../learn/filter/types';
@@ -44,8 +44,8 @@ export class Settings implements ISettings {
     clickOpensMessage: boolean = false;
     disallowedTags: string[] = [];
     notifications: boolean = true;
-    notifyFriendSignIn: Conversation.RelationChooser = Conversation.RelationChooser.NoOne;
-    notifyOnFriendMessage: Conversation.RelationChooser = Conversation.RelationChooser.NoOne;
+    notifyFriendSignIn: Relation.Chooser = Relation.Chooser.NoOne;
+    notifyOnFriendMessage: Relation.Chooser = Relation.Chooser.NoOne;
     highlight: boolean = true;
     highlightWords: string[] = [];
     highlightUsers: boolean = false;
@@ -138,7 +138,7 @@ export class AdSettings implements Conversation.AdSettings {
 
 export class ConversationSettings implements Conversation.Settings {
     notify = Conversation.Setting.Default;
-    notifyOnFriendMessage = Conversation.RelationChooser.Default;
+    notifyOnFriendMessage = Relation.Chooser.Default;
     highlight = Conversation.Setting.Default;
     highlightWords: string[] = [];
     highlightUsers = false;

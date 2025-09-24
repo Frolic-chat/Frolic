@@ -9,6 +9,21 @@ export const userStatuses: ReadonlyArray<Character.Status> = ['online', 'looking
 export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both'];
 import { Ad } from './ads/ad-center';
 import { GeneralSettings } from '../electron/common';
+import { LocalizationKey } from './localize';
+
+export namespace Relation {
+    export enum Chooser {
+        NoOne, Bookmarks, Friends, Both, Default
+    }
+
+    export const Label: Record<Chooser, LocalizationKey> = {
+        [Chooser.NoOne]     : 'settings.relation.noOne',
+        [Chooser.Friends]   : 'settings.relation.friendsOnly',
+        [Chooser.Bookmarks] : 'settings.relation.bookmarksOnly',
+        [Chooser.Both]      : 'settings.relation.friendsAndBookmarks',
+        [Chooser.Default]   : 'settings.relation.default'
+    };
+}
 
 export namespace Conversation {
     interface BaseMessage {
@@ -85,6 +100,15 @@ export namespace Conversation {
         sendAd(text: string): Promise<void>
     }
 
+    export interface ConsoleConversation extends Conversation {
+        showHome(): void;
+        /**
+         * Part 2 of console's `show()` split to account for the home page.
+         * `showConsole` explicitly shows the console;
+         */
+        showConsole(): void;
+    }
+
     export function isPrivate(conversation: Conversation): conversation is PrivateConversation {
         return (<Partial<PrivateConversation>>conversation).character !== undefined;
     }
@@ -96,7 +120,7 @@ export namespace Conversation {
     export interface State {
         readonly privateConversations: ReadonlyArray<PrivateConversation>
         readonly channelConversations: ReadonlyArray<ChannelConversation>
-        readonly consoleTab: Conversation
+        readonly consoleTab: ConsoleConversation
         readonly recent: ReadonlyArray<RecentPrivateConversation>
         readonly recentChannels: ReadonlyArray<RecentChannelConversation>
         readonly selectedConversation: Conversation
@@ -111,13 +135,9 @@ export namespace Conversation {
         True, False, Default
     }
 
-    export enum RelationChooser {
-        NoOne, Bookmarks, Friends, Both, Default
-    }
-
     export interface Settings {
         readonly notify: Setting;
-        readonly notifyOnFriendMessage: RelationChooser;
+        readonly notifyOnFriendMessage: Relation.Chooser;
         readonly highlight: Setting;
         readonly highlightWords: ReadonlyArray<string>;
         readonly highlightUsers: boolean;
@@ -212,58 +232,59 @@ export namespace Settings {
     }
 
     export interface Settings {
-        readonly playSound: boolean;
-        readonly notifyVolume: number;
-        readonly clickOpensMessage: boolean;
-        readonly disallowedTags: ReadonlyArray<string>;
-        readonly notifications: boolean;
-        readonly notifyFriendSignIn: Conversation.RelationChooser;
-        readonly notifyOnFriendMessage: Conversation.RelationChooser;
-        readonly highlight: boolean;
-        readonly highlightWords: ReadonlyArray<string>;
-        readonly highlightUsers: boolean;
-        readonly showBroadcastsInPMs: boolean;
-        readonly showAvatars: boolean;
-        readonly animatedEicons: boolean;
-        readonly idleTimer: number;
-        readonly messageSeparators: boolean;
-        readonly eventMessages: boolean;
-        readonly joinMessages: boolean;
-        readonly alwaysNotify: boolean;
-        readonly logMessages: boolean; // All messages
-        readonly logChannels: boolean;
-        readonly logAds: boolean;
-        readonly expensiveMemberList: boolean;
-        readonly fontSize: number;
-        readonly showNeedsReply: boolean;
-        readonly enterSend: boolean;
-        readonly secondEnterSend: boolean;
-        readonly colorBookmarks: boolean;
+        playSound: boolean;
+        notifyVolume: number;
+        clickOpensMessage: boolean;
+        disallowedTags: string[];
+        notifications: boolean;
+        notifyFriendSignIn: Relation.Chooser;
+        notifyOnFriendMessage: Relation.Chooser;
+        highlight: boolean;
+        highlightWords: string[];
+        highlightUsers: boolean;
+        highlightUsernames: string[];
+        showBroadcastsInPMs: boolean;
+        showAvatars: boolean;
+        animatedEicons: boolean;
+        idleTimer: number;
+        messageSeparators: boolean;
+        eventMessages: boolean;
+        joinMessages: boolean;
+        alwaysNotify: boolean;
+        logMessages: boolean; // All messages
+        logChannels: boolean;
+        logAds: boolean;
+        expensiveMemberList: boolean;
+        fontSize: number;
+        showNeedsReply: boolean;
+        enterSend: boolean;
+        secondEnterSend: boolean;
+        colorBookmarks: boolean;
 
-        readonly risingAdScore: boolean;
-        readonly risingLinkPreview: boolean;
-        readonly linkPreviewVolume: number;
-        readonly risingAutoCompareKinks: boolean;
+        risingAdScore: boolean;
+        risingLinkPreview: boolean;
+        linkPreviewVolume: number;
+        risingAutoCompareKinks: boolean;
 
-        readonly risingAutoExpandCustomKinks: boolean;
-        readonly risingCharacterPreview: boolean;
-        readonly risingComparisonInUserMenu: boolean;
-        readonly risingComparisonInSearch: boolean;
+        risingAutoExpandCustomKinks: boolean;
+        risingCharacterPreview: boolean;
+        risingComparisonInUserMenu: boolean;
+        risingComparisonInSearch: boolean;
 
-        readonly risingShowUnreadOfflineCount: boolean;
-        readonly risingColorblindMode: boolean;
-        readonly risingShowPortraitNearInput: boolean;
-        readonly risingShowPortraitInMessage: boolean;
-        readonly risingShowHighQualityPortraits: boolean;
+        risingShowUnreadOfflineCount: boolean;
+        risingColorblindMode: boolean;
+        risingShowPortraitNearInput: boolean;
+        risingShowPortraitInMessage: boolean;
+        risingShowHighQualityPortraits: boolean;
 
-        readonly risingFilter: SmartFilterSettings;
+        risingFilter: SmartFilterSettings;
 
-        readonly risingCharacterTheme: string | undefined;
+        risingCharacterTheme: string | undefined;
 
         /**
          * Legacy: deprecate by removing from place of use, but retain it in settings for backporting capability; as long as we want to suporrt that.
          */
-        readonly bbCodeBar: boolean;
+        bbCodeBar: boolean;
     }
 }
 

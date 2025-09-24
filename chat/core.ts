@@ -1,5 +1,6 @@
 import Vue, {WatchHandler} from 'vue';
 import * as qs from 'querystring';
+import { deepEqual } from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
@@ -28,30 +29,29 @@ const params = <{[key: string]: string | undefined}>qs.parse(window.location.sea
  * The state operates as an event-bus, allowing global-reaching updates.
  */
 class State implements StateInterface {
-    _settings: Settings | undefined = undefined;
-    // This is still bad. The real settings object (with loading saved) is imported from main.
+    _settings = new SettingsClass();
+    // This is still bad. The real general settings object (with loading saved) is imported from main.
     generalSettings: GeneralSettings = JSON.parse(params['settings']!) as GeneralSettings;
     hiddenUsers: string[] = [];
     favoriteEIcons: Record<string, boolean> = {};
 
-    /**
-     * This should absolutely be fixed to grant a basic, safe settings structure instead of throwing an error. It's bad form to state in typescript the settings always exist and then throw an error if they don't, and it has caused issues before witht he log viewer which can be used when not logged in.
-     */
     get settings(): Settings {
-        if (this._settings === undefined)
-            throw new Error('Settings load failed.');
-
         return this._settings;
     }
 
+    /**
+     * This will only trigger when directly setting the settings object; it does not fire if the internal structure changes.
+     *
+     * See {@link Core.watch | Core.watch} for tracking changes to the internl structure.
+     */
     set settings(value: Settings) {
         this._settings = value;
 
-        //tslint:disable-next-line:no-floating-promises
         if (data.settingsStore !== undefined) {
-            data.settingsStore.set('settings', value);
-            data.bbCodeParser = createBBCodeParser();
+            log.warn('set settings will not be saving core, the other saver should have picked it up.');
         }
+
+        data.bbCodeParser = createBBCodeParser();
     }
 }
 
@@ -92,21 +92,21 @@ const data = {
         Vue.set(vue, module, subState);
         (<VueState[K]>data[module]) = subState;
     },
-    watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void, opts?: Vue.WatchOptions): void {
+    watch<T>(getter: (this: VueState) => T, callback: (n: T, o: T) => void, opts?: Vue.WatchOptions): void {
         vue.$watch(getter, callback, opts);
     },
     async reloadSettings(): Promise<void> {
         const s = await core.settingsStore.get('settings') as Partial<SettingsClass>;
-        const initial = new SettingsClass();
 
-        state._settings = SettingsMerge(initial, s);
+        const initial = new SettingsClass();
 
         log.debug('data.reloadSettings', {
             initial: initial,
+            current: state._settings,
             saved: s,
-            result: state._settings,
-            //test: test,
         });
+
+        state._settings = SettingsMerge(initial, s);
 
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
         state.hiddenUsers = hiddenUsers ?? [];
@@ -115,6 +115,9 @@ const data = {
         state.favoriteEIcons = favoriteEIcons ?? {};
     }
 };
+
+// Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
+let smartFilterCache = {}
 
 export function init(this: any,
                      connection: Connection,
@@ -141,6 +144,31 @@ export function init(this: any,
         await data.settingsStore?.set('hiddenUsers', newValue);
     }, /* { deep: true } */);
 
+    data.watch(() => state._settings, async (newValue, oldValue) => {
+        if (!oldValue && newValue) {
+            smartFilterCache = structuredClone(newValue.risingFilter);
+        }
+
+        if (oldValue && newValue) {
+            log.warn('watch _settings will save core.', newValue);
+            await data.settingsStore?.set('settings', newValue);
+
+            EventBus.$emit('configuration-update', newValue);
+
+            if (oldValue.notifications !== newValue.notifications)
+                EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications })
+
+            if (!deepEqual(newValue.risingFilter, smartFilterCache)) {
+                log.warn('risingFilter in _settings changed.', newValue.risingFilter);
+
+                EventBus.$emit('smartfilters-update', newValue.risingFilter);
+
+                smartFilterCache = structuredClone(newValue.risingFilter);
+            }
+        }
+
+    }, { deep: true });
+
     connection.onEvent('connecting', async () => {
         await data.reloadSettings();
         data.bbCodeParser = createBBCodeParser();
@@ -164,7 +192,7 @@ export interface Core {
     readonly adCenter: AdCenter;
     readonly siteSession: SiteSession;
 
-    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>): void
+    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>, opts?: Vue.WatchOptions): void
 }
 
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack

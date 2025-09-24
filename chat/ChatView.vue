@@ -28,10 +28,10 @@
                 </a>
             </div>
 
-            <div><a href="#" @click.prevent="showSettings()" class="btn">
+            <!-- <div><a href="#" @click.prevent="showSettings()" class="btn">
                 <span class="fas fa-cog"></span>
                 {{l('settings.open')}}
-            </a></div>
+            </a></div> -->
 
             <div><a href="#" @click.prevent="showAdCenter()" class="btn">
                 <span class="fas fa-ad"></span>
@@ -62,9 +62,9 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
+                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="showHomeScreen()"
                         class="list-group-item list-group-item-action">
-                        {{conversations.consoleTab.name}}
+                        {{ l('home') }}
                     </a>
                 </div>
             </div>
@@ -129,7 +129,7 @@
         </sidebar>
         <div style="display:flex;flex-direction:column;flex:1;min-width:0">
             <div id="quick-switcher" class="list-group">
-                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
+                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="showHomeScreen()"
                     class="list-group-item list-group-item-action">
                     <span class="fas fa-home conversation-icon"></span>
                     {{conversations.consoleTab.name}}
@@ -146,7 +146,10 @@
                     <div class="name">{{conversation.name}}</div>
                 </a>
             </div>
-            <conversation :reportDialog="$refs['reportDialog']"></conversation>
+            <!-- :conversation="conversations.consoleTab" -->
+             <!-- v-show="conversations.selectedConversation !== conversations.consoleTab" -->
+            <home-screen v-show="conversations.selectedConversation === conversations.consoleTab" ref="HomeScreen" :reportDialog="$refs['reportDialog']"></home-screen>
+            <conversation v-show="conversations.selectedConversation !== conversations.consoleTab" ref="Conversationscreen" :reportDialog="$refs['reportDialog']"></conversation>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
@@ -154,7 +157,7 @@
         <character-search ref="searchDialog"></character-search>
         <adLauncher ref="adLauncher"></adLauncher>
         <adCenter ref="adCenter"></adCenter>
-        <settings ref="settingsDialog"></settings>
+        <!--<settings ref="settingsDialog"></settings>-->
         <report-dialog ref="reportDialog"></report-dialog>
         <user-menu ref="userMenu" :reportDialog="$refs['reportDialog']"></user-menu>
         <recent-conversations ref="recentDialog"></recent-conversations>
@@ -186,6 +189,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import ChannelList from './ChannelList.vue';
     import CharacterSearch from './CharacterSearch.vue';
     import {characterImage, getKey, profileLink} from './common';
+    import HomeScreen from './HomeScreen.vue';
     import ConversationView from './ConversationView.vue';
     import core from './core';
     import {Character, Connection, Conversation} from './interfaces';
@@ -193,7 +197,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import PmPartnerAdder from './PmPartnerAdder.vue';
     import RecentConversations from './RecentConversations.vue';
     import ReportDialog from './ReportDialog.vue';
-    import SettingsView from './SettingsView.vue';
+    //import SettingsView from './SettingsView.vue';
     import Sidebar from './Sidebar.vue';
     import StatusSwitcher from './StatusSwitcher.vue';
     import {getStatusIcon} from './UserView.vue';
@@ -217,7 +221,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     @Component({
         components: {
             'user-list': UserList, channels: ChannelList, 'status-switcher': StatusSwitcher, 'character-search': CharacterSearch,
-            settings: SettingsView, conversation: ConversationView, 'report-dialog': ReportDialog, sidebar: Sidebar,
+            //settings: SettingsView,
+            'home-screen': HomeScreen,
+            conversation: ConversationView, 'report-dialog': ReportDialog, sidebar: Sidebar,
             'user-menu': UserMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
@@ -352,13 +358,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     else if(pms.length > 0) pms[pms.length - 1].show();
                 } else if(Conversation.isPrivate(selected)) {
                     const index = pms.indexOf(selected);
-                    if(index === 0) console.show();
+                    if(index === 0) this.showHomeScreen();
                     else pms[index - 1].show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index === 0)
                         if(pms.length > 0) pms[pms.length - 1].show();
-                        else console.show();
+                        else this.showHomeScreen();
                     else channels[index - 1].show();
                 }
             else if(getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
@@ -369,11 +375,12 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     const index = pms.indexOf(selected);
                     if(index === pms.length - 1) {
                         if(channels.length > 0) channels[0].show();
+                        else this.showHomeScreen();
                     } else pms[index + 1].show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index < channels.length - 1) channels[index + 1].show();
-                    else console.show();
+                    else this.showHomeScreen();
                 }
         }
 
@@ -422,9 +429,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             if(Dialog.confirmDialog(l('chat.confirmLeave'))) core.connection.close();
         }
 
-        showSettings(): void {
-            (<SettingsView>this.$refs['settingsDialog']).show();
-        }
+        // showSettings(): void {
+        //     (<SettingsView>this.$refs['settingsDialog']).show();
+        // }
 
         showSearch(): void {
             (<CharacterSearch>this.$refs['searchDialog']).show();
@@ -448,6 +455,16 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         showAdLauncher(): void {
           (<AdLauncherDialog>this.$refs['adLauncher']).show();
+        }
+
+        /**
+         * Instead of directly opening the console in the primary area, show the home screen (which contains the console conversation).
+         */
+        showHomeScreen(): void {
+            if (this.conversations.consoleTab === this.conversations.selectedConversation)
+                return;
+            this.conversations.consoleTab.showHome();
+            (this.$refs['HomeScreen'] as HomeScreen).show();
         }
 
         showDevTools(): void {

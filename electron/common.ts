@@ -32,4 +32,5 @@ export class GeneralSettings {
     browserPath: string = '';
     browserArgs: string = '%s';
     browserIncognitoArg: string = '';
+    defaultToHome: boolean = true;
 }

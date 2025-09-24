@@ -18,10 +18,10 @@
             </label>
             <select class="form-control" :id="'friendsNotify' + conversation.key" v-model="notifyOnFriendMessage">
                 <option :value="friendchooser.Default">{{l('settings.useGlobalSetting')}}</option>
-                <option :value="friendchooser.Friends">{{l('conversationSettings.friendsOnly')}}</option>
-                <option :value="friendchooser.Bookmarks">{{l('conversationSettings.bookmarksOnly')}}</option>
-                <option :value="friendchooser.Both">{{l('conversationSettings.friendsAndBookmarks')}}</option>
-                <option :value="friendchooser.NoOne">{{l('conversationSettings.noOne')}}</option>
+                <option :value="friendchooser.Friends">{{l('settings.relation.friendsOnly')}}</option>
+                <option :value="friendchooser.Bookmarks">{{l('settings.relation.bookmarksOnly')}}</option>
+                <option :value="friendchooser.Both">{{l('settings.relation.friendsAndBookmarks')}}</option>
+                <option :value="friendchooser.NoOne">{{l('settings.relation.noOne')}}</option>
             </select>
         </div>
         <div v-show="isChannel(conversation)" class="form-group">
@@ -67,7 +67,7 @@
     import {Component, Prop} from '@f-list/vue-ts';
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
-    import {Conversation} from './interfaces';
+    import { Conversation, Relation } from './interfaces';
     import l from './localize';
 
     @Component({
@@ -79,14 +79,14 @@
         readonly isChannel = Conversation.isChannel;
         l = l;
         setting = Conversation.Setting;
-        friendchooser = Conversation.RelationChooser;
+        friendchooser = Relation.Chooser;
         notify!: Conversation.Setting;
         highlight!: Conversation.Setting;
         highlightWords!: string;
         highlightUsers!: boolean;
         joinMessages!: Conversation.Setting;
         defaultHighlights!: boolean;
-        notifyOnFriendMessage!: Conversation.RelationChooser;
+        notifyOnFriendMessage!: Relation.Chooser;
 
         load(): void {
             const settings = this.conversation.settings;
