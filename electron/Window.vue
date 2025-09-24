@@ -73,7 +73,7 @@
             (tab.view.webContents as any).destroy();
           }
         } catch (err) {
-          console.log(err);
+          console.error('webcontents destroy:', err);
         }
 
         try {
@@ -81,7 +81,7 @@
             (tab.view.webContents as any).close();
           }
         } catch (err) {
-          console.log(err);
+          console.error('webcontents close:', err);
         }
 
         try {
@@ -89,7 +89,7 @@
             (tab.view as any).destroy();
           }
         } catch (err) {
-          console.log(err);
+          console.error('view destroy:', err);
         }
 
         try {
@@ -97,7 +97,7 @@
             (tab.view as any).close();
           }
         } catch (err) {
-          console.log(err);
+          console.error('view close:', err);
         }
 
         // tab.view.destroy();
