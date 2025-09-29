@@ -16,3 +16,6 @@ test.js
 stats-*.json
 
 .vscode/settings.json
+
+patches
+local_docs
