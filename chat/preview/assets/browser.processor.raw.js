@@ -199,6 +199,9 @@ class FListImagePreviewDomMutator {
     async attemptPlay(img, lessStrict) {
         //this.debug('attemptPlay', img, lessStrict);
 
+        img.muted = true;
+        img.volume = window.volume.value() / 100;
+
         try {
             if (
                 (img.play)
@@ -214,6 +217,7 @@ class FListImagePreviewDomMutator {
                 };
 
                 img.volume = window.volume.value() / 100;
+                img.muted = false;
                 img.loop = true;
 
                 const result = await img.play();
@@ -409,6 +413,8 @@ class FListImagePreviewDomMutator {
         setTimeout(
             () => {
                 if (this.img) {
+                    img.volume = 0;
+                    img.muted = true;
                     this.attemptPlay(this.img);
                 }
 
