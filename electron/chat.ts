@@ -50,7 +50,7 @@ const webContents = remote.getCurrentWebContents();
 // tslint:disable-next-line:no-require-imports no-submodule-imports
 require('@electron/remote/main').enable(webContents);
 
-import Axios from 'axios';
+//import Axios from 'axios';
 import { exec } from 'child_process';
 import * as path from 'path';
 import * as qs from 'querystring';
@@ -85,7 +85,7 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
         remote.getCurrentWebContents().toggleDevTools();
 });
 
-Axios.defaults.params = {__fchat: `desktop/${remote.app.getVersion()}`};
+//Axios.defaults.params = {__fchat: `desktop/3.0.14`};
 
 if(process.env.NODE_ENV === 'production') {
     remote.getCurrentWebContents().on('devtools-opened', () => {
@@ -247,7 +247,7 @@ onSettings(settings);
 
 log.debug('init.chat.core');
 
-const connection = new Connection(`F-Chat 3.0 (${process.platform})`, remote.app.getVersion(), Socket);
+const connection = new Connection(`F-Chat 3.0 (Web)`, '3.0.16', Socket);
 initCore(connection, settings, Logs, SettingsStore, Notifications);
 
 log.debug('init.chat.vue');
