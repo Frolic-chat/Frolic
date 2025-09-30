@@ -222,6 +222,7 @@ class FListImagePreviewDomMutator {
 
                 const result = await img.play();
 
+                img.volume = window.volume.value() / 100;
                 img.loop = true;
 
                 this.debug('attemptPlay result', result);
