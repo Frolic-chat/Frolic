@@ -228,21 +228,19 @@
         profilePointer = 0;
 
         allowedToLogin(): boolean {
-            log.debug(
-                'index.login.allowedCheck', {
-                    loggingIn: this.loggingIn,
-                    fatalError: this.fatalError,
-                    creatHookRan: this.createHookFinished,
-                }
-            );
+            log.debug('index.login.allowedCheck', {
+                loggingIn:     this.loggingIn,
+                fatalError:    this.fatalError,
+                createHookRan: this.createHookFinished,
+            });
 
             return !this.loggingIn
-            &&     !this.fatalError
-            &&      this.createHookFinished;
+                && !this.fatalError
+                && this.createHookFinished;
         }
 
         createHookFinished: boolean = false;
-        fatalError: boolean = false;
+        fatalError:         boolean = false;
         loginScreenWarnings: string[] = [];
         loginScreenErrors:   string[] = [];
 
@@ -268,7 +266,7 @@
         async startAndUpgradeCache(): Promise<void> {
             log.debug('init.chat.cache.start');
 
-            const spinner = setTimeout(() => { this.shouldShowSpinner = true }, 250);
+            const spinner = setTimeout(() => this.shouldShowSpinner = true, 250);
 
             try {
                 await core.cache.start(this.settings, this.hasCompletedUpgrades);

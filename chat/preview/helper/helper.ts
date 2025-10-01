@@ -40,4 +40,3 @@ export abstract class ImagePreviewHelper {
         this.debug = debug;
     }
 }
-

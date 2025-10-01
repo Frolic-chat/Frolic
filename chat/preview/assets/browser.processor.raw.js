@@ -50,9 +50,8 @@ class FListImagePreviewDomMutator {
                 : (...args) => (this.debug('MOCK.ipc.sendToHost', ...args))
         };
 
-        if (!this.delayPreprocess) {
+        if (!this.delayPreprocess)
             this.preprocess();
-        }
 
         this.img = this.detectImage(this.selectors, this.body);
         this.wrapper = this.createWrapperElement();
@@ -61,11 +60,12 @@ class FListImagePreviewDomMutator {
 
 
     preprocess() {
-        for (const el of document.querySelectorAll('header, .header, nav, .nav, .navbar, .navigation')) {
+        for (const el of document.querySelectorAll('input, header, .header, nav, .nav, .navbar, .navigation')) {
             try {
                 el.remove();
-            } catch (err) {
-                this.error('preprocess', err);
+            }
+            catch (e) {
+                this.error('preprocess', e);
             }
         }
     }
@@ -75,7 +75,9 @@ class FListImagePreviewDomMutator {
         let selected = [];
 
         for (const selector of selectors) {
-            const selectedElements = (Array.from(document.querySelectorAll(selector)).filter((i) => ((i.width !== 1) && (i.height !== 1))));
+            const selectedElements = Array.from(document.querySelectorAll(selector))
+                .filter(i => i.width !== 1 && i.height !== 1);
+
             selected = selected.concat(selectedElements);
         }
 
@@ -123,9 +125,8 @@ class FListImagePreviewDomMutator {
 
 
     cleanDom(body) {
-        if (this.skipElementRemove) {
+        if (this.skipElementRemove)
             return;
-        }
 
         const removeList = [];
         const safeIds = ['flistWrapper', 'flistError', 'flistHider', 'flistStyle'];
@@ -133,22 +134,21 @@ class FListImagePreviewDomMutator {
 
         for (const el of body.childNodes) {
             try {
-                if (
-                    (safeIds.indexOf(el.id) < 0)
-                    && ((!el.tagName) || (safeTags.indexOf(el.tagName.toLowerCase())) < 0)
-                ) {
+                if (safeIds.indexOf(el.id) < 0 && (!el.tagName || safeTags.indexOf(el.tagName.toLowerCase()) < 0)) {
                     removeList.push(el);
                 }
-            } catch (err) {
-                this.error('cleanDom find nodes', err);
+            }
+            catch (e) {
+                this.error('cleanDom find nodes', e);
             }
         }
 
         for (const el of removeList) {
             try {
                 el.remove();
-            } catch (err) {
-                this.error('cleanDom remove element', err);
+            }
+            catch (e) {
+                this.error('cleanDom remove element', e);
             }
         }
     }
@@ -157,14 +157,13 @@ class FListImagePreviewDomMutator {
     updateImgSizeTimer(img) {
         const result = this.updateImgSize(img, 'timer');
 
-        if (!result) {
+        if (!result)
             setTimeout(() => this.updateImgSizeTimer(img), 100);
-        }
     }
 
 
     resolveVideoSrc(img) {
-        if ((img.src) || (!img.tagName) || ((img.tagName) && (img.tagName.toUpperCase() !== 'VIDEO'))) {
+        if (img.src || !img.tagName || (img.tagName && img.tagName.toUpperCase() !== 'VIDEO')) {
             return;
         }
 
@@ -172,12 +171,12 @@ class FListImagePreviewDomMutator {
 
         const contentUrls = document.querySelectorAll('meta[itemprop="contentURL"]');
 
-        if ((contentUrls) && (contentUrls.length > 0)) {
+        if (contentUrls && contentUrls.length > 0) {
             this.debug('Found content URLs', contentUrls);
 
             const cu = contentUrls[0];
 
-            if ((cu.attributes) && (cu.attributes.content) && (cu.attributes.content.value)) {
+            if (cu.attributes && cu.attributes.content && cu.attributes.content.value) {
                 this.debug('Content URL', cu.attributes.content.value);
 
                 img.src = cu.attributes.content.value;
@@ -203,13 +202,7 @@ class FListImagePreviewDomMutator {
         img.volume = window.volume.value() / 100;
 
         try {
-            if (
-                (img.play)
-                && (
-                    (lessStrict)
-                    || ((!lessStrict) && (!img.ended) && (!(img.currentTime > 0)))
-                )
-            )
+            if (img.play && (lessStrict || !lessStrict && !img.ended && !(img.currentTime > 0)))
             {
                 img.onpause = () => {
                     img.loop = true;
@@ -225,13 +218,14 @@ class FListImagePreviewDomMutator {
                 img.volume = window.volume.value() / 100;
                 img.loop = true;
 
-                this.debug('attemptPlay result', result);
+                // this.debug('attemptPlay result', result);
             }
             else {
                 this.debug('attemptPlay skip', img.ended, img.currentTime);
             }
-        } catch (err) {
-            this.error('attemptPlay', err, img, lessStrict);
+        }
+        catch (e) {
+            this.error('attemptPlay', e, img, lessStrict);
         }
     }
 
@@ -250,8 +244,9 @@ class FListImagePreviewDomMutator {
 
             img.removeAttribute('width');
             img.removeAttribute('height');
-        } catch (err) {
-            this.error('forceElementStyling remove class', err);
+        }
+        catch (e) {
+            this.error('forceElementStyling remove class', e);
         }
 
         html.style = this.getWrapperStyleOverrides();
@@ -268,8 +263,9 @@ class FListImagePreviewDomMutator {
     attachStyleToWrapper(style, wrapper) {
         try {
             wrapper.append(style);
-        } catch (err) {
-            this.error('attach style', err);
+        }
+        catch (e) {
+            this.error('attach style', e);
         }
     }
 
@@ -277,13 +273,15 @@ class FListImagePreviewDomMutator {
     attachImgToWrapper(img, wrapper) {
         try {
             img.remove();
-        } catch(err) {
-            this.error('attachImgToWrapper', 'remove()', err);
+        }
+        catch (e) {
+            this.error('attachImgToWrapper', 'remove()', e);
 
             try {
                 img.parentNode.removeChild(img);
-            } catch(err2) {
-                this.error('attachImgToWrapper', 'removeChild()', err2);
+            }
+            catch (e2) {
+                this.error('attachImgToWrapper', 'removeChild()', e2);
             }
         }
 
@@ -307,9 +305,8 @@ class FListImagePreviewDomMutator {
 
 
     createStyleElement() {
-        if (!!this.settings.skipInjectStyle) {
+        if (!!this.settings.skipInjectStyle)
             return document.createElement('i');
-        }
 
         const el = document.createElement('style');
 
@@ -339,7 +336,7 @@ class FListImagePreviewDomMutator {
         for (let ri = 0; ri < sizePairs.length; ri++) {
             const val = sizePairs[ri];
 
-            if ((img[val[0]]) && (img[val[1]])) {
+            if (img[val[0]] && img[val[1]]) {
                 solved.width = img[val[0]];
                 solved.height = img[val[1]];
                 break;
@@ -353,7 +350,7 @@ class FListImagePreviewDomMutator {
     updateImgSize(img, stage) {
         const imSize = this.resolveImgSize(img);
 
-        if ((imSize.width) && (imSize.height)) {
+        if (imSize.width && imSize.height) {
             this.debug('IPC webview.img', imSize, stage);
 
             this.ipcRenderer.sendToHost('webview.img', imSize.width, imSize.height, stage);
@@ -411,33 +408,31 @@ class FListImagePreviewDomMutator {
             return;
         }
 
-        setTimeout(
-            () => {
-                if (this.img) {
-                    img.volume = 0;
-                    img.muted = true;
-                    this.attemptPlay(this.img);
-                }
+        setTimeout(() => {
+            if (this.img) {
+                img.volume = 0;
+                img.muted = true;
+                this.attemptPlay(this.img);
+            }
 
-                this.finalize(counter - 1);
-            },
-            100
+            this.finalize(counter - 1);
+        },
+        100
         );
     }
 
     scheduler() {
-        setTimeout(
-            () => {
-                this.img = this.detectImage(this.selectors, this.body);
+        setTimeout(() => {
+            this.img = this.detectImage(this.selectors, this.body);
 
-                if (!this.img) {
-                    this.scheduler();
-                    return;
-                }
+            if (!this.img) {
+                this.scheduler();
+                return;
+            }
 
-                this.run();
-            },
-            200
+            this.run();
+        },
+        200
         );
     }
 

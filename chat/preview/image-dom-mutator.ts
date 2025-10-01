@@ -94,6 +94,14 @@ export class ImageDomMutator {
         return `(() => { try { ${mutatorJs} } catch (err) { console.error('Mutator error', err); } })();`;
     }
 
+    /**
+     * This script is responsible for creating the page mutator. Provide the url and media elements and the jsMutator as the second argument (probably `getBaseJsMutatorScript` with the selector elements) and you're good to go.
+     * @param domain
+     * @param mutatorJs
+     * @param urlMutator
+     * @param eventName
+     * @returns
+     */
     protected add(
         domain: string | RegExp,
         mutatorJs: string,

@@ -506,7 +506,7 @@
                 return;
             }
 
-            this.debugLog(`ImagePreview execute-${context}`, js, logDetails);
+            this.debugLog(`ImagePreview execute-${context}`, /*js,*/ logDetails);
 
             try {
                 const result = await webview.executeJavaScript(js);
