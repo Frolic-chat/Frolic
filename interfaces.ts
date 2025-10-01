@@ -4,9 +4,9 @@
  * Character name, unique ID, and whether or not the character exists.
  */
 export interface SimpleCharacter {
-    id:      number
-    name:    string
-    deleted: boolean
+    id:       number
+    name:     string
+    deleted?: boolean
 }
 
 export interface InlineImage {

@@ -77,6 +77,16 @@ import { IncognitoArgFromBrowserPath } from '../constants/general';
 import checkForGitRelease from './main/updater';
 import versionUpgradeRoutines from './main/version-upgrade';
 
+//region: 2nd Instance
+const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
+if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
+    app.quit();
+else {
+    app.on('second-instance', () => PrimaryWindow?.show());
+    app.on('ready', onReady);
+}
+
+
 import InitIcon from './main/icon';
 const icon = {
     main:      InitIcon(platform, 'icon',       path.join(__dirname, 'system')),
@@ -1097,14 +1107,5 @@ function onReady(): void {
 
 // Twitter fix
 app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
-
-
-const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
-if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
-    app.quit();
-else {
-    app.on('second-instance', () => PrimaryWindow?.show());
-    app.on('ready', onReady);
-}
 
 app.on('window-all-closed', () => app.quit());
