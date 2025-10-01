@@ -105,7 +105,12 @@
     const CHARACTER_CACHE_EXPIRE      = 7 * 24 * 60 * 60 * 1000; // 7 days (milliseconds)
     const CHARACTER_META_CACHE_EXPIRE = 7 * 24 * 60 * 60 * 1000; // 7 days (milliseconds)
 
-    type ArmorStand = Pick<CharacterPage, 'character' | 'guestbook' | 'friends' | 'groups' | 'images' | 'matchReport'>;
+    type ArmorStand = Pick<CharacterPage, 'character'
+                                        | 'guestbook'
+                                        | 'friends'
+                                        | 'groups'
+                                        | 'images'
+                                        | 'matchReport'>;
 
     /**
      * Where does this come from? What is show?
@@ -258,7 +263,7 @@
                 }
 
                 if (mustLoad || !this.character)
-                    due.push(this._getCharacter(skipCache));
+                    due.push(this._getCharacter(this.name, skipCache));
 
                 await Promise.all(due);
             }
@@ -440,8 +445,8 @@
              * Builds the data that will fil in this.* attributes, like `this.character` and `this.images`. We use an {@link ArmorStand|armor stand} to hold the cache/API data until we've built the full character; if we wrote to this.* every step of the way; the async messes up and we change this.name to a new character as this.character is the old one; then this.character to the old one as this.images are set for the old one. Chaos.
              * @param skipCache
              */
-        private async _getCharacter(skipCache: boolean = false): Promise<void> {
-            log.debug('profile.getCharacter', { name: this.name } );
+        private async _getCharacter(name: string, skipCache: boolean = false): Promise<void> {
+            log.debug('profile.getCharacter', { name });
 
             this.character = undefined;
             this.friends   = null;
@@ -460,17 +465,16 @@
                 images: null,
                 matchReport: undefined,
             };
-            const n = this.name; // cache to prevent async shananigans.
 
-            if (!this.name) // Ever hit? Checked before entering _gC
+            if (!name)
                 return log.debug('profile.getCharacter.noName');
 
-            const char_record = (n && !skipCache)
-                ? await core.cache.profileCache.get(n)
+            const char_record = !skipCache
+                ? await core.cache.profileCache.get(name)
                 : null;
 
             stand.character = char_record?.character
-                ?? await methods.characterData(n, undefined, false);
+                ?? await methods.characterData(name, undefined, false);
 
             if (char_record?.meta) {
                 stand.guestbook = char_record.meta.guestbook;
@@ -524,6 +528,9 @@
             if (this.isCurrentCharacter(stand.character.character.name)) {
                 standardParser.inlines = stand.character.character.inlines
                 this.printArmorStand(stand);
+            }
+            else {
+                log.debug("_getCharacter: Abandoning printable stand because it doesn't fit current character.");
             }
         }
 

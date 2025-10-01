@@ -1,5 +1,5 @@
 /**
- * The most simple character structure, used primarily for listing your characters on the log-in selector.
+ * The most simple character structure, used primarily for listing your characters on the log-in selector, but also for some API responses, where only `name` and `id` are used.
  *
  * Character name, unique ID, and whether or not the character exists.
  */
