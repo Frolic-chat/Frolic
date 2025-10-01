@@ -32,6 +32,12 @@ export class ImageUrlMutator {
     }
 
     protected init(): void {
+        this.add(/^http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?[\w\?=]*)?/,
+            async(_url: string, match: RegExpMatchArray): Promise<string> => {
+                return `https://youtube.com/embed/${match[1]}?autoplay=1`
+            }
+        );
+
         this.add(/^https?:\/\/(www\.)?tiktok\.com\//,
             async(url: string, _match: RegExpMatchArray): Promise<string> => {
                 const result = await Axios.get(
