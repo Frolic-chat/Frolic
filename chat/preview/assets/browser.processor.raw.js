@@ -120,7 +120,7 @@ class FListImagePreviewDomMutator {
 
         this.cleanDom(this.body);
 
-        this.finalize();
+        this.finalize(60);
     }
 
 
@@ -404,20 +404,25 @@ class FListImagePreviewDomMutator {
     }
 
     finalize(counter) {
-        if (counter <= 0) {
+        if (counter === null || counter === undefined)
+            throw new Error("Called finalize without a counter value; canceling so it won't run forever.");
+
+        if (counter <= 0)
             return;
-        }
 
         setTimeout(() => {
-            if (this.img) {
-                img.volume = 0;
-                img.muted = true;
-                this.attemptPlay(this.img);
+            if (this.img && this.img.src) {
+                // this.img.muted = true;
+                // This may be the birthplace of all good things in life.
+                this.img.volume = window.volume.value() / 100;
+
+                if (this.img.play)
+                    this.attemptPlay(this.img);
             }
 
             this.finalize(counter - 1);
         },
-        100
+        166
         );
     }
 
