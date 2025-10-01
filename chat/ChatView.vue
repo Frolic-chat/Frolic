@@ -199,7 +199,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import {getStatusIcon} from './UserView.vue';
     import UserList from './UserList.vue';
     import UserMenu from './UserMenu.vue';
-    import ImagePreview from './preview/ImagePreview.vue';
+    import ImagePreview from './preview/ContentPreview.vue';
     import PrivateConversation = Conversation.PrivateConversation;
     import NoteStatus from '../site/NoteStatus.vue';
     import { Dialog } from '../helpers/dialog';
