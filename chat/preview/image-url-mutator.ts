@@ -89,6 +89,13 @@ export class ImageUrlMutator {
             }
         );
 
+        // https://bsky.app/profile/user/post/postid
+        this.add(/^https?:\/\/((?:[^.]+\.)?(?:bsky|fxbsky|vxbsky|bskye|bskyx|bsyy)\.app)\/profile\/[^\/]+\/post\/[^\/]+/,
+            async (url: string, match: RegExpMatchArray): Promise<string> => {
+                return url.replace(match[1], 'd.fxbsky.app');
+            }
+        );
+
         this.add(/^https?:\/\/rule34video\.com\/videos\/([0-9a-zA-Z-_]+)/,
             async(_url: string, match: RegExpMatchArray): Promise<string> => {
                 const videoId = match[1];
