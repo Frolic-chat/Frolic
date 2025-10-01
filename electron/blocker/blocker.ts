@@ -7,6 +7,8 @@ import path from 'path';
 import fs from 'fs';
 import * as electron from 'electron';
 
+import lockdownPermissions from '../main/lockdown-permissions';
+
 export class BlockerIntegration {
   protected static readonly adBlockerLists = [
       'https://easylist.to/easylist/easylist.txt',
@@ -51,6 +53,7 @@ export class BlockerIntegration {
       log.debug('adblock.load.complete');
 
       const session = electron.session.fromPartition('persist:adblocked', { cache: true });
+      lockdownPermissions(session);
 
       // Block downloads
       session.on('will-download', e => e.preventDefault());
