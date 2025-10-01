@@ -77,7 +77,7 @@ export interface Character extends SimpleCharacter {
     updated_at:      number
     views:           number
     last_online_at?: number
-    timezone?:       number
+    timezone?:       number | null
     image_count?:    number
     online_chat?:    boolean
 }
