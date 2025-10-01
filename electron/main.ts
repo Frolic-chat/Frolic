@@ -553,6 +553,10 @@ function onReady(): void {
     app.setAppUserModelId('com.squirrel.fchat.Frolic');
     app.on('open-file', createWindow);
 
+    app.on('web-contents-created', (_e, wc) => {
+        wc.setWindowOpenHandler(() => ({ action: "deny" }));
+    });
+
     const targetVersion = app.getVersion();
     if (settings.version !== targetVersion) {
         // Run all routines necessary to upgrade the general settings.
