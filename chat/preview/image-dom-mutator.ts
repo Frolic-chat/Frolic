@@ -321,6 +321,15 @@ export class ImageDomMutator {
     }
 
 
+    /**
+     * Returns the ENTIRE `browser.processor.raw.js` file with a small portion of settings modified.
+     * @param elSelector
+     * @param skipElementRemove
+     * @param safeTags
+     * @param delayPreprocess
+     * @param scheduled
+     * @returns
+     */
     protected getBaseJsMutatorScript(elSelector: string[], skipElementRemove: boolean = false, safeTags: string[] = [], delayPreprocess: boolean = false, scheduled: boolean = false): string {
         const js = this.scripts.processor; // ./assets/browser.processor.raw.js
 

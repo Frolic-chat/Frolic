@@ -24,16 +24,11 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
             //     webview.executeJavaScript(this.parent.jsMutator.getHideMutator());
             // } else {
 
-            // tslint:disable-next-line:no-floating-promises
             webview.stop();
             webview.setAudioMuted(true);
 
             webview.loadURL('about:blank')
-                .catch(
-                  (err: any) => {
-                      console.warn('webview.loadURL() in hide()', err);
-                  }
-                );
+                .catch((err: any) => console.warn('webview.loadURL() in hide()', err));
 
             //}
 
