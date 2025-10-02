@@ -269,7 +269,7 @@
 
                 await Promise.all(due);
             }
-            catch(e) {
+            catch (e) {
                 console.error(e);
 
                 this.error = Utils.isJSONError(e)
@@ -289,8 +289,10 @@
          * @param as ArmorStand; inherited from getCharacter
          */
         async updateGuestbook(stand: ArmorStand): Promise<void> {
-            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
-                return log.debug("Discarding guestbook; this armor isn't for this character.");
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+            log.debug("Discarding guestbook; this armor isn't for this character.");
+                return;
+        }
 
             try {
                 if (!stand.character.settings.guestbook)
@@ -313,8 +315,10 @@
          * @param as ArmorStand; inherited from getCharacter
          */
         async updateGroups(stand: ArmorStand): Promise<void> {
-            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
-                return log.debug("Discarding groups; this armor isn't for this character.");
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding groups; this armor isn't for this character.");
+                return;
+            }
 
             try {
                 if (this.oldApi)
@@ -337,8 +341,10 @@
          * @param as ArmorStand; inherited from getCharacter
          */
         async updateFriends(stand: ArmorStand): Promise<void> {
-            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
-                return log.debug("Discarding friends; this armor isn't for this character.");
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding friends; this armor isn't for this character.");
+                return;
+            }
 
             try {
                 if (shouldShowFriendsTabs(stand.character))
@@ -359,8 +365,10 @@
          * @param as ArmorStand; inherited from getCharacter
          */
         async updateImages(stand: ArmorStand): Promise<void> {
-            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
-                return log.debug("Discarding images; this armor isn't for this character.");
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding images; this armor isn't for this character.");
+                return;
+            }
 
             try {
                 // log.debug('updateImages.start', stand.character.character.name);
@@ -377,8 +385,13 @@
          * @param as in-progress character from getCharacter
          */
         async updateMeta(stand: ArmorStand): Promise<void> {
-            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
-                log.debug("Abandoning meta stand; it isn't for this character.");
+            if (!stand.character) {
+                log.error('Tried updating meta without an armor stand. A very strange error.', { noncanon_name: this.name, stand });
+                return;
+            }
+
+            if (!this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Abandoning meta stand; it isn't for this character.", { this_char: stand.character.character.name, on_sheet: this.name, stand });
                 return;
             }
 
@@ -413,8 +426,10 @@
         }
 
         printArmorStand(stand: ArmorStand): void {
-            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
-                return log.debug("Discarding armor; it doesn't fit this character.");
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding armor; it doesn't fit this character.");
+                return;
+            }
 
             Object.assign(
                 this,
@@ -448,6 +463,11 @@
              * @param skipCache
              */
         private async _getCharacter(name: string, skipCache: boolean = false): Promise<void> {
+            if (!name) {
+                log.debug('profile.getCharacter.noName');
+                return;
+            }
+
             log.debug('profile.getCharacter', { name });
 
             this.character = undefined;
@@ -467,9 +487,6 @@
                 images: null,
                 matchReport: undefined,
             };
-
-            if (!name)
-                return log.debug('profile.getCharacter.noName');
 
             const char_record = !skipCache
                 ? await core.cache.profileCache.get(name)
