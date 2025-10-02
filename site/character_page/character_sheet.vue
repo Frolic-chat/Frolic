@@ -172,7 +172,6 @@
         refreshing = false;
         error = '';
         tab = '0';
-        autoExpandCustoms = false;
 
         // Tab content:
         guestbook:  Guestbook         | null = null;
@@ -213,11 +212,14 @@
             // Set loading screen here stead of in load()?
 
             this.tab = '0';
-            this.autoExpandCustoms = core.state.settings.risingAutoExpandCustomKinks;
 
             await this.load();
 
             this.scrollToTopOnNextTick()
+        }
+
+        get autoExpandCustoms() {
+            return core.state.settings.risingAutoExpandCustomKinks;
         }
 
 
