@@ -577,7 +577,7 @@
         }
 
         isCurrentCharacter(name: string): boolean {
-            return this.name === name;
+            return this.name?.toLowerCase() === name.toLowerCase();
         }
 
         scrollToTopOnNextTick(): void {
