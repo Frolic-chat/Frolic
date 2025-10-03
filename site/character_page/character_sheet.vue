@@ -267,7 +267,7 @@
                 if (mustLoad || !this.character)
                     due.push(this._getCharacter(this.name, skipCache));
 
-                await Promise.all(due);
+                await Promise.allSettled(due);
             }
             catch (e) {
                 console.error(e);
