@@ -229,9 +229,12 @@
 
 
         /**
-         * This is invoked from the modal header, described in Index.vue. The payload is shift key or right-click.
+         * This is invoked from the modal header, described in Index.vue. The payload (commented out) is shift key or right-click.
          */
         async reload(/* force: boolean */): Promise<void> {
+            if (!this.name)
+                return;
+
             // await this.load(force, force);
             await this.load(true, true);
 
@@ -244,15 +247,17 @@
 
 
         async load(mustLoad: boolean = true, skipCache: boolean = false): Promise<void> {
+            if (!this.name)
+                return;
+
+            const n = this.name;
+
             this.loading = true;
             this.refreshing = false;
             this.error = '';
 
             try {
                 const due: Promise<void>[] = [];
-
-                if (!this.name)
-                    return;
 
                 // Should this be pushed into the due?
                 await methods.fieldsGet();
@@ -264,8 +269,8 @@
                     due.push(this.loadSelfCharacter());
                 }
 
-                if (mustLoad || !this.character)
-                    due.push(this._getCharacter(this.name, skipCache));
+                if (mustLoad || n !== this.character?.character.name)
+                    due.push(this._getCharacter(n, skipCache));
 
                 await Promise.allSettled(due);
             }
