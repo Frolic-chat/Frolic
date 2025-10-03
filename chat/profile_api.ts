@@ -90,7 +90,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
         infotags:     {[key: string]: string},
         memo?:        {id: number, memo: string},
         settings:     CharacterSettings,
-        timezone:     number,
+        timezone:     number | null,
     }>('character-data.php', { name });
 
     const newKinks: {[key: string]: KinkChoiceFull} = {};
