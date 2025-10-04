@@ -500,6 +500,24 @@
             stand.character = char_record?.character
                 ?? await methods.characterData(name, undefined, false);
 
+            if (char_record?.lastFetched && Date.now() - char_record.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
+                // void: will have to put the armor on the character on its own.
+                void this.refreshCache(stand);
+            }
+            // refreshCache calls updateMeta, so this has to be wrapped in else.
+            else if (!char_record?.meta?.lastMetaFetched || Date.now() - char_record.meta.lastMetaFetched.getTime() >= CHARACTER_META_CACHE_EXPIRE) {
+                log.debug('updateMeta.solo', name);
+
+                // void: will have to put the armor on the character on its own.
+                void this.updateMeta(stand)
+                    .catch(err => log.error('_getCharacter.updateMeta', stand.character?.character.name, err));
+            }
+
+            if (!this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("_getCharacter: Abandoning printable stand because it doesn't fit current character.");
+                return;
+            }
+
             if (char_record?.meta) {
                 stand.guestbook = char_record.meta.guestbook;
                 stand.friends   = char_record.meta.friends;
@@ -507,55 +525,16 @@
                 stand.images    = char_record.meta.images;
             }
 
-            // Profile metadata not expired? Do nothing.
-            if (char_record?.meta?.lastMetaFetched && (Date.now() - char_record.meta.lastMetaFetched.getTime() < CHARACTER_META_CACHE_EXPIRE)) {
-
-                // Do nothing; not enough time has passed to refresh profile extras.
-
-            }
-            else {
-                // void: will have to put the armor on the character on its own.
-                void this.updateMeta(stand)
-                    .catch(err => log.error('_getCharacter.updateMeta', stand.character?.character.name, err));
-            }
-
             if (this.selfCharacter)
                 stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character);
 
-            // old profile cache; methods.characterData was never ran; let's refresh
-            if (char_record?.lastFetched && Date.now() - char_record.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
-                // log.debug('_getCharacter.refreshCache.pre', {
-                //     character: stand.character,
-                //     friends:   stand.friends,
-                //     groups:    stand.groups,
-                //     guestbook: stand.guestbook,
-                //     images:    stand.images,
-                // });
-
-                // void: will have to put the armor on the character on its own.
-                void this.refreshCache(stand);
-
-                // log.debug('_getCharacter.refreshCache.post', {
-                //     character: stand.character,
-                //     friends:   stand.friends,
-                //     groups:    stand.groups,
-                //     guestbook: stand.guestbook,
-                //     images:    stand.images,
-                // });
-            }
-
+            standardParser.inlines = stand.character.character.inlines
 
             /**
              * Time to dump the armor stand out into a character.
              * At this point we only have basic info; the meta and refresh haven't returned.
              */
-            if (this.isCurrentCharacter(stand.character.character.name)) {
-                standardParser.inlines = stand.character.character.inlines
-                this.printArmorStand(stand);
-            }
-            else {
-                log.debug("_getCharacter: Abandoning printable stand because it doesn't fit current character.");
-            }
+            this.printArmorStand(stand);
         }
 
         /**
