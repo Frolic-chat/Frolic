@@ -544,10 +544,10 @@
          * @param as In-progress character.
          */
         private async refreshCache(stand: ArmorStand): Promise<void> {
-            this.refreshing = true;
-
             if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
                 return;
+
+            this.refreshing = true;
 
             const name = stand.character?.character.name;
 
@@ -555,7 +555,6 @@
 
             try {
                 stand.character = await methods.characterData(name, undefined, false);
-                void core.cache.profileCache.register(stand.character);
 
                 log.debug('refreshCache.characterData.fetched', { char: stand.character });
 
