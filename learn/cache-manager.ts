@@ -180,6 +180,8 @@ export class CacheManager {
      * turning that character into a fully fleshed-out character.
      *
      * But under what scenarios do we actually need to process without fetching?
+     * when called from the "standard" character api method; which emits the
+     * 'character-data' event.
      * @param character Character name to fetch, or a character object to finish
      */
     async addProfile(character: string | ComplexCharacter): Promise<void> {

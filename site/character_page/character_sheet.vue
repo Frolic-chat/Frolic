@@ -463,10 +463,10 @@
                 this.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, this.character.character);
         }
 
-            /**
-             * Builds the data that will fil in this.* attributes, like `this.character` and `this.images`. We use an {@link ArmorStand|armor stand} to hold the cache/API data until we've built the full character; if we wrote to this.* every step of the way; the async messes up and we change this.name to a new character as this.character is the old one; then this.character to the old one as this.images are set for the old one. Chaos.
-             * @param skipCache
-             */
+        /**
+         * Builds the data that will fil in this.* attributes, like `this.character` and `this.images`. We use an {@link ArmorStand|armor stand} to hold the cache/API data until we've built the full character; if we wrote to this.* every step of the way; the async messes up and we change this.name to a new character as this.character is the old one; then this.character to the old one as this.images are set for the old one. Chaos.
+         * @param skipCache
+         */
         private async _getCharacter(name: string, skipCache: boolean = false): Promise<void> {
             if (!name) {
                 log.debug('profile.getCharacter.noName');
