@@ -548,7 +548,7 @@
             try {
             // Hack!
                 if (process.platform === 'win32') {
-                    if (core.state.generalSettings?.risingDisableWindowsHighContrast) {
+                    if (core.state.generalSettings.risingDisableWindowsHighContrast) {
                         document.querySelector('html')?.classList.add('disableWindowsHighContrast');
                     }
                     else {
@@ -559,7 +559,7 @@
                 return {
                     [`theme-${core.state.settings.risingCharacterTheme || this.settings.theme}`]: true,
                     colorblindMode: core.state.settings.risingColorblindMode,
-                    disableWindowsHighContrast: core.state.generalSettings?.risingDisableWindowsHighContrast || false
+                    disableWindowsHighContrast: core.state.generalSettings.risingDisableWindowsHighContrast || false
                 };
             }
             catch(err) {

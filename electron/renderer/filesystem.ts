@@ -5,14 +5,6 @@ import {Message as MessageImpl} from '../../chat/common';
 import core from '../../chat/core';
 import {Character, Conversation, Logs as Logging, Settings} from '../../chat/interfaces';
 import l from '../../chat/localize';
-import {GeneralSettings} from '../common';
-
-// ?? ? ???
-declare module '../../chat/interfaces' {
-    interface State {
-        generalSettings?: GeneralSettings
-    }
-}
 
 const dayMs = 86400000;
 
@@ -52,7 +44,7 @@ interface Index {
  * @returns Directory path
  */
 export function getLogDir(this: void, character: string): string {
-    const dir = path.join(core.state.generalSettings!.logDirectory, character, 'logs');
+    const dir = path.join(core.state.generalSettings.logDirectory, character, 'logs');
     fs.mkdirSync(dir, {recursive: true});
     return dir;
 }
@@ -296,14 +288,14 @@ export class Logs implements Logging {
     }
 
     async getAvailableCharacters(): Promise<ReadonlyArray<string>> {
-        const baseDir = core.state.generalSettings!.logDirectory;
+        const baseDir = core.state.generalSettings.logDirectory;
         fs.mkdirSync(baseDir, {recursive: true});
         return (fs.readdirSync(baseDir)).filter((x) => fs.statSync(path.join(baseDir, x)).isDirectory());
     }
 }
 
 function getSettingsDir(character: string = core.connection.character): string {
-    const dir = path.join(core.state.generalSettings!.logDirectory, character, 'settings');
+    const dir = path.join(core.state.generalSettings.logDirectory, character, 'settings');
     fs.mkdirSync(dir, {recursive: true});
     return dir;
 }
@@ -325,7 +317,7 @@ export class SettingsStore implements Settings.Store {
     }
 
     async getAvailableCharacters(): Promise<ReadonlyArray<string>> {
-        const baseDir = core.state.generalSettings!.logDirectory;
+        const baseDir = core.state.generalSettings.logDirectory;
         return (fs.readdirSync(baseDir)).filter((x) => fs.statSync(path.join(baseDir, x)).isDirectory());
     }
 

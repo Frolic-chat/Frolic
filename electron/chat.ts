@@ -228,7 +228,7 @@ function onSettings(s: GeneralSettings): void {
 electron.ipcRenderer.on('settings', (_e, s: GeneralSettings) => onSettings(s));
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
-let settings = <GeneralSettings>JSON.parse(params['settings']!);
+let settings = JSON.parse(params['settings']!) as GeneralSettings;
 
 // console.log('SETTINGS', settings);
 

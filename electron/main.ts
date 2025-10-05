@@ -115,7 +115,7 @@ if (!fs.existsSync(settingsFile)) {
 }
 else {
     try {
-        Object.assign(settings, <GeneralSettings>JSON.parse(fs.readFileSync(settingsFile, 'utf8')));
+        Object.assign(settings, JSON.parse(fs.readFileSync(settingsFile, 'utf8')) as GeneralSettings);
     }
     catch (e) {
         log.error(`Error loading settings: ${e}`);

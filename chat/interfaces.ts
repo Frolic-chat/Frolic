@@ -8,6 +8,7 @@ export {Connection, Channel, Character} from '../fchat/interfaces';
 export const userStatuses: ReadonlyArray<Character.Status> = ['online', 'looking', 'away', 'busy', 'dnd'];
 export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both'];
 import { Ad } from './ads/ad-center';
+import { GeneralSettings } from '../electron/common';
 
 export namespace Conversation {
     interface BaseMessage {
@@ -281,6 +282,7 @@ export interface Notifications {
 
 export interface State {
     settings: Settings;
+    generalSettings: GeneralSettings;
     hiddenUsers: string[];
     favoriteEIcons: Record<string, boolean>;
 }

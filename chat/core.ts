@@ -1,4 +1,5 @@
 import Vue, {WatchHandler} from 'vue';
+import * as qs from 'querystring';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
@@ -22,11 +23,14 @@ function createBBCodeParser(): BBCodeParser {
     return parser;
 }
 
+const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 /**
  * The state operates as an event-bus, allowing global-reaching updates.
  */
 class State implements StateInterface {
     _settings: Settings | undefined = undefined;
+    // This is still bad. The real settings object (with loading saved) is imported from main.
+    generalSettings: GeneralSettings = JSON.parse(params['settings']!) as GeneralSettings;
     hiddenUsers: string[] = [];
     favoriteEIcons: Record<string, boolean> = {};
 
@@ -125,7 +129,7 @@ export function init(this: any,
     data.adCenter = new AdCenter();
     data.siteSession = new SiteSession();
 
-    (data.state as any).generalSettings = settings;
+    data.state.generalSettings = settings;
 
     data.register('characters', Characters(connection));
     data.register('channels', Channels(connection, core.characters));
