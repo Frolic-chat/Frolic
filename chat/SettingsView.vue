@@ -238,15 +238,15 @@
                     {{l('rising.preview.showLinkPopup')}}
                 </label>
                 <template v-if="risingLinkPreview">
+                    <template v-if="linkPreviewVolume >= 1">
+                        <br>
+                        <small>{{ l('settings.linkPreviewVolume.warning') }}</small>
+                    </template>
                     <br>
                     <label class="control-label" for="linkPreviewVolume">
                         {{ l('settings.linkPreviewVolume', linkPreviewVolume) }}
                     </label>
                     <input type="range" class="form-control-range" id="linkPreviewVolume" v-model="linkPreviewVolume">
-                    <template v-if="linkPreviewVolume >= 1">
-                        <br>
-                        <small>{{ l('settings.linkPreviewVolume.warning') }}</small>
-                    </template>
                 </template>
             </div>
 
