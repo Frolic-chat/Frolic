@@ -128,9 +128,9 @@ export class CacheManager {
                 const mid = (low + high) >> 1; // floor
 
                 if (this.queue[mid].score < entry.score)
-                    low = mid + 1;
-                else
                     high = mid;
+                else
+                    low = mid + 1;
             }
 
             this.queue.splice(low, 0, entry);
