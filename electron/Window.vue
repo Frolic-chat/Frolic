@@ -69,38 +69,13 @@
         tab.view.webContents.stopPainting();
 
         try {
-          if ((tab.view.webContents as any).destroy) {
-            (tab.view.webContents as any).destroy();
-          }
-        } catch (err) {
-          console.error('webcontents destroy:', err);
-        }
-
-        try {
-          if ((tab.view.webContents as any).close) {
-            (tab.view.webContents as any).close();
+          if (tab.view.webContents.close) {
+            tab.view.webContents.close();
           }
         } catch (err) {
           console.error('webcontents close:', err);
         }
 
-        try {
-          if ((tab.view as any).destroy) {
-            (tab.view as any).destroy();
-          }
-        } catch (err) {
-          console.error('view destroy:', err);
-        }
-
-        try {
-          if ((tab.view as any).close) {
-            (tab.view as any).close();
-          }
-        } catch (err) {
-          console.error('view close:', err);
-        }
-
-        // tab.view.destroy();
         electron.ipcRenderer.send('tab-closed');
     }
 
