@@ -115,6 +115,14 @@ const scoreIcons: ScoreClassMap = {
     [Scoring.MISMATCH]: 'fas fa-heart-broken',
 };
 
+const scoreIconsLite: ScoreClassMap = {
+    [Scoring.MATCH]: 'fa-regular fa-heart',
+    [Scoring.WEAK_MATCH]: 'fa-regular fa-thumbs-up',
+    [Scoring.NEUTRAL]: 'fa-regular fa-meh',
+    [Scoring.WEAK_MISMATCH]: 'fa-regular fa-question-circle',
+    [Scoring.MISMATCH]: 'fa-regular fa-heart-broken',
+};
+
 export class Score {
     readonly score: Scoring;
     readonly description: string;
@@ -143,6 +151,10 @@ export class Score {
 
     static getIcon(score: Scoring): string {
         return scoreIcons[score];
+    }
+
+    static getIconLite(score: Scoring): string {
+        return scoreIconsLite[score];
     }
 }
 
