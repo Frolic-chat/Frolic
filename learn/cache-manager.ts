@@ -116,14 +116,35 @@ export class CacheManager {
             key,
             channelId,
             added: new Date(),
-            score: 0,
+            score: this.characterProfiler?.calculateInterestScore(name) ?? 0,
             retryCount: 0
         };
 
-        this.queue.push(entry);
+        if (!this.queue.length)
+            this.queue.push(entry);
+        else {
+            let low = 0, high = this.queue.length;
+            while (low < high) {
+                const mid = (low + high) >> 1; // floor
+
+                if (this.queue[mid].score < entry.score)
+                    low = mid + 1;
+                else
+                    high = mid;
+            }
+
+            this.queue.splice(low, 0, entry);
+        }
     }
 
 
+    /**
+     * Not entirely useless but the default profile_api method already does this; opting to invoke an Eventbus event 'character-data' instead of directly calling register.
+     *
+     * If the intent was to always use this function, why add the event-driven functionality to the profile api?
+     * @param name Character name who's profile you want to fetch
+     * @returns
+     */
     async fetchProfile(name: string): Promise<ComplexCharacter | null> {
         try {
             await methods.fieldsGet();
@@ -213,13 +234,6 @@ export class CacheManager {
         if (this.queue.length === 0) {
             return null;
         }
-
-        // Sorting should be done when we add the new entry,
-        // not every update.
-
-        // re-score
-        this.queue.forEach(e => e.score = this.calculateScore(e))
-        this.queue.sort((a, b) => a.score - b.score);
 
         log.debug('QUEUE', this.queue.map(q => `${q.name}: ${q.score}`));
 
