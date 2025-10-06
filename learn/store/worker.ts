@@ -72,7 +72,12 @@ export class WorkerStore implements PermanentIndexedStore {
     }
 
     async stop(): Promise<void> {
-        return this.workerClient.request('stop');
+        // This never actually executed any code:
+        //return this.workerClient.request('stop');
+
+        // Unfortunately, this initial webworker for some reason is the worker that handles various data requests. Removing it causes breakage of the bookmarks and friends lists. The breakage *seems to be* a race-condition, so it may not always be apparent that it's broken or that you've fixed it.
+        // Once that's fixed, we can shut down the extra webworker when shutting down the core. Re-enable the below `stop()` to do that.
+        //this.workerClient.stop();
     }
 
 

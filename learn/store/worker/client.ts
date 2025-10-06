@@ -114,4 +114,8 @@ export class WorkerClient {
       }
     );
   }
+
+  stop() {
+    this.worker.terminate();
+  }
 }

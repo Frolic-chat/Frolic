@@ -523,7 +523,6 @@ export class CacheManager {
             await this.profileStore.stop();
         }
 
-        // should do some $off here?
         EventBus.$off('character-data',         this.on_character_data);
         EventBus.$off('channel-message',        this.on_channel_message);
         EventBus.$off('channel-ad',             this.on_channel_ad);
