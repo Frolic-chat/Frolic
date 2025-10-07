@@ -7,7 +7,9 @@ import NewLogger from '../../helpers/log';
 const log = NewLogger('eicon/store');
 
 import { FisherYatesShuffle } from '../../helpers/utils';
+import { EventBus } from '../../chat/preview/event-bus';
 import { EIconUpdater } from './updater';
+
 
 /**
  * The eicon UI has a maximum display size of 7x7 eicons at a time,
@@ -239,6 +241,11 @@ export class EIconStore {
             }
             catch (err2) {
                 log.error('eicons.load.failure.download', { initial: err, explicit: err2 });
+                EventBus.$emit('error', {
+                    source:  'eicon',
+                    type:    'load.download',
+                    message: 'Failed to update or download new eicons. Eicon search may provide outdated results.',
+                });
             }
         }
     }
