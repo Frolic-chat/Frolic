@@ -17,7 +17,7 @@ export class EIconUpdater {
         const controller = new AbortController();
 
         let user_impatience = () => controller.abort("Xariah connection timeout.");
-        let no_response = setTimeout(user_impatience, 20000);
+        let no_response = setTimeout(user_impatience, 8000);
         log.debug('eiconupdater.fetchall.timeout.start');
 
         /** How to handle wrong response type?
@@ -31,7 +31,7 @@ export class EIconUpdater {
                 onDownloadProgress: () => {
                     log.debug('eiconupdater.fetchall.progress.datareceived');
                     clearTimeout(no_response);
-                    no_response = setTimeout(user_impatience, 20000);
+                    no_response = setTimeout(user_impatience, 5000);
                 },
                 timeout: 15000,
                 timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
