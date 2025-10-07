@@ -1,4 +1,3 @@
-import { EventBus } from '../../../chat/preview/event-bus';
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
 
 import NewLogger from '../../../helpers/log';
@@ -66,9 +65,13 @@ export class WorkerClient {
         // }
 
         waiter.resolve(res.result);
-      } else {
-        log.error('store.worker.client.msg.err', { t: (Date.now() - waiter.initiated) / 1000, msg: res.msg, req: waiter.request });
-        EventBus.$emit('error', { source: 'store.worker.client', type: typeof res, message: res.msg ?? '' })
+      }
+      else {
+        log.error('store.worker.client.msg.err', {
+          t: (Date.now() - waiter.initiated) / 1000,
+          msg: res.msg,
+          req: waiter.request,
+        });
 
         const err = new Error(res.msg);
         waiter.reject(err);
@@ -90,21 +93,13 @@ export class WorkerClient {
     const id = this.generateId();
 
     const request: IndexedRequest = {
-      cmd,
-      id,
-      params,
+      cmd, id, params,
     };
 
     return new Promise(
       (resolve, reject) => {
         try {
-          this.when(
-            id,
-            resolve,
-            reject,
-            request,
-          );
-
+          this.when(id, resolve, reject, request);
           this.worker.postMessage(request);
         }
         catch (err) {
