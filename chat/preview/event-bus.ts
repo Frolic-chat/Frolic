@@ -70,9 +70,10 @@ export interface MemoEvent {
 }
 
 export interface ErrorEvent {
-    source:  string,
+    source:  'eicon' | 'index' | 'core',
     type?:   string,
     message: string,
+    fatal?:  boolean,
 }
 
 export type EventCallback = (data: any) => void | Promise<void>;
