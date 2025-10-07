@@ -44,8 +44,8 @@ export class CacheManager {
 
     static readonly PROFILE_QUERY_DELAY = 400; //1 * 1000;
 
-    adCache: AdCache = new AdCache();
-    profileCache: ProfileCache = new ProfileCache();
+    adCache:                  AdCache                  = new AdCache();
+    profileCache:             ProfileCache             = new ProfileCache();
     channelConversationCache: ChannelConversationCache = new ChannelConversationCache();
 
     protected queue: ProfileCacheQueueEntry[] = [];
@@ -59,8 +59,8 @@ export class CacheManager {
 
     protected lastFetch = Date.now();
 
-    protected fetchLog: Record<string, number> = {};
-    protected ongoingLog: Record<string, true> = {};
+    protected fetchLog:   Record<string, number> = {};
+    protected ongoingLog: Record<string, true>   = {};
 
     protected isActiveTab = true;
 
@@ -287,14 +287,13 @@ export class CacheManager {
         await this.stop();
 
         this.profileStore = await WorkerStore.open(
-          path.join(/*electron.remote.app.getAppPath(),*/ 'storeWorkerEndpoint.js')
+            path.join(/*electron.remote.app.getAppPath(),*/ 'storeWorkerEndpoint.js')
         ); // await IndexedStore.open();
 
         this.profileCache.setStore(this.profileStore);
 
-        if (!skipFlush) {
-          await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
-        }
+        if (!skipFlush)
+            await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
 
         EventBus.$on('character-data',          this.on_character_data);
         EventBus.$on('channel-message',         this.on_channel_message);
