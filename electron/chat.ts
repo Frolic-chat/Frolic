@@ -249,13 +249,11 @@ log.debug('init.chat.core');
 
 const connection = new Connection(`F-Chat 3.0 (Web)`, '3.0.16', Socket);
 initCore(connection, settings, Logs, SettingsStore, Notifications);
-
 log.debug('init.chat.vue');
-
-//tslint:disable-next-line:no-unused-expression
 new Index({
     el: '#app',
     data: {
+        // Useless to pass settinsg through, they're initiated into the core right above!
         settings,
         hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
     }

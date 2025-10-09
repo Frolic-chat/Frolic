@@ -212,8 +212,10 @@
         error = '';
         defaultCharacter?: number;
         l = l;
+
         settings!: GeneralSettings;
         hasCompletedUpgrades!: boolean;
+
         importProgress = 0;
         profileName = '';
         profileStatus = '';
