@@ -759,15 +759,13 @@ type localizationKey = keys | string & {};
  * @returns A complete string
  */
 export default function l(key: localizationKey, ...args: (string | number)[]): string {
-    let i = args.length;
-    let str: string = strings[key as keys];
-    if (!str) {
-        if(process.env.NODE_ENV !== 'production')
-            throw new Error(`String ${key} does not exist.`);
-
+    let str: string | undefined = strings[key as keys];
+    if (!str)
         return '';
-    }
+
+    let i = args.length;
     while(i-- > 0)
         str = str.replace(new RegExp(`\\{${i}\\}`, 'igm'), args[i].toString());
+
     return str;
 }
