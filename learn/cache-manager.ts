@@ -19,8 +19,8 @@ import * as path from 'path';
 import { lastElement } from '../helpers/utils';
 // import * as electron from 'electron';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('cache-manager');
+import NewLogger from '../helpers/log';
+const log = NewLogger('cache-manager');
 
 import { shouldFilterPrivate } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 

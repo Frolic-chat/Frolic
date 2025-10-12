@@ -33,8 +33,8 @@
     //import {Character} from './interfaces';
     //import core from '../../chat/core';
 
-    import Logger from 'electron-log/renderer';
-    const log = Logger.scope('character_page/images');
+    import NewLogger from '../../helpers/log';
+    const log = NewLogger('cahracter_page_images');
 
     @Component
     export default class ImagesView extends Vue {

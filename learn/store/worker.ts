@@ -4,8 +4,8 @@ import { CharacterImage, SimpleCharacter } from '../../interfaces';
 
 import { WorkerClient } from './worker/client';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('worker')
+import NewLogger from '../../helpers/log';
+const log = NewLogger('worker');
 
 
 export class WorkerStore implements PermanentIndexedStore {

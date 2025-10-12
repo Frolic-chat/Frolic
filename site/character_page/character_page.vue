@@ -77,8 +77,8 @@
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
     import Vue from 'vue';
 
-    import Logger from 'electron-log/renderer';
-    const log = Logger.scope('character_page');
+    import NewLogger from '../../helpers/log';
+    const log = NewLogger('character_page');
 
     import {StandardBBCodeParser} from '../../bbcode/standard';
     import {BBCodeView} from '../../bbcode/view';

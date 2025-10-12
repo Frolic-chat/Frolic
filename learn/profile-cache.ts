@@ -9,8 +9,8 @@ import { Scoring } from './matcher-types';
 import { matchesSmartFilters } from './filter/smart-filter';
 import * as remote from '@electron/remote';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('profile-cache');
+import NewLogger from '../helpers/log';
+const log = NewLogger('profile-cache', () => process.env.NODE_ENV === 'development');
 
 export interface MetaRecord {
     images: CharacterImage[] | null;

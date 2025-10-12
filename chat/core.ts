@@ -13,8 +13,8 @@ import { SiteSession } from '../site/site-session';
 import { SettingsMerge } from '../helpers/utils';
 
 import { EventBus } from './preview/event-bus';
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('chat/core');
+import NewLogger from '../helpers/log';
+const log = NewLogger('chat/core', () => process.env.NODE_ENV === 'development');
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();

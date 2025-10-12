@@ -13,8 +13,8 @@ import MessageType = Interfaces.Message.Type;
 import {EventBus} from './preview/event-bus';
 import throat from 'throat';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('chat/conversations');
+import NewLogger from '../helpers/log';
+const log = NewLogger('chat/conversations');
 
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {

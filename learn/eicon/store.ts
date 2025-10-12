@@ -3,8 +3,8 @@ import * as path from 'path';
 
 import { ipcRenderer } from 'electron';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('eicon/store');
+import NewLogger from '../../helpers/log';
+const log = NewLogger('eicon/store');
 
 import { FisherYatesShuffle } from '../../helpers/utils';
 import { EIconUpdater } from './updater';

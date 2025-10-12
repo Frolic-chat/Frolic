@@ -33,8 +33,8 @@
 </template>
 
 <script lang="ts">
-    import Logger from 'electron-log/renderer'; //tslint:disable-line:match-default-export-name
-    const log = Logger.scope('Chat');
+import NewLogger from '../helpers/log';
+const log = NewLogger('Chat');
 
     import {Component, Hook, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';

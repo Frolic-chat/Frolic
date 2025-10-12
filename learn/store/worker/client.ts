@@ -1,8 +1,8 @@
 import { EventBus } from '../../../chat/preview/event-bus';
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('worker/client');
+import NewLogger from '../../../helpers/log';
+const log = NewLogger('worker/client');
 
 export interface WaiterDef {
   id: string;

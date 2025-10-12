@@ -1,7 +1,7 @@
 import throat from 'throat';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('AdCoordinatorGuest');
+import NewLogger from '../../helpers/log';
+const log = NewLogger('ad-manager');
 
 import core from '../core';
 import { FisherYatesShuffle } from '../../helpers/utils';

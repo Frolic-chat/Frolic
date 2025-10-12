@@ -2,8 +2,8 @@ import { AxiosError, AxiosResponse, CanceledError } from 'axios';
 import {InlineDisplayMode, Settings, SimpleCharacter} from '../interfaces';
 import { dialog } from 'electron';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('site utils');
+import NewLogger from '../helpers/log';
+const log = NewLogger('site/utils');
 
 type FlashMessageType = 'info' | 'success' | 'warning' | 'danger';
 type FlashMessageImpl = (type: FlashMessageType, message: string) => void;

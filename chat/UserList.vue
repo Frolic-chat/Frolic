@@ -59,8 +59,8 @@ import { Scoring } from '../learn/matcher-types';
 import { EventBus, CharacterDataEvent } from './preview/event-bus';
 import { debounce } from '../helpers/utils';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('UserList');
+import NewLogger from '../helpers/log';
+const log = NewLogger('UseList');
 
 type StatusSort = { [key in Character.Status]: number };
 type GenderSort = { [key in Character.Gender]: number };

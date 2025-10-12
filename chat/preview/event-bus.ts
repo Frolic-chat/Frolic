@@ -6,8 +6,8 @@ import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
 
-// import Logger from 'electron-log/renderer';
-// const log = Logger.scope('event-bus');
+// import NewLogger from '../helpers/log';
+// const log = NewLogger('event-bus');
 
 export interface EmptyEvent {}
 

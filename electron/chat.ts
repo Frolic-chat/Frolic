@@ -72,8 +72,9 @@ import * as SlimcatImporter from './renderer/importer';
 
 import Index from './Index.vue';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('chat');
+import Logger from 'electron-log';
+import NewLogger from '../helpers/log';
+const log = NewLogger('electron/chat');
 import { LevelOption as LogLevelOption } from 'electron-log';
 
 import { WordPosSearch } from '../learn/dictionary/word-pos-search';

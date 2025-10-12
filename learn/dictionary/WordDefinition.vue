@@ -19,8 +19,8 @@ import Vue from 'vue';
 import { Component, Hook, Prop } from '@f-list/vue-ts';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('WordDefinition');
+import NewLogger from '../../helpers/log';
+const log = NewLogger('WordDefinition');
 
 // tslint:disable-next-line:ban-ts-ignore
 // @ts-ignore

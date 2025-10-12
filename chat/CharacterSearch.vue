@@ -76,8 +76,8 @@ import {
 } from '../learn/matcher-types';
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('CharacterSearch');
+import NewLogger from '../helpers/log';
+const log = NewLogger('CharacterSearch');
 
 type Options = {
     kinks: SearchKink[],

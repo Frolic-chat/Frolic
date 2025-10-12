@@ -1,6 +1,21 @@
 import { Character, CharacterInfotag, KinkChoice } from '../interfaces';
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('matcher');
+
+// Because matcher is loaded in the worker, we can't rely on anything that chains into core, so we must use a custom log implementation for the portion in worker. This is just NewLogger without defaults dependent on `core`.
+import Logger from 'electron-log';
+const we_care_about_matcher_logging = false;
+const in_renderer = self.document !== undefined;
+const log = {
+    l:     Logger.scope('Matcher'),
+    cond:    () => we_care_about_matcher_logging && in_renderer,
+    debug:   (...args: any) => { if (log.cond()) log.l.debug(...args)   },
+    error:   (...args: any) => { if (log.cond()) log.l.error(...args)   },
+    info:    (...args: any) => { if (log.cond()) log.l.info(...args)    },
+    log:     (...args: any) => { if (log.cond()) log.l.log(...args)     },
+    silly:   (...args: any) => { if (log.cond()) log.l.silly(...args)   },
+    verbose: (...args: any) => { if (log.cond()) log.l.verbose(...args) },
+    warn:    (...args: any) => { if (log.cond()) log.l.warn(...args)    },
+};
+
 const ulslog = Logger.scope('UserListSorter');
 
 import anyAscii from 'any-ascii';
