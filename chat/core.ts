@@ -3,7 +3,7 @@ import * as qs from 'querystring';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
-import {Settings as SettingsImpl} from './common';
+import { Settings as SettingsClass } from './common';
 import Conversations from './conversations';
 import {Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface} from './interfaces';
 import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
@@ -95,12 +95,13 @@ const data = {
         vue.$watch(getter, callback);
     },
     async reloadSettings(): Promise<void> {
-        const s = await core.settingsStore.get('settings');
+        const s = await core.settingsStore.get('settings') as Partial<SettingsClass>;
+        const initial = new SettingsClass();
 
-        state._settings = SettingsMerge(new SettingsImpl, s as Partial<SettingsImpl>);
+        state._settings = SettingsMerge(initial, s);
 
         log.debug('data.reloadSettings', {
-            initial: new SettingsImpl(),
+            initial: initial,
             saved: s,
             result: state._settings,
             //test: test,
