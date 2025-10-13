@@ -4,6 +4,8 @@ import {Keys} from '../keys';
 import {Character, Conversation, Settings as ISettings} from './interfaces';
 import core from './core';
 
+import { SmartFilterSettings } from '../learn/filter/types';
+
 const e = new TextEncoder()
 export function getByteLength(s: string): number {
     return e.encode(s).length;
@@ -37,54 +39,55 @@ export function characterImage(this: any | never, character: string): string {
 }
 
 export class Settings implements ISettings {
-    playSound = true;
-    notifyVolume = 100;
-    clickOpensMessage = false;
+    playSound: boolean = true;
+    notifyVolume: number = 100;
+    clickOpensMessage: boolean = false;
     disallowedTags: string[] = [];
-    notifications = true;
-    notifyFriendSignIn = Conversation.RelationChooser.NoOne;
-    notifyOnFriendMessage = Conversation.RelationChooser.NoOne;
-    highlight = true;
+    notifications: boolean = true;
+    notifyFriendSignIn: Conversation.RelationChooser = Conversation.RelationChooser.NoOne;
+    notifyOnFriendMessage: Conversation.RelationChooser = Conversation.RelationChooser.NoOne;
+    highlight: boolean = true;
     highlightWords: string[] = [];
-    highlightUsers = false;
-    showBroadcastsInPMs = false;
-    showAvatars = true;
-    animatedEicons = true;
-    idleTimer = 0;
-    messageSeparators = false;
-    eventMessages = true;
-    joinMessages = false;
-    alwaysNotify = false;
-    logMessages = true; // All messages
-    logChannels = true;
-    logAds = false;
-    expensiveMemberList = false;
-    fontSize = 14;
-    showNeedsReply = false;
-    enterSend = true;
-    secondEnterSend = false;
-    colorBookmarks = false;
-    bbCodeBar = true;
+    highlightUsers: boolean = false;
+    highlightUsernames: string[] = [];
+    showBroadcastsInPMs: boolean = false;
+    showAvatars: boolean = true;
+    animatedEicons: boolean = true;
+    idleTimer: number = 0;
+    messageSeparators: boolean = false;
+    eventMessages: boolean = true;
+    joinMessages: boolean = false;
+    alwaysNotify: boolean = false;
+    logMessages: boolean = true; // All messages
+    logChannels: boolean = true;
+    logAds: boolean = false;
+    expensiveMemberList: boolean = false;
+    fontSize: number = 14;
+    showNeedsReply: boolean = false;
+    enterSend: boolean = true;
+    secondEnterSend: boolean = false;
+    colorBookmarks: boolean = false;
+    bbCodeBar: boolean = true;
 
-    risingAdScore = true;
-    risingLinkPreview = true;
-    linkPreviewVolume = 0;
-    risingAutoCompareKinks = true;
+    risingAdScore: boolean = true;
+    risingLinkPreview: boolean = true;
+    linkPreviewVolume: number = 0;
+    risingAutoCompareKinks: boolean = true;
 
-    risingAutoExpandCustomKinks = true;
-    risingCharacterPreview = true;
-    risingComparisonInUserMenu = true;
-    risingComparisonInSearch = true;
-    experimentalOrientationMatching = false;
-    relaxPostLengthMatching = false;
+    risingAutoExpandCustomKinks: boolean = true;
+    risingCharacterPreview: boolean = true;
+    risingComparisonInUserMenu: boolean = true;
+    risingComparisonInSearch: boolean = true;
+    experimentalOrientationMatching: boolean = false;
+    relaxPostLengthMatching: boolean = false;
 
-    risingShowUnreadOfflineCount = true;
-    risingColorblindMode = false;
-    risingShowPortraitNearInput = true;
-    risingShowPortraitInMessage = true;
-    risingShowHighQualityPortraits = true;
+    risingShowUnreadOfflineCount: boolean = true;
+    risingColorblindMode: boolean = false;
+    risingShowPortraitNearInput: boolean = true;
+    risingShowPortraitInMessage: boolean = true;
+    risingShowHighQualityPortraits: boolean = true;
 
-    risingFilter = {
+    risingFilter: SmartFilterSettings = {
         hideAds: false,
         hideSearchResults: false,
         hideChannelMembers: false,
@@ -124,7 +127,7 @@ export class Settings implements ISettings {
         exceptionNames: []
     };
 
-    risingCharacterTheme = undefined;
+    risingCharacterTheme: string | undefined = undefined;
 }
 
 
