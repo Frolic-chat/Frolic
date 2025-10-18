@@ -1,6 +1,7 @@
 import { Character, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Settings } from '../interfaces';
+import { SmartFilterSettings } from '../../learn/filter/types';
 import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
@@ -87,6 +88,7 @@ class EventBusManager {
      * You probably also want to register 'core-connected' to detect the initial settings set, as well.
      */
     $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'smartfilters-update',   callback: (e: SmartFilterSettings) => void | Promise<void>): void;
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
@@ -183,6 +185,7 @@ class EventBusManager {
 
     $emit(event: 'core-connected',         data: Settings): void;
     $emit(event: 'configuration-update',   data: Settings): void;
+    $emit(event: 'smartfilters-update',    data: SmartFilterSettings): void;
     $emit(event: 'error',                  data: ErrorEvent): void;
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;

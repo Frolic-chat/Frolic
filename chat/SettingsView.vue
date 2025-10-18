@@ -486,7 +486,6 @@
     import {Conversation} from './interfaces';
     import l from './localize';
     import { SmartFilterSettings, SmartFilterSelection, smartFilterTypes as smartFilterTypesOrigin } from '../learn/filter/types';
-    import { matchesSmartFilters } from '../learn/filter/smart-filter';
     import { ProfileCache } from '../learn/profile-cache';
     import { EventBus } from './preview/event-bus';
     import { deepEqual } from '../helpers/utils';
@@ -718,7 +717,7 @@
             const newRisingFilter = JSON.parse(JSON.stringify(core.state.settings.risingFilter));
 
             if (!deepEqual(oldRisingFilter, newRisingFilter))
-                this.rebuildFilters();
+                core.cache.rebuildFilters();
 
             if (this.notifications)
                 await core.notifications.requestPermission();
@@ -726,20 +725,6 @@
             EventBus.$emit('configuration-update', core.state.settings);
             if (core.characters.ownProfile)
                 EventBus.$emit('own-profile-update', { profile: core.characters.ownProfile });
-        }
-
-        rebuildFilters() {
-            core.cache.profileCache.onEachInMemory(
-                c => {
-                    const oldFiltered = c.match.isFiltered;
-
-                    c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
-
-                    if (oldFiltered !== c.match.isFiltered) {
-                        core.cache.scoreAllConversations(c.character.character.name, c.match.matchScore, c.match.isFiltered);
-                    }
-                }
-            );
         }
 
         getAsNumber(input: any): number | null {

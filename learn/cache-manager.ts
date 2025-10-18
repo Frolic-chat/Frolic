@@ -17,7 +17,7 @@ import { WorkerStore } from './store/worker';
 import { PermanentIndexedStore } from './store/types';
 import * as path from 'path';
 import { lastElement } from '../helpers/utils';
-// import * as electron from 'electron';
+import { matchesSmartFilters } from './filter/smart-filter';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('cache-manager');
@@ -279,6 +279,9 @@ export class CacheManager {
       // tslint:disable-next-line: no-floating-promises
       this.onLoadMoreConversation(data);
     };
+    private on_smartfilters_update = async () => {
+        this.rebuildFilters();
+    }
 
     async start(settings: GeneralSettings, skipFlush: boolean): Promise<void> {
         await this.stop();
@@ -451,6 +454,19 @@ export class CacheManager {
         );
     }
 
+    rebuildFilters() {
+        log.debug('Rebuilding filters.');
+
+        this.profileCache.onEachInMemory(c => {
+            const oldFiltered = c.match.isFiltered;
+
+            c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
+
+            if (oldFiltered !== c.match.isFiltered) {
+                this.scoreAllConversations(c.character.character.name, c.match.matchScore, c.match.isFiltered);
+            }
+        });
+    }
 
     /**
      * Match a character, score their message (if provided), and return their scored Character.
@@ -528,6 +544,7 @@ export class CacheManager {
         EventBus.$off('channel-ad',             this.on_channel_ad);
         EventBus.$off('select-conversation',    this.on_select_conversation);
         EventBus.$off('conversation-load-more', this.on_conversation_load_more);
+        EventBus.$on('smartfilters-update',     this.on_smartfilters_update);
     }
 
 
