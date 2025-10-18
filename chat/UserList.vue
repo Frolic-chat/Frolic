@@ -54,7 +54,7 @@ import UserView from './UserView.vue';
 import characterPage from '../site/character_page/character_sheet.vue';
 import { profileLink } from './common';
 
-import { UserListSorter } from '../learn/matcher';
+import UserListSorter from '../learn/user-list-sorter';
 import { Scoring } from '../learn/matcher-types';
 import { EventBus, CharacterDataEvent } from './preview/event-bus';
 import { debounce } from '../helpers/utils';

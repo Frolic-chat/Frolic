@@ -5,7 +5,7 @@ import Logger from 'electron-log';
 const we_care_about_matcher_logging = false;
 const in_renderer = self.document !== undefined;
 const log = {
-    l:     Logger.scope('Matcher'),
+    l:       Logger.scope('Matcher'),
     cond:    () => we_care_about_matcher_logging && in_renderer,
     debug:   (...args: any) => { if (log.cond()) log.l.debug(...args)   },
     error:   (...args: any) => { if (log.cond()) log.l.error(...args)   },
@@ -15,8 +15,6 @@ const log = {
     verbose: (...args: any) => { if (log.cond()) log.l.verbose(...args) },
     warn:    (...args: any) => { if (log.cond()) log.l.warn(...args)    },
 };
-
-const ulslog = Logger.scope('UserListSorter');
 
 import anyAscii from 'any-ascii';
 
@@ -1722,53 +1720,3 @@ export class Matcher {
 }
 
 log.debug('init.matcher');
-
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class UserListSorter {
-    static getGenderPreferenceFromKink(c: Character, fchatGender: string): Scoring | null {
-        const gender = Matcher.strToGender(fchatGender) || Gender.None;
-
-        if (!(gender in genderKinkMapping))
-            return null;
-
-        const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
-
-        ulslog.silly('userlist.sorter.genderfromkink', {
-            character: c.name,
-            fchatGender: fchatGender,
-            kinkGender: gender,
-            pref: pref,
-        });
-
-        if      (pref === KinkPreference.Favorite)
-            return Scoring.MATCH;
-        else if (pref === KinkPreference.Yes)
-            return Scoring.WEAK_MATCH;
-        else if (pref === KinkPreference.Maybe)
-            return Scoring.WEAK_MISMATCH;
-        else if (pref === KinkPreference.No)
-            return Scoring.MISMATCH;
-        else    // null
-            return null;
-    }
-
-    static GetGenderPreferenceFromOrientation(c: Character, fchatGender: string): Scoring {
-        const myGender    = Matcher.getTagValueList(TagId.Gender, c);
-        const orientation = Matcher.getTagValueList(TagId.Orientation, c);
-        const theirGender = Matcher.strToGender(fchatGender);
-
-        // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
-        const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
-
-        ulslog.silly('userlist.sorter.genderfromorientation', {
-            character: c.name,
-            fchatGender: fchatGender,
-            myGender: myGender,
-            orientation: orientation,
-            theirGender: theirGender,
-            score: score,
-        });
-
-        return score;
-    }
-}
