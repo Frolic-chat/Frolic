@@ -45,10 +45,12 @@
                 {{l('settings.highlightWords')}}
             </label>
             <input :id="'highlightWords' + conversation.key" class="form-control" v-model="highlightWords"/>
-            <label class="control-label" for="highlightUsers">
-                <input type="checkbox" id="highlightUsers" v-model="highlightUsers"/>
-                {{ l('settings.highlightUsersChannel') }}
+        </div>
+        <div v-show="isChannel(conversation)" class="form-group">
+            <label class="control-label" :for="'highlightUsernames' + conversation.key">
+                {{l('settings.highlightUsernames')}}
             </label>
+            <input :id="'highlightUsernames' + conversation.key" class="form-control" v-model="highlightUsernames"/>
         </div>
         <div class="form-group"><hr></div>
         <div class="form-group">
@@ -83,7 +85,7 @@
         notify!: Conversation.Setting;
         highlight!: Conversation.Setting;
         highlightWords!: string;
-        highlightUsers!: boolean;
+        highlightUsernames!: string;
         joinMessages!: Conversation.Setting;
         defaultHighlights!: boolean;
         notifyOnFriendMessage!: Relation.Chooser;
@@ -93,7 +95,7 @@
             this.notify = settings.notify;
             this.highlight = settings.highlight;
             this.highlightWords = settings.highlightWords.join(',');
-            this.highlightUsers = settings.highlightUsers;
+            this.highlightUsernames = settings.highlightUsernames.join(', ');
             this.joinMessages = settings.joinMessages;
             this.defaultHighlights = settings.defaultHighlights;
             this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
@@ -103,8 +105,12 @@
             this.conversation.settings = {
                 notify: this.notify,
                 highlight: this.highlight,
-                highlightWords: this.highlightWords.split(',').map((x) => x.trim()).filter((x) => (x.length > 0)),
-                highlightUsers: this.highlightUsers,
+                highlightWords: this.highlightWords.split(',')
+                    .map(x => x.trim())
+                    .filter(x => x.length),
+                highlightUsernames: this.highlightUsernames.split(',')
+                    .map(x => x.trim())
+                    .filter(x => x.length),
                 joinMessages: this.joinMessages,
                 defaultHighlights: this.defaultHighlights,
                 adSettings: this.conversation.settings.adSettings,

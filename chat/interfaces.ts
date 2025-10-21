@@ -140,7 +140,7 @@ export namespace Conversation {
         readonly notifyOnFriendMessage: Relation.Chooser;
         readonly highlight: Setting;
         readonly highlightWords: ReadonlyArray<string>;
-        readonly highlightUsers: boolean;
+        readonly highlightUsernames: ReadonlyArray<string>;
         readonly joinMessages: Setting;
         readonly defaultHighlights: boolean;
         readonly adSettings: AdSettings;

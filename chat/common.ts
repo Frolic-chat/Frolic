@@ -141,7 +141,7 @@ export class ConversationSettings implements Conversation.Settings {
     notifyOnFriendMessage = Relation.Chooser.Default;
     highlight = Conversation.Setting.Default;
     highlightWords: string[] = [];
-    highlightUsers = false;
+    highlightUsernames: string[] = [];
     joinMessages = Conversation.Setting.Default;
     defaultHighlights = true;
     adSettings: Conversation.AdSettings = { ads: [], randomOrder: false, lastAdTimestamp: 0 };

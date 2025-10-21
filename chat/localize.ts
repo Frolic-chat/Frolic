@@ -136,7 +136,11 @@ const strings = {
     'charName.invalid': 'Name contains invalid characters.',
     'charName.tooLong': "Name is too long.",
     'chat.confirmLeave': 'You are still connected to chat. Would you like to disconnect?',
+
+    // Used in the notification.
     'chat.highlight': 'mentioned {0} in {1}:\n{2}',
+    'chat.highlight.user': 'posted in {0}',
+
     'chat.roll': 'rolls {0}: {1}',
     'chat.bottle': 'spins the bottle: {0}',
     'chat.consoleChat': 'You cannot chat here.',
@@ -498,7 +502,8 @@ Once this process has started, do not interrupt it or your logs will get corrupt
     'events.ignore_add': 'You are now ignoring {0}\'s messages. Should they go around this by any means, please report it using the Alert Staff button.',
     'events.ignore_delete': '{0} is now allowed to send you messages again.',
     'events.uptime': 'Server has been running since {0}, with currently {1} channels and {2} users, a total of {3} accepted connections, and {4} maximum users.',
-    'events.highlight': '{0} said "{1}" in {2}',
+    'events.highlight': '{0} mentioned "{1}" in {2}',
+    'events.highlight.user': '{0} posted in {1}: {2}',
     'preview.debug': 'Debug Mode',
     'preview.expand': 'Expand Images',
     'preview.reload': 'Reload Image',

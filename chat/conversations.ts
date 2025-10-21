@@ -1024,35 +1024,51 @@ export default function(this: any): Interfaces.State {
                      core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both    )
         }
 
-        const words = conversation.settings.highlightWords.slice();
+        const hilite_words = conversation.settings.highlightWords.slice();
         if (conversation.settings.defaultHighlights)
-            words.push(...core.state.settings.highlightWords);
+            hilite_words.push(...core.state.settings.highlightWords);
 
         if ((conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight)
         ||  conversation.settings.highlight === Interfaces.Setting.True) {
-            words.push(core.connection.character);
+            hilite_words.push(core.connection.character);
         }
 
-        for (let i = 0; i < words.length; ++i)
-            words[i] = words[i].replace(/[^\w]/gi, '\\$&');
+        const words = hilite_words
+            .map(e => e.replace(/[^\w]/gi, '\\$&'));
+        const names = conversation.settings.highlightUsernames
+            .map(e => e.replace(/[^\w]/gi, '\\$&'));
 
-        const msgResults  = words.length > 0
+        const msg_results  = words.length > 0
                 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
                 : null;
-        const nameResults = conversation.settings.highlightUsers && words.length > 0
-                ? data.character.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
+        const name_results = names.length > 0
+                ? data.character.match(new RegExp(`^(${names.join('|')})$`, 'i'))
                 : null;
 
-        if (msgResults || nameResults) {
-            const results = msgResults ?? nameResults;
-            await core.notifications.notify(conversation, data.character, l('chat.highlight', results![0], conversation.name, message.text), characterImage(data.character), 'attention');
+        let msg = null;
+
+        if (name_results) {
+            msg = {
+                notify: l('chat.highlight.user', conversation.name),
+                event: l('events.highlight.user', `[user]${data.character}[/user]`, `[session=${conversation.name}]${data.channel}[/session]`, message.text),
+            }
+        }
+        else if (msg_results) {
+            msg = {
+                notify: l('chat.highlight', msg_results[0], conversation.name, message.text.length > 25 ? message.text.slice(0, 25).trim() + '...' : message.text),
+                event: l('events.highlight', `[user]${data.character}[/user]`, msg_results[0], `[session=${conversation.name}]${data.channel}[/session]`),
+            }
+        };
+
+        if (msg) {
+            await core.notifications.notify(conversation, data.character, msg.notify, characterImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
                 conversation.unread = Interfaces.UnreadState.Mention;
 
             message.isHighlight = true;
 
-            await state.consoleTab.addMessage(new EventMessage(l('events.highlight', `[user]${data.character}[/user]`, results![0], `[session=${conversation.name}]${data.channel}[/session]`), time));
+            await state.consoleTab.addMessage(new EventMessage(msg.event, time));
         }
         else if (conversation.settings.notify === Interfaces.Setting.True
         || (shouldNotifyOnFriendMessage()   && core.characters.friendList.includes(data.character))
@@ -1075,12 +1091,8 @@ export default function(this: any): Interfaces.State {
 
         const msg = new Message(MessageType.Ad, char, decodeHTML(data.message), time);
 
-        const p = await core.cache.resolvePScore(
-            (core.conversations.selectedConversation !== conv),
-            char,
-            conv,
-            msg
-        );
+        const selected = core.conversations.selectedConversation === conv;
+        const p = await core.cache.resolvePScore(!selected, char, conv, msg);
 
         EventBus.$emit('channel-ad', { message: msg, channel: conv, profile: p });
 
