@@ -175,6 +175,7 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
         }
         // Differing types or absent value means a structure change, which is
         // handled in another part of the code; ignore the user setting.
+        // Functions are also caught here.
         else {
             obj[k] = base[k];
         }

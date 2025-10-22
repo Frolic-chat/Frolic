@@ -48,9 +48,10 @@ class State implements StateInterface {
         this._settings = value;
 
         //tslint:disable-next-line:no-floating-promises
-        if (data.settingsStore !== undefined) data.settingsStore.set('settings', value);
-
-        data.bbCodeParser = createBBCodeParser();
+        if (data.settingsStore !== undefined) {
+            data.settingsStore.set('settings', value);
+            data.bbCodeParser = createBBCodeParser();
+        }
     }
 }
 
@@ -91,8 +92,8 @@ const data = {
         Vue.set(vue, module, subState);
         (<VueState[K]>data[module]) = subState;
     },
-    watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void): void {
-        vue.$watch(getter, callback);
+    watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void, opts?: Vue.WatchOptions): void {
+        vue.$watch(getter, callback, opts);
     },
     async reloadSettings(): Promise<void> {
         const s = await core.settingsStore.get('settings') as Partial<SettingsClass>;
@@ -137,9 +138,8 @@ export function init(this: any,
     data.register('conversations', Conversations());
 
     data.watch(() => state.hiddenUsers, async (newValue) => {
-        if (data.settingsStore !== undefined)
-            await data.settingsStore.set('hiddenUsers', newValue);
-    });
+        await data.settingsStore?.set('hiddenUsers', newValue);
+    }, /* { deep: true } */);
 
     connection.onEvent('connecting', async () => {
         await data.reloadSettings();
