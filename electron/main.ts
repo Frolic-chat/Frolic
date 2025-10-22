@@ -130,7 +130,7 @@ if (!settings.hwAcceleration) {
 // async function setDictionary(lang: string | undefined): Promise<void> {
 //     if(lang !== undefined) await ensureDictionary(lang);
 //     settings.spellcheckLang = lang;
-//     setGeneralSettings(settings);
+//     saveGeneralSettings(settings);
 // }
 
 
@@ -156,21 +156,21 @@ async function toggleDictionary(lang: string): Promise<void> {
 
     settings.spellcheckLang = Array.from(new Set(newLangs));
 
-    setGeneralSettings(settings);
+    saveGeneralSettings(settings);
 
     updateSpellCheckerLanguages(newLangs);
 }
 
-function setGeneralSettings(value: GeneralSettings): void {
+function saveGeneralSettings(value: GeneralSettings): void {
     fs.writeFileSync(settingsFile, JSON.stringify(value));
 
-    for (const w of Electron.webContents.getAllWebContents()) w.send('settings', settings);
+    for (const w of Electron.webContents.getAllWebContents()) w.send('settings', value);
 
     shouldImportSettings = false;
 
     const logLevel: LogLevelOption = 'warn';
-    Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
-    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
+    Logger.transports.file.level    = value.risingSystemLogLevel || logLevel;
+    Logger.transports.console.level = value.risingSystemLogLevel || logLevel;
 }
 
 async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
@@ -240,7 +240,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
 
             fs.accessSync(stdout, fs.constants.X_OK);
             settings.browserPath = stdout;
-            setGeneralSettings(settings);
+            saveGeneralSettings(settings);
         }
     }
     catch {
@@ -261,7 +261,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
 
         if (incognitoArg) {
             settings.browserIncognitoArg = incognitoArg;
-            setGeneralSettings(settings);
+            saveGeneralSettings(settings);
         }
         else {
             // TODO: Robust error handler.
@@ -278,11 +278,11 @@ function openURLExternally(url: string, incognito: boolean = false): void {
 
     if (!settings.browserArgs) {
         settings.browserArgs = '%s';
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     }
     else if (!settings.browserArgs.includes('%s')) {
         settings.browserArgs += ' %s';
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     }
 
     // Ensure url is encoded, but not twice.
@@ -573,7 +573,7 @@ function onReady(): void {
         versionUpgradeRoutines(settings.version, targetVersion);
 
         settings.version = targetVersion;
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     }
 
     function updateAllZoom(c: Electron.WebContents[]   = [],
@@ -634,7 +634,7 @@ function onReady(): void {
 
     const setSystemLogLevel = (logLevel: LogLevelOption) => {
         settings.risingSystemLogLevel = logLevel;
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     };
 
 
@@ -645,7 +645,7 @@ function onReady(): void {
 
     const setTheme = (theme: string) => {
         settings.theme = theme;
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     };
 
 
@@ -754,7 +754,7 @@ function onReady(): void {
                                 PrimaryWindow?.webContents.send('quit');
 
                                 settings.logDirectory = dir[0];
-                                setGeneralSettings(settings);
+                                saveGeneralSettings(settings);
 
                                 app.quit();
                             }
@@ -767,7 +767,7 @@ function onReady(): void {
                     checked: settings.closeToTray,
                     click: m => {
                         settings.closeToTray = m.checked;
-                        setGeneralSettings(settings);
+                        saveGeneralSettings(settings);
                     }
                 },
                 {
@@ -776,7 +776,7 @@ function onReady(): void {
                     checked: settings.profileViewer,
                     click: m => {
                         settings.profileViewer = m.checked;
-                        setGeneralSettings(settings);
+                        saveGeneralSettings(settings);
                     }
                 },
                 {
@@ -798,14 +798,14 @@ function onReady(): void {
                     checked: settings.hwAcceleration,
                     click: m => {
                         settings.hwAcceleration = m.checked;
-                        setGeneralSettings(settings);
+                        saveGeneralSettings(settings);
                     }
                 },
                 // {
                 //     label: l('settings.beta'), type: 'checkbox', checked: settings.beta,
                 //     click: async(item: electron.MenuItem) => {
                 //         settings.beta = item.checked;
-                //         setGeneralSettings(settings);
+                //         saveGeneralSettings(settings);
                 //         // electron.autoUpdater.setFeedURL({url: updaterUrl+(item.checked ? '?channel=beta' : ''), serverType: 'json'});
                 //         // return electron.autoUpdater.checkForUpdates();
                 //     }
@@ -834,7 +834,7 @@ function onReady(): void {
                     checked: settings.risingDisableWindowsHighContrast,
                     click: m => {
                         settings.risingDisableWindowsHighContrast = m.checked;
-                        setGeneralSettings(settings);
+                        saveGeneralSettings(settings);
                     }
                 },
                 {
@@ -926,6 +926,7 @@ function onReady(): void {
     });
     //#endregion
 
+    Electron.ipcMain.on('settings', (_e, s: GeneralSettings) => saveGeneralSettings(s));
 
     Electron.ipcMain.handle('app-getPath', async (_e, appPath: string) => {
         await null;
@@ -972,7 +973,7 @@ function onReady(): void {
     Electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
         settings.account = account;
         settings.host = host;
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     });
 
     Electron.ipcMain.on('connect', (e, character: string) => { //hack
@@ -1011,12 +1012,12 @@ function onReady(): void {
     Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
-        // setGeneralSettings(settings);
+        // saveGeneralSettings(settings);
         PrimaryWindow?.webContents.session.addWordToSpellCheckerDictionary(word);
     });
     Electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
         // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
-        // setGeneralSettings(settings);
+        // saveGeneralSettings(settings);
     });
 
 
@@ -1093,7 +1094,7 @@ function onReady(): void {
         settings.browserPath = path;
         settings.browserArgs = args;
         settings.browserIncognitoArg = incognito;
-        setGeneralSettings(settings);
+        saveGeneralSettings(settings);
     }
 
     Electron.ipcMain.on('browser-option-update', updateBrowserOption);
