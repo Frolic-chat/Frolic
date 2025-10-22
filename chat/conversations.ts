@@ -81,7 +81,8 @@ abstract class Conversation implements Interfaces.Conversation {
     async send(): Promise<void> {
         // This is a safety check; technically if we reached this point, we should send the message.
         // However, parsing requires there be an actual message, so we can't avoid this.
-        if (!this.enteredText.trim())
+        this.enteredText = this.enteredText.trim();
+        if (!this.enteredText)
             return;
 
         if(isCommand(this.enteredText)) {
