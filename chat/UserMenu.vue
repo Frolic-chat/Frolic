@@ -35,12 +35,16 @@
                 <span class="far fa-fw fa-bookmark"></span>
                 {{ l(character.isBookmarked ? 'user.unbookmark' : 'user.bookmark') }}
             </a>
+            <a tabindex="-1" href="#" @click.prevent="toggleWatched()" class="list-group-item list-group-item-action" v-show="channel">
+                <span class="fa-solid fa-fw" :class="{'fa-eye-slash': watched, 'fa-eye': !watched }"></span>
+                {{ l(watched ? 'user.unwatch' : 'user.watch') }}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
                 <span class="fa-solid fa-fw fa-rectangle-ad"></span>
                 {{l('user.adLog')}}
             </a>
             <a tabindex="-1" href="#" @click.prevent="setHidden()" class="list-group-item list-group-item-action" v-show="!isChatOp">
-                <span class="fa fa-fw fa-eye-slash"></span>
+                <span class="fa fa-fw fa-thumbs-down"></span>
                 {{ l(isHidden ? 'user.unhide' : 'user.hide') }}
             </a>
             <a tabindex="-1" href="#" @click.prevent="report()" class="list-group-item list-group-item-action" style="border-top-width:1px">
@@ -84,6 +88,9 @@ import { Matcher, MatchReport } from '../learn/matcher';
 import MatchTags from './preview/MatchTags.vue';
 import { MemoManager } from './character/memo';
 
+import NewLogger from '../helpers/log';
+const log = NewLogger('UserMenu');
+
 @Component({
         components: {'match-tags': MatchTags, bbcode: BBCodeView(core.bbCodeParser), modal: Modal, 'ad-view': CharacterAdView}
     })
@@ -102,6 +109,21 @@ import { MemoManager } from './character/memo';
         memoLoading = false;
         match: MatchReport | null = null;
         memoManager?: MemoManager;
+
+        get conversation() {
+            if (this.channel)
+                return core.conversations.channelConversations.find(c => c.channel.id === this.channel!.id);
+            else if (this.character)
+                return core.conversations.privateConversations.find(c => c.key === this.character!.name.toLowerCase());
+        }
+
+        get watched(): boolean {
+            if (!this.channel || !this.character || !this.conversation?.settings.highlightUsernames)
+                return false;
+
+            return this.conversation.settings.highlightUsernames
+                .includes(this.character.name.toLowerCase());
+        }
 
         get memoLength() {
             return this.memo ? getByteLength(this.memo) : 0;
@@ -140,6 +162,21 @@ import { MemoManager } from './character/memo';
             catch (e) {
                 alert(errorToString(e));
             }
+        }
+
+        toggleWatched(): void {
+            if (!this.channel || !this.character || !this.conversation)
+                return;
+
+            const hilites = this.conversation.settings.highlightUsernames;
+
+            const i = hilites.indexOf(this.character.name.toLowerCase());
+            if (i < 0)
+                hilites.push(this.character.name.toLowerCase());
+            else
+                hilites.splice(i, 1);
+
+            setTimeout(() => log.debug({w: this.watched, hilites }), 10);
         }
 
         setHidden(): void {
