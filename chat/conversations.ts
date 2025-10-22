@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import {queuedJoin} from '../fchat/channels';
 import {decodeHTML} from '../fchat/common';
 // import { CharacterCacheRecord } from '../learn/profile-cache';
@@ -38,7 +39,7 @@ abstract class Conversation implements Interfaces.Conversation {
     lastRead: Interfaces.Message | undefined = undefined;
     infoText = '';
     abstract readonly maxMessageLength: number | undefined;
-    _settings: Interfaces.Settings | undefined;
+    _settings: Interfaces.Settings;
     protected abstract context: CommandContext;
     protected maxMessages = 50;
     protected insertCount = 0;
@@ -52,16 +53,27 @@ abstract class Conversation implements Interfaces.Conversation {
 
     constructor(readonly key: string, public _isPinned: boolean) {
         this.adManager = new AdManager(this);
+
+        // In the future, see if we can manage settings by conversation type so we can offer different settings for PMs.
+        if (this instanceof ConsoleConversation) {
+            this._settings = new ConversationSettings();
+        }
+        else {
+            this._settings = Vue.observable(state.settings[key] || new ConversationSettings());
+
+            core.watch(() => this._settings, async (newValue, _oldValue) => {
+                log.warn('watch _settings will save conversation.');
+                state.setSettings(this.key, newValue);
+            }, { deep: true });
+        }
     }
 
     get settings(): Interfaces.Settings {
-        //tslint:disable-next-line:strict-boolean-expressions
-        return this._settings || (this._settings = state.settings[this.key] || new ConversationSettings());
+        return this._settings;
     }
 
     set settings(value: Interfaces.Settings) {
         this._settings = value;
-        state.setSettings(this.key, value); //tslint:disable-line:no-floating-promises
     }
 
     get isPinned(): boolean {

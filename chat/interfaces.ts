@@ -136,14 +136,14 @@ export namespace Conversation {
     }
 
     export interface Settings {
-        readonly notify: Setting;
-        readonly notifyOnFriendMessage: Relation.Chooser;
-        readonly highlight: Setting;
-        readonly highlightWords: ReadonlyArray<string>;
-        readonly highlightUsernames: ReadonlyArray<string>;
-        readonly joinMessages: Setting;
-        readonly defaultHighlights: boolean;
-        readonly adSettings: AdSettings;
+        notify: Setting;
+        notifyOnFriendMessage: Relation.Chooser;
+        highlight: Setting;
+        highlightWords: Array<string>;
+        highlightUsernames: Array<string>;
+        joinMessages: Setting;
+        defaultHighlights: boolean;
+        adSettings: AdSettings;
     }
 
     export interface AdSettings {
