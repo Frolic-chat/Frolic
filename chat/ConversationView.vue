@@ -4,7 +4,7 @@
             <img :src="characterImage" style="height:60px;width:60px;margin-right:10px" v-if="settings.showAvatars"/>
             <div style="flex:1;position:relative;display:flex;flex-direction:column;user-select:text">
                 <div>
-                    <user :character="conversation.character" :match="true" :reusable="true"></user>
+                    <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
                     <a href="#" @click.prevent="showLogs()" class="btn">
                         <span class="fa fa-file-alt"></span>
                         <span class="btn-text">{{l('logs.title')}}</span>
