@@ -78,8 +78,6 @@ export class Settings implements ISettings {
     risingCharacterPreview: boolean = true;
     risingComparisonInUserMenu: boolean = true;
     risingComparisonInSearch: boolean = true;
-    experimentalOrientationMatching: boolean = false;
-    relaxPostLengthMatching: boolean = false;
 
     risingShowUnreadOfflineCount: boolean = true;
     risingColorblindMode: boolean = false;

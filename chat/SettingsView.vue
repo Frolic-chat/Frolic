@@ -202,26 +202,6 @@
                 </label>
             </div>
 
-            <div class="form-group">
-                <label class="control-label" for="experimentalOrientationMatching">
-                    <input type="checkbox" id="experimentalOrientationMatching" v-model="experimentalOrientationMatching"/>
-                    <b> {{ l('general.experiment') }}</b> {{ l('settings.experiment.orientationMatching') }}
-                </label>
-                <template v-if="experimentalOrientationMatching">
-                    <br>
-                    <small>{{ l('settings.experiment.orientationMatching.selectedInfo') }}</small>
-                    <br>
-                    <small>{{ l('general.feedback') }}</small>
-                </template>
-            </div>
-
-            <div class="form-group">
-                <label class="control-label" for="relaxPostLengthMatching">
-                    <input type="checkbox" id="relaxPostLengthMatching" v-model="relaxPostLengthMatching"/>
-                    {{ l('settings.match.relaxlength') }}
-                </label>
-            </div>
-
 <!--            <div class="form-group">-->
 <!--                <label class="control-label" for="hideProfileComparisonSummary">-->
 <!--                    <input type="checkbox" id="hideProfileComparisonSummary" :checked="!hideProfileComparisonSummary" @input="hideProfileComparisonSummary = !$event.target.checked"/>-->
@@ -561,8 +541,6 @@
         risingCharacterPreview!: boolean;
         risingComparisonInUserMenu!: boolean;
         risingComparisonInSearch!: boolean;
-        experimentalOrientationMatching!: boolean;
-        relaxPostLengthMatching!: boolean;
 
         risingShowUnreadOfflineCount!: boolean;
         risingColorblindMode!: boolean;
@@ -624,8 +602,6 @@
             this.risingCharacterPreview = settings.risingCharacterPreview;
             this.risingComparisonInUserMenu = settings.risingComparisonInUserMenu;
             this.risingComparisonInSearch = settings.risingComparisonInSearch;
-            this.experimentalOrientationMatching = settings.experimentalOrientationMatching;
-            this.relaxPostLengthMatching = settings.relaxPostLengthMatching;
             this.risingShowUnreadOfflineCount = settings.risingShowUnreadOfflineCount;
 
             this.risingColorblindMode = settings.risingColorblindMode;
@@ -719,8 +695,6 @@
                 risingCharacterPreview: this.risingCharacterPreview,
                 risingComparisonInUserMenu: this.risingComparisonInUserMenu,
                 risingComparisonInSearch: this.risingComparisonInSearch,
-                experimentalOrientationMatching: this.experimentalOrientationMatching,
-                relaxPostLengthMatching: this.relaxPostLengthMatching,
 
                 risingShowUnreadOfflineCount: this.risingShowUnreadOfflineCount,
                 risingShowPortraitNearInput: this.risingShowPortraitNearInput,

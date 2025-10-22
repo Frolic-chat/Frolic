@@ -22,9 +22,6 @@ import anyAscii from 'any-ascii';
 
 import { Store } from '../site/character_page/data_store';
 
-import { Settings } from '../chat/interfaces';
-import { EventBus } from '../chat/preview/event-bus';
-
 import {
     BodyType,
     bodyTypeKinkMapping,
@@ -47,7 +44,6 @@ import {
     nonAnthroSpecies,
     Orientation,
     Position,
-    postLengthOrder,
     PostLengthPreference,
     postLengthPreferenceMapping,
     postLengthPreferenceScoreMapping,
@@ -250,14 +246,6 @@ export class Matcher {
 
     readonly yourAnalysis:  CharacterAnalysis;
     readonly theirAnalysis: CharacterAnalysis;
-
-    private static settings: Settings | null = null;
-
-    // Sadly, this method doesn't receive the settings object by reference, so it needs EventBus for 'configuration-update' to receive the updated values, instead of just once on load.
-    static importSettings(settings: Settings): void {
-        Matcher.settings = settings;
-        log.debug('matcher.settings.received', Matcher.settings.experimentalOrientationMatching);
-    }
 
     constructor(you: Character, them: Character, yourAnalysis?: CharacterAnalysis, theirAnalysis?: CharacterAnalysis) {
         this.you  = you;
@@ -510,19 +498,6 @@ export class Matcher {
         if (doesntHaveGender(yourGender) || doesntHaveGender(theirGender) || lovesEveryone(yourOrientation))
             return new Score(Scoring.NEUTRAL);
 
-
-        function approximatelyFemale(gender: Gender): boolean {
-            return gender === Gender.Female
-                || gender === Gender.Herm // Oof. But this is how flist uses it.
-                || gender === Gender.Shemale;
-        }
-
-        function approximatelyMale(gender: Gender): boolean {
-            return gender === Gender.Male
-                || gender === Gender.MaleHerm // Double-oof.
-                || gender === Gender.Cuntboy;
-        }
-
         if (yourOrientation === Orientation.Gay && theirGender === yourGender
         && yourGender !== Gender.Transgender)
             return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
@@ -531,38 +506,6 @@ export class Matcher {
             return new Score(Scoring.MATCH, 'Loves <span>female</span> partners');
         if (yourOrientation === Orientation.BiMalePreference   && theirGender === Gender.Male)
             return new Score(Scoring.MATCH, 'Loves <span>male</span> partners');
-
-        // EXPERIMENT: Very obvious matching.
-
-        if (!this.settings) {
-            log.warn('matcher.importedsettings.unavailable', 'Was the matcher never able to import settings?');
-        }
-        else if (this.settings.experimentalOrientationMatching) {
-            if (yourOrientation === Orientation.Straight) {
-                // *Very* few people use straight herm to mean attracted to males.
-                if (approximatelyFemale(yourGender) && theirGender === Gender.Male)
-                    return new Score(Scoring.MATCH, 'Loves <span>male</span> partners <small>🚧</small>');
-
-                if (approximatelyMale(yourGender)   && theirGender === Gender.Female)
-                    return new Score(Scoring.MATCH, 'Loves <span>female</span> partners <small>🚧</small>');
-            }
-
-            if (yourOrientation === Orientation.BiCurious) {
-                if (approximatelyFemale(yourGender)) {
-                    if (theirGender === Gender.Female)
-                        return new Score(Scoring.NEUTRAL);
-                    if (theirGender === Gender.Male)
-                        return new Score(Scoring.MATCH, 'Loves <span>male</span> partners <small>🚧</small>');
-                }
-
-                if (approximatelyMale(yourGender)) {
-                    if (theirGender === Gender.Male)
-                        return new Score(Scoring.NEUTRAL);
-                    if (theirGender === Gender.Female)
-                        return new Score(Scoring.MATCH, 'Loves <span>female</span> partners <small>🚧</small>');
-                }
-            }
-        } // END EXPERIMENT: Very obvious matching.
 
         // CIS
         // tslint:disable-next-line curly
@@ -636,13 +579,6 @@ export class Matcher {
             return new Score(Scoring.NEUTRAL);
 
         let score = postLengthPreferenceScoreMapping[yourLength][theirLength];
-
-        if (Matcher.settings?.relaxPostLengthMatching && score !== Scoring.MATCH) {
-            const d = postLengthOrder.indexOf(yourLength) - postLengthOrder.indexOf(theirLength);
-            if (d <= 2 && d >= -2) score += 0.5;
-
-            log.debug('matcher.postlength', { diff: d, before: score - 0.5, after: score });
-        }
 
         return this.formatScoring(score, postLengthPreferenceMapping[theirLength]);
     }
@@ -1784,10 +1720,6 @@ export class Matcher {
         return atLevelScore + aboveLevelScore + penalty;
     }
 }
-
-// This is event bus abuse. Event bus is only supposed to be for character upates.
-EventBus.$on('core-connected',       s => Matcher.importSettings(s));
-EventBus.$on('configuration-update', s => Matcher.importSettings(s));
 
 log.debug('init.matcher');
 

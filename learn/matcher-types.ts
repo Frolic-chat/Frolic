@@ -267,17 +267,6 @@ export const furryPreferenceMapping = {
     [FurryPreference.FurriesPreferredHumansOk]: 'loves furries, likes humans',
 };
 
-
-export const postLengthOrder = [
-    PostLengthPreference.VeryShort_1_2,
-    PostLengthPreference.Short_2_4,
-    PostLengthPreference.SemiParagraph_4_7,
-    PostLengthPreference.Paragraph_7_10,
-    PostLengthPreference.StrongParagraph_10_14,
-    PostLengthPreference.MultiParagraph_14_25,
-]
-
-
 export const postLengthPreferenceMapping = {
     [PostLengthPreference.MultiParagraph_14_25]:  'multi-paragraph posts',
     [PostLengthPreference.StrongParagraph_10_14]: 'strong paragraph posts',
