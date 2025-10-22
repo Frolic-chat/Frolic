@@ -272,7 +272,7 @@
                 if (mustLoad || n !== this.character?.character.name)
                     due.push(this._getCharacter(n, skipCache));
 
-                await Promise.allSettled(due);
+                await Promise.all(due);
             }
             catch (e) {
                 console.error(e);
