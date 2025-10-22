@@ -36,7 +36,7 @@
                 {{ l(character.isBookmarked ? 'user.unbookmark' : 'user.bookmark') }}
             </a>
             <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
-                <span class="far fa-fw fa-ad"></span>
+                <span class="fa-solid fa-fw fa-rectangle-ad"></span>
                 {{l('user.adLog')}}
             </a>
             <a tabindex="-1" href="#" @click.prevent="setHidden()" class="list-group-item list-group-item-action" v-show="!isChatOp">
