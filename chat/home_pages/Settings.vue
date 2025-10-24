@@ -9,6 +9,7 @@
                 l('settings.tabs.bonus'),
                 l('settings.tabs.filters'),
                 l('settings.tabs.hideAds'),
+                l('settings.tabs.browser'),
                 l('settings.tabs.hqp'),
                 l('settings.tabs.import'),
             ]">
@@ -138,6 +139,8 @@
                 setting="exceptionNames" prefix="risingFilter"></generic-text>
         </div>
         <div v-show="tab === '4'">
+            <h5>{{ l('settings.hideAds.title') }}</h5>
+            <div>{{ l('settings.hideAds.desc') }}</div>
             <template v-if="hidden.length">
                 <div v-for="(user, i) in hidden">
                     <span class="fa fa-times" style="cursor:pointer" @click.stop="hidden.splice(i, 1)"></span>
@@ -148,7 +151,8 @@
                 {{l('settings.hideAds.empty')}}
             </template>
         </div>
-        <div v-show="tab === '5'">
+        <custom-browser-settings v-show="tab === '5'"></custom-browser-settings>
+        <div v-show="tab === '6'">
             <h5>{{ l('settings.hqp.title') }}</h5>
             <div>{{ l('settings.hqp.desc1') }}</div>
 
@@ -180,7 +184,7 @@
                 <textarea class="hqp-input form-control" @click="selectAllIfValid" :value="hqpLink" rows="1" :placeholder="l('settings.hqp.output.ph')" readonly="true"></textarea>
             </div>
         </div>
-        <div v-show="tab === '6'">
+        <div v-show="tab === '7'">
             <div class="form-label">{{ l('settings.import.desc') }}</div>
             <div class="form-group d-flex">
                 <select id="import" class="form-control" v-model="importCharacter" style="flex:1;margin-right:10px">
@@ -219,9 +223,10 @@ import NumberInput from './settings/Number.vue';
 import GenericNumber from './settings/GenericNumber.vue';
 import Range from './settings/Range.vue';
 import Dropdown from './settings/Dropdown.vue';
+import BrowserSettings from './Settings-CustomBrowserPage.vue';
 
 import { Settings as SettingsInterface, Relation } from '../interfaces';
-import { SmartFilterSelection, smartFilterTypes as smartFilterTypesImport } from '../../learn/filter/types';
+import { /* SmartFilterSelection, */ smartFilterTypes as smartFilterTypesImport } from '../../learn/filter/types';
 import { ProfileCache } from '../../learn/profile-cache';
 
 import core from '../core';
@@ -241,41 +246,47 @@ type hqpErrorString = 'settings.hqp.errorUrl' | 'settings.hqp.errorDomain' | 'se
         'generic-num': GenericNumber,
         range: Range,
         dropdown: Dropdown,
+        'custom-browser-settings': BrowserSettings,
     }
 })
 export default class Settings extends Vue {
     l = l;
-    tab = '0';
-
-    availableImports: ReadonlyArray<string> = [];
-    risingAvailableThemes: ReadonlyArray<string> = [];
-
-    smartFilterTypes = smartFilterTypesImport;
-
-    importCharacter = '';
 
     generalSettings = core.state.generalSettings;
     settings = core.state.settings;
 
-    get relationshipMap() {
-        return Object.values(Relation.Chooser)
-            // ts sucks at this type-narrowing, but it works.
-            .filter(v => typeof v === 'number')
-            .map(v => [ v, l(Relation.Label[v as Relation.Chooser]) ]);
+    tab = '0';
+    @Watch('tab')
+    scrollToTop(): void {
+        const home_page = (this.$refs['homePageLayout'] as HTMLElement & { scrollToTop: () => void });
+        home_page.scrollToTop();
     }
 
+    @Hook('mounted')
+    async onMount() {
+        // Tab 2
+        this.risingAvailableThemes = this.getAvailableThemes();
+
+        // Tab 7
+        this.availableImports = await this.getAvailableImports();
+    }
+
+    /**
+     * Tab 0
+     */
     idleTimerDefault = 10;
     fontSizeDefault  = 14;
+
     idleTimerMin   =    0;
     idleTimerMax   = 1440;
     fontSizeMin    =   10;
     fontSizeMax    =   24;
-    notifyVolumeMarks = [  0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
-    linkVolumeMarks   = [  0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
+
     idleTimerArgs    = { help: [  '0', '1440' ] };
     fontSizeArgs     = { help: [ '10',   '24' ] };
-    notifyVolumeArgs = { help: [  '0',  '100' ] };
-    linkVolumeArgs   = { help: [  '0',  '100' ] };
+
+    get disallowedTags() { return this.settings.disallowedTags.join(',') }
+    get highlightWords() { return this.settings.highlightWords.join(',') }
 
     vdDisallowedTags(s: string): boolean {
         if (this.tfDisallowedTags(s))
@@ -319,16 +330,26 @@ export default class Settings extends Vue {
         return [ ...new Set(a) ];
     }
 
-    get disallowedTags() { return this.settings.disallowedTags.join(',') }
-    get highlightWords() { return this.settings.highlightWords.join(',') }
+    /**
+     * Tab 1
+     */
+    notifyVolumeMarks = [  0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
+    notifyVolumeArgs = { help: [  '0',  '100' ] };
 
-    @Hook('mounted')
-    async onMount() {
-        this.availableImports = await this.getAvailableImports();
-        this.risingAvailableThemes = this.getAvailableThemes();
+    get relationshipMap() {
+        return Object.values(Relation.Chooser)
+            // ts sucks at this type-narrowing, but it works.
+            .filter(v => typeof v === 'number')
+            .map(v => [ v, l(Relation.Label[v as Relation.Chooser]) ]);
     }
 
-    getAvailableImports = async () => { return (await core.settingsStore.getAvailableCharacters()).filter(c => c !== core.connection.character) }
+    /**
+     * Tab 2
+     */
+    linkVolumeMarks   = [  0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
+    linkVolumeArgs   = { help: [  '0',  '100' ] };
+
+    risingAvailableThemes: ReadonlyArray<string> = [];
 
     getAvailableThemes = () => {
         return fs.readdirSync(path.join(__dirname, 'themes'))
@@ -338,48 +359,21 @@ export default class Settings extends Vue {
             //.map(name => name.charAt(0).toUpperCase() + name.slice(1));
     }
 
-    async doImport(): Promise<void> {
-        if(!confirm(l('settings.import.confirm', this.importCharacter, core.connection.character))) return;
-        const importKey = async(key: keyof SettingsInterface.Keys) => {
-            const settings = await core.settingsStore.get(key, this.importCharacter);
-            if(settings !== undefined) await core.settingsStore.set(key, settings);
-        };
-        await importKey('settings');
-        await importKey('pinned');
-        await importKey('modes');
-        await importKey('conversationSettings');
-        core.connection.close(false);
-    }
+    /**
+     * Tab 3
+     */
+    smartFilterTypes = smartFilterTypesImport;
 
+    /**
+     * Tab 4
+     */
     get hidden(): string[] {
         return core.state.hiddenUsers;
     }
 
-    getAsNumber(input: any): number | null {
-        if (input === null || input === undefined || input === '')
-            return null;
-
-        const n = parseInt(input, 10);
-
-        return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
-    }
-
-    getExceptionList(): string {
-        return this.settings.risingFilter.exceptionNames?.join('\n') || '';
-    }
-
-    setExceptionList(v: Event): void {
-        this.settings.risingFilter.exceptionNames = (v.target as HTMLInputElement).value.split('/[\r\n]+/').map(n => n.trim());
-    }
-
-    getSmartFilter(key: keyof SmartFilterSelection): boolean {
-        return !!this.settings.risingFilter.smartFilters?.[key];
-    }
-
-    setSmartFilter(key: keyof SmartFilterSelection, v: Event): void {
-        this.settings.risingFilter.smartFilters[key] = (v.target as HTMLInputElement).checked;
-    }
-
+    /**
+     * Tab 6
+     */
     normalLink = '';
     get hqpLink() {
         return this.normalLink
@@ -410,10 +404,32 @@ export default class Settings extends Vue {
         return '' as hqpErrorString;
     }
 
-    @Watch('tab')
-    scrollToTop(): void {
-        const home_page = (this.$refs['homePageLayout'] as HTMLElement & { scrollToTop: () => void });
-        home_page.scrollToTop();
+    /**
+     * Tab 7
+     */
+    importCharacter = '';
+
+    availableImports: ReadonlyArray<string> = [];
+
+    getAvailableImports = async () => { return (await core.settingsStore.getAvailableCharacters()).filter(c => c !== core.connection.character) }
+
+    async doImport(): Promise<void> {
+        if (!confirm(l('settings.import.confirm', this.importCharacter, core.connection.character))) {
+            return;
+        }
+
+        const importKey = async (key: keyof SettingsInterface.Keys) => {
+            const settings = await core.settingsStore.get(key, this.importCharacter);
+
+            if (settings !== undefined)
+                await core.settingsStore.set(key, settings);
+        };
+
+        await importKey('settings');
+        await importKey('pinned');
+        await importKey('modes');
+        await importKey('conversationSettings');
+        core.connection.close(false);
     }
 }
 </script>
