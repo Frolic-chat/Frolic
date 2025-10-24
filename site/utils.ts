@@ -16,6 +16,11 @@ export function setFlashMessageImplementation(impl: FlashMessageImpl): void {
     flashImpl = impl;
 }
 
+/**
+ * Unlike `core.characters.getImage`, `avatarURL` doesn't check for rising overrides.
+ * @param name
+ * @returns
+ */
 export function avatarURL(name: string): string {
     const uregex = /^[a-zA-Z0-9_\-\s]+$/;
 

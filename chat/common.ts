@@ -2,7 +2,7 @@
 import {isToday} from 'date-fns';
 import {Keys} from '../keys';
 import { Character, Conversation, Settings as ISettings, Relation } from './interfaces';
-import core from './core';
+
 
 import { SmartFilterSettings } from '../learn/filter/types';
 
@@ -30,12 +30,6 @@ export function sanitizeFilenameForUnixlike(fn: string): string {
 
 export function profileLink(this: any | never, character: string): string {
     return `https://www.f-list.net/c/${character}`;
-}
-
-export function characterImage(this: any | never, character: string): string {
-    const c = core.characters.get(character);
-
-    return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
 }
 
 export class Settings implements ISettings {

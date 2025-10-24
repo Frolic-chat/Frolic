@@ -11,7 +11,6 @@ import { Score } from '../learn/matcher';
 import core from './core';
 import { EventBus, CharacterScoreEvent } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
-import { characterImage } from './common';
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
 export function getStatusIcon(status: Character.Status): string {
@@ -148,7 +147,7 @@ export default class UserView extends Vue {
     getCharacterUrl(): UserView['characterUrl'] { return `flist-character://${this.character.name}` }
 
     avatarUrl = '';
-    getAvatarUrl(): UserView['avatarUrl'] { return characterImage(this.character.name) }
+    getAvatarUrl(): UserView['avatarUrl'] { return core.characters.getImage(this.character.name) }
 
     /** Utility */
     hiding = false;

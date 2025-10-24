@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { CharacterAnalysis, Matcher } from '../matcher';
 import { FurryPreference, Kink, mammalSpecies, Species } from '../matcher-types';
-import { characterImage } from '../../chat/common';
+import core from '../../chat/core';
 import { ProfileCache } from '../profile-cache';
 import l from '../../chat/localize';
 
@@ -55,7 +55,7 @@ export class ProfileRecommendationAnalyzer {
     }
 
     protected async checkPortrait(): Promise<void> {
-        const portraitUrl = characterImage(this.profile.character.name);
+        const portraitUrl = core.characters.getImage(this.profile.character.name);
 
         const result = await Axios.head(portraitUrl);
 

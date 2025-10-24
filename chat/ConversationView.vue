@@ -223,7 +223,7 @@
     import CharacterAdView from './character/CharacterAdView.vue';
     import {Editor} from './bbcode';
     import CommandHelp from './CommandHelp.vue';
-    import { characterImage, errorToString, getByteLength, getKey } from './common';
+    import { errorToString, getByteLength, getKey } from './common';
     import ConversationSettings from './ConversationSettings.vue';
     import ConversationAdSettings from './ads/ConversationAdSettings.vue';
     import core from './core';
@@ -798,7 +798,7 @@
         }
 
         get characterImage(): string {
-            return characterImage(this.conversation.name);
+            return core.characters.getImage(this.conversation.name);
         }
 
         get settings(): Settings {

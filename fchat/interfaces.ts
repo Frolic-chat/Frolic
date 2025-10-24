@@ -190,6 +190,7 @@ export namespace Character {
 
         validateCharacter(name: string): ValidatedCharacter;
         get(name: string): Character;
+        getImage(this: any | never, character: string | Character): string;
         setOverride(name: string, type: keyof CharacterOverrides, value: any): void;
     }
 

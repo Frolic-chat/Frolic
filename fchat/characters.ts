@@ -119,6 +119,21 @@ class State implements Interfaces.State {
         return char;
     }
 
+    getImage(character: string | Character): string {
+        if (typeof character === 'string') {
+            // The most official username regex from Maya herself.
+            const uregex = /^[a-zA-Z0-9_\-\s]+$/;
+            if (!uregex.test(character))
+                return '#';
+
+            const c = this.get(character);
+            return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`
+        }
+        else {
+            return character.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.name.toLowerCase()}.png`
+        }
+    }
+
     setStatus(character: Character, status: Interfaces.Status, text: string): void {
         if(character.status === 'offline' && status !== 'offline') {
             if(character.isFriend) this.friends.push(character);

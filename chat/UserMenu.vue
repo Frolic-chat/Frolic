@@ -79,7 +79,7 @@ import Vue from 'vue';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
 import CharacterAdView from './character/CharacterAdView.vue';
-import { characterImage, errorToString, getByteLength, profileLink } from './common';
+import { errorToString, getByteLength, profileLink } from './common';
 import core from './core';
 import { Channel, Character } from './interfaces';
 import l from './localize';
@@ -333,7 +333,7 @@ const log = NewLogger('UserMenu');
 
             this.$nextTick(() => {
                 const menu = <HTMLElement>this.$refs['menu'];
-                this.characterImage = characterImage(character.name);
+                this.characterImage = core.characters.getImage(character.name);
                 if((parseInt(this.position.left, 10) + menu.offsetWidth) > window.innerWidth)
                     this.position.left = `${window.innerWidth - menu.offsetWidth - 1}px`;
                 if((parseInt(this.position.top, 10) + menu.offsetHeight) > window.innerHeight)

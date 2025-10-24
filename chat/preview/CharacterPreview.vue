@@ -181,7 +181,6 @@ export function getStatusClasses(character:    CharacterStatus.Character,
 import l from '../localize';
 import { AdCachedPosting } from '../../learn/ad-cache';
 import {formatTime} from '../common';
-import { characterImage } from '../common';
 import MatchTags from './MatchTags.vue';
 import {
   furryPreferenceMapping,
@@ -255,7 +254,7 @@ export default class CharacterPreview extends Vue {
   conversation?: Conversation.Message[];
 
   get avatarUrl() {
-    return this.onlineCharacter?.overrides.avatarUrl || characterImage(this.characterName ?? this.character?.character.name ?? '');
+    return core.characters.getImage(this.characterName ?? this.character?.character.name ?? '');
   }
 
   @Hook('mounted')
