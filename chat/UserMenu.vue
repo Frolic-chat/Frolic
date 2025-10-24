@@ -19,10 +19,12 @@
                 <span class="fa fa-fw fa-comment"></span>
                 {{l('user.messageJump')}}
             </a>
+            <!--
             <a tabindex="-1" href="#" @click.prevent="openConversation(false)" class="list-group-item list-group-item-action">
                 <span class="fa fa-fw fa-plus"></span>
                 {{l('user.message')}}
             </a>
+            -->
             <a tabindex="-1" :href="profileLink" target="_blank" v-if="!showProfileFirst" class="list-group-item list-group-item-action">
                 <span class="fa fa-fw fa-user"></span>
                 {{l('user.profile')}}
