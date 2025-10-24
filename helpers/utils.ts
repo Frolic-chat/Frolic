@@ -222,6 +222,14 @@ export function deepEqual(obj1: any, obj2: any): boolean {
 
 export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
 
+export function getAsNumber(input: string | null | undefined): number | null {
+    if (input === null || input === undefined || input === '')
+        return null;
+
+    const n = parseInt(input, 10);
+
+    return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
+}
 
 /**
  * Some day in the future, this may be useful, however, in TS3.x it's compiler errors.
