@@ -2,6 +2,7 @@
 <template>
 <home-page ref="homePageLayout">
     <template v-slot:prescroll>
+        <h5>{{ l('settings') }}</h5>
         <tabs v-model="tab"
             :tabs="[
                 l('settings.tabs.general'),
@@ -14,11 +15,6 @@
                 l('settings.tabs.import'),
             ]">
         </tabs>
-    </template>
-    <template v-slot:header>
-        <div>
-            {{ l('settings.action') }}
-        </div>
     </template>
 
     <template v-slot:default>
@@ -195,12 +191,6 @@
                     {{l('settings.import')}}
                 </button>
             </div>
-        </div>
-    </template>
-
-    <template v-slot:footer>
-        <div>
-            <!-- Version --><!-- License -->
         </div>
     </template>
 </home-page>
@@ -435,6 +425,10 @@ export default class Settings extends Vue {
 </script>
 
 <style lang="scss">
+#settings > .prescroll .nav-tabs-scroll {
+    margin-left:  -10px; /* Offset for bootstrap .container */
+    margin-right: -10px; /* Offset for bootstrap .container */
+}
 #settings .form-group {
     margin-left: 0;
     margin-right: 0;

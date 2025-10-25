@@ -20,15 +20,13 @@
             <span class="tab-text">{{ tabNames[3] }}</span>
         </span>
         <span>
-            <span class="fa fa-star"></span>
-            <span class="tab-file-contract">{{ tabNames[4] }}</span>
+            <span class="fa-solid fa-file-contract"></span>
+            <span class="tab-text">{{ tabNames[4] }}</span>
         </span>
     </tabs>
 
-    <!-- home screen -->
-    <home v-show="tab === '0'" role="tabpanel" ref="tab0" class="home-page" id="home">
-        <!-- <home></home> -->
-    </home>
+    <!-- home page -->
+    <home v-show="tab === '0'" role="tabpanel" ref="tab0" class="home-page" id="home"></home>
     <!-- Changelog and update alert -->
     <!-- Logs? -->
     <!-- Dev settings/info -->
@@ -117,6 +115,7 @@ export default class HomeScreen extends Vue {
         'Data',
     ] as const;
 
+    home!: Home;
     console!: ConversationView;
 
     @Hook('created')
@@ -126,6 +125,7 @@ export default class HomeScreen extends Vue {
     mounted() {
         window.addEventListener('keydown', this.onKey);
 
+        this.home    = <Home>this.$refs['tab0'];
         this.console = <ConversationView>this.$refs['tab1'];
     }
 
@@ -170,11 +170,17 @@ export default class HomeScreen extends Vue {
 
     /** This doesn't always exist? Because the home screen is destroyed? */
     show() {
-        if (!core.state.generalSettings.defaultToHome)
-            this.tab = this.tabNames.indexOf(core.conversations.consoleTab.name).toString();
-        else
+        /* TODO: Account for coming from channel settings.
+        if (SelectedTabInCurrentChatIsSettings) {
+            this.tab = this.tabNames.indexOf(l('settings')).toString();
+        }
+        else */if (core.state.generalSettings.defaultToHome) {
             this.tab = this.tabNames.indexOf(l('home')).toString();
-        // TODO: Account for coming from channel settings.
+        }
+        else {
+            this.tab = this.tabNames.indexOf(core.conversations.consoleTab.name).toString();
+        }
+
     }
 }
 </script>
@@ -195,7 +201,7 @@ export default class HomeScreen extends Vue {
     display: flex;
 } */
 
-#home-screen .nav-link {
+#home-screen > .tabs .nav-link {
     height: calc(100% + 1px);
     line-height: 1;
 
@@ -205,12 +211,12 @@ export default class HomeScreen extends Vue {
     align-content: end;
 }
 
-#home-screen .tabs .channel-title {
+#home-screen > .tabs .channel-title {
     font-size: 1.25rem;
     font-weight: 500;
 }
 
-#home-screen .tab-text {
+#home-screen > .tabs .tab-text {
     margin-left: 5px;
 }
 /** end Tab customization */

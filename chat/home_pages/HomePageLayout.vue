@@ -1,26 +1,20 @@
 <template>
 <div class="home-page">
-    <div class="prescroll">
+    <div class="prescroll container-fluid">
         <slot name="prescroll"></slot>
     </div>
-    <div class="scroll-cage" ref="scrollCage">
+    <div class="scroll-cage container-fluid" ref="scrollCage">
     <header>
-        <slot name="header">
-            <h4>Header!</h4>
-        </slot>
+        <slot name="header"></slot>
     </header>
     <main>
-        <slot>
-            Default home-page body.
-        </slot>
+        <slot></slot>
     </main>
     <footer>
-        <slot name="footer">
-            Default home-page footer.
-        </slot>
+        <slot name="footer"></slot>
     </footer>
     </div><!-- /scroll-cage -->
-    <div class="postscroll">
+    <div class="postscroll container-fluid">
         <slot name="postscroll"></slot>
     </div>
 </div>
@@ -62,8 +56,16 @@ export default class HomePageLayout extends Vue {
         padding: 0;
     }
 }
+
+.prescroll {
+    padding-top: 10px;
+}
 .scroll-cage {
     flex: 1 1 0%;
     overflow: auto;
+}
+
+.postscroll {
+    padding-bottom: 10px;
 }
 </style>
