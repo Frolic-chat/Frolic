@@ -12,16 +12,16 @@
             <span class="tab-text">{{ tabNames[1] }}</span>
         </span>
         <span>
-            <span class="fa fa-star"></span>
+            <span class="fa-solid fa-star"></span>
             <span class="tab-text">{{ tabNames[2] }}</span>
         </span>
         <span>
-            <span class="fa fa-star"></span>
+            <span class="fa-solid fa-screwdriver-wrench"></span>
             <span class="tab-text">{{ tabNames[3] }}</span>
         </span>
         <span>
             <span class="fa fa-star"></span>
-            <span class="tab-text">{{ tabNames[4] }}</span>
+            <span class="tab-file-contract">{{ tabNames[4] }}</span>
         </span>
     </tabs>
 
