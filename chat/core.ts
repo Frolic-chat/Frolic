@@ -145,18 +145,22 @@ export function init(this: any,
     }, /* { deep: true } */);
 
     data.watch(() => state._settings, async (newValue, oldValue) => {
-        if (!oldValue && newValue) {
+        // This object is initialized as a general settings object, so there's no "no old, but new" scenario.
+
+        if (!newValue) { // Should never happen; avoid catastrophy.
+            return;
+        }
+        else if (!oldValue) {
             smartFilterCache = structuredClone(newValue.risingFilter);
         }
-
-        if (oldValue && newValue) {
+        else {
             log.warn('watch _settings will save core.', newValue);
             await data.settingsStore?.set('settings', newValue);
 
             EventBus.$emit('configuration-update', newValue);
 
             if (oldValue.notifications !== newValue.notifications)
-                EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications })
+                EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
             if (!deepEqual(newValue.risingFilter, smartFilterCache)) {
                 log.warn('risingFilter in _settings changed.', newValue.risingFilter);
