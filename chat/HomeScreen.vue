@@ -2,14 +2,27 @@
 <template>
 <div id="home-screen">
     <!-- header of some kind... -->
-    <tabs class="tabs" v-model="tab" :tabs="tabNames">
-        <!--
-        <span>Home     </span>
-        <span>Console  </span>
-        <span>Customize</span>
-        <span>Settings </span>
-        <span>Data     </span>
-        -->
+    <tabs class="tabs" v-model="tab">
+        <span class="channel-title">
+            <span class="fa-solid fa-house-user"></span>
+            <span class="tab-text">{{ tabNames[0] }}</span>
+        </span>
+        <span>
+            <span class="fa-solid fa-terminal"></span>
+            <span class="tab-text">{{ tabNames[1] }}</span>
+        </span>
+        <span>
+            <span class="fa fa-star"></span>
+            <span class="tab-text">{{ tabNames[2] }}</span>
+        </span>
+        <span>
+            <span class="fa fa-star"></span>
+            <span class="tab-text">{{ tabNames[3] }}</span>
+        </span>
+        <span>
+            <span class="fa fa-star"></span>
+            <span class="tab-text">{{ tabNames[4] }}</span>
+        </span>
     </tabs>
 
     <!-- home screen -->
@@ -176,6 +189,31 @@ export default class HomeScreen extends Vue {
     /* flex: 1 1 0%; */
     /* position: relative; */
 }
+
+/** Tab customization */
+/* #home-screen .nav-tabs {
+    display: flex;
+} */
+
+#home-screen .nav-link {
+    height: calc(100% + 1px);
+    line-height: 1;
+
+    padding-top:    0.25rem;
+    padding-bottom: 0.25rem;
+
+    align-content: end;
+}
+
+#home-screen .tabs .channel-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+#home-screen .tab-text {
+    margin-left: 5px;
+}
+/** end Tab customization */
 
 #home-screen .home-page {
     /* normal margins for a conversation */
