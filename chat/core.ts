@@ -159,6 +159,12 @@ export function init(this: any,
 
             EventBus.$emit('configuration-update', newValue);
 
+            if (oldValue.disallowedTags !== newValue.disallowedTags) {
+                data.bbCodeParser = createBBCodeParser();
+
+                log.debug('_settings disallowedTags updated.', oldValue, newValue);
+            }
+
             if (oldValue.notifications !== newValue.notifications)
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
