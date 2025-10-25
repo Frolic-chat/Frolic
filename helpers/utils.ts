@@ -151,10 +151,7 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
 
     // User base since user settings can be out-of-date
     for (const k of Object.keys(base) as (keyof T)[]) {
-        const tb = typeof base[k],
-              ts = typeof supplement[k];
-
-        // null <-> string <-> number <-> undefined is fine.
+        // null <-> string <-> number is fine.
         if (isSimpleInterchangeable(supplement[k]) && isSimpleInterchangeable(base[k])) {
             // May not be the same type but we're okay with it, so assert.
             obj[k] = supplement[k] as T[keyof T];
@@ -170,7 +167,7 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
             obj[k] = supplement[k] as T[keyof T];
         }
         // Same type not covered above means safe to take user value.
-        else if (supplement[k] !== null && base[k] !== null && ts === tb) {
+        else if (supplement[k] !== null && base[k] !== null && typeof supplement[k] === typeof base[k]) {
             obj[k] = supplement[k];
         }
         // Differing types or absent value means a structure change, which is
