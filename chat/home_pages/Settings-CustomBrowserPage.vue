@@ -97,6 +97,7 @@ const log = NewLogger('CustomBrowserPage');
 export default class BrowserSettings extends Vue {
     l = l;
 
+    settings = core.state.generalSettings;
     browserPath  = core.state.generalSettings.browserPath;
     browserArgs  = core.state.generalSettings.browserArgs;
     incognitoArg = core.state.generalSettings.browserIncognitoArg;
@@ -108,7 +109,6 @@ export default class BrowserSettings extends Vue {
 
     @Hook('mounted')
     async onMount() {
-        // Tab 5
         let queueSend = false;
 
         if (!this.browserArgs) {
@@ -136,24 +136,21 @@ export default class BrowserSettings extends Vue {
         const input = e.target as HTMLInputElement;
         const v = input.value;
         log.debug('setBrowserPath', { old: this.browserPath, new: v });
-        this.browserPath = v;
-        // Other logic here.
+        this.browserPath = v.trim();
     }
 
     setBrowserArgs(e: Event) {
         const input = e.target as HTMLInputElement;
         const v = input.value;
         log.debug('setBrowserArgs', { old: this.browserArgs, new: v });
-        this.browserArgs = v;
-        // Other logic here.
+        this.browserArgs = v.trim();
     }
 
     setIncogArgs(e: Event) {
         const input = e.target as HTMLInputElement;
         const v = input.value;
         log.debug('setIncogArgs', { old: this.incognitoArg, new: v });
-        this.incognitoArg = v;
-        // Other logic here.
+        this.incognitoArg = v.trim();
     }
 
     @Watch('browserPath')
@@ -182,6 +179,10 @@ export default class BrowserSettings extends Vue {
         this.example = `"${this.browserPath}" ${parsed_args}`;
         this.incognitoMessage = l('settings.browser.current') + `"${this.browserPath}" ${this.incognitoArg} ${parsed_args}`;
         this.incognitoMessageTextClass = 'text-muted';
+
+        this.settings.browserPath         = this.browserPath;
+        this.settings.browserArgs         = this.browserArgs;
+        this.settings.browserIncognitoArg = this.incognitoArg;
     }
 
     autoFillIncognitoArg(): void {

@@ -1,4 +1,5 @@
 import Vue, {WatchHandler} from 'vue';
+import * as Electron from 'electron';
 import * as qs from 'querystring';
 import { deepEqual } from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
@@ -9,7 +10,7 @@ import Conversations from './conversations';
 import {Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface} from './interfaces';
 import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
 import { AdCenter } from './ads/ad-center';
-import { GeneralSettings } from '../electron/common';
+import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
 import { SiteSession } from '../site/site-session';
 import { SettingsMerge } from '../helpers/utils';
 
@@ -113,11 +114,22 @@ const data = {
 
         const favoriteEIcons = await core.settingsStore.get('favoriteEIcons');
         state.favoriteEIcons = favoriteEIcons ?? {};
-    }
+    },
+
+    updateMain(channel: 'settings'): void {
+        if (channel === 'settings') {
+            Electron.ipcRenderer.send(channel, {
+            settings: state.generalSettings,
+            timestamp: generalSettingsTimestamp,
+        });
+        }
+    },
 };
 
 // Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
 let smartFilterCache = {}
+let generalSettingsTimestamp = 0;
+let updateTimestamp = true;
 
 export function init(this: any,
                      connection: Connection,
@@ -145,8 +157,6 @@ export function init(this: any,
     }, /* { deep: true } */);
 
     data.watch(() => state._settings, async (newValue, oldValue) => {
-        // This object is initialized as a general settings object, so there's no "no old, but new" scenario.
-
         if (!newValue) { // Should never happen; avoid catastrophy.
             return;
         }
@@ -179,6 +189,46 @@ export function init(this: any,
 
     }, { deep: true });
 
+    data.watch(() => state.generalSettings, async () => {
+        if (!updateTimestamp) {
+            log.debug('watch skipped.');
+            updateTimestamp = true;
+            return;
+        }
+
+        const old_timestamp = generalSettingsTimestamp; // for logging.
+        generalSettingsTimestamp = Date.now();
+
+        log.debug('Watcher: General settings change.', { new: generalSettingsTimestamp, old: old_timestamp });
+
+        data.updateMain('settings');
+    }, { deep: true });
+
+    Electron.ipcRenderer.on('settings', (_e, d: GeneralSettingsUpdate) => {
+        if (d.timestamp <= generalSettingsTimestamp) {
+            log.debug('Settings from main: skipping', {
+                curr: generalSettingsTimestamp,
+                incoming: d.timestamp,
+            });
+
+            return;
+        }
+
+        log.debug('Settings from main: updating', {
+            curr: generalSettingsTimestamp,
+            incoming: d.timestamp,
+        });
+
+        // Don't need Vue.observable because we arne't adding any new properties we need to watch.
+        generalSettingsTimestamp = d.timestamp;
+        state.generalSettings = d.settings;
+
+        updateTimestamp = false;
+        log.debug('This should not trigger watcher.', generalSettingsTimestamp);
+
+        EventBus.$emit('settings-from-main', d.settings);
+    });
+
     connection.onEvent('connecting', async () => {
         await data.reloadSettings();
         data.bbCodeParser = createBBCodeParser();
@@ -202,7 +252,9 @@ export interface Core {
     readonly adCenter: AdCenter;
     readonly siteSession: SiteSession;
 
-    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>, opts?: Vue.WatchOptions): void
+    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>, opts?: Vue.WatchOptions): void;
+
+    updateMain(channel: 'settings'): void;
 }
 
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack

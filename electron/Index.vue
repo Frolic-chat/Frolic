@@ -604,11 +604,6 @@
                 log.debug('init.eicons.update.done');
             },
             listeners: async () => {
-                electron.ipcRenderer.on('settings', (_e, settings: GeneralSettings) => {
-                    log.debug('settings.update.index');
-                    core.state.generalSettings = this.settings = settings;
-                });
-
                 electron.ipcRenderer.on('open-profile', (_e, name: string) => {
                     const profileViewer = <Modal>this.$refs['profileViewer'];
 

@@ -46,7 +46,7 @@
     import * as url from 'url';
     import Vue from 'vue';
     import l from '../chat/localize';
-    import {GeneralSettings} from './common';
+    import { GeneralSettings, GeneralSettingsUpdate } from './common';
     import { getSafeLanguages, updateSupportedLanguages } from './language';
 
     import Logger from 'electron-log/renderer';
@@ -99,6 +99,7 @@
         platform = process.platform;
         lockTab = false;
         hasCompletedUpgrades = false;
+        generalSettingsTimestamp = 0;
 
 
         @Hook('mounted')
@@ -125,12 +126,15 @@
             //     }
             // )
 
-            electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, settings: GeneralSettings) => {
-                log.debug('settings.update.window');
+            electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, d: GeneralSettingsUpdate) => {
+                if (d.timestamp > this.generalSettingsTimestamp) {
+                    log.debug('settings.update.window');
 
-                this.settings = settings;
+                    this.generalSettingsTimestamp = d.timestamp;
+                    this.settings = d.settings;
 
-                Logger.transports.console.level = settings.risingSystemLogLevel;
+                    Logger.transports.console.level = d.settings.risingSystemLogLevel;
+                }
             });
 
             electron.ipcRenderer.on('rising-upgrade-complete', () => {

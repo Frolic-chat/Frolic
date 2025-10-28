@@ -217,16 +217,14 @@ if(process.platform === 'win32') //get the path in DOS (8-character) format as s
 // '', {spellCheck: (words, callback) => callback(words.filter((x) => spellchecker.isMisspelled(x)))});
 
 function onSettings(s: GeneralSettings): void {
-    settings = s;
-
     const logLevel: LogLevelOption = 'warn'
-    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
+    Logger.transports.console.level = s.risingSystemLogLevel || logLevel;
 
     // spellchecker.setDictionary(s.spellcheckLang, dictDir);
     // for(const word of s.customDictionary) spellchecker.add(word);
 }
 
-electron.ipcRenderer.on('settings', (_e, s: GeneralSettings) => onSettings(s));
+EventBus.$on('settings-from-main', onSettings);
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 let settings = JSON.parse(params['settings']!) as GeneralSettings;

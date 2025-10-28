@@ -6,6 +6,7 @@ import { Conversation } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
+import { GeneralSettings } from '../../electron/common';
 
 // import NewLogger from '../helpers/log';
 // const log = NewLogger('event-bus');
@@ -94,8 +95,10 @@ class EventBusManager {
      * You probably also want to register 'core-connected' to detect the initial settings set, as well.
      */
     $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
-    $on(event: 'smartfilters-update',   callback: (e: SmartFilterSettings) => void | Promise<void>): void;
+    $on(event: 'smartfilters-update',    callback: (e: SmartFilterSettings) => void | Promise<void>): void;
     $on(event: 'notification-setting',   callback: (e: NotificationChangeEvent) => void | Promise<void>): void;
+    $on(event: 'settings-from-main',     callback: (e: GeneralSettings) => void | Promise<void>): void;
+
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
@@ -112,7 +115,8 @@ class EventBusManager {
     $on(event: 'select-conversation',    callback: (e: SelectConversationEvent) => void | Promise<void>): void;
     $on(event: 'conversation-load-more', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
 
-    $on(event: 'imagepreview-show' | 'imagepreview-dismiss', callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
+    $on(event: 'imagepreview-show'
+            | 'imagepreview-dismiss',    callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
     $on(event: 'imagepreview-toggle-sticky', callback: (e: ImageToggleEvent) => void | Promise<void>): void;
     //$on(event: string, callback: EventCallback): void;
     $on(event: string, callback: EventCallback): void {
@@ -194,6 +198,8 @@ class EventBusManager {
     $emit(event: 'configuration-update',   data: Settings): void;
     $emit(event: 'smartfilters-update',    data: SmartFilterSettings): void;
     $emit(event: 'notification-setting',   data: NotificationChangeEvent): void;
+    $emit(event: 'settings-from-main',     data: GeneralSettings): void;
+
     $emit(event: 'error',                  data: ErrorEvent): void;
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;

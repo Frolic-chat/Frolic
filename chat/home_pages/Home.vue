@@ -32,8 +32,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 import core from './../core';
 import l from '../localize';
 
-import * as Electron from 'electron';
-
 //import Logger from '../../helpers/log';
 //const log = Logger('Home');
 
@@ -59,8 +57,6 @@ export default class Home extends Vue {
     @Watch('defaultToHome')
     switch() {
         core.state.generalSettings.defaultToHome = this.defaultToHome;
-
-        Electron.ipcRenderer.send('settings', core.state.generalSettings);
     }
 }
 </script>

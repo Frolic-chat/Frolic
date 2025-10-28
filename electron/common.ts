@@ -14,6 +14,11 @@ function getDefaultLanguage(): string {
     }
 }
 
+export type GeneralSettingsUpdate = {
+    settings:  GeneralSettings,
+    timestamp: number,
+}
+
 export class GeneralSettings {
     account = '';
     closeToTray: boolean = true;
