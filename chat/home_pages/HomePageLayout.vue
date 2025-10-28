@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="home-page">
     <div class="prescroll container-fluid">
