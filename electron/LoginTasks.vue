@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div>
     <div class="row form-group" v-for="t in tasks" :key="t.name">
