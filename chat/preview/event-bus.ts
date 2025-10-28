@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { Character, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Settings } from '../interfaces';

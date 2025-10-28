@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import Vue, {WatchHandler} from 'vue';
 import * as Electron from 'electron';
 import * as qs from 'querystring';
