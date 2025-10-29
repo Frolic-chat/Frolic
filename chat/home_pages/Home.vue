@@ -2,11 +2,11 @@
 <template>
 <home-page>
     <template v-slot:header>
-        Welcome Home!
-        <span class="homepage-selector">
-            <span>Default:</span>
-            <span style="min-width: 7ch">{{ homeOrConsole }}</span>
-            <slider color="info" round="true" v-model="defaultToHome"></slider>
+        <span class="title">Welcome Home!</span>
+        <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
+            <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
+                <span class="fa-solid fa-screwdriver-wrench"></span>
+            </button>
         </span>
     </template>
 
@@ -16,6 +16,7 @@
         <!-- Changelog and update alert -->
         <!-- Logs? -->
         <!-- Dev settings/info -->
+        <widget-options ref="widgetOptionsModal"></widget-options>
     </template>
 
     <template v-slot:footer>
@@ -29,46 +30,26 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook, Watch } from '@f-list/vue-ts';
-import core from './../core';
-import l from '../localize';
-
-//import Logger from '../../helpers/log';
-//const log = Logger('Home');
+import { Component } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
-import Slider from '../../components/Slider.vue';
+import WidgetOptions from './WidgetOptions.vue';
 
 @Component({
     components: {
         'home-page': HomePageLayout,
-        slider: Slider,
-    }
+        'widget-options': WidgetOptions,
+    },
 })
 export default class Home extends Vue {
-    defaultToHome: boolean = true;
-
-    get homeOrConsole() { return this.defaultToHome ? l('home') : core.conversations.consoleTab.name }
-
-    @Hook('beforeMount')
-    mounted() {
-        this.defaultToHome = core.state.generalSettings.defaultToHome ?? true;
-    }
-
-    @Watch('defaultToHome')
-    switch() {
-        core.state.generalSettings.defaultToHome = this.defaultToHome;
+    openWidgetOptions() {
+         (<WidgetOptions>this.$refs['widgetOptionsModal']).show();
     }
 }
 </script>
 
 <style>
-.homepage-selector {
-    display: inline-flex;
-    align-items: center;
-
-    > span {
-        margin: 0 5px;
-    }
+.home-page header .title {
+    align-self: center;
 }
 </style>

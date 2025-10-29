@@ -38,4 +38,13 @@ export class GeneralSettings {
     browserArgs: string = '%s';
     browserIncognitoArg: string = '';
     defaultToHome: boolean = true;
+    widgets = {
+        inbox:       true,  // Display of notes from site
+        scratchpad:  true,  // Text box for player notes
+        events:      true,  // Important player events such as rare friend sighting
+        news:        true,  // News from the client
+        suggestions: false, // Profile helper suggestions
+        activity:    true,  // Small console with recent friend/bookmark activity
+        match:       true,  // High quality match
+    };
 }

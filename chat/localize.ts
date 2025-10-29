@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 const strings = {
     'home': 'Home',
+    'default': 'Default',
     'action.resetZoom': 'Reset Zoom',
     'action.zoomIn': 'Zoom In',
     'action.zoomOut': 'Zoom Out',
@@ -335,6 +336,24 @@ Are you sure?`,
     'settings.hideChannelMessages.help': "Messages from channel moderators and global ops will remain visible.",
     'settings.hidePrivateMessages.help': "Messages from global ops and moderators of any channel you're in will remain visible.",
     'settings.useGlobalSetting': 'Use global setting',
+
+    // Home page widgets
+    'home.widgetOptions.title': 'Customize homepage',
+    'home.widgetOptions.defaultHome': 'Select console or home page by default?',
+    'settings.widgets.inbox': 'Notes',
+    'settings.widgets.inbox.help': '',
+    'settings.widgets.scratchpad': 'Personal scratchpad',
+    'settings.widgets.scratchpad.help': '',
+    'settings.widgets.events': 'Personal notices',
+    'settings.widgets.events.help': 'Example: Rare friend sighting, admin broadcast, front page news post',
+    'settings.widgets.news': 'Client news',
+    'settings.widgets.news.help': 'Update notices, reminders of new or changed features',
+    'settings.widgets.suggestions': 'Profile recommendations',
+    'settings.widgets.suggestions.help': '',
+    'settings.widgets.activity': 'Recent chat events',
+    'settings.widgets.activity.help': '',
+    'settings.widgets.match': 'High quality matches',
+    'settings.widgets.match.help': 'Infrequently highlight very-high quality matches',
 
     // Menu
     'settings.closeToTray': 'Close to tray',
