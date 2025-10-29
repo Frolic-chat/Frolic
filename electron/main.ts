@@ -949,7 +949,9 @@ function onReady(): void {
     Electron.ipcMain.on('settings', (e, d: GeneralSettingsUpdate) => {
         if (d.timestamp > generalSettingsTimestamp) {
             generalSettingsTimestamp = d.timestamp;
+            log.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
             Object.assign(settings, d.settings);
+            log.warn('post assignment: SHOULD BE BEST SETTINGS.', settings);
             saveGeneralSettings(settings, e.sender);
         }
     });

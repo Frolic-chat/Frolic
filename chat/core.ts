@@ -18,6 +18,7 @@ import { SettingsMerge } from '../helpers/utils';
 import { EventBus } from './preview/event-bus';
 import NewLogger from '../helpers/log';
 const log = NewLogger('chat/core', () => process.env.NODE_ENV === 'development');
+const logw = NewLogger('core/watch', () => false);
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();
@@ -121,16 +122,18 @@ const data = {
         if (channel === 'settings') {
             Electron.ipcRenderer.send(channel, {
             settings: state.generalSettings,
-            timestamp: generalSettingsTimestamp,
+            timestamp: VueUpdateCache.timestamp,
         });
         }
     },
 };
 
 // Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
-let smartFilterCache = {}
-let generalSettingsTimestamp = 0;
-let updateTimestamp = true;
+const VueUpdateCache = {
+    staleFilters: {},
+    timestamp: 0,
+    skipWatch: false,
+};
 
 export function init(this: any,
                      connection: Connection,
@@ -162,10 +165,10 @@ export function init(this: any,
             return;
         }
         else if (!oldValue) {
-            smartFilterCache = structuredClone(newValue.risingFilter);
+            VueUpdateCache.staleFilters = structuredClone(newValue.risingFilter);
         }
         else {
-            log.warn('watch _settings will save core.', newValue);
+            log.debug('watch _settings will save core.', newValue);
             await data.settingsStore?.set('settings', newValue);
 
             EventBus.$emit('configuration-update', newValue);
@@ -179,53 +182,47 @@ export function init(this: any,
             if (oldValue.notifications !== newValue.notifications)
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
-            if (!deepEqual(newValue.risingFilter, smartFilterCache)) {
-                log.warn('risingFilter in _settings changed.', newValue.risingFilter);
+            if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilters)) {
+                logw.warn('risingFilter in _settings changed.', newValue.risingFilter);
 
                 EventBus.$emit('smartfilters-update', newValue.risingFilter);
 
-                smartFilterCache = structuredClone(newValue.risingFilter);
+                VueUpdateCache.staleFilters = structuredClone(newValue.risingFilter);
             }
         }
 
     }, { deep: true });
 
     data.watch(() => state.generalSettings, async () => {
-        if (!updateTimestamp) {
-            log.debug('watch skipped.');
-            updateTimestamp = true;
-            return;
+        logw.debug(VueUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', VueUpdateCache.timestamp);
+
+        if (VueUpdateCache.skipWatch) {
+            VueUpdateCache.skipWatch = false;
         }
-
-        const old_timestamp = generalSettingsTimestamp; // for logging.
-        generalSettingsTimestamp = Date.now();
-
-        log.debug('Watcher: General settings change.', { new: generalSettingsTimestamp, old: old_timestamp });
-
-        data.updateMain('settings');
+        else {
+            VueUpdateCache.timestamp = Date.now();
+            data.updateMain('settings');
+        }
     }, { deep: true });
 
     Electron.ipcRenderer.on('settings', (_e, d: GeneralSettingsUpdate) => {
-        if (d.timestamp <= generalSettingsTimestamp) {
-            log.debug('Settings from main: skipping', {
-                curr: generalSettingsTimestamp,
-                incoming: d.timestamp,
-            });
-
+        if (d.timestamp <= VueUpdateCache.timestamp) {
+            logw.warn('Settings from main stale; skipping', VueUpdateCache.timestamp, d.timestamp);
             return;
         }
 
-        log.debug('Settings from main: updating', {
-            curr: generalSettingsTimestamp,
-            incoming: d.timestamp,
-        });
+        VueUpdateCache.timestamp = d.timestamp;
 
-        // Don't need Vue.observable because we arne't adding any new properties we need to watch.
-        generalSettingsTimestamp = d.timestamp;
-        state.generalSettings = d.settings;
+        const prev_settings = JSON.stringify(state.generalSettings);
+        Object.assign(state.generalSettings, d.settings);
+        VueUpdateCache.skipWatch = JSON.stringify(state.generalSettings) !== prev_settings;
 
-        updateTimestamp = false;
-        log.debug('This should not trigger watcher.', generalSettingsTimestamp);
+        logw.debug(
+            VueUpdateCache.skipWatch
+                ? 'Skipping next watcher.'
+                : 'No change from main; not skipping next watcher.',
+            VueUpdateCache.timestamp
+        );
 
         EventBus.$emit('settings-from-main', d.settings);
     });
