@@ -22,10 +22,16 @@ export default class GenericCheckbox extends Vue {
     readonly obj!: { [key: string]: any };
 
     /**
-     * Custom prefix; typically the object you're toggling members of.
+     * Custom prefix for UI elements; typically the object you're toggling members of.
      */
     @Prop({ default: '' })
     readonly prefix!: string;
+
+    /**
+     * In case you want to replace `settings.` with something else in the localization strings.
+     */
+    @Prop({ default: 'settings' })
+    readonly localizationPrefix!: string;
 
     /**
      * Primary title of the element; also used for all localization.
@@ -45,7 +51,11 @@ export default class GenericCheckbox extends Vue {
     @Prop({ default: false })
     readonly disabled!: boolean;
 
-    get title() { return l(`settings.${this.prefix}.${this.setting}`,      ...(this.localArgs.title ?? [])) }
-    get help()  { return l(`settings.${this.prefix}.${this.setting}.help`, ...(this.localArgs.help  ?? [])) }
+    get title() {
+        return l(`${this.localizationPrefix}.${this.prefix}.${this.setting}`,      ...(this.localArgs.title ?? []));
+    }
+    get help()  {
+        return l(`${this.localizationPrefix}.${this.prefix}.${this.setting}.help`, ...(this.localArgs.help  ?? []));
+    }
 }
 </script>
