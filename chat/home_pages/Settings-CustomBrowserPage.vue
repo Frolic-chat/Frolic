@@ -17,7 +17,7 @@
 
     <div class="form-group">
         <div class="row">
-            <label class="control-label" for="browserPath">{{l('settings.browser.path')}}</label>
+            <label class="control-label col" for="browserPath">{{l('settings.browser.path')}}</label>
         </div>
         <div class="row">
             <div class="col">
@@ -29,11 +29,11 @@
         </div>
     </div>
 
-    <div class="form-group"><hr></div>
+    <div class="form-group row"><hr class="col"></div>
 
     <div class="form-group">
         <div class="row">
-            <label class="control-label" for="browserArgs">{{l('settings.browser.arguments')}}</label>
+            <label class="control-label col" for="browserArgs">{{l('settings.browser.arguments')}}</label>
         </div>
         <div class="row">
             <div class="col">
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <div class="form-group row"><hr></div>
+    <div class="form-group row"><hr class="col"></div>
 
     <div class="form-group">
         <div class="row">
