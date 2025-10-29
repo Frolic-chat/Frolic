@@ -15,62 +15,68 @@
         </div>
     </div>
 
-    <div class="form-group col-12">
-        <label class="control-label" for="browserPath">{{l('settings.browser.path')}}</label>
+    <div class="form-group">
         <div class="row">
-            <div class="col-10">
-            <input type="text" class="form-control" id="browserPath" :value="browserPath" @change="setBrowserPath" :placeholder="l('settings.browser.default')"/>
+            <label class="control-label" for="browserPath">{{l('settings.browser.path')}}</label>
+        </div>
+        <div class="row">
+            <div class="col">
+                <input type="text" class="form-control" id="browserPath" :value="settings.browserPath" @change="setBrowserPath" :placeholder="l('settings.browser.default')"/>
             </div>
-            <div class="col-2">
-            <button class="btn btn-primary" @click.prevent.stop="browseForPath()">{{l('settings.browser.browse')}}</button>
+            <div class="col-auto">
+                <button class="btn btn-primary" @click.prevent.stop="browseForPath()">{{l('settings.browser.browse')}}</button>
             </div>
         </div>
     </div>
 
-    <div class="form-group col-12"><hr></div>
+    <div class="form-group"><hr></div>
 
-    <div class="form-group col-12">
-        <label class="control-label" for="browserArgs">{{l('settings.browser.arguments')}}</label>
+    <div class="form-group">
         <div class="row">
-            <div class="col-12">
-                <input type="text" class="form-control" id="browserArgs" :value="browserArgs" @change="setBrowserArgs"/>
+            <label class="control-label" for="browserArgs">{{l('settings.browser.arguments')}}</label>
+        </div>
+        <div class="row">
+            <div class="col">
+                <input type="text" class="form-control" id="browserArgs" :value="settings.browserArgs" @change="setBrowserArgs"/>
             </div>
         </div>
         <div class="row">
-            <div class="col-12">
+            <div class="col">
                 <small class="form-text text-muted">{{l('settings.browser.argumentsHelp')}}</small>
-                <small v-if="browserPath" class="form-text text-muted">{{ l('settings.browser.current') }}{{ example }}</small>
+                <small v-if="settings.browserPath" class="form-text text-muted">{{ l('settings.browser.current') }}{{ example }}</small>
             </div>
         </div>
     </div>
 
-    <div class="form-group col-12"><hr></div>
+    <div class="form-group row"><hr></div>
 
-    <div class="form-group col-12">
-        <label class="control-label" for="incognitoArg">{{ l('settings.browser.incognito.title') }}</label>
+    <div class="form-group">
         <div class="row">
-            <div class="col-10">
-                <input type="text" class="form-control" id="incognitoArg" :value="incognitoArg" @change="setIncogArgs"/>
+            <label class="control-label" for="incognitoArg">{{ l('settings.browser.incognito.title') }}</label>
+        </div>
+        <div class="row">
+            <div class="col">
+                <input type="text" class="form-control" id="incognitoArg" :value="settings.browserIncognitoArg" @change="setIncogArgs"/>
             </div>
-            <div class="col-2">
+            <div class="col-auto">
                 <button class="btn btn-primary" @click.prevent.stop="autoFillIncognitoArg()">{{ l('settings.browser.incognito.auto') }}</button>
             </div>
         </div>
         <div class="row">
-            <div class="col-12">
+            <div class="col">
                 <small class="form-text text-muted">{{ l('settings.browser.incognito.help') }}</small>
                 <small class="form-text" :class="incognitoMessageTextClass">{{ incognitoMessage }}</small>
             </div>
         </div>
     </div>
-    <div class="form-group col-12">
+    <div class="form-group">
         <div class="row">
-            <div class="col-4">
+            <div class="col-auto">
                 <button class="btn btn-danger" @click.prevent.stop="resetToDefault()">{{l('settings.browser.reset')}}</button>
             </div>
         </div>
         <div class="row">
-            <div class="col-12">
+            <div class="col">
                 <small class="form-text text-muted">⚠ This will clear the entire form.</small>
             </div>
         </div>
@@ -98,9 +104,6 @@ export default class BrowserSettings extends Vue {
     l = l;
 
     settings = core.state.generalSettings;
-    browserPath  = core.state.generalSettings.browserPath;
-    browserArgs  = core.state.generalSettings.browserArgs;
-    incognitoArg = core.state.generalSettings.browserIncognitoArg;
 
     example = '';
     incognitoMessage = '';
@@ -111,53 +114,72 @@ export default class BrowserSettings extends Vue {
     async onMount() {
         let queueSend = false;
 
-        if (!this.browserArgs) {
-            this.browserArgs = '%s';
+        if (!this.settings.browserArgs) {
+            this.settings.browserArgs = '%s';
             queueSend = true;
         }
-        else if (!this.browserArgs.includes('%s')) {
-            this.browserArgs += ' %s';
+        else if (!this.settings.browserArgs.includes('%s')) {
+            this.settings.browserArgs += ' %s';
             queueSend = true;
         }
 
-        if (!this.incognitoArg) {
-            const oldarg = this.incognitoArg;
+        if (!this.settings.browserIncognitoArg) {
+            const oldarg = this.settings.browserIncognitoArg;
             this.autoFillIncognitoArg();
 
-            if (this.incognitoArg !== oldarg)
+            if (this.settings.browserIncognitoArg !== oldarg)
                 queueSend = true;
         }
 
         if (queueSend)
-            Electron.ipcRenderer.send('browser-option-update', this.browserPath, this.browserArgs, this.incognitoArg);
+            Electron.ipcRenderer.send('browser-option-update', this.settings.browserPath, this.settings.browserArgs, this.settings.browserIncognitoArg);
+
+        this.updateExample();
     }
 
     setBrowserPath(e: Event) {
         const input = e.target as HTMLInputElement;
-        const v = input.value;
-        log.debug('setBrowserPath', { old: this.browserPath, new: v });
-        this.browserPath = v.trim();
+        const v = input.value.trim();
+        log.debug('setBrowserPath', { old: this.settings.browserPath, new: v });
+
+        this.settings.browserPath = v;
     }
 
     setBrowserArgs(e: Event) {
         const input = e.target as HTMLInputElement;
-        const v = input.value;
-        log.debug('setBrowserArgs', { old: this.browserArgs, new: v });
-        this.browserArgs = v.trim();
+        const v = input.value.trim();
+        log.debug('setBrowserArgs', { old: this.settings.browserArgs, new: v });
+
+        if (!v)
+            //input.value = this.settings.browserArgs = '%s';
+            this.settings.browserArgs = '%s';
+        else if (!v.includes('%s'))
+            //input.value = this.settings.browserArgs = v + ' %s';
+            this.settings.browserArgs = v + ' %s';
+        else
+            this.settings.browserArgs = v;
+
+        this.$forceUpdate();
     }
 
     setIncogArgs(e: Event) {
         const input = e.target as HTMLInputElement;
-        const v = input.value;
-        log.debug('setIncogArgs', { old: this.incognitoArg, new: v });
-        this.incognitoArg = v.trim();
+        const v = input.value.trim();
+        log.debug('setIncogArgs', { old: this.settings.browserIncognitoArg, new: v });
+
+        if (!v)
+            this.autoFillIncognitoArg();
+        else
+            this.settings.browserIncognitoArg = v;
+
+        this.$forceUpdate();
     }
 
-    @Watch('browserPath')
-    @Watch('browserArgs')
-    @Watch('incognitoArg')
+    @Watch('settings.browserPath')
+    @Watch('settings.browserArgs')
+    @Watch('settings.incognitoArg')
     updateExample(): void {
-        if (!this.browserPath) {
+        if (!this.settings.browserPath) {
             this.example = '';
             this.incognitoMessage = l('settings.browser.incognito.auto.warning');
             this.incognitoMessageTextClass = 'text-warning';
@@ -166,32 +188,20 @@ export default class BrowserSettings extends Vue {
             return;
         }
 
-        if (!this.browserArgs)
-            this.browserArgs = '%s';
-        else if (!this.browserArgs.includes('%s'))
-            this.browserArgs = this.browserArgs.trimEnd() + ' %s';
-
-        if (!this.incognitoArg)
-            this.autoFillIncognitoArg();
-
         // Output
-        const parsed_args = this.browserArgs.replaceAll(/%s/g, '"https://example.com/page"');
-        this.example = `"${this.browserPath}" ${parsed_args}`;
-        this.incognitoMessage = l('settings.browser.current') + `"${this.browserPath}" ${this.incognitoArg} ${parsed_args}`;
+        const parsed_args = this.settings.browserArgs.replaceAll(/%s/g, '"https://example.com/page"');
+        this.example = `"${this.settings.browserPath}" ${parsed_args}`;
+        this.incognitoMessage = l('settings.browser.current') + `"${this.settings.browserPath}" ${this.settings.browserIncognitoArg} ${parsed_args}`;
         this.incognitoMessageTextClass = 'text-muted';
-
-        this.settings.browserPath         = this.browserPath;
-        this.settings.browserArgs         = this.browserArgs;
-        this.settings.browserIncognitoArg = this.incognitoArg;
     }
 
     autoFillIncognitoArg(): void {
-        const incognitoArg = IncognitoArgFromBrowserPath(this.browserPath);
+        const incognitoArg = IncognitoArgFromBrowserPath(this.settings.browserPath);
 
-        log.debug('autoFillIncognitoArg', { old: this.incognitoArg, new: incognitoArg, browser: this.browserPath });
+        log.debug('autoFillIncognitoArg', { old: this.settings.browserIncognitoArg, new: incognitoArg, browser: this.settings.browserPath });
 
         if (incognitoArg) {
-            this.incognitoArg = incognitoArg;
+            this.settings.browserIncognitoArg = incognitoArg;
         }
         else {
             this.incognitoMessage = l('settings.browser.incognito.auto.warning');
@@ -200,33 +210,16 @@ export default class BrowserSettings extends Vue {
     }
 
     resetToDefault(): void {
-        this.browserPath = '';
-        this.browserArgs = '%s';
+        this.settings.browserPath = '';
+        this.settings.browserArgs = '%s';
     }
 
     browseForPath(): void {
         Electron.ipcRenderer.invoke('browser-option-browse')
         .then(result => {
             if (typeof result === 'string')
-                this.browserPath = result;
+                this.settings.browserPath = result;
         });
-    }
-
-    /**
-     * Strip this away.
-     */
-    submit(): void {
-        this.browserArgs = this.browserArgs.trim();
-
-        if (!this.browserArgs)
-            this.browserArgs = '%s';
-        else if (!this.browserArgs.includes('%s'))
-            this.browserArgs += ' %s';
-
-        if (!this.incognitoArg)
-            this.autoFillIncognitoArg();
-
-        Electron.ipcRenderer.send('browser-option-update', this.browserPath, this.browserArgs, this.incognitoArg);
     }
 }
 </script>
