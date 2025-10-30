@@ -1,121 +1,107 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-    <modal :action="l('conversationSettings.action', conversation.name)" @submit="submit" ref="dialog" @open="load()" dialogClass="w-100"
-        :buttonText="l('conversationSettings.save')">
-        <div class="form-group">
-            <label class="control-label" :for="'notify' + conversation.key">
-                {{l('conversationSettings.notify')}}
-            </label>
-            <select class="form-control" :id="'notify' + conversation.key" v-model="notify">
-                <option :value="setting.Default">{{l('settings.useGlobalSetting')}}</option>
-                <option :value="setting.True">{{l('conversationSettings.true')}}</option>
-                <option :value="setting.False">{{l('conversationSettings.false')}}</option>
-            </select>
-        </div>
-        <div class="form-group"><hr></div>
-        <div v-show="isChannel(conversation)" class="form-group">
-            <label class="control-label" :for="'friendsNotify' + conversation.key">
-                {{l('settings.friendMessageInThisChannel')}}
-            </label>
-            <select class="form-control" :id="'friendsNotify' + conversation.key" v-model="notifyOnFriendMessage">
-                <option :value="friendchooser.Default">{{l('settings.useGlobalSetting')}}</option>
-                <option :value="friendchooser.Friends">{{l('settings.relation.friendsOnly')}}</option>
-                <option :value="friendchooser.Bookmarks">{{l('settings.relation.bookmarksOnly')}}</option>
-                <option :value="friendchooser.Both">{{l('settings.relation.friendsAndBookmarks')}}</option>
-                <option :value="friendchooser.NoOne">{{l('settings.relation.noOne')}}</option>
-            </select>
-        </div>
-        <div v-show="isChannel(conversation)" class="form-group">
-            <label class="control-label" :for="'highlight' + conversation.key">
-                {{l('settings.highlight')}}
-            </label>
-            <select class="form-control" :id="'highlight' + conversation.key" v-model="highlight">
-                <option :value="setting.Default">{{l('settings.useGlobalSetting')}}</option>
-                <option :value="setting.True">{{l('conversationSettings.true')}}</option>
-                <option :value="setting.False">{{l('conversationSettings.false')}}</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="control-label" for="defaultHighlights">
-                <input type="checkbox" id="defaultHighlights" v-model="defaultHighlights"/>
-                {{l('settings.defaultHighlights')}}
-            </label>
-        </div>
-        <div class="form-group">
-            <label class="control-label" :for="'highlightWords' + conversation.key">
-                {{l('settings.highlightWords')}}
-            </label>
-            <input :id="'highlightWords' + conversation.key" class="form-control" v-model="highlightWords"/>
-        </div>
-        <div v-show="isChannel(conversation)" class="form-group">
-            <label class="control-label" :for="'highlightUsernames' + conversation.key">
-                {{l('settings.highlightUsernames')}}
-            </label>
-            <input :id="'highlightUsernames' + conversation.key" class="form-control" v-model="highlightUsernames"/>
-        </div>
-        <div class="form-group"><hr></div>
-        <div class="form-group">
-            <label class="control-label" :for="'joinMessages' + conversation.key">
-                {{l('settings.joinMessageInThisChannel')}}
-            </label>
-            <select class="form-control" :id="'joinMessages' + conversation.key" v-model="joinMessages">
-                <option :value="setting.Default">{{l('settings.useGlobalSetting')}}</option>
-                <option :value="setting.True">{{l('conversationSettings.true')}}</option>
-                <option :value="setting.False">{{l('conversationSettings.false')}}</option>
-            </select>
-        </div>
-    </modal>
+    <home-page ref="homePageLayout">
+        <template v-slot:prescroll>
+            <h5>{{ l('conversationSettings.action', conversation.name) }}</h5>
+        </template>
+
+        <template v-slot:default>
+            <dropdown :obj="settings" prefix="conversationSettings" setting="notify">
+                <option :value="setting.Default">{{ l('settings.useGlobalSetting')  }}</option>
+                <option :value="setting.True"   >{{ l('conversationSettings.true')  }}</option>
+                <option :value="setting.False"  >{{ l('conversationSettings.false') }}</option>
+            </dropdown>
+
+            <dropdown v-show="isChannel" :obj="settings" prefix="conversationSettings" setting="notifyOnFriendMessage">
+                <option :value="friendchooser.Default"  >{{ l('settings.useGlobalSetting')             }}</option>
+                <option :value="friendchooser.Friends"  >{{ l('settings.relation.friendsOnly')         }}</option>
+                <option :value="friendchooser.Bookmarks">{{ l('settings.relation.bookmarksOnly')       }}</option>
+                <option :value="friendchooser.Both"     >{{ l('settings.relation.friendsAndBookmarks') }}</option>
+                <option :value="friendchooser.NoOne"    >{{ l('settings.relation.noOne')               }}</option>
+            </dropdown>
+
+            <div class="form-group"><hr></div>
+
+            <dropdown v-show="isChannel" :obj="settings" prefix="conversationSettings" setting="highlight">
+                <option :value="setting.Default">{{ l('settings.useGlobalSetting')  }}</option>
+                <option :value="setting.True"   >{{ l('conversationSettings.true')  }}</option>
+                <option :value="setting.False"  >{{ l('conversationSettings.false') }}</option>
+            </dropdown>
+
+            <checkbox :obj="settings" prefix="conversationSettings" setting="defaultHighlights"></checkbox>
+
+            <textfield :obj="settings" prefix="conversationSettings" setting="highlightWords"
+                :validator="vdHighlightString" :transformer="tfHighlightString"></textfield>
+
+            <textfield v-show="isChannel" :obj="settings" prefix="conversationSettings" setting="highlightUsernames"
+                :validator="vdHighlightString" :transformer="tfHighlightString"></textfield>
+
+            <div class="form-group"><hr></div>
+
+            <dropdown :obj="settings" prefix="conversationSettings" setting="joinMessages">
+                <option :value="setting.Default">{{ l('settings.useGlobalSetting')  }}</option>
+                <option :value="setting.True"   >{{ l('conversationSettings.true')  }}</option>
+                <option :value="setting.False"  >{{ l('conversationSettings.false') }}</option>
+            </dropdown>
+        </template>
+    </home-page>
 </template>
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
-    import CustomDialog from '../components/custom_dialog';
-    import Modal from '../components/Modal.vue';
-    import { Conversation, Relation } from './interfaces';
+    import Vue from 'vue';
+    import { Component, Prop, Hook } from '@f-list/vue-ts';
+
+    import HomePageLayout from './home_pages/HomePageLayout.vue';
+
+    import GenericDropdown from './home_pages/settings/GenericDropdown.vue';
+    import GenericCheckbox from './home_pages/settings/GenericCheckbox.vue';
+    import GenericText     from './home_pages/settings/GenericText.vue';
+
     import l from './localize';
 
+
+
+
+
+    import { Conversation, Relation } from './interfaces';
+
     @Component({
-        components: {modal: Modal}
+        components: {
+            'home-page': HomePageLayout,
+            'dropdown':  GenericDropdown,
+            'checkbox':  GenericCheckbox,
+            'textfield': GenericText,
+        }
     })
-    export default class ConversationSettings extends CustomDialog {
+    export default class ConversationSettings extends Vue {
+        l = l;
+        setting       = Conversation.Setting;
+        friendchooser = Relation.Chooser;
+
         @Prop({required: true})
         readonly conversation!: Conversation;
-        readonly isChannel = Conversation.isChannel;
-        l = l;
-        setting = Conversation.Setting;
-        friendchooser = Relation.Chooser;
-        notify!: Conversation.Setting;
-        highlight!: Conversation.Setting;
-        highlightWords!: string;
-        highlightUsernames!: string;
-        joinMessages!: Conversation.Setting;
-        defaultHighlights!: boolean;
-        notifyOnFriendMessage!: Relation.Chooser;
 
-        load(): void {
-            const settings = this.conversation.settings;
-            this.notify = settings.notify;
-            this.highlight = settings.highlight;
-            this.highlightWords = settings.highlightWords.join(',');
-            this.highlightUsernames = settings.highlightUsernames.join(', ');
-            this.joinMessages = settings.joinMessages;
-            this.defaultHighlights = settings.defaultHighlights;
-            this.notifyOnFriendMessage = settings.notifyOnFriendMessage;
+        settings!: Conversation.Settings
+
+        get isChannel() { return Conversation.isChannel(this.conversation) }
+
+
+        @Hook('created')
+        created() {
+            this.settings = this.conversation.settings;
         }
 
-        submit(): void {
-            this.conversation.settings = {
-                notify: this.notify,
-                highlight: this.highlight,
-                highlightWords: this.highlightWords.split(',')
-                    .map(x => x.trim())
-                    .filter(x => x.length),
-                highlightUsernames: this.highlightUsernames.split(',')
-                    .map(x => x.trim())
-                    .filter(x => x.length),
-                joinMessages: this.joinMessages,
-                defaultHighlights: this.defaultHighlights,
-                adSettings: this.conversation.settings.adSettings,
-                notifyOnFriendMessage: this.notifyOnFriendMessage
-            };
+        vdHighlightString(s: string): boolean {
+            if (this.tfHighlightString(s))
+                return true;
+            else
+                return false;
+        }
+
+        tfHighlightString(s: string): string[] {
+            const a = s.trim().toLowerCase()
+                .split(/\s*,\s*/)
+                .filter(v => v);
+            return [ ...new Set(a) ];
         }
     }
 </script>
