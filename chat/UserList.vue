@@ -1,6 +1,6 @@
 <template>
 <sidebar id="user-list" :label="l('users.title')" icon="fa-users" :right="true" :open="expanded">
-    <tabs style="flex-shrink:0" :tabs="channel ? { 0: l('users.friends'), 1: l('users.members') } : !isConsoleTab ? { 0: l('users.friends'), 1: 'Profile'} : { 0: l('users.friends') }" v-model="tab"></tabs>
+    <tabs style="flex-shrink:0" :tabs="channel ? { 0: l('users.friends'), 1: l('users.members') } : !isConsoleOrActivity ? { 0: l('users.friends'), 1: 'Profile'} : { 0: l('users.friends') }" v-model="tab"></tabs>
     <div class="users" style="padding-left:10px" v-show="tab === '0'">
         <h4>{{l('users.friends')}}</h4>
         <div v-for="character in friends" :key="character.name">
@@ -29,7 +29,7 @@
             <input class="form-control" v-model="filter" :placeholder="l('general.filter')" type="text"/>
         </div>
     </div>
-    <div v-if="!channel && !isConsoleTab" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
+    <div v-if="!channel && !isConsoleOrActivity" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
 
         <a :href="profileUrl" target="_blank" class="btn profile-button">
             <span class="fa fa-fw fa-user"></span>
@@ -170,9 +170,10 @@ export default class UserList extends Vue {
         return (<Conversation.ChannelConversation>core.conversations.selectedConversation).channel;
     }
 
-    get isConsoleTab(): Boolean {
-        return core.conversations.selectedConversation === core.conversations.consoleTab;
-    }
+    get isConsoleOrActivity() {
+            return core.conversations.selectedConversation === core.conversations.consoleTab
+                || core.conversations.selectedConversation === core.conversations.activityTab;
+        }
 
     get profileName(): string | undefined {
         return this.channel ? undefined : core.conversations.selectedConversation.name;

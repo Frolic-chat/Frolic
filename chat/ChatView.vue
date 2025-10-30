@@ -62,7 +62,7 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="showHomeScreen()"
+                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="goHome()"
                         class="list-group-item list-group-item-action">
                         {{ l('home') }}
                     </a>
@@ -129,7 +129,7 @@
         </sidebar>
         <div style="display:flex;flex-direction:column;flex:1;min-width:0">
             <div id="quick-switcher" class="list-group">
-                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="showHomeScreen()"
+                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="goHome()"
                     class="list-group-item list-group-item-action">
                     <span class="fas fa-home conversation-icon"></span>
                     {{conversations.consoleTab.name}}
@@ -358,13 +358,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     else if(pms.length > 0) pms[pms.length - 1].show();
                 } else if(Conversation.isPrivate(selected)) {
                     const index = pms.indexOf(selected);
-                    if(index === 0) this.showHomeScreen();
+                    if(index === 0) this.goHome();
                     else pms[index - 1].show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index === 0)
                         if(pms.length > 0) pms[pms.length - 1].show();
-                        else this.showHomeScreen();
+                        else this.goHome();
                     else channels[index - 1].show();
                 }
             else if(getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
@@ -375,12 +375,12 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     const index = pms.indexOf(selected);
                     if(index === pms.length - 1) {
                         if(channels.length > 0) channels[0].show();
-                        else this.showHomeScreen();
+                        else this.goHome();
                     } else pms[index + 1].show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index < channels.length - 1) channels[index + 1].show();
-                    else this.showHomeScreen();
+                    else this.goHome();
                 }
         }
 
@@ -460,10 +460,15 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         /**
          * Instead of directly opening the console in the primary area, show the home screen (which contains the console conversation).
          */
-        showHomeScreen(): void {
-            if (this.conversations.consoleTab === this.conversations.selectedConversation)
+        goHome(): void {
+            const convo = core.state.generalSettings.defaultToHome
+                ? core.conversations.activityTab
+                : core.conversations.consoleTab;
+
+            if (convo === this.conversations.selectedConversation)
                 return;
-            this.conversations.consoleTab.showHome();
+
+            convo.show();
             (this.$refs['HomeScreen'] as HomeScreen).show();
         }
 

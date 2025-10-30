@@ -164,7 +164,7 @@ export default class HomeScreen extends Vue {
         // Also the input box seems scuff with two lines of text?
         if ('id' in target && target.id === 'console') {
             this.$nextTick(() => this.console.textBox.focus());
-            core.conversations.consoleTab.showConsole();
+            core.conversations.consoleTab.show();
         }
     }
 

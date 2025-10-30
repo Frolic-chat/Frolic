@@ -265,7 +265,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         state.privateConversations.splice(state.privateConversations.indexOf(this), 1);
         delete state.privateMap[this.character.name.toLowerCase()];
         await state.savePinned();
-        if(state.selectedConversation === this) state.showHome();
+        if(state.selectedConversation === this) state.showHomeOrConsole();
     }
 
     async sort(newIndex: number): Promise<void> {
@@ -638,6 +638,8 @@ class ActivityConversation extends Conversation {
     // We're opting to include these to overwrite them with readonlies:
     readonly errorText = '';
     readonly infoText  = '';
+
+    onHide(): void {}
 }
 
 class State implements Interfaces.State {
