@@ -42,7 +42,7 @@
                                     <match-report :characterMatch="matchReport" v-if="shouldShowMatch"></match-report>
 
                                     <div style="margin-bottom:10px" class="character-description">
-                                        <bbcode :text="character.character.description"></bbcode>
+                                        <bbcode v-if="descBody" :text="descBody"></bbcode>
                                     </div>
 
                                     <character-kinks :character="character" :oldApi="oldApi" ref="tab0" :autoExpandCustoms="autoExpandCustoms"></character-kinks>
@@ -106,6 +106,7 @@
     const CHARACTER_META_CACHE_EXPIRE = 7 * 24 * 60 * 60 * 1000; // 7 days (milliseconds)
 
     type ArmorStand = Pick<CharacterPage, 'character'
+                                        | 'descBody'
                                         | 'guestbook'
                                         | 'friends'
                                         | 'groups'
@@ -174,6 +175,7 @@
         tab = '0';
 
         // Tab content:
+        descBody:   string            | null = null;
         guestbook:  Guestbook         | null = null;
         friends:    SimpleCharacter[] | null = null;
         groups:     CharacterGroup[]  | null = null;
@@ -478,6 +480,7 @@
             log.debug('profile.getCharacter', { name });
 
             this.character = undefined;
+            this.descBody  = null;
             this.friends   = null;
             this.groups    = null;
             this.guestbook = null;
@@ -487,11 +490,12 @@
              * This armor stand is how we'll prevent collisions with alternative async code that modifies this.name and this.character. It's entirely possible to get part way through loading and have another this.name begin another load of this.character, and result in us putting data from the second character into the first character's profile.
              */
             const stand: ArmorStand = {
-                character: undefined,
-                friends: null,
-                groups: null,
-                guestbook: null,
-                images: null,
+                character:   undefined,
+                descBody:    null,
+                friends:     null,
+                groups:      null,
+                guestbook:   null,
+                images:      null,
                 matchReport: undefined,
             };
 
@@ -502,17 +506,22 @@
             stand.character = char_record?.character
                 ?? await methods.characterData(name, undefined, false);
 
-            if (char_record?.lastFetched && Date.now() - char_record.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
-                // void: will have to put the armor on the character on its own.
-                void this.refreshCache(stand);
-            }
-            // refreshCache calls updateMeta, so this has to be wrapped in else.
-            else if (!char_record?.meta?.lastMetaFetched || Date.now() - char_record.meta.lastMetaFetched.getTime() >= CHARACTER_META_CACHE_EXPIRE) {
-                log.debug('updateMeta.solo', name);
+            const now = Date.now();
 
+            if (char_record?.lastFetched && now - char_record.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
                 // void: will have to put the armor on the character on its own.
-                void this.updateMeta(stand)
-                    .catch(err => log.error('_getCharacter.updateMeta', stand.character?.character.name, err));
+                void this.refreshCache(stand); // calls updateMeta internally.
+            }
+            else  {
+                if (!char_record?.meta?.lastMetaFetched || now - char_record.meta.lastMetaFetched.getTime() >= CHARACTER_META_CACHE_EXPIRE) {
+                    log.debug('updateMeta.solo', name);
+
+                    // void: will have to put the armor on the character on its own.
+                    void this.updateMeta(stand)
+                        .catch(err => log.error('_getCharacter.updateMeta', stand.character?.character.name, err));
+                }
+
+                stand.descBody = stand.character.character.description;
             }
 
             if (!this.isCurrentCharacter(stand.character.character.name)) {
@@ -562,6 +571,8 @@
                 // This used to check this.refreshing.
                 if (!stand.character || !this.isCurrentCharacter(name))
                     return;
+
+                stand.descBody = stand.character.character.description;
 
                 if (this.selfCharacter)
                     stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character);
