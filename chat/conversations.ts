@@ -55,7 +55,7 @@ abstract class Conversation implements Interfaces.Conversation {
         this.adManager = new AdManager(this);
 
         // In the future, see if we can manage settings by conversation type so we can offer different settings for PMs.
-        if (this instanceof ConsoleConversation) {
+        if (this instanceof ConsoleConversation || this instanceof ActivityConversation) {
             this._settings = new ConversationSettings();
         }
         else {
@@ -613,18 +613,31 @@ class ConsoleConversation extends Conversation {
     protected doSend(): void {
         this.errorText = l('chat.consoleChat');
     }
+}
 
-    show(): void {
-        state.showHome();
+class ActivityConversation extends Conversation {
+    constructor() {
+        super('_activity', false);
+        this.allMessages = [];
+
+        // Not sure how many of these are necessary.
+        this._settings.notify = Interfaces.Setting.False;
+        this._settings.highlight = Interfaces.Setting.False;
+        this._settings.defaultHighlights = false;
     }
 
-    showHome(): void {
-        state.showHome();
-    }
+    readonly context = CommandContext.Console;
+    readonly name = l('chat.activityTab');
+    readonly maxMessageLength = 0;
+    readonly enteredText = '';
 
-    showConsole(): void {
-        state.showConsole();
-    }
+    async addMessage(): Promise<void> {} // noop
+    close(): void {}                     // noop
+    protected doSend(): void {}          // noop
+
+    // We're opting to include these to overwrite them with readonlies:
+    readonly errorText = '';
+    readonly infoText  = '';
 }
 
 class State implements Interfaces.State {
@@ -632,6 +645,7 @@ class State implements Interfaces.State {
     channelConversations: ChannelConversation[] = [];
     privateMap: {[key: string]: PrivateConversation | undefined} = {};
     channelMap: {[key: string]: ChannelConversation | undefined} = {};
+    activityTab!: ActivityConversation;
     consoleTab!: ConsoleConversation;
     selectedConversation: Conversation = this.consoleTab;
     recent: Interfaces.RecentPrivateConversation[] = [];
@@ -705,8 +719,8 @@ class State implements Interfaces.State {
     show(conversation: Conversation): void {
         if(conversation === this.selectedConversation) return;
 
-        if (conversation === this.consoleTab) {
-            this.showHome();
+        if (conversation === this.consoleTab || conversation === this.activityTab) {
+            this.showHomeOrConsole(); // emulates the below
             return;
         }
 
@@ -716,21 +730,21 @@ class State implements Interfaces.State {
         EventBus.$emit('select-conversation', { conversation });
     }
 
-    /**
-     * The first half of console's `show()`. This is invoked from `consoleTab.show()`
-     */
-    showHome(): void {
-        this.selectedConversation.onHide();
-        this.selectedConversation = this.consoleTab;
-    }
+    showHomeOrConsole(): void {
+        const convo = core.state.generalSettings.defaultToHome
+            ? state.activityTab
+            : state.consoleTab;
 
-    /**
-     * The second half of console's `show()`.
-     * Perform the two actions we skipped from `showHome()`
-     */
-    showConsole(): void {
-        this.consoleTab.unread = Interfaces.UnreadState.None;
-        EventBus.$emit('select-conversation', { conversation: this.consoleTab });
+        if (state.selectedConversation !== convo) {
+            // p1 of console show()
+            this.selectedConversation.onHide();
+            this.selectedConversation = convo;
+
+            // p2 of console show()
+            convo.unread = Interfaces.UnreadState.None;
+            EventBus.$emit('select-conversation', { conversation: this.consoleTab });
+        }
+
     }
 
     async reloadSettings(): Promise<void> {
@@ -932,6 +946,7 @@ export default function(this: any): Interfaces.State {
         state.channelConversations = [];
         state.channelMap = {};
         if(!isReconnect) {
+            state.activityTab = new ActivityConversation();
             state.consoleTab = new ConsoleConversation();
             state.privateConversations = [];
             state.privateMap = {};

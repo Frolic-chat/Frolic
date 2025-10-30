@@ -100,13 +100,12 @@ export namespace Conversation {
         sendAd(text: string): Promise<void>
     }
 
-    export interface ConsoleConversation extends Conversation {
-        showHome(): void;
-        /**
-         * Part 2 of console's `show()` split to account for the home page.
-         * `showConsole` explicitly shows the console;
-         */
-        showConsole(): void;
+    export interface ConsoleConversation extends Conversation {}
+
+    export interface ActivityConversation extends Conversation {
+        // We're opting to include these to overwrite them with readonlies:
+        readonly errorText: string;
+        readonly infoText:  string;
     }
 
     export function isPrivate(conversation: Conversation): conversation is PrivateConversation {
@@ -120,6 +119,7 @@ export namespace Conversation {
     export interface State {
         readonly privateConversations: ReadonlyArray<PrivateConversation>
         readonly channelConversations: ReadonlyArray<ChannelConversation>
+        readonly activityTab: ActivityConversation;
         readonly consoleTab: ConsoleConversation
         readonly recent: ReadonlyArray<RecentPrivateConversation>
         readonly recentChannels: ReadonlyArray<RecentChannelConversation>

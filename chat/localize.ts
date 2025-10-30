@@ -129,6 +129,7 @@ const strings = {
     'chat.pms': 'PMs',
     'chat.newPM': 'Open Conversation',
     'chat.joinChannel': 'Join Channel',
+    'chat.activityTab': 'Recent Activity',
     'chat.consoleTab': 'Console',
     'chat.pinTab': 'Pin this tab',
     'chat.closeTab': 'Close this tab',
