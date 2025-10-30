@@ -73,6 +73,8 @@ export namespace Conversation {
 
     export type TypingStatus = 'typing' | 'paused' | 'clear';
 
+    export type TabType = 'conversation' | 'description' | 'settings';
+
     interface TabConversation extends Conversation {
         isPinned: boolean
         readonly maxMessageLength: number

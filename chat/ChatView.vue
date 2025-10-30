@@ -148,8 +148,8 @@
             </div>
             <!-- :conversation="conversations.consoleTab" -->
              <!-- v-show="conversations.selectedConversation !== conversations.consoleTab" -->
-            <home-screen v-show="conversations.selectedConversation === conversations.consoleTab" ref="HomeScreen" :reportDialog="$refs['reportDialog']"></home-screen>
-            <conversation v-show="conversations.selectedConversation !== conversations.consoleTab" ref="Conversationscreen" :reportDialog="$refs['reportDialog']"></conversation>
+            <home-screen v-show="isConsoleOrActivity" ref="HomeScreen" :reportDialog="$refs['reportDialog']" @tab-changed="tabChanged" :tabSuggestion="tab"></home-screen>
+            <conversation v-show="!isConsoleOrActivity" ref="Conversationscreen" :reportDialog="$refs['reportDialog']" @tab-changed="tabChanged" :tabSuggestion="tab"></conversation>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
@@ -252,6 +252,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         privateCanGlow = !this.channelConversations?.length;
         channelCanGlow = !this.privateConversations?.length;
+
+        // desc = recon;
+        tab: 'conversation' | 'description' | 'settings' = 'conversation';
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -491,6 +494,20 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         userMenuHandle(e: MouseEvent | TouchEvent): void {
             (<UserMenu>this.$refs['userMenu']).handleEvent(e);
+        }
+
+        tabChanged(tab: any) {
+            if (typeof tab === 'string' && (tab === 'conversation' || tab === 'description' || tab === 'settings')) {
+                this.tab = tab;
+            }
+            else {
+                console.error('tabChanged: tried to change into something inappropriate.', { tab });
+            }
+        }
+
+        get isConsoleOrActivity() {
+            return this.conversations.selectedConversation === this.conversations.consoleTab
+                || this.conversations.selectedConversation === this.conversations.activityTab;
         }
 
         get showAvatars(): boolean {

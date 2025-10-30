@@ -1,44 +1,54 @@
 <template>
     <div style="height:100%;display:flex;flex-direction:column;flex:1;margin:0 5px;position:relative" id="conversation">
-        <div style="display:flex" v-if="isPrivate(conversation)" class="header">
-            <img :src="characterImage" style="height:60px;width:60px;margin-right:10px" v-if="settings.showAvatars"/>
+        <div v-if="isPrivate(conversation)" class="header d-flex justify-content-between align-items-end">
+            <tabs class="conversation-tabs" v-model="tab">
+                <span class="channel-title">
+                    <!-- icon, username -->
+                    <img v-if="settings.showAvatars" style="height:100%; object-fit: cover" :src="characterImage"/>
+                    <span v-else class="fa-solid fa-house-user"></span>
+                    <span class="tab-text">{{ conversation.character.name }}</span>
+                </span>
+                <span>
+                    <!-- Description (Status, Memo, Channels, Ads) (recon) -->
+                    <!-- @click.prevent="showStatus() showMemo() showChannels() showAds()" -->
+                    <span class="fa-solid fa-star"></span>
+                    <span class="tab-text">Recon</span>
+                </span>
+                <span>
+                    <!-- Settings -->
+                    <!-- @click.prevent="showSettings()" -->
+                    <span class="fa-solid fa-screwdriver-wrench"></span>
+                    <span class="tab-text">{{ l('conversationSettings.title') }}</span>
+                </span>
+            </tabs>
+            <span class="">
+                <a href="#" @click.prevent="showLogs()" class="btn">
+                    <span class="fa fa-file-alt"></span>
+                    <span class="btn-text">{{l('logs.title')}}</span>
+                </a>
+                <a href="#" @click.prevent="reportDialog.report()" class="btn">
+                    <span class="fa fa-exclamation-triangle"></span>
+                    <span class="btn-text">{{l('chat.report')}}</span>
+                </a>
+            </span>
+            <!-- to the right of tabs: Open Profile, Logs, Alert Staff -->
+            <!--
+            <a ... open profile></a>
+            <a href="#" @click.prevent="showLogs()" class="btn">
+                <span class="fa fa-file-alt"></span>
+                <span class="btn-text">{{l('logs.title')}}</span>
+            </a>
+            <a href="#" @click.prevent="reportDialog.report()" class="btn">
+                <span class="fa fa-exclamation-triangle"></span>
+                <span class="btn-text">{{l('chat.report')}}</span>
+            </a>
+            -->
+
+            <!--
             <div style="flex:1;position:relative;display:flex;flex-direction:column;user-select:text">
-                <div>
-                    <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
-                    <a href="#" @click.prevent="showLogs()" class="btn">
-                        <span class="fa fa-file-alt"></span>
-                        <span class="btn-text">{{l('logs.title')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showSettings()" class="btn">
-                        <span class="fa fa-cog"></span>
-                        <span class="btn-text">{{l('conversationSettings.title')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="reportDialog.report()" class="btn">
-                        <span class="fa fa-exclamation-triangle"></span>
-                        <span class="btn-text">{{l('chat.report')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showAds()" class="btn">
-                        <span class="fa fa-ad"></span>
-                        <span class="btn-text">{{l('chat.ads')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showChannels()" class="btn">
-                        <span class="fa fa-tv"></span>
-                        <span class="btn-text">{{l('chat.channels')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showMemo()" class="btn">
-                        <span class="fas fa-edit"></span>
-                        <span class="btn-text">{{l('chat.memo')}}</span>
-                    </a>
-                </div>
-                <div style="overflow:auto;overflow-x:hidden;max-height:50px;user-select:text">
-                    {{l('status.' + conversation.character.status)}}
-                    <span v-show="conversation.character.statusText"> – <bbcode :text="conversation.character.statusText"></bbcode>
-                    </span>
-                    <div v-show="userMemo">
-                        <b>{{l('chat.memoHeader')}}</b> {{ userMemo }}
-                    </div>
-                </div>
+                <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
             </div>
+            -->
         </div>
         <div v-else-if="isChannel(conversation)" class="header">
             <div style="display: flex; align-items: center;">
@@ -221,7 +231,10 @@
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
     import {Keys} from '../keys';
     import CharacterAdView from './character/CharacterAdView.vue';
+
     import {Editor} from './bbcode';
+    import Tabs from '../components/tabs';
+
     import CommandHelp from './CommandHelp.vue';
     import { errorToString, getByteLength, getKey } from './common';
     import ConversationSettings from './ConversationSettings.vue';
@@ -242,6 +255,7 @@
 
     @Component({
         components: {
+            tabs: Tabs,
             user: UserView,
             'bbcode-editor': Editor,
             'manage-channel': ManageChannel,
@@ -260,6 +274,12 @@
     export default class ConversationView extends Vue {
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
+
+        @Prop({ default: 'conversation' })
+        readonly tabSuggestion!: Conversation.TabType;
+
+        tab = '0';
+
         modes = channelModes;
         descriptionExpanded = false;
         l = l;
@@ -453,6 +473,40 @@
             if(!this.scrolledDown && newValue.length === this.messageCount)
                 this.messageView.scrollTop -= (this.messageView.firstElementChild!).clientHeight;
             this.messageCount = newValue.length;
+        }
+
+        @Watch('tabSuggestion')
+        externalTabChange(n: Conversation.TabType, o: Conversation.TabType) {
+            // This doesn't work the way I hope, does it?
+            // if (this.conversation === core.conversations.activityTab
+            // ||  this.conversation === core.conversations.consoleTab) {
+            //     return;
+            // }
+
+            const oldtab = this.tab;
+
+            if (n === 'description')
+                this.tab = '1';
+            else if (n === 'settings')
+                this.tab = '2';
+            else // if (n === 'conversation')
+                this.tab = '0';
+
+            console.warn({ o, n, oldtab, newtab: this.tab });
+        }
+
+        @Watch('tab')
+        onTabChanged() {
+            if (this.tab === '1') {
+                if (this.tabSuggestion !== 'description')
+                    this.$emit('tab-changed', 'description');
+            }
+            else if (this.tab === '2') {
+                if (this.tabSuggestion !== 'settings')
+                    this.$emit('tab-changed', 'settings');
+            }
+            else if (this.tabSuggestion !== 'conversation')
+                this.$emit('tab-changed', 'conversation');
         }
 
         /**

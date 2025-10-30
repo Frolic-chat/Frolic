@@ -2,7 +2,7 @@
 <template>
 <div id="home-screen">
     <!-- header of some kind... -->
-    <tabs class="tabs" v-model="tab">
+    <tabs class="conversation-tabs" v-model="tab">
         <span class="channel-title">
             <span class="fa-solid fa-house-user"></span>
             <span class="tab-text">{{ tabNames[0] }}</span>
@@ -69,7 +69,7 @@ import ConversationView from './ConversationView.vue';
 import Settings from './home_pages/Settings.vue';
 
 import ReportDialog from './ReportDialog.vue';
-//import { Conversation } from './interfaces';
+import { Conversation } from './interfaces';
 
 @Component({
     components: {
@@ -97,6 +97,9 @@ export default class HomeScreen extends Vue {
      */
     @Prop({ required: true })
     readonly reportDialog!: ReportDialog;
+
+    @Prop({ default: 'conversation' })
+    readonly tabSuggestion!: Conversation.TabType;
 
     /**
      * Index of the current tab; a string rep of a number. Keep `tab` and `tabNum` in sync.
@@ -166,20 +169,34 @@ export default class HomeScreen extends Vue {
             this.$nextTick(() => this.console.textBox.focus());
             core.conversations.consoleTab.show();
         }
+
+        // desc = recon;
+        const tabname = this.tabNames[this.tabNum];
+
+        if (tabname === core.connection.character) {
+            if (this.tabSuggestion !== 'description')
+                this.$emit('tab-changed', 'description');
+        }
+        else if (tabname === l('settings') || tabname === 'Data') {
+            if (this.tabSuggestion !== 'settings')
+                this.$emit('tab-changed', 'settings');
+        }
+        else if (this.tabSuggestion !== 'conversation') { // if (tabname === l('home') || tabname === core.conversations.consoleTab.name)
+            this.$emit('tab-changed', 'conversation');
+        }
     }
 
     /** This doesn't always exist? Because the home screen is destroyed? */
     show() {
-        /* TODO: Account for coming from channel settings.
-        if (SelectedTabInCurrentChatIsSettings) {
+        if (this.tabSuggestion === 'settings')
             this.tab = this.tabNames.indexOf(l('settings')).toString();
-        }
-        else */if (core.state.generalSettings.defaultToHome) {
+        else if (this.tabSuggestion === 'description')
+            this.tab = this.tabNames.indexOf(core.connection.character).toString();
+        // Maybe all this rest can be redone now that we have conversations.activityTab
+        else if (core.state.generalSettings.defaultToHome)
             this.tab = this.tabNames.indexOf(l('home')).toString();
-        }
-        else {
+        else
             this.tab = this.tabNames.indexOf(core.conversations.consoleTab.name).toString();
-        }
 
     }
 }
@@ -190,18 +207,9 @@ export default class HomeScreen extends Vue {
     height: 100%;
     display: flex;
     flex-direction: column;
-
-    /* This seems unnecessary. */
-    /* flex: 1 1 0%; */
-    /* position: relative; */
 }
 
-/** Tab customization */
-/* #home-screen .nav-tabs {
-    display: flex;
-} */
-
-#home-screen > .tabs .nav-link {
+.conversation-tabs .nav-link {
     height: calc(100% + 1px);
     line-height: 1;
 
@@ -211,12 +219,12 @@ export default class HomeScreen extends Vue {
     align-content: end;
 }
 
-#home-screen > .tabs .channel-title {
+.conversation-tabs .channel-title {
     font-size: 1.25rem;
     font-weight: 500;
 }
 
-#home-screen > .tabs .tab-text {
+.conversation-tabs .tab-text {
     margin-left: 5px;
 }
 /** end Tab customization */
