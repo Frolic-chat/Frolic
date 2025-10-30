@@ -21,17 +21,23 @@
         <div v-show="tab === '0'">
             <text-input setting="disallowedTags" :validator="vdDisallowedTags" :transformer="tfDisallowedTags"></text-input>
             <checkbox setting="clickOpensMessage"></checkbox>
+
             <checkbox setting="enterSend"></checkbox>
             <checkbox setting="secondEnterSend" :disabled="!settings.enterSend"></checkbox>
+
             <checkbox setting="showAvatars"></checkbox>
             <checkbox setting="colorBookmarks"></checkbox>
             <checkbox setting="animatedEicons"></checkbox>
+
             <number   setting="idleTimer" :default="idleTimerDefault" :localArgs="idleTimerArgs" :min="idleTimerMin" :max="idleTimerMax"></number>
+
             <checkbox setting="messageSeparators"></checkbox>
             <checkbox setting="bbCodeBar"></checkbox>
+
             <checkbox setting="logMessages"></checkbox>
             <checkbox setting="logChannels" :disabled="!settings.logMessages"></checkbox>
             <checkbox setting="logAds"      :disabled="!settings.logMessages"></checkbox>
+
             <number   setting="fontSize" :default="fontSizeDefault" :localArgs="fontSizeArgs" :min="fontSizeMin" :max="fontSizeMax"></number>
         </div>
         <div v-show="tab === '1'">
@@ -46,7 +52,7 @@
             <dropdown setting="notifyOnFriendMessage" :options="relationshipMap"></dropdown>
             <!-- show global highlights here. -->
             <checkbox setting="highlight"></checkbox>
-            <text-input setting="highlightWords" :validator="vdHighlightWords" :transformer="tfHighlightWords"></text-input>
+            <text-input setting="highlightWords" :validator="vdHighlightString" :transformer="tfHighlightString"></text-input>
             <!--
             <text-input setting="highlightUsernames" :validator="tfHighlightUsernames" :transformer="tfHighlightUsernames"></text-input>
             -->
@@ -292,29 +298,15 @@ export default class Settings extends Vue {
         return [ ...new Set(a) ];
     }
 
-    vdHighlightWords(s: string): boolean {
-        if (this.tfHighlightWords(s))
+    vdHighlightString(s: string): boolean {
+        if (this.tfHighlightString(s))
             return true;
         else
             return false;
     }
 
-    tfHighlightWords(s: string): string[] {
-        const a = s.toLowerCase()
-            .split(/\s*,\s*/)
-            .filter(v => v);
-        return [ ...new Set(a) ];
-    }
-
-    vdHighlightUsernames(s: string): boolean {
-        if (this.tfHighlightUsernames(s))
-            return true;
-        else
-            return false;
-    }
-
-    tfHighlightUsernames(s: string): string[] {
-        const a = s.toLowerCase()
+    tfHighlightString(s: string): string[] {
+        const a = s.trim().toLowerCase()
             .split(/\s*,\s*/)
             .filter(v => v);
         return [ ...new Set(a) ];
