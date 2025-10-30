@@ -436,6 +436,8 @@
                 return;
             }
 
+            standardParser.inlines = stand.character.character.inlines;
+
             Object.assign(
                 this,
                 Object.fromEntries(
@@ -527,8 +529,6 @@
 
             if (this.selfCharacter)
                 stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character);
-
-            standardParser.inlines = stand.character.character.inlines
 
             /**
              * Time to dump the armor stand out into a character.
