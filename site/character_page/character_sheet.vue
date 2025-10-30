@@ -577,7 +577,8 @@
                 if (this.selfCharacter)
                     stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character);
 
-                void this.updateMeta(stand);
+                void this.updateMeta(stand)
+                    .catch(err => log.error('refreshCache.updateMeta', stand.character?.character.name, err));
             }
             finally {
                 this.refreshing = false;
