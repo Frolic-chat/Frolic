@@ -438,6 +438,7 @@
                 return;
             }
 
+            // Refresh inlines BEFORE putting descBody on the character (as that triggers the parser).
             standardParser.inlines = stand.character.character.inlines;
 
             Object.assign(
