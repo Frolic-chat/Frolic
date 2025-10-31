@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div id="home-screen">
+<div id="home-screen" class="chat-panel">
     <!-- header of some kind... -->
     <tabs class="conversation-tabs" v-model="tab">
         <span class="channel-title">
@@ -26,7 +26,7 @@
     </tabs>
 
     <!-- home page -->
-    <home v-show="tab === '0'" role="tabpanel" ref="tab0" class="home-page" id="home"></home>
+    <home v-show="tab === '0'" role="tabpanel" ref="tab0" class="page" id="home"></home>
     <!-- Changelog and update alert -->
     <!-- Logs? -->
     <!-- Dev settings/info -->
@@ -35,11 +35,11 @@
     <!-- Notes -->
 
     <!-- console -->
-    <console v-show="tab === '1'" role="tabpanel" ref="tab1" class="home-page" id="console" :reportDialog="reportDialog">
+    <console v-show="tab === '1'" role="tabpanel" ref="tab1" class="page" id="console" :reportDialog="reportDialog">
     </console>
 
     <!-- Personality -->
-    <div v-show="tab === '2'" role="tabpanel" ref="tab2" class="home-page" id="personalize"></div>
+    <div v-show="tab === '2'" role="tabpanel" ref="tab2" class="page" id="personalize"></div>
     <!-- parts of personality: -->
         <!-- Profile helper/suggestions -->
         <!-- Eidol builder -->
@@ -49,10 +49,10 @@
         <!-- Friends/BM Manager -->
 
     <!-- Settings -->
-    <settings v-show="tab === '3'" role="tabpanel" ref="tab3" class="home-page" id="settings"></settings>
+    <settings v-show="tab === '3'" role="tabpanel" ref="tab3" class="page" id="settings"></settings>
 
     <!-- Drafts & Channel Settings -->
-    <div v-show="tab === '4'" role="tabpanel" ref="tab3" class="home-page" id="personal-data"></div>
+    <div v-show="tab === '4'" role="tabpanel" ref="tab3" class="page" id="personal-data"></div>
 </div>
 </template>
 
@@ -203,10 +203,17 @@ export default class HomeScreen extends Vue {
 </script>
 
 <style>
-#home-screen {
+.chat-panel {
     height: 100%;
     display: flex;
     flex-direction: column;
+}
+
+.conversation-tabs {
+    /* Don't overlap the sidebar toggle */
+     @media (min-width: breakpoint-min(md)) {
+        margin-right: 32px;
+    }
 }
 
 .conversation-tabs .nav-link {
@@ -217,6 +224,10 @@ export default class HomeScreen extends Vue {
     padding-bottom: 0.25rem;
 
     align-content: end;
+
+    &:has(.hidden-tab) {
+        display: none;
+    }
 }
 
 .conversation-tabs .channel-title {
@@ -224,12 +235,17 @@ export default class HomeScreen extends Vue {
     font-weight: 500;
 }
 
+.conversation-tabs img {
+    /* It really doesn't look that good, though. */
+    height: 0.778em;
+}
+
 .conversation-tabs .tab-text {
     margin-left: 5px;
 }
 /** end Tab customization */
 
-#home-screen .home-page {
+.chat-panel .page {
     /* normal margins for a conversation */
     margin: 0px 5px;
     display: flex;
