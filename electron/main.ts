@@ -54,9 +54,15 @@ const app = Electron.app; // Module to control application life.
 import InitLogger from './main/logger';
 InitLogger(app.getPath('logs'));
 
-import Logger from 'electron-log/main';
-const log = Logger.scope('main');
+import NewLogger from './main/custom-logger';
+const l_m = process.argv.includes('--debug-main');
+const l_s = process.argv.includes('--debug-settings');
+const l_b = process.argv.includes('--debug-browser');
+const log = NewLogger('main', () => l_m);
+const logSettings = NewLogger('main/settings', () => l_s);
+const logBrowser = NewLogger('main/browser', () => l_b);
 
+import Logger from 'electron-log';
 import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log';
 
 import * as remoteMain from '@electron/remote/main';
@@ -118,12 +124,12 @@ else {
         Object.assign(settings, JSON.parse(fs.readFileSync(settingsFile, 'utf8')) as GeneralSettings);
     }
     catch (e) {
-        log.error(`Error loading settings: ${e}`);
+        logSettings.error(`Error loading settings: ${e}`);
     }
 }
 
 if (!settings.hwAcceleration) {
-    log.info('Disabling hardware acceleration.');
+    logSettings.info('Disabling hardware acceleration.');
     app.disableHardwareAcceleration();
 }
 
@@ -164,7 +170,7 @@ async function toggleDictionary(lang: string): Promise<void> {
 let generalSettingsTimestamp = 0;
 function updateGeneralSettings(s: GeneralSettings): void {
     generalSettingsTimestamp = Date.now();
-    log.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", generalSettingsTimestamp);
+    logSettings.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", generalSettingsTimestamp);
     saveGeneralSettings(s);
 }
 
@@ -173,16 +179,16 @@ function saveGeneralSettings(s: GeneralSettings, wc?: Electron.WebContents): voi
     const ts = generalSettingsTimestamp;
 
     if (wc)
-        log.debug('Received update; saving and broadcasting.', wc.id, ts);
+        logSettings.debug('Received update; saving and broadcasting.', wc.id, ts);
     else
-        log.debug('Local update; broadcasting general settings...', ts);
+        logSettings.debug('Local update; broadcasting general settings...', ts);
 
     fs.writeFileSync(settingsFile, JSON.stringify(s));
 
     const id = wc?.id;
     for (const w of Electron.webContents.getAllWebContents())
         if (id && id === w.id)
-            log.debug('Found webcontents match; Good once per timestamp.', w.id, ts);
+            logSettings.debug('Found webcontents match; Good once per timestamp.', w.id, ts);
         else
             w.send('settings', { settings: s, timestamp: ts });
 
@@ -256,7 +262,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         catch {
             const stdout = FindExeFileFromName(settings.browserPath);
 
-            log.info(`Unexpected custom browser, but found "${stdout}" - Attemping to use it.`);
+            logBrowser.info(`Unexpected custom browser, but found "${stdout}" - Attemping to use it.`);
 
             fs.accessSync(stdout, fs.constants.X_OK);
             settings.browserPath = stdout;
@@ -313,7 +319,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     // Quote URL to prevent issues with spaces and special characters
     const args = (incognito ? settings.browserIncognitoArg + ' ': '') + settings.browserArgs.replaceAll('%s', `"${url}"`);
 
-    log.silly(`Opening: ${args} with ${settings.browserPath}`);
+    logBrowser.silly(`Opening: ${args} with ${settings.browserPath}`);
 
     // MacOS bug: If app browser is Safari and OS browser is not, both will open.
     // https://developer.apple.com/forums/thread/685385
@@ -949,9 +955,9 @@ function onReady(): void {
     Electron.ipcMain.on('settings', (e, d: GeneralSettingsUpdate) => {
         if (d.timestamp > generalSettingsTimestamp) {
             generalSettingsTimestamp = d.timestamp;
-            log.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
+            logSettings.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
             Object.assign(settings, d.settings);
-            log.warn('post assignment: SHOULD BE BEST SETTINGS.', settings);
+            logSettings.warn('post assignment: SHOULD BE BEST SETTINGS.', settings);
             saveGeneralSettings(settings, e.sender);
         }
     });
@@ -1089,7 +1095,7 @@ function onReady(): void {
     });
 
     Electron.ipcMain.handle('browser-option-browse', async () => {
-        log.debug('settings.browser.browse');
+        logBrowser.debug('settings.browser.browse');
         console.log('settings.browser.browse', JSON.stringify(settings));
 
         let filters;
@@ -1117,7 +1123,7 @@ function onReady(): void {
                                  args: string,
                                  incognito: string
                                 ): void {
-        log.debug('Browser Path settings update:', path, args, incognito);
+        logBrowser.debug('Browser Path settings update:', path, args, incognito);
 
         settings.browserPath = path;
         settings.browserArgs = args;
