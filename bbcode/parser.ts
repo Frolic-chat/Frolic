@@ -65,7 +65,7 @@ export class BBCodeParser {
     private _tags: {[tag: string]: BBCodeTag | undefined} = {};
     private _line = -1;
     private _column = -1;
-    private _storeWarnings = false;
+    private _storeWarnings = process.env.NODE_ENV === 'development' || process.argv.includes('--debug-parser');
     private _currentTag!: {tag: string, line: number, column: number};
 
     parseEverything(input: string): HTMLElement {
@@ -79,8 +79,14 @@ export class BBCodeParser {
         this._currentTag = {tag: '<root>', line: 1, column: 1};
         this.parse(input, 0, undefined, parent, () => true, 0);
 
-        //if(process.env.NODE_ENV !== 'production' && this._warnings.length > 0)
-        //    console.log(this._warnings);
+        if(process.env.NODE_ENV !== 'production' && this._warnings.length > 0)
+            console.warn(this._warnings);
+
+        this._warnings = [];
+        this._line   = -1;
+        this._column = -1;
+        this._currentTag = {tag: '<root>', line: 1, column: 1};
+
         return parent;
     }
 
