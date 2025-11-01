@@ -106,7 +106,7 @@
         async mounted(): Promise<void> {
             log.debug('init.window.mounting');
 
-            if (remote.process.argv.includes('--devtools')) {
+            if (this.settings.argv.includes('--devtools')) {
               browserWindow.webContents.openDevTools({ mode: 'detach' });
             }
 
@@ -369,7 +369,7 @@
 
             log.debug('init.window.tab.add.remote');
 
-            if (remote.process.argv.includes('--devtools')) {
+            if (this.settings.argv.includes('--devtools')) {
               view.webContents.openDevTools({ mode: 'detach' });
             }
 

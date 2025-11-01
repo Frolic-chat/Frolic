@@ -47,4 +47,5 @@ export class GeneralSettings {
         activity:    true,  // Small console with recent friend/bookmark activity
         match:       true,  // High quality match
     };
+    argv: string[] = [];
 }

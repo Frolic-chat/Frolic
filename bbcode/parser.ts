@@ -1,3 +1,5 @@
+import core from "../chat/core";
+
 abstract class BBCodeTag {
     noClosingTag = false;
     allowedTags: {[tag: string]: boolean | undefined} | undefined;
@@ -65,7 +67,7 @@ export class BBCodeParser {
     private _tags: {[tag: string]: BBCodeTag | undefined} = {};
     private _line = -1;
     private _column = -1;
-    private _storeWarnings = process.argv.includes('--debug-parser');
+    private _storeWarnings = core?.state?.generalSettings.argv.includes('--debug-parser') || false;
     private _currentTag!: {tag: string, line: number, column: number};
 
     parseEverything(input: string): HTMLElement {

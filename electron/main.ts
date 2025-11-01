@@ -122,6 +122,7 @@ if (!fs.existsSync(settingsFile)) {
 else {
     try {
         Object.assign(settings, JSON.parse(fs.readFileSync(settingsFile, 'utf8')) as GeneralSettings);
+        settings.argv = process.argv;
     }
     catch (e) {
         logSettings.error(`Error loading settings: ${e}`);
