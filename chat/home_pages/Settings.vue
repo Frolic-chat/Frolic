@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<home-page ref="homePageLayout">
+<page ref="homePageLayout">
     <template v-slot:prescroll>
         <h5>{{ l('settings') }}</h5>
         <tabs v-model="tab"
@@ -199,7 +199,7 @@
             </div>
         </div>
     </template>
-</home-page>
+</page>
 </template>
 
 <script lang="ts">
@@ -232,7 +232,7 @@ type hqpErrorString = 'settings.hqp.errorUrl' | 'settings.hqp.errorDomain' | 'se
 
 @Component({
     components: {
-        'home-page': HomePageLayout,
+        page: HomePageLayout,
         tabs: Tabs,
         checkbox: Checkbox,
         'generic-check': GenericCheckbox,

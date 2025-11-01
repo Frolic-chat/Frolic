@@ -33,21 +33,21 @@
     <!-- home page -->
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
         <template v-slot:chat>
-            <frameless-convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog"></frameless-convo>
+            <convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog"></convo>
         </template>
+        <!-- Logs? -->
+        <!-- License -->
+        <!-- Notes -->
+        <!-- Drafts -->
     </home>
-    <frameless-convo v-else v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog" role="tabpanel" class="page" id="home"></frameless-convo>
-    <!-- Logs? -->
-    <!-- License -->
-    <!-- Notes -->
-    <!-- Drafts -->
+    <convo v-else v-show="tab === '0'" role="tabpanel" class="page" id="home" ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></convo>
 
     <!-- console -->
-    <frameless-convo v-if="secondaryConversation" v-show="tab === '1'" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView" role="tabpanel" class="page" id="linked-conversation"></frameless-convo>
-    <div v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></div>
+    <convo v-if="secondaryConversation" v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView"></convo>
+    <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
 
     <!-- Personality -->
-    <div v-show="tab === '2'" role="tabpanel" class="page" id="recon">
+    <page v-show="tab === '2'" role="tabpanel" class="page" id="recon">
         <div v-if="isHome">
             This is where your personality helper goes.
         </div>
@@ -77,11 +77,11 @@
         <!-- Saved ads editor -->
         <!-- Eicon favoriter -->
         <!-- Friends/BM Manager -->
-    </div>
+    </page>
 
     <!-- Settings -->
     <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
-    <div v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
+    <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
         <!-- header -->
         <convo-settings :conversation="primaryConversation"  ></convo-settings>
         <template v-if="secondaryConversation">
@@ -89,9 +89,9 @@
             <!-- header -->
             <convo-settings :conversation="secondaryConversation"></convo-settings>
         </template>
-    </div>
+    </page>
 
-    <div v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
+    <page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
         <!-- Dev settings/info -->
          <div class="container-fluid">
             <div class="row">
@@ -109,7 +109,7 @@
                 </div>
             </template>
          </div>
-    </div>
+    </page>
 </div>
 </template>
 
@@ -119,7 +119,8 @@ import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
 
 import Tabs from '../components/tabs';
 import Home from './home_pages/Home.vue';
-import ConversationView from './UnframedConversation.vue';
+import HomePageLayout from './home_pages/HomePageLayout.vue';
+import ConversationView from './ConversationPage.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
@@ -138,9 +139,11 @@ const log = NewLogger('Home', () => l_h);
         tabs:    Tabs,
 
         home:             Home,
-        'frameless-convo': ConversationView,
-        'char-settings':   Settings,
-        'convo-settings':  ConversationSettings,
+        page:             HomePageLayout,
+
+        'convo':          ConversationView,
+        'char-settings':  Settings,
+        'convo-settings': ConversationSettings,
         /*
         customize:
         data:

@@ -202,7 +202,7 @@ export default class HomeScreen extends Vue {
 }
 </script>
 
-<style>
+<style lang="scss">
 .chat-panel {
     height: 100%;
     display: flex;

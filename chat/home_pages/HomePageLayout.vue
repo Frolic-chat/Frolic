@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="home-page">
+<div class="home-page d-flex flex-column">
     <div class="prescroll container-fluid">
         <slot name="prescroll"></slot>
     </div>

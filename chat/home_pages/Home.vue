@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<home-page>
+<page>
     <template v-slot:header>
         <span class="title">Welcome Home!</span>
         <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
@@ -26,7 +26,7 @@
             <!-- Version --><!-- License -->
         </div>
     </template>
-</home-page>
+</page>
 </template>
 
 <script lang="ts">
@@ -38,7 +38,7 @@ import WidgetOptions from './WidgetOptions.vue';
 
 @Component({
     components: {
-        'home-page': HomePageLayout,
+        'page': HomePageLayout,
         'widget-options': WidgetOptions,
     },
 })
