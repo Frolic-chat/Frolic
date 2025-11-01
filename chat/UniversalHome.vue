@@ -300,8 +300,6 @@ export default class HomeScreen extends Vue {
         }
         // Not on tab 0 or 1:
         //     don't clear unread messages.
-
-
     }
 
     /**

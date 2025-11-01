@@ -28,11 +28,6 @@
                 </a>
             </div>
 
-            <!-- <div><a href="#" @click.prevent="showSettings()" class="btn">
-                <span class="fas fa-cog"></span>
-                {{l('settings.open')}}
-            </a></div> -->
-
             <div><a href="#" @click.prevent="showAdCenter()" class="btn">
                 <span class="fas fa-ad"></span>
                 {{l('chat.adEditor')}}
@@ -155,7 +150,6 @@
         <character-search ref="searchDialog"></character-search>
         <adLauncher ref="adLauncher"></adLauncher>
         <adCenter ref="adCenter"></adCenter>
-        <!--<settings ref="settingsDialog"></settings>-->
         <report-dialog ref="reportDialog"></report-dialog>
         <user-menu ref="userMenu" :reportDialog="$refs['reportDialog']"></user-menu>
         <recent-conversations ref="recentDialog"></recent-conversations>
@@ -188,14 +182,12 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import CharacterSearch from './CharacterSearch.vue';
     import { getKey, profileLink } from './common';
     import HomeScreen from './UniversalHome.vue';
-    import ConversationView from './UnframedConversation.vue';
     import core from './core';
     import {Character, Connection, Conversation} from './interfaces';
     import l from './localize';
     import PmPartnerAdder from './PmPartnerAdder.vue';
     import RecentConversations from './RecentConversations.vue';
     import ReportDialog from './ReportDialog.vue';
-    //import SettingsView from './SettingsView.vue';
     import Sidebar from './Sidebar.vue';
     import StatusSwitcher from './StatusSwitcher.vue';
     import {getStatusIcon} from './UserView.vue';
@@ -426,10 +418,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         logOut(): void {
             if(Dialog.confirmDialog(l('chat.confirmLeave'))) core.connection.close();
         }
-
-        // showSettings(): void {
-        //     (<SettingsView>this.$refs['settingsDialog']).show();
-        // }
 
         showSearch(): void {
             (<CharacterSearch>this.$refs['searchDialog']).show();
