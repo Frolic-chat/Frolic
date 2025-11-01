@@ -1,19 +1,20 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="home-page d-flex flex-column">
+<div class="home-page">
     <div class="prescroll container-fluid">
         <slot name="prescroll"></slot>
     </div>
     <div class="scroll-cage container-fluid" ref="scrollCage">
-    <header>
-        <slot name="header"></slot>
-    </header>
-    <main>
+        <!-- <header>
+            <slot name="header"></slot>
+        </header> -->
+        <!-- <main>
+            <slot></slot>
+        </main> -->
         <slot></slot>
-    </main>
-    <footer>
-        <slot name="footer"></slot>
-    </footer>
+        <!-- <footer>
+            <slot name="footer"></slot>
+        </footer> -->
     </div><!-- /scroll-cage -->
     <div class="postscroll container-fluid">
         <slot name="postscroll"></slot>
@@ -36,6 +37,10 @@ export default class HomePageLayout extends Vue {
 
 <style lang="scss">
 .home-page {
+    /* d-flex flex-column interferes with vue v-show */
+    display: flex;
+    flex-direction: column;
+
     align-items: justify;
 
     // Inside scroll cage to pad against the scroll bar.

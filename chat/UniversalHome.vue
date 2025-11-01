@@ -33,7 +33,7 @@
     <!-- home page -->
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
         <template v-slot:chat>
-            <convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog"></convo>
+            <convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog" style="max-width: 50%;"></convo>
         </template>
         <!-- Logs? -->
         <!-- License -->

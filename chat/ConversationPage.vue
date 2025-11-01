@@ -103,7 +103,9 @@
                 </span>
             </template>
         </div>
+    </template>
 
+    <template v-slot:postscroll>
         <!-- Input box -->
         <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
             :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
