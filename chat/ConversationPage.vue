@@ -1,5 +1,5 @@
 <template>
-<page>
+<page ref="pageLayout">
     <template v-slot:prescroll>
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center">
@@ -83,26 +83,30 @@
         </div>
     </template>
 
+    <!-- Message box -->
+    <!-- I need `ref="messageBlock" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView"` to apply to the dive that contains this slot. That div is `class="scroll-cage" ref="scrollCage"` in the page component. -->
     <template v-slot:default>
-        <!-- Message box -->
-        <div class="border-top messages d-flex flex-column" :class="getMessageWrapperClasses()" ref="messages" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="overflow:auto; margin-top:2px">
-            <template v-for="message in messages">
-                <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded" :classes="message == conversation.lastRead ? 'last-read' : ''">
-                </message-view>
-                <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
-                    <a :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid"
-                        v-if="message.sfc.logid" target="_blank">
-                        {{l('events.report.viewLog')}}
+        <template v-for="message in messages">
+            <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded" :classes="message == conversation.lastRead ? 'last-read' : ''">
+            </message-view>
+            <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
+                <a :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid"
+                    v-if="message.sfc.logid" target="_blank">
+                    {{l('events.report.viewLog')}}
+                </a>
+                <span v-else>{{l('events.report.noLog')}}</span>
+                <span v-show="!message.sfc.confirmed">
+                    | <a href="#" @click.prevent="message.sfc.action === 'report' && acceptReport(message.sfc)">
+                        {{l('events.report.confirm')}}
                     </a>
-                    <span v-else>{{l('events.report.noLog')}}</span>
-                    <span v-show="!message.sfc.confirmed">
-                        | <a href="#" @click.prevent="message.sfc.action === 'report' && acceptReport(message.sfc)">
-                            {{l('events.report.confirm')}}
-                        </a>
-                    </span>
                 </span>
-            </template>
+            </span>
+        </template>
+
+        <!--
+        <div class="border-top messages d-flex flex-column" :class="getMessageWrapperClasses()" ref="messageBlock" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="overflow:auto; margin-top:2px">
         </div>
+        -->
     </template>
 
     <template v-slot:postscroll>
@@ -164,34 +168,43 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
+    import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
     import Vue from 'vue';
-    import {EditorButton, EditorSelection} from '../bbcode/editor';
-    import {BBCodeView} from '../bbcode/view';
-    import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
-    import {Keys} from '../keys';
-    import CharacterAdView from './character/CharacterAdView.vue';
 
-    import {Editor} from './bbcode';
-    import Tabs from '../components/tabs';
     import HomePageLayout from './home_pages/HomePageLayout.vue';
+    import Tabs from '../components/tabs';
+    import Dropdown from '../components/Dropdown.vue';
+
+    import MessageView from './message_view';
+    import UserView from './UserView.vue';
+    import { BBCodeView } from '../bbcode/view';
+    import { Editor } from './bbcode';
+    import { EditorButton, EditorSelection } from '../bbcode/editor';
+
+
+    import Modal, { isShowing as anyDialogsShown } from '../components/Modal.vue';
+    import Logs from './Logs.vue';
+    import ReportDialog from './ReportDialog.vue';
+    import ConversationAdSettings from './ads/ConversationAdSettings.vue';
+    import ManageChannel from './ManageChannel.vue';
 
     import CommandHelp from './CommandHelp.vue';
-    import { errorToString, getByteLength, getKey } from './common';
-    import ConversationAdSettings from './ads/ConversationAdSettings.vue';
-    import core from './core';
-    import {Channel, channelModes, Character, Conversation, Settings} from './interfaces';
-    import l from './localize';
-    import Logs from './Logs.vue';
-    import ManageChannel from './ManageChannel.vue';
-    import MessageView from './message_view';
-    import ReportDialog from './ReportDialog.vue';
-    import {isCommand} from './slash_commands';
-    import UserView from './UserView.vue';
+    // Recon buttons, can go away.
+    import CharacterAdView from './character/CharacterAdView.vue';
     import CharacterChannelList from './character/CharacterChannelList.vue';
-    import Dropdown from '../components/Dropdown.vue';
-    import { EventBus, MemoEvent } from './preview/event-bus';
     import { MemoManager } from './character/memo';
+
+    import core from './core';
+    import l from './localize';
+    import { Keys } from '../keys'; // Even needed?
+    import { errorToString, getByteLength, getKey } from './common';
+    import { isCommand } from './slash_commands';
+    import { EventBus, MemoEvent } from './preview/event-bus';
+    import { Channel, channelModes, Character, Conversation, Settings } from './interfaces';
+
+    import NewLogger from '../helpers/log';
+    const l_cp = core.state.generalSettings.argv.includes('--debug-conversation-window');
+    const log = NewLogger('ConversationPage', () => l_cp);
 
     @Component({
         components: {
@@ -237,11 +250,13 @@
         lastSearchInput = 0;
         messageCount = 0;
         searchTimer = 0;
-        messageView!: HTMLElement;
+        Layout!: HomePageLayout;
+        messageBlock!: HTMLElement;
         textBox!: Editor;
         resizeHandler!: EventListener;
         keydownHandler!: EventListener;
         keypressHandler!: EventListener;
+        scrollHandler!: EventListener;
 
         /**
          * True if the user is scrolled to the bottom of the page.
@@ -299,8 +314,13 @@
         mounted(): void {
             this.updateOwnName();
 
-            this.messageView = <HTMLElement>this.$refs['messages'];
-            this.textBox     = <Editor>this.$refs['mainInput'];
+            // this.messageBlock = <HTMLElement>this.$refs['messageBlock']; // Legacy
+            this.textBox      = <Editor>this.$refs['mainInput'];
+            this.Layout       = <HomePageLayout>this.$refs['pageLayout'];
+            this.messageBlock = this.Layout.scrollCage;
+
+            this.Layout.scrollCage.addEventListener('scroll', this.scrollHandler = () => this.onMessagesScroll());
+            log.debug({ lyaout: this.Layout, cage: this.Layout.scrollCage });
 
             this.extraButtons = [{
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
@@ -394,7 +414,7 @@
             this.updateOwnName();
 
             if (!anyDialogsShown) this.textBox.focus();
-            this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
+            this.$nextTick(() => setTimeout(() => this.messageBlock.scrollTop = this.messageBlock.scrollHeight));
             this.scrolledDown = true;
 
             this.refreshAutoPostingTimer();
@@ -411,7 +431,7 @@
         messageAdded(newValue: Conversation.Message[]): void {
             this.keepScroll();
             if(!this.scrolledDown && newValue.length === this.messageCount)
-                this.messageView.scrollTop -= (this.messageView.firstElementChild!).clientHeight;
+                this.messageBlock.scrollTop -= (this.messageBlock.firstElementChild!).clientHeight;
             this.messageCount = newValue.length;
         }
 
@@ -424,7 +444,7 @@
                 this.ignoreScroll = true;
                 this.$nextTick(() => setTimeout(() => {
                     this.ignoreScroll = true;
-                    this.messageView.scrollTop = this.messageView.scrollHeight;
+                    this.messageBlock.scrollTop = this.messageBlock.scrollHeight;
                 }, 0));
             }
         }
@@ -433,7 +453,7 @@
             this.ignoreScroll = true;
             this.$nextTick(() => setTimeout(() => {
                 this.ignoreScroll = true;
-                this.messageView.scrollTop = this.messageView.scrollHeight;
+                this.messageBlock.scrollTop = this.messageBlock.scrollHeight;
                 this.scrolledDown = true;
             }));
 
@@ -450,20 +470,20 @@
                 this.ignoreScroll = false;
                 return;
             }
-            if(this.messageView.scrollTop < 20) {
+            if(this.messageBlock.scrollTop < 20) {
                 if(!this.scrolledUp) {
-                    const firstMessage = this.messageView.firstElementChild;
+                    const firstMessage = this.messageBlock.firstElementChild;
                     if(this.conversation.loadMore() && firstMessage !== null) {
-                        this.messageView.style.overflow = 'hidden';
+                        this.messageBlock.style.overflow = 'hidden';
                         this.$nextTick(() => {
-                            this.messageView.scrollTop = (<HTMLElement>firstMessage).offsetTop;
-                            this.messageView.style.overflow = 'auto';
+                            this.messageBlock.scrollTop = (<HTMLElement>firstMessage).offsetTop;
+                            this.messageBlock.style.overflow = 'auto';
                         });
                     }
                 }
                 this.scrolledUp = true;
             } else this.scrolledUp = false;
-            this.scrolledDown = this.messageView.scrollTop + this.messageView.offsetHeight >= this.messageView.scrollHeight - 15;
+            this.scrolledDown = this.messageBlock.scrollTop + this.messageBlock.offsetHeight >= this.messageBlock.scrollHeight - 15;
         }
 
         @Watch('conversation.errorText')

@@ -4,18 +4,11 @@
     <div class="prescroll container-fluid">
         <slot name="prescroll"></slot>
     </div>
+
     <div class="scroll-cage container-fluid" ref="scrollCage">
-        <!-- <header>
-            <slot name="header"></slot>
-        </header> -->
-        <!-- <main>
-            <slot></slot>
-        </main> -->
         <slot></slot>
-        <!-- <footer>
-            <slot name="footer"></slot>
-        </footer> -->
-    </div><!-- /scroll-cage -->
+    </div>
+
     <div class="postscroll container-fluid">
         <slot name="postscroll"></slot>
     </div>
@@ -24,10 +17,32 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component } from '@f-list/vue-ts';
+import { Component, Hook } from '@f-list/vue-ts';
 
 @Component({})
 export default class HomePageLayout extends Vue {
+    scrollCage!: HTMLDivElement;
+
+    registeredEvents: Array<[ string, keyof HTMLElementEventMap, (event: Event) => void ]> = [];
+    addEventListener(e: keyof HTMLElementEventMap, fn: (event: Event) => void): void {
+        if (e === 'scroll') {
+            (this.$refs['scrollCage'] as HTMLElement).addEventListener(e, fn);
+            this.registeredEvents.push(['scrollCage', e, fn]);
+        }
+    }
+
+    @Hook('mounted')
+    onMount() {
+        this.scrollCage = this.$refs['scrollCage'] as HTMLDivElement;
+    }
+
+    @Hook('beforeDestroy')
+    beforeDestroy() {
+        this.registeredEvents.forEach(e =>
+            (this.$refs[e[0]] as HTMLElement).removeEventListener(e[1], e[2])
+        );
+    }
+
     scrollToTop(): void {
         const cage = (this.$refs['scrollCage'] as HTMLElement);
         this.$nextTick(() => cage.scrollTo(0,0));

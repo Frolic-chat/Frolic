@@ -1,6 +1,4 @@
-import Logger from 'electron-log';
-
-import core from '../chat/core';
+import Logger from 'electron-log/renderer';
 
 /**
  * Ties electron-log to a custom condition. The condition is checked regardless of log level.
@@ -14,10 +12,9 @@ import core from '../chat/core';
  * @returns A logger object with capabilities mapped to those of electron-log
  */
 export default function NewLogger(scope: string, condition?: (...a: any) => any) {
-    const settings_check = () =>
-        !(`log${scope}` in core.state.generalSettings) || (core.state.generalSettings as any)[`log${scope}`]
+    // const settings_check = () => !(`log${scope}` in core.state.generalSettings) || (core.state.generalSettings as any)[`log${scope}`]
 
-    const cond = condition ?? settings_check;
+    const cond = condition ?? (() => true);
 
     const l = Logger.scope(scope);
     return {
