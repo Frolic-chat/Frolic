@@ -3,7 +3,7 @@
 <div id="home-screen" class="chat-panel">
     <!-- header of some kind... -->
     <tabs class="conversation-tabs" v-model="tab">
-        <span class="channel-title">
+        <span class="channel-title"><!-- Chat -->
             <span :class="{
                 'fa-solid   fa-house-user':  isHome,
                 'fa         fa-star':        isOfficialChannel,
@@ -12,45 +12,42 @@
             }"></span>
             <span class="tab-text">{{ tab0Name }}</span>
         </span>
-        <span v-show="isHome || linkedChannel">
+        <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
             <span class="fa-solid fa-terminal"></span>
             <span class="tab-text">{{ tab1Name }}</span>
         </span>
-        <span>
+        <span><!-- Desc/Recon -->
             <span class="fa-solid fa-star"></span>
             <span class="tab-text">{{ tab2Name }}</span>
         </span>
-        <span>
+        <span><!-- Settings -->
             <span class="fa-solid fa-screwdriver-wrench"></span>
             <span class="tab-text">{{ tab3Name }}</span>
         </span>
-        <span v-show="isHome">
+        <span><!-- Data -->
             <span class="fa-solid fa-file-contract"></span>
             <span class="tab-text">{{ tab4Name }}</span>
         </span>
     </tabs>
 
     <!-- home page -->
-    <div v-show="tab === '0'" role="tabpanel" ref="tab0" class="page" id="home">
-        <home v-if="isHome">
-            <template v-slot:chat>
-                <frameless-convo ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></frameless-convo>
-            </template>
-        </home>
-        <frameless-convo v-else ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></frameless-convo>
-        <!-- Logs? -->
-        <!-- License -->
-        <!-- Notes -->
-        <!-- Drafts -->
-    </div>
+    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
+        <template v-slot:chat>
+            <frameless-convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog"></frameless-convo>
+        </template>
+    </home>
+    <frameless-convo v-else v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog" role="tabpanel" class="page" id="home"></frameless-convo>
+    <!-- Logs? -->
+    <!-- License -->
+    <!-- Notes -->
+    <!-- Drafts -->
 
     <!-- console -->
-    <div v-show="tab === '1'" role="tabpanel" ref="tab1" class="page" id="linked-conversation">
-        <frameless-convo v-if="secondaryConversation" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView"></frameless-convo>
-    </div>
+    <frameless-convo v-if="secondaryConversation" v-show="tab === '1'" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView" role="tabpanel" class="page" id="linked-conversation"></frameless-convo>
+    <div v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></div>
 
     <!-- Personality -->
-    <div v-show="tab === '2'" role="tabpanel" ref="tab2" class="page" id="recon">
+    <div v-show="tab === '2'" role="tabpanel" class="page" id="recon">
         <div v-if="isHome">
             This is where your personality helper goes.
         </div>
@@ -83,16 +80,18 @@
     </div>
 
     <!-- Settings -->
-     <div v-show="tab === '3'" role="tabpanel" ref="tab3" class="page" id="settings">
-        <char-settings  v-if="isHome"></char-settings>
-        <template v-else>
-            <convo-settings :conversation="primaryConversation"  ></convo-settings>
+    <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
+    <div v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
+        <!-- header -->
+        <convo-settings :conversation="primaryConversation"  ></convo-settings>
+        <template v-if="secondaryConversation">
             <hr>
+            <!-- header -->
             <convo-settings :conversation="secondaryConversation"></convo-settings>
         </template>
-     </div>
+    </div>
 
-    <div v-show="tab === '4'" role="tabpanel" ref="tab3" class="page" id="personal-data">
+    <div v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
         <!-- Dev settings/info -->
          <div class="container-fluid">
             <div class="row">
@@ -391,36 +390,35 @@ export default class HomeScreen extends Vue {
      @media (min-width: breakpoint-min(md)) {
         margin-right: 32px;
     }
-}
 
-.conversation-tabs .nav-link {
-    height: calc(100% + 1px);
-    line-height: 1;
+    .nav-link {
+        height: calc(100% + 1px);
+        line-height: 1;
 
-    padding-top:    0.25rem;
-    padding-bottom: 0.25rem;
+        padding-top:    0.25rem;
+        padding-bottom: 0.25rem;
 
-    align-content: end;
+        align-content: end;
 
-    &:has(.hidden-tab) {
-        display: none;
+        &:has(.hidden-tab) {
+            display: none;
+        }
+    }
+
+    .channel-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+
+    img {
+        /* It really doesn't look that good, though. */
+        height: 0.778em;
+    }
+
+    .tab-text {
+        margin-left: 5px;
     }
 }
-
-.conversation-tabs .channel-title {
-    font-size: 1.25rem;
-    font-weight: 500;
-}
-
-.conversation-tabs img {
-    /* It really doesn't look that good, though. */
-    height: 0.778em;
-}
-
-.conversation-tabs .tab-text {
-    margin-left: 5px;
-}
-/** end Tab customization */
 
 .chat-panel .page {
     /* normal margins for a conversation */

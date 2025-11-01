@@ -5,12 +5,6 @@
         <span v-if="isPrivate(conversation)"><!-- left side: userview -->
             <img v-if="settings.showAvatars" style="height:60px" :src="characterImage"/>
             <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
-            <!--
-            <a class="btn btn-outline-secondary">
-                <span class="fa-solid fa-id-card"></span>
-                <span class="btn-text">Open Profile</span>
-            </a>
-            -->
         </span>
         <span v-else-if="isChannel(conversation)"><!-- left side: channel name -->
             <h5>{{ conversation.name }}</h5>

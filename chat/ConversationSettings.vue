@@ -77,7 +77,7 @@
         setting       = Conversation.Setting;
         friendchooser = Relation.Chooser;
 
-        @Prop({required: true})
+        @Prop({ required: true })
         readonly conversation!: Conversation;
 
         settings!: Conversation.Settings
