@@ -16,7 +16,8 @@
         <!-- Changelog and update alert -->
         <!-- Logs? -->
         <!-- Dev settings/info -->
-        <widget-options ref="widgetOptionsModal"></widget-options>
+         <slot name="chat"></slot>
+         <widget-options ref="widgetOptionsModal"></widget-options>
     </template>
 
     <template v-slot:footer>

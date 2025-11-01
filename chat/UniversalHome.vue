@@ -1,0 +1,434 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<template>
+<div id="home-screen" class="chat-panel">
+    <!-- header of some kind... -->
+    <tabs class="conversation-tabs" v-model="tab">
+        <span class="channel-title">
+            <span :class="{
+                'fa-solid   fa-house-user':  isHome,
+                'fa         fa-star':        isOfficialChannel,
+                'fa-regular fa-chart-bar':   isChannel && !isOfficialChannel,
+                'fa         fa-chart-gantt': isPrivate,
+            }"></span>
+            <span class="tab-text">{{ tab0Name }}</span>
+        </span>
+        <span v-show="isHome || linkedChannel">
+            <span class="fa-solid fa-terminal"></span>
+            <span class="tab-text">{{ tab1Name }}</span>
+        </span>
+        <span>
+            <span class="fa-solid fa-star"></span>
+            <span class="tab-text">{{ tab2Name }}</span>
+        </span>
+        <span>
+            <span class="fa-solid fa-screwdriver-wrench"></span>
+            <span class="tab-text">{{ tab3Name }}</span>
+        </span>
+        <span v-show="isHome">
+            <span class="fa-solid fa-file-contract"></span>
+            <span class="tab-text">{{ tab4Name }}</span>
+        </span>
+    </tabs>
+
+    <!-- home page -->
+    <div v-show="tab === '0'" role="tabpanel" ref="tab0" class="page" id="home">
+        <home v-if="isHome">
+            <template v-slot:chat>
+                <frameless-convo ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></frameless-convo>
+            </template>
+        </home>
+        <frameless-convo v-else ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></frameless-convo>
+        <!-- Logs? -->
+        <!-- License -->
+        <!-- Notes -->
+        <!-- Drafts -->
+    </div>
+
+    <!-- console -->
+    <div v-show="tab === '1'" role="tabpanel" ref="tab1" class="page" id="linked-conversation">
+        <frameless-convo v-if="secondaryConversation" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView"></frameless-convo>
+    </div>
+
+    <!-- Personality -->
+    <div v-show="tab === '2'" role="tabpanel" ref="tab2" class="page" id="recon">
+        <div v-if="isHome">
+            This is where your personality helper goes.
+        </div>
+
+        <div v-else-if="isChannel">
+            <template v-if="primaryDescription">
+                {{ primaryConversation.name }}
+                <bbcode :text="primaryDescription"></bbcode>
+            </template>
+
+            <hr v-if="primaryDescription && secondaryDescription">
+
+            <template v-if="secondaryDescription">
+                {{ secondaryConversation ? secondaryConversation.name : '' }}
+                <bbcode :text="secondaryDescription"></bbcode>
+            </template>
+        </div>
+
+        <div v-else-if="isPrivate">
+            This is where recon goes. :)
+        </div>
+
+        <!-- parts of personality: -->
+        <!-- Profile helper/suggestions -->
+        <!-- Eidol builder -->
+        <!-- Saved status editor -->
+        <!-- Saved ads editor -->
+        <!-- Eicon favoriter -->
+        <!-- Friends/BM Manager -->
+    </div>
+
+    <!-- Settings -->
+     <div v-show="tab === '3'" role="tabpanel" ref="tab3" class="page" id="settings">
+        <char-settings  v-if="isHome"></char-settings>
+        <template v-else>
+            <convo-settings :conversation="primaryConversation"  ></convo-settings>
+            <hr>
+            <convo-settings :conversation="secondaryConversation"></convo-settings>
+        </template>
+     </div>
+
+    <div v-show="tab === '4'" role="tabpanel" ref="tab3" class="page" id="personal-data">
+        <!-- Dev settings/info -->
+         <div class="container-fluid">
+            <div class="row">
+                <div class="col-auto">Logging:</div>
+                <div class="col">Y/N, Log directory</div>
+            </div>
+            <template v-if="isChannel">
+                <div>
+                    <div class="col-auto">Level:</div>
+                    <div class="col">Are you op?</div>
+                </div>
+                <div>
+                    <div class="col-auto">Chat modes:</div>
+                    <div class="col">Ads/Chat/Both?</div>
+                </div>
+            </template>
+         </div>
+    </div>
+</div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue';
+import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
+
+import Tabs from '../components/tabs';
+import Home from './home_pages/Home.vue';
+import ConversationView from './UnframedConversation.vue';
+import Settings from './home_pages/Settings.vue';
+import ConversationSettings from './ConversationSettings.vue';
+
+import { Conversation } from './interfaces';
+import ReportDialog from './ReportDialog.vue';
+
+import core from './core';
+import l from './localize';
+
+import NewLogger from '../helpers/log';
+const l_h = process.argv.includes('--debug-home');
+const log = NewLogger('Home', () => l_h);
+
+@Component({
+    components: {
+        tabs:    Tabs,
+
+        home:             Home,
+        'frameless-convo': ConversationView,
+        'char-settings':   Settings,
+        'convo-settings':  ConversationSettings,
+        /*
+        customize:
+        data:
+        */
+    }
+})
+export default class HomeScreen extends Vue {
+    get conversation() { return core.conversations.selectedConversation }
+
+    /**
+     * Use the global report dialog; exclusively here to pass to the conversation.
+     */
+    @Prop({ required: true })
+    readonly reportDialog!: ReportDialog;
+
+    /**
+     * Used to externally broadcast the current tab. This can go away when tab numbers are synchronized across all chat windows; tab 1 = tab 1 (or tab 2?); tab 3 is always desc/customize/recon, etc.
+     */
+    @Prop({ default: 'conversation' })
+    readonly tabSuggestion!: Conversation.TabType;
+
+    activityTab = core.conversations.activityTab;
+    consoleTab  = core.conversations.consoleTab;
+
+    /**
+     * Link two channels together to have them display in the same chat window.
+     * Useful for linking IC + OOC rooms into a cohesive unit.
+     */
+    linkedChannel = undefined; // Unused.
+
+    /**
+     * Index of the current tab; a string rep of a number. Keep `tab` and `tabNum` in sync.
+     */
+    tab = '0';
+    /**
+     * Pure numerical rep of current tab; keep `tab` and `tabNum` in sync.
+     */
+    tabNum = 0;
+
+    get isHome()    { return this.conversation === this.activityTab
+                          || this.conversation === this.consoleTab     }
+    get isPrivate() { return Conversation.isPrivate(this.conversation) }
+    get isChannel() { return Conversation.isChannel(this.conversation) }
+
+    get isOfficialChannel() {
+        if (Conversation.isChannel(this.conversation)) {
+            return this.conversation.channel.id.substring(0,4) !== 'adh-'
+                ? true
+                : false;
+        }
+        else {
+            return false;
+        }
+    }
+
+    get primaryConversation()   { return this.isHome ? this.activityTab : this.conversation  }
+    get secondaryConversation() { return this.isHome ? this.consoleTab  : this.linkedChannel }
+    // primaryView!:   ConversationView;
+    // secondaryView!: ConversationView | undefined;
+
+    get primaryDescription() {
+        return Conversation.isChannel(this.primaryConversation)
+            ? this.primaryConversation.channel.description
+            : undefined;
+    }
+
+    get secondaryDescription() {
+        return this.secondaryConversation && Conversation.isChannel(this.secondaryConversation)
+            ? this.secondaryConversation.channel.description
+            : undefined;
+    }
+
+    get tab0Name() {
+        if (this.isHome)    return l('home');
+        if (this.isPrivate) return this.conversation.name;
+        if (this.isChannel) return this.conversation.name;
+    }
+
+    get tab1Name() {
+        if (this.isHome)    return core.conversations.consoleTab.name;
+        if (this.isPrivate) return '';
+        if (this.isChannel) return ''; // Linked channel name, probably
+    }
+
+    get tab2Name() {
+        if (this.isHome)    return core.connection.character;
+        if (this.isPrivate) return 'Recon';
+        if (this.isChannel) return l('channel.description');
+    }
+
+    get tab3Name() { return l('settings') }
+
+    get tab4Name() {
+        if (this.isHome)    return 'Data';
+        if (this.isPrivate) return ''; // No one else
+        if (this.isChannel) return ''; // has this tab
+    }
+
+    get primaryView()   { return this.$refs['primaryView']   as ConversationView             }
+    get secondaryView() { return this.$refs['secondaryView'] as ConversationView | undefined }
+
+    @Hook('created')
+    created() {}
+
+    @Hook('mounted')       mounted() { window.addEventListener('keydown', this.onKey)    }
+    @Hook('beforeDestroy') destroy() { window.removeEventListener('keydown', this.onKey) }
+
+    /**
+     * Watches for alt+left, alt+right hotkeys to switch between tabs.
+     * The 'tabNum watcher is invoked
+     */
+    onKey = (e: KeyboardEvent) => {
+        if (e.repeat)
+            return;
+
+        if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            if (e.key === "ArrowRight" && this.tabNum < 4) {
+                this.tab = this.tab === '0' && !this.secondaryConversation
+                    ? (this.tabNum + 2).toString()
+                    : (this.tabNum + 1).toString();
+            }
+            else if (e.key === "ArrowLeft" && this.tabNum > 0) {
+                this.tab = this.tab === '2' && !this.secondaryConversation
+                    ? (this.tabNum - 2).toString()
+                    : (this.tabNum - 1).toString();
+            }
+        }
+    };
+
+    /**
+     * detect selectedConversation changes; always use new_convo.show() as that calls old_convo.onHide() automatically.
+     *
+     * Tab doesn't change on selecting a conversation. This is deliberate; clear messages only if proper tab is selected.
+     */
+    @Watch('conversation')
+    onConversationChanged(n: Conversation, _o: Conversation) {
+        log.debug('Watch(conversation):', this.conversation.name, {
+            isPrimary:   this.conversation === this.primaryConversation,
+            isSecondary: this.conversation === this.secondaryConversation,
+            secondary: this.secondaryConversation !== undefined,
+            tab: this.tab,
+        });
+
+        if (this.tab === '0') {
+            if (n === this.primaryConversation) { // I don't think this can fail.
+                n.clearUnread();
+            }
+        }
+        if (this.tab === '1') {
+            if (this.secondaryConversation && n === this.secondaryConversation) {
+                n.clearUnread();
+            }
+            else { // So we're on tab 1 but no conversation on that tab...
+                this.tab = '0';
+            }
+        }
+        // Not on tab 0 or 1:
+        //     don't clear unread messages.
+
+
+    }
+
+    /**
+     * Tab change events don't happen automatically. Either the player changed the tab on the current conversation (can trigger a conversation change)
+     * If tab-change event takes us to a channel tab, clear that channel's unread messages.
+     */
+    @Watch('tab')
+    onTabChanged() {
+        log.debug('Watch(tab):', this.tab, {
+            isPrimary:   this.conversation === this.primaryConversation,
+            isSecondary: this.conversation === this.secondaryConversation,
+            secondary: this.secondaryConversation !== undefined,
+            conversation: this.conversation.name,
+        });
+
+        this.tabNum = Number(this.tab);
+
+        if (this.tab === '0') {
+            this.$nextTick(() => {
+                if (this.primaryConversation !== this.activityTab)
+                        this.primaryView.textBox.focus();
+            });
+
+            if (this.conversation === this.primaryConversation)
+                this.conversation.clearUnread();
+            else
+                this.primaryConversation.show();
+        }
+        else if (this.tab === '1') {
+            this.$nextTick(() => this.secondaryView?.textBox.focus());
+
+            if (this.conversation === this.secondaryConversation)
+                this.conversation.clearUnread();
+            else {
+                if (this.secondaryConversation)
+                    this.secondaryConversation.show();
+                else { // Fallback; shouldn't happen.
+                    this.tab = '0';
+                    console.warn('tried to swap to tab 1 without secondary conversation, changed tab to 0.');
+                }
+            }
+        }
+
+        // Webpack complains `show` and `id` are "never", so fix that to "sometimes".
+        const target = <{ show?: () => void }>this.$refs[`tab${this.tab}`];
+        if (!target)
+            return;
+
+        // Wait for vue to update the screen so we actually have DOM elements to play with.
+        this.$nextTick(() => {
+            // If the tab has custom show() functionality...
+            if ('show' in target && typeof target.show === 'function')
+                target.show();
+
+            // ... and second, the conents.
+            if (this.tabNum === 0) {
+                if (this.isHome) {
+                    if (this.conversation !== this.primaryConversation)
+                        this.primaryConversation.show();
+                }
+                else {
+                    if (this.primaryConversation !== this.activityTab)
+                        this.primaryView.textBox.focus();
+                }
+            }
+            else if (this.tabNum === 1) {
+                if (this.isHome) {
+                    if (this.secondaryConversation && this.conversation !== this.secondaryConversation)
+                        this.secondaryConversation.show();
+                }
+
+                this.secondaryView?.textBox.focus();
+            }
+
+        });
+    }
+}
+</script>
+
+<style lang="scss">
+.chat-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.conversation-tabs {
+    /* Don't overlap the sidebar toggle */
+     @media (min-width: breakpoint-min(md)) {
+        margin-right: 32px;
+    }
+}
+
+.conversation-tabs .nav-link {
+    height: calc(100% + 1px);
+    line-height: 1;
+
+    padding-top:    0.25rem;
+    padding-bottom: 0.25rem;
+
+    align-content: end;
+
+    &:has(.hidden-tab) {
+        display: none;
+    }
+}
+
+.conversation-tabs .channel-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.conversation-tabs img {
+    /* It really doesn't look that good, though. */
+    height: 0.778em;
+}
+
+.conversation-tabs .tab-text {
+    margin-left: 5px;
+}
+/** end Tab customization */
+
+.chat-panel .page {
+    /* normal margins for a conversation */
+    margin: 0px 5px;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+}
+</style>

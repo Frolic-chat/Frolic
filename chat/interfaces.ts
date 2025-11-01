@@ -172,6 +172,7 @@ export namespace Conversation {
         clear(): void
         loadLastSent(): void
         show(): void
+        clearUnread(): void;
         loadMore(): boolean
     }
 }

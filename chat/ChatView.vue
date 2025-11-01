@@ -146,10 +146,8 @@
                     <div class="name">{{conversation.name}}</div>
                 </a>
             </div>
-            <!-- :conversation="conversations.consoleTab" -->
-             <!-- v-show="conversations.selectedConversation !== conversations.consoleTab" -->
-            <home-screen v-show="isConsoleOrActivity" ref="HomeScreen" :reportDialog="$refs['reportDialog']" @tab-changed="tabChanged" :tabSuggestion="tab"></home-screen>
-            <conversation v-show="!isConsoleOrActivity" ref="Conversationscreen" :reportDialog="$refs['reportDialog']" @tab-changed="tabChanged" :tabSuggestion="tab"></conversation>
+
+            <home-screen :reportDialog="$refs['reportDialog']"></home-screen>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
@@ -189,8 +187,8 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import ChannelList from './ChannelList.vue';
     import CharacterSearch from './CharacterSearch.vue';
     import { getKey, profileLink } from './common';
-    import HomeScreen from './HomeScreen.vue';
-    import ConversationView from './ConversationView.vue';
+    import HomeScreen from './UniversalHome.vue';
+    import ConversationView from './UnframedConversation.vue';
     import core from './core';
     import {Character, Connection, Conversation} from './interfaces';
     import l from './localize';
@@ -221,9 +219,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     @Component({
         components: {
             'user-list': UserList, channels: ChannelList, 'status-switcher': StatusSwitcher, 'character-search': CharacterSearch,
-            //settings: SettingsView,
             'home-screen': HomeScreen,
-            conversation: ConversationView, 'report-dialog': ReportDialog, sidebar: Sidebar,
+            'report-dialog': ReportDialog,
+            sidebar: Sidebar,
             'user-menu': UserMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
@@ -252,9 +250,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         privateCanGlow = !this.channelConversations?.length;
         channelCanGlow = !this.privateConversations?.length;
-
-        // desc = recon;
-        tab: 'conversation' | 'description' | 'settings' = 'conversation';
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -460,19 +455,17 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
           (<AdLauncherDialog>this.$refs['adLauncher']).show();
         }
 
-        /**
-         * Instead of directly opening the console in the primary area, show the home screen (which contains the console conversation).
-         */
         goHome(): void {
+            if (this.conversations.selectedConversation === this.conversations.activityTab
+            ||  this.conversations.selectedConversation === this.conversations.consoleTab) {
+                return;
+            }
+
             const convo = core.state.generalSettings.defaultToHome
                 ? core.conversations.activityTab
                 : core.conversations.consoleTab;
 
-            if (convo === this.conversations.selectedConversation)
-                return;
-
             convo.show();
-            (this.$refs['HomeScreen'] as HomeScreen).show();
         }
 
         showDevTools(): void {
@@ -494,20 +487,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         userMenuHandle(e: MouseEvent | TouchEvent): void {
             (<UserMenu>this.$refs['userMenu']).handleEvent(e);
-        }
-
-        tabChanged(tab: any) {
-            if (typeof tab === 'string' && (tab === 'conversation' || tab === 'description' || tab === 'settings')) {
-                this.tab = tab;
-            }
-            else {
-                console.error('tabChanged: tried to change into something inappropriate.', { tab });
-            }
-        }
-
-        get isConsoleOrActivity() {
-            return this.conversations.selectedConversation === this.conversations.consoleTab
-                || this.conversations.selectedConversation === this.conversations.activityTab;
         }
 
         get showAvatars(): boolean {

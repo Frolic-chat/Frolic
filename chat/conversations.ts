@@ -142,6 +142,10 @@ abstract class Conversation implements Interfaces.Conversation {
         this.insertCount = 0;
     }
 
+    clearUnread() {
+        this.unread = Interfaces.UnreadState.None;
+    }
+
     // Keeps the message-list from re-rendering every time when full, cleaning up after itself every 200 messages
     stretch(): void {
         if ((core.conversations.selectedConversation !== this) || (this.messages.length < this.maxMessages)) {
@@ -265,7 +269,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         state.privateConversations.splice(state.privateConversations.indexOf(this), 1);
         delete state.privateMap[this.character.name.toLowerCase()];
         await state.savePinned();
-        if(state.selectedConversation === this) state.showHomeOrConsole();
+        if(state.selectedConversation === this) state.show(core.state.generalSettings.defaultToHome ? state.activityTab : state.consoleTab);
     }
 
     async sort(newIndex: number): Promise<void> {
@@ -633,13 +637,12 @@ class ActivityConversation extends Conversation {
 
     async addMessage(): Promise<void> {} // noop
     close(): void {}                     // noop
+    onHide(): void {}                    // noop
     protected doSend(): void {}          // noop
 
     // We're opting to include these to overwrite them with readonlies:
     readonly errorText = '';
     readonly infoText  = '';
-
-    onHide(): void {}
 }
 
 class State implements Interfaces.State {
@@ -721,32 +724,11 @@ class State implements Interfaces.State {
     show(conversation: Conversation): void {
         if(conversation === this.selectedConversation) return;
 
-        if (conversation === this.consoleTab || conversation === this.activityTab) {
-            this.showHomeOrConsole(); // emulates the below
-            return;
-        }
-
         this.selectedConversation.onHide();
-        conversation.unread = Interfaces.UnreadState.None;
+        // "Unread messages" are messages you haven't read yet. (So clearing them should be UI based.)
+        // conversation.unread = Interfaces.UnreadState.None;
         this.selectedConversation = conversation;
         EventBus.$emit('select-conversation', { conversation });
-    }
-
-    showHomeOrConsole(): void {
-        const convo = core.state.generalSettings.defaultToHome
-            ? state.activityTab
-            : state.consoleTab;
-
-        if (state.selectedConversation !== convo) {
-            // p1 of console show()
-            this.selectedConversation.onHide();
-            this.selectedConversation = convo;
-
-            // p2 of console show()
-            convo.unread = Interfaces.UnreadState.None;
-            EventBus.$emit('select-conversation', { conversation: this.consoleTab });
-        }
-
     }
 
     async reloadSettings(): Promise<void> {

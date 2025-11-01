@@ -1,5 +1,6 @@
 <template>
 <div>
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center">
         <span v-if="isPrivate(conversation)"><!-- left side: userview -->
             <img v-if="settings.showAvatars" style="height:60px" :src="characterImage"/>
@@ -48,6 +49,7 @@
         </span>
     </div>
 
+    <!-- Message filter/search bar -->
     <div class="search input-group" v-show="showSearch">
         <div class="input-group-prepend">
             <div class="input-group-text">
@@ -60,6 +62,7 @@
             <i class="fas fa-times"></i>
         </a>
     </div>
+    <!-- Ad posting display - Legacy? -->
     <div class="auto-ads" v-show="isAutopostingAds()">
         <h4>{{l('admgr.activeHeader')}}</h4>
         <div class="update">{{adAutoPostUpdate}}</div>
@@ -83,11 +86,10 @@
         </a>
     </div>
 
-    <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messages"
-        @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="flex:1;overflow:auto;margin-top:2px">
+    <!-- Message box -->
+    <div class="border-top messages d-flex" :class="getMessageWrapperClasses()" ref="messages" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="overflow:auto; margin-top:2px">
         <template v-for="message in messages">
-            <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded"
-                :classes="message == conversation.lastRead ? 'last-read' : ''">
+            <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded" :classes="message == conversation.lastRead ? 'last-read' : ''">
             </message-view>
             <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
                 <a :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid"
@@ -103,6 +105,8 @@
             </span>
         </template>
     </div>
+
+    <!-- Input box -->
     <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
         :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
         :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
@@ -152,6 +156,7 @@
         </template>
     </bbcode-editor>
 
+    <!-- Modals -->
     <command-help ref="helpDialog"></command-help>
     <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
 </div>
@@ -213,13 +218,11 @@
         }
     })
     export default class ConversationView extends Vue {
+        @Prop({ required: true })
+        readonly conversation!: Conversation;
+
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
-
-        @Prop({ default: 'conversation' })
-        readonly tabSuggestion!: Conversation.TabType;
-
-        tab = '0';
 
         modes = channelModes;
         descriptionExpanded = false;
@@ -374,10 +377,6 @@
             this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter?.name : undefined;
         }
 
-        get conversation(): Conversation {
-            return core.conversations.selectedConversation;
-        }
-
         get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {
             if(this.search === '') return this.conversation.messages;
             const filter = new RegExp(this.search.replace(/[^\w]/gi, '\\$&'), 'i');
@@ -414,40 +413,6 @@
             if(!this.scrolledDown && newValue.length === this.messageCount)
                 this.messageView.scrollTop -= (this.messageView.firstElementChild!).clientHeight;
             this.messageCount = newValue.length;
-        }
-
-        @Watch('tabSuggestion')
-        externalTabChange(n: Conversation.TabType, o: Conversation.TabType) {
-            // This doesn't work the way I hope, does it?
-            // if (this.conversation === core.conversations.activityTab
-            // ||  this.conversation === core.conversations.consoleTab) {
-            //     return;
-            // }
-
-            const oldtab = this.tab;
-
-            if (n === 'description')
-                this.tab = '2';
-            else if (n === 'settings')
-                this.tab = '3';
-            else // if (n === 'conversation')
-                this.tab = '0'; // TODO: Adapt for linked channels
-
-            console.warn({ o, n, oldtab, newtab: this.tab });
-        }
-
-        @Watch('tab')
-        onTabChanged() {
-            if (this.tab === '1') {
-                if (this.tabSuggestion !== 'description')
-                    this.$emit('tab-changed', 'description');
-            }
-            else if (this.tab === '2') {
-                if (this.tabSuggestion !== 'settings')
-                    this.$emit('tab-changed', 'settings');
-            }
-            else if (this.tabSuggestion !== 'conversation')
-                this.$emit('tab-changed', 'conversation');
         }
 
         /**
@@ -801,9 +766,13 @@
         }
 
         get isChannelMod(): boolean {
-            if(core.characters.ownCharacter.isChatOp) return true;
-            const conv = (<Conversation.ChannelConversation>this.conversation);
-            const member = conv.channel.members[core.connection.character];
+            if (core.characters.ownCharacter.isChatOp)
+                return true;
+
+            if (!this.isChannel(this.conversation))
+                return false;
+
+            const member = this.conversation.channel.members[core.connection.character];
             return member !== undefined && member.rank > Channel.Rank.Member;
         }
     }
@@ -1057,8 +1026,7 @@
     }
 
 
-    .messages.hide-non-matching .message.message-score
-    {
+    .messages.hide-non-matching .message.message-score {
         &.mismatch {
             display: none;
         }
