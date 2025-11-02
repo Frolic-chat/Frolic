@@ -1,14 +1,13 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div id="home-screen" class="chat-panel">
-    <!-- header of some kind... -->
     <tabs class="conversation-tabs" v-model="tab">
         <span class="channel-title"><!-- Chat -->
             <span :class="{
-                'fa-solid   fa-house-user':  isHome,
-                'fa         fa-star':        isOfficialChannel,
-                'fa-regular fa-chart-bar':   isChannel && !isOfficialChannel,
-                'fa         fa-chart-gantt': isPrivate,
+                'fa-solid fa-house-user':  isHome,
+                'fa       fa-star':        isOfficialChannel,
+                'fa       fa-chart-gannt': isChannel && !isOfficialChannel,
+                'fa-solid fa-user':        isPrivate,
             }"></span>
             <span class="tab-text">{{ tab0Name }}</span>
         </span>
@@ -16,8 +15,12 @@
             <span class="fa-solid fa-terminal"></span>
             <span class="tab-text">{{ tab1Name }}</span>
         </span>
-        <span><!-- Desc/Recon -->
-            <span class="fa-solid fa-star"></span>
+        <span><!-- Personalize/Description/Recon -->
+            <span :class="{
+                'fa user-pen':                isHome,
+                'fa-solid fa-align-left':     isChannel,
+                'fa-solid fa-satellite-dish': isPrivate,
+            }"></span>
             <span class="tab-text">{{ tab2Name }}</span>
         </span>
         <span><!-- Settings -->
@@ -31,6 +34,7 @@
     </tabs>
 
     <!-- home page -->
+    <keep-alive>
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
         <template v-slot:chat>
             <convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog" style="max-width: 50%;"></convo>
@@ -41,6 +45,7 @@
         <!-- Drafts -->
     </home>
     <convo v-else v-show="tab === '0'" role="tabpanel" class="page" id="home" ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></convo>
+    </keep-alive>
 
     <!-- console -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView"></convo>
@@ -86,29 +91,26 @@
         <convo-settings :conversation="primaryConversation"  ></convo-settings>
         <template v-if="secondaryConversation">
             <hr>
-            <!-- header -->
             <convo-settings :conversation="secondaryConversation"></convo-settings>
         </template>
     </page>
 
     <page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
         <!-- Dev settings/info -->
-         <div class="container-fluid">
             <div class="row">
                 <div class="col-auto">Logging:</div>
                 <div class="col">Y/N, Log directory</div>
             </div>
             <template v-if="isChannel">
-                <div>
+                <div class="row">
                     <div class="col-auto">Level:</div>
                     <div class="col">Are you op?</div>
                 </div>
-                <div>
+                <div class="row">
                     <div class="col-auto">Chat modes:</div>
                     <div class="col">Ads/Chat/Both?</div>
                 </div>
             </template>
-         </div>
     </page>
 </div>
 </template>
@@ -172,7 +174,7 @@ export default class HomeScreen extends Vue {
      * Link two channels together to have them display in the same chat window.
      * Useful for linking IC + OOC rooms into a cohesive unit.
      */
-    linkedChannel = undefined; // Unused.
+    linkedChannel = undefined; // Unused; useful for linking IC + OOC channels.
 
     /**
      * Index of the current tab; a string rep of a number. Keep `tab` and `tabNum` in sync.
@@ -201,8 +203,6 @@ export default class HomeScreen extends Vue {
 
     get primaryConversation()   { return this.isHome ? this.activityTab : this.conversation  }
     get secondaryConversation() { return this.isHome ? this.consoleTab  : this.linkedChannel }
-    // primaryView!:   ConversationView;
-    // secondaryView!: ConversationView | undefined;
 
     get primaryDescription() {
         return Conversation.isChannel(this.primaryConversation)
@@ -217,30 +217,26 @@ export default class HomeScreen extends Vue {
     }
 
     get tab0Name() {
-        if (this.isHome)    return l('home');
+        if (this.isHome)    return l('home.tab.home');
         if (this.isPrivate) return this.conversation.name;
         if (this.isChannel) return this.conversation.name;
     }
 
     get tab1Name() {
         if (this.isHome)    return core.conversations.consoleTab.name;
-        if (this.isPrivate) return '';
-        if (this.isChannel) return ''; // Linked channel name, probably
+        if (this.isPrivate) return this.secondaryConversation?.name ?? ''; // When could you ever do this?
+        if (this.isChannel) return this.secondaryConversation?.name ?? ''; // Linked channel name, probably
     }
 
     get tab2Name() {
         if (this.isHome)    return core.connection.character;
-        if (this.isPrivate) return 'Recon';
-        if (this.isChannel) return l('channel.description');
+        if (this.isPrivate) return l('home.tab.recon');
+        if (this.isChannel) return l('home.tab.description');
     }
 
-    get tab3Name() { return l('settings') }
+    get tab3Name() { return l('home.tab.settings') }
 
-    get tab4Name() {
-        if (this.isHome)    return 'Data';
-        if (this.isPrivate) return ''; // No one else
-        if (this.isChannel) return ''; // has this tab
-    }
+    get tab4Name() { return l('home.tab.data') }
 
     get primaryView()   { return this.$refs['primaryView']   as ConversationView             }
     get secondaryView() { return this.$refs['secondaryView'] as ConversationView | undefined }
