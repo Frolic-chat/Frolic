@@ -203,8 +203,7 @@
     import { Channel, channelModes, Character, Conversation, Settings } from './interfaces';
 
     import NewLogger from '../helpers/log';
-    const l_cp = core.state.generalSettings.argv.includes('--debug-conversation-window');
-    const log = NewLogger('ConversationPage', () => l_cp);
+    const log = NewLogger('conversation');
 
     @Component({
         components: {
@@ -320,7 +319,7 @@
             this.messageBlock = this.Layout.scrollCage;
 
             this.Layout.scrollCage.addEventListener('scroll', this.scrollHandler = () => this.onMessagesScroll());
-            log.debug({ lyaout: this.Layout, cage: this.Layout.scrollCage });
+            log.debug('mounted', { layout: this.Layout, cage: this.Layout.scrollCage });
 
             this.extraButtons = [{
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
