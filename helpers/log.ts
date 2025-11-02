@@ -1,5 +1,7 @@
 import Logger from 'electron-log/renderer';
 
+import core from '../chat/core';
+
 /**
  * Ties electron-log to a custom condition. The condition is checked regardless of log level.
  *
@@ -12,18 +14,19 @@ import Logger from 'electron-log/renderer';
  * @returns A logger object with capabilities mapped to those of electron-log
  */
 export default function NewLogger(scope: string, condition?: (...a: any) => any) {
-    // const settings_check = () => !(`log${scope}` in core.state.generalSettings) || (core.state.generalSettings as any)[`log${scope}`]
+    const s = core.state.generalSettings.argv.includes('--debug-' + scope.toLocaleLowerCase());
+    const default_check = () => s;
 
-    const cond = condition ?? (() => true);
+    const c = condition ?? default_check;
 
     const l = Logger.scope(scope);
     return {
-        debug:   (...args: any) => { if (cond(...args)) l.debug(...args)   },
-        error:   (...args: any) => { if (cond(...args)) l.error(...args)   },
-        info:    (...args: any) => { if (cond(...args)) l.info(...args)    },
-        log:     (...args: any) => { if (cond(...args)) l.log(...args)     },
-        silly:   (...args: any) => { if (cond(...args)) l.silly(...args)   },
-        verbose: (...args: any) => { if (cond(...args)) l.verbose(...args) },
-        warn:    (...args: any) => { if (cond(...args)) l.warn(...args)    },
+        debug:   (...args: any) => { if (c(...args)) l.debug(...args)   },
+        error:   (...args: any) => { if (c(...args)) l.error(...args)   },
+        info:    (...args: any) => { if (c(...args)) l.info(...args)    },
+        log:     (...args: any) => { if (c(...args)) l.log(...args)     },
+        silly:   (...args: any) => { if (c(...args)) l.silly(...args)   },
+        verbose: (...args: any) => { if (c(...args)) l.verbose(...args) },
+        warn:    (...args: any) => { if (c(...args)) l.warn(...args)    },
     };
 }
