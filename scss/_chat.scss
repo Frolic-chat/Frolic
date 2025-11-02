@@ -96,7 +96,10 @@
   }
 
   &.sidebar-left {
+    /* move to left side of main window. */
+    /* */
     border-right: solid 1px $card-border-color;
+    /* */
     left: 0;
     margin-right: 0;
     padding-right: 0;
