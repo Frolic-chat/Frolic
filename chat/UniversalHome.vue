@@ -85,15 +85,17 @@
     </page>
 
     <!-- Settings -->
-    <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
-    <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
-        <!-- header -->
-        <convo-settings :conversation="primaryConversation"  ></convo-settings>
-        <template v-if="secondaryConversation">
-            <hr>
-            <convo-settings :conversation="secondaryConversation"></convo-settings>
-        </template>
-    </page>
+     <keep-alive>
+        <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
+        <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
+            <!-- header -->
+            <convo-settings :conversation="primaryConversation"  ></convo-settings>
+            <template v-if="secondaryConversation">
+                <hr>
+                <convo-settings :conversation="secondaryConversation"></convo-settings>
+            </template>
+        </page>
+    </keep-alive>
 
     <page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
         <!-- Dev settings/info -->
