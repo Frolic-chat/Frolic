@@ -342,8 +342,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             const pms = this.conversations.privateConversations;
             const channels = this.conversations.channelConversations;
             const console = this.conversations.consoleTab;
+            const activity = this.conversations.activityTab;
             if(getKey(e) === Keys.ArrowUp && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console) { //tslint:disable-line:curly
+                if(selected === console || selected === activity) { //tslint:disable-line:curly
                     if(channels.length > 0) channels[channels.length - 1].show();
                     else if(pms.length > 0) pms[pms.length - 1].show();
                 } else if(Conversation.isPrivate(selected)) {
@@ -358,7 +359,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     else channels[index - 1].show();
                 }
             else if(getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console) { //tslint:disable-line:curly - false positive
+                if(selected === console || selected === activity) { //tslint:disable-line:curly - false positive
                     if(pms.length > 0) pms[0].show();
                     else if(channels.length > 0) channels[0].show();
                 } else if(Conversation.isPrivate(selected)) {
