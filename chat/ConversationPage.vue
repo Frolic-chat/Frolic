@@ -319,7 +319,6 @@
             this.messageBlock = this.Layout.scrollCage;
 
             this.Layout.scrollCage.addEventListener('scroll', this.scrollHandler = () => this.onMessagesScroll());
-            log.debug('mounted', { layout: this.Layout, cage: this.Layout.scrollCage });
 
             this.extraButtons = [{
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
