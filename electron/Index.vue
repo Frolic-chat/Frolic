@@ -130,6 +130,7 @@
     import * as qs from 'querystring';
     // import {promisify} from 'util';
     import Vue from 'vue';
+    import VueVirtualScroller from 'vue-virtual-scroller';
     import Chat from '../chat/Chat.vue';
     import { ipcRenderer } from 'electron';
     import { Settings } from '../chat/common';
@@ -155,6 +156,8 @@
     import BBCodeTester from '../bbcode/Tester.vue';
     import { BBCodeView } from '../bbcode/view';
     import { EIconStore } from '../learn/eicon/store';
+
+    Vue.use(VueVirtualScroller);
 
     const webContents = remote.getCurrentWebContents();
     const parent = remote.getCurrentWindow().webContents;

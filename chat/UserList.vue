@@ -11,15 +11,21 @@
             <user :character="character" :showStatus="true" :bookmark="false"></user>
         </div>
     </div>
-    <div v-if="channel" style="padding-left:5px;flex:1;display:flex;flex-direction:column" v-show="tab === '1'">
-        <div class="users" style="flex:1;padding-left:5px">
-            <h4>
-                {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
-            </h4>
+    <div v-if="channel" style="padding-left:10px;display:flex" class="flex-column flex-grow-1 flex-shrink-1" v-show="tab === '1'">
+        <h4 class="flex-shrink-0 flex-grow-0">
+            {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
+        </h4>
+        <!-- <div class="users" style="flex:1;padding-left:5px"> -->
+            <!--
             <div v-for="member in filteredMembers" :key="member.character.name">
                 <user :character="member.character" :channel="channel" :hide="true" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
             </div>
-        </div>
+            -->
+            <!-- itemClass="text-truncate" -->
+        <recycle-scroller :items="filteredMembers" :itemSize="singleElementSize" class="users user-list-scroller flex-shrink-1 flex-grow-1 text-truncate"  :buffer="800" v-slot="{ item }">
+            <user :character="item.character" :channel="channel" :immediate="true" :hide="false" :showStatus="true" @visibility-change="userViewUpdateThrottle" :key="item.character.name"></user>
+        </recycle-scroller>
+        <!-- </div> -->
         <div class="input-group" style="margin-top:5px;flex-shrink:0">
             <div class="input-group-prepend">
                 <div class="input-group-text">
@@ -44,6 +50,7 @@
 <script lang="ts">
 import {Component} from '@f-list/vue-ts';
 import Vue from 'vue';
+import { RecycleScroller, DynamicScroller } from 'vue-virtual-scroller';
 import Tabs from '../components/tabs';
 import core from './core';
 import { Channel, Character, Conversation } from './interfaces';
@@ -136,6 +143,8 @@ EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
         user: UserView,
         sidebar: Sidebar,
         tabs: Tabs,
+        'recycle-scroller': RecycleScroller,
+        'dynamic-scroller': DynamicScroller,
     }
 })
 export default class UserList extends Vue {
@@ -144,8 +153,12 @@ export default class UserList extends Vue {
     filter = '';
     l = l;
 
+    // singleElementSize = core.state.settings.fontSize * 1.25; // 1.25em from fa-fw icons
+    // I'm not sure where we get 1.5em line height, but that's what the legacy userlist+useview does.
+    singleElementSize = core.state.settings.fontSize * 1.5;
+
     userListProxy = false;
-    userViewUpdateThrottle = debounce(this.update, { wait: 1000, maxWait: 3000 });
+    userViewUpdateThrottle = debounce(this.update, { wait: 250, maxWait: 750 });
 
     /** This was async in testing */
     update(): void {
@@ -189,16 +202,20 @@ export default class UserList extends Vue {
         * venus-mars (gender)
         * would be easy and make sense.
         */
-    get filteredMembers(): ReadonlyArray<Channel.Member> {
+    get filteredMembers(): ReadonlyArray<Channel.Member & { id: string }> {
         //Trigger update from UserView
         this.userListProxy;
 
         const members = this.getFilteredMembers();
 
-        if (this.sortType === 'normal')
-            return members;
+        // Gross:
+        const sorted = members.map(e => ({
+            ...e,
+            id: e.character.name
+        })) as Array<Channel.Member & { id: string }>;
 
-        const sorted = [ ...members ];
+        if (this.sortType === 'normal')
+            return sorted;
 
         /** `{ sensitivity: 'base' }` should not be necessary due to the pre-sorting that happens when a new channel member joins, but could technically come in handy after changing through various list sorts. */
         switch (this.sortType) {
@@ -265,6 +282,7 @@ export default class UserList extends Vue {
 @import "~bootstrap/scss/functions";
 @import "~bootstrap/scss/variables";
 @import "~bootstrap/scss/mixins/breakpoints";
+@import '~vue-virtual-scroller/dist/vue-virtual-scroller';
 
 #user-list {
     flex-direction: column;
@@ -277,12 +295,12 @@ export default class UserList extends Vue {
     .users {
         overflow: auto;
 
-        > div {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-        }
+        // > div {
+        //     overflow: hidden;
+        //     text-overflow: ellipsis;
+        //     -webkit-line-clamp: 2;
+        //     line-clamp: 2;
+        // }
     }
 
     .nav li:first-child a {
