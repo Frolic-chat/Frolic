@@ -3,15 +3,15 @@
     <template v-slot:prescroll>
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center">
-            <span v-if="isPrivate(conversation)"><!-- left side: userview -->
+            <span v-if="isPrivate(conversation)" class="mr-auto"><!-- left side: userview -->
                 <img v-if="settings.showAvatars" style="height:60px" :src="characterImage"/>
                 <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
             </span>
-            <span v-else-if="isChannel(conversation)"><!-- left side: channel name -->
+            <span v-else-if="isChannel(conversation)" class="mr-auto"><!-- left side: channel name -->
                 <h5>{{ conversation.name }}</h5>
             </span>
 
-            <span><!-- right side -->
+            <span class="ml-auto"><!-- right side -->
                 <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
                     <span class="fa fa-edit"></span>
                     <span class="btn-text">{{l('manageChannel.open')}}</span>
