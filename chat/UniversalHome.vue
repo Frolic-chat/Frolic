@@ -33,22 +33,29 @@
         </span>
     </tabs>
 
+    <!-- Pseudo-teleport -->
+     <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
+        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
+        :style="isHome ? 'max-width: 50%' : ''"
+        :class="{ page:     !isHome }"
+        :id="{    home:     !isHome }"
+        :role="{  tabpanel: !isHome }"
+    ></convo>
+
     <!-- home page -->
-    <keep-alive>
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
         <template v-slot:chat>
-            <convo ref="primaryView" :conversation="activityTab" :reportDialog="reportDialog" style="max-width: 50%;"></convo>
+            <div ref="primaryContainer" style="display: contents;"></div>
         </template>
         <!-- Logs? -->
         <!-- License -->
         <!-- Notes -->
         <!-- Drafts -->
     </home>
-    <convo v-else v-show="tab === '0'" role="tabpanel" class="page" id="home" ref="primaryView" :conversation="primaryConversation" :reportDialog="reportDialog"></convo>
-    </keep-alive>
+    <div v-else ref="primaryContainer" style="display: contents;"></div>
 
     <!-- console -->
-    <convo v-if="secondaryConversation" v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation" :conversation="secondaryConversation" :reportDialog="reportDialog" ref="secondaryView"></convo>
+    <convo v-if="secondaryConversation" v-show="tab === '1'" class="page" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation" :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" role="tabpanel"></convo>
     <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
 
     <!-- Personality -->
@@ -243,13 +250,19 @@ export default class HomeScreen extends Vue {
 
     get tab4Name() { return l('home.tab.data') }
 
-    get primaryView()   { return this.$refs['primaryView']   as ConversationView             }
-    get secondaryView() { return this.$refs['secondaryView'] as ConversationView | undefined }
+    primaryView!:  ConversationView;
+    secondaryView: ConversationView | undefined;
 
     @Hook('created')
     created() {}
 
-    @Hook('mounted')       mounted() { window.addEventListener('keydown', this.onKey)    }
+    @Hook('mounted')
+    mounted() {
+        this.primaryView   = this.$refs['primaryView']   as ConversationView;
+        this.secondaryView = this.$refs['secondaryView'] as ConversationView | undefined;
+
+        window.addEventListener('keydown', this.onKey);
+    }
     @Hook('beforeDestroy') destroy() { window.removeEventListener('keydown', this.onKey) }
 
     /**
@@ -281,6 +294,8 @@ export default class HomeScreen extends Vue {
      */
     @Watch('conversation')
     onConversationChanged(n: Conversation, _o: Conversation) {
+        this.secondaryView = this.$refs['secondaryView'] as ConversationView | undefined;
+
         log.debug('Watch(conversation):', this.conversation.name, {
             isPrimary:   this.conversation === this.primaryConversation,
             isSecondary: this.conversation === this.secondaryConversation,
@@ -303,6 +318,17 @@ export default class HomeScreen extends Vue {
         }
         // Not on tab 0 or 1:
         //     don't clear unread messages.
+    }
+
+    @Watch('isHome')
+    moveConvo() {
+        this.$nextTick(() => {
+            const convoEl = this.primaryView.$el;
+            const target = (this.$refs['primaryContainer'] as HTMLDivElement | undefined);
+            if (convoEl && target && target !== convoEl.parentNode) {
+                target.appendChild(convoEl);
+            }
+        });
     }
 
     /**
