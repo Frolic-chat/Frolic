@@ -17,7 +17,7 @@
         </span>
         <span><!-- Personalize/Description/Recon -->
             <span :class="{
-                'fa user-pen':                isHome,
+                'fa-solid fa-user-pen':       isHome,
                 'fa-solid fa-align-left':     isChannel,
                 'fa-solid fa-satellite-dish': isPrivate,
             }"></span>
