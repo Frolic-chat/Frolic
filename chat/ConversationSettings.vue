@@ -46,62 +46,61 @@
     </template>
 </page>
 </template>
+
 <script lang="ts">
-    import Vue from 'vue';
-    import { Component, Prop, Hook } from '@f-list/vue-ts';
+import Vue from 'vue';
+import { Component, Prop, Hook } from '@f-list/vue-ts';
 
-    import HomePageLayout from './home_pages/HomePageLayout.vue';
+import HomePageLayout from './home_pages/HomePageLayout.vue';
 
-    import GenericDropdown from './home_pages/settings/GenericDropdown.vue';
-    import GenericCheckbox from './home_pages/settings/GenericCheckbox.vue';
-    import GenericText     from './home_pages/settings/GenericText.vue';
+import GenericDropdown from './home_pages/settings/GenericDropdown.vue';
+import GenericCheckbox from './home_pages/settings/GenericCheckbox.vue';
+import GenericText     from './home_pages/settings/GenericText.vue';
 
-    import l from './localize';
+import l from './localize';
+import { Conversation, Relation } from './interfaces';
 
+import NewLogger from '../helpers/log';
+const log = NewLogger('settings');
 
-
-
-
-    import { Conversation, Relation } from './interfaces';
-
-    @Component({
-        components: {
-            page: HomePageLayout,
-            'dropdown':  GenericDropdown,
-            'checkbox':  GenericCheckbox,
-            'textfield': GenericText,
-        }
-    })
-    export default class ConversationSettings extends Vue {
-        l = l;
-        setting       = Conversation.Setting;
-        friendchooser = Relation.Chooser;
-
-        @Prop({ required: true })
-        readonly conversation!: Conversation;
-
-        settings!: Conversation.Settings
-
-        get isChannel() { return Conversation.isChannel(this.conversation) }
-
-
-        @Hook('created')
-        created() {
-            this.settings = this.conversation.settings;
-        }
-
-        vdHighlightString(s: string): boolean {
-            if (this.tfHighlightString(s))
-                return true;
-            else
-                return false;
-        }
-
-        tfHighlightString(s: string): string[] {
-            const a = s.trim().toLowerCase()
-                .split(/\s*,\s*/)
-                .filter(v => v);
-            return [ ...new Set(a) ];
-        }
+@Component({
+    components: {
+        page: HomePageLayout,
+        'dropdown':  GenericDropdown,
+        'checkbox':  GenericCheckbox,
+        'textfield': GenericText,
     }
+})
+export default class ConversationSettings extends Vue {
+    l = l;
+    setting       = Conversation.Setting;
+    friendchooser = Relation.Chooser;
+
+    @Prop({ required: true })
+    readonly conversation!: Conversation;
+
+    settings!: Conversation.Settings
+
+    get isChannel() { return Conversation.isChannel(this.conversation) }
+
+
+    @Hook('created')
+    created() {
+        this.settings = this.conversation.settings;
+    }
+
+    vdHighlightString(s: string): boolean {
+        if (this.tfHighlightString(s))
+            return true;
+        else
+            return false;
+    }
+
+    tfHighlightString(s: string): string[] {
+        const a = s.trim().toLowerCase()
+            .split(/\s*,\s*/)
+            .filter(v => v);
+        return [ ...new Set(a) ];
+    }
+}
 </script>
