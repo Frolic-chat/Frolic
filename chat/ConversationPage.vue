@@ -202,8 +202,8 @@
     import { EventBus, MemoEvent } from './preview/event-bus';
     import { Channel, channelModes, Character, Conversation, Settings } from './interfaces';
 
-    // import NewLogger from '../helpers/log';
-    // const log = NewLogger('conversation');
+    import NewLogger from '../helpers/log';
+    const log = NewLogger('conversation');
 
     @Component({
         components: {
@@ -314,12 +314,12 @@
         mounted(): void {
             this.updateOwnName();
 
-            // this.messageBlock = <HTMLElement>this.$refs['messageBlock']; // Legacy
             this.textBox      = <Editor>this.$refs['mainInput'];
             this.Layout       = <HomePageLayout>this.$refs['pageLayout'];
             this.messageBlock = this.Layout.scrollCage;
 
-            this.Layout.scrollCage.addEventListener('scroll', this.scrollHandler = () => this.onMessagesScroll());
+            this.messageBlock.addEventListener('scroll', this.scrollHandler = () => this.onMessagesScroll());
+            log.debug(`Event listener added for scroll on ${this.conversation.name}`);
 
             this.extraButtons = [{
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
@@ -339,7 +339,10 @@
                     this.showSearch = true;
                     this.$nextTick(() => (<HTMLElement>this.$refs['searchField']).focus());
                 }
-            }) as EventListener);
+            }));
+
+            log.debug(`Registered resize, keypress, and keydown events for ${this.conversation.name}`);
+
             this.searchTimer = window.setInterval(() => {
                 if(Date.now() - this.lastSearchInput > 500 && this.search !== this.searchInput)
                     this.search = this.searchInput;

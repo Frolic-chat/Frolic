@@ -18,7 +18,7 @@ import { SettingsMerge } from '../helpers/utils';
 import { EventBus } from './preview/event-bus';
 import NewLogger from '../helpers/log';
 const log = NewLogger('chat/core', () => process.env.NODE_ENV === 'development');
-const logw = NewLogger('core/watch', () => false);
+const logS = NewLogger('settings');
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();
@@ -190,7 +190,7 @@ export function init(this: any,
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
             if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilters)) {
-                logw.warn('risingFilter in _settings changed.', newValue.risingFilter);
+                logS.warn('risingFilter in _settings changed.', newValue.risingFilter);
 
                 EventBus.$emit('smartfilters-update', newValue.risingFilter);
 
@@ -201,7 +201,7 @@ export function init(this: any,
     }, { deep: true });
 
     data.watch(() => state.generalSettings, async () => {
-        logw.debug(VueUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', VueUpdateCache.timestamp);
+        logS.debug(VueUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', VueUpdateCache.timestamp);
 
         if (VueUpdateCache.skipWatch) {
             VueUpdateCache.skipWatch = false;
@@ -214,7 +214,7 @@ export function init(this: any,
 
     Electron.ipcRenderer.on('settings', (_e, d: GeneralSettingsUpdate) => {
         if (d.timestamp <= VueUpdateCache.timestamp) {
-            logw.warn('Settings from main stale; skipping', VueUpdateCache.timestamp, d.timestamp);
+            logS.warn('Settings from main stale; skipping', VueUpdateCache.timestamp, d.timestamp);
             return;
         }
 
@@ -224,7 +224,7 @@ export function init(this: any,
         Object.assign(state.generalSettings, d.settings);
         VueUpdateCache.skipWatch = JSON.stringify(state.generalSettings) !== prev_settings;
 
-        logw.debug(
+        logS.debug(
             VueUpdateCache.skipWatch
                 ? 'Skipping next watcher.'
                 : 'No change from main; not skipping next watcher.',
