@@ -252,10 +252,11 @@
         Layout!: HomePageLayout;
         messageBlock!: HTMLElement;
         textBox!: Editor;
-        resizeHandler!: EventListener;
-        keydownHandler!: EventListener;
-        keypressHandler!: EventListener;
-        scrollHandler!: EventListener;
+
+        resizeHandler!:   { (e: UIEvent):       any };
+        keydownHandler!:  { (e: KeyboardEvent): any };
+        keypressHandler!: { (e: KeyboardEvent): any };
+        scrollHandler!:   { (e: Event):         any };
 
         /**
          * True if the user is scrolled to the bottom of the page.

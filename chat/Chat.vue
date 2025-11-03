@@ -45,7 +45,9 @@ const log = NewLogger('Chat');
     import {errorToString, getKey} from './common';
     import core from './core';
     import l from './localize';
+
     import Logs from './Logs.vue';
+
     import {init as profileApiInit} from './profile_api';
     import { AdManager } from './ads/ad-manager';
     import { EventBus } from './preview/event-bus';

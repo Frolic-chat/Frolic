@@ -135,7 +135,9 @@
     import { Settings } from '../chat/common';
     import core /*, { init as initCore }*/ from '../chat/core';
     import l from '../chat/localize';
+
     import Logs from '../chat/Logs.vue';
+
     import Socket from '../chat/WebSocket';
     import Modal from '../components/Modal.vue';
     import {SimpleCharacter} from '../interfaces';
@@ -178,7 +180,9 @@
             chat: Chat,
             modal: Modal,
             characterPage: CharacterPage,
+
             logs: Logs,
+
             'word-definition': WordDefinition,
             BBCodeTester: BBCodeTester,
             bbcode: BBCodeView(core.bbCodeParser),

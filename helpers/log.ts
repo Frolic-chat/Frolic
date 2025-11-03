@@ -14,6 +14,7 @@ import core from '../chat/core';
  * @returns A logger object with capabilities mapped to those of electron-log
  */
 export default function NewLogger(scope: string, condition?: (...a: any) => any) {
+    // Skips logging if default generalSettings. (argv empty by default)
     const s = core?.state.generalSettings.argv.includes('--debug-' + scope.toLocaleLowerCase()) ?? true;
     const default_check = () => s;
 
