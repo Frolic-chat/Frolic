@@ -3,7 +3,7 @@
 <!-- doesn't seem to impact anything :style="{ 'contain-intrinsic-height': `${totalHeight}px` }" -->
 <div ref="scroller" class="virtual-scroller" @scroll="onScroll">
     <div class="scroller-content" :style="{ height: `${totalHeight}px` }">
-        <div v-for="(item, index) in visibleItems" :key="item.id || index" class="scroller-item" :style="getItemStyle(index)">
+        <div v-for="(item, index) in gottenVisibleItems" :key="item.id || index" class="scroller-item" :style="getItemStyle(index)">
             <slot :item="item"></slot>
             <div v-if="debug" class="debug-index">{{ leadingSpaceIndex + index }}</div>
         </div>
@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
+import { Component, Prop, Hook } from '@f-list/vue-ts';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('virtual-scroller');
@@ -57,7 +57,7 @@ export default class VirtualScroller extends Vue {
             throw new Error(`Forbidden act with the virtual scroller:\n + No id property on items in array.\n + Items must have a height\n + Overdraw can be absent, zero, or a positive integer.`);
 
         this.visibleHeight = (this.$refs['scroller'] as HTMLDivElement).clientHeight;
-        this.updateVisibleItems();
+        //this.updateVisibleItems();
 
         this.ro = new ResizeObserver(() => {
             log.verbose('Resized:', {
@@ -73,13 +73,16 @@ export default class VirtualScroller extends Vue {
 
     @Hook('activated')
     activated() {
-        this.visibleHeight = (this.$refs['scroller'] as HTMLDivElement).clientHeight;
-        this.updateVisibleItems();
+        this.$nextTick(() => {
+            this.visibleHeight = (this.$refs['scroller'] as HTMLDivElement).clientHeight;
+            //this.updateVisibleItems();
 
-        log.verbose('Reactivated - height:', {
-            visibleHeight: this.visibleHeight,
-            totalHeight: this.totalHeight,
+            log.verbose('Reactivated - height:', {
+                visibleHeight: this.visibleHeight,
+                totalHeight: this.totalHeight,
+            });
         });
+
     }
 
     @Hook('beforeDestroy')
@@ -87,7 +90,24 @@ export default class VirtualScroller extends Vue {
         this.ro.disconnect();
     }
 
-    updateVisibleItems() {
+    // updateVisibleItems() {
+    //     const start_index = Math.max(
+    //         0,
+    //         Math.floor(this.scrollTop / this.itemHeight) - this.overdraw
+    //     );
+
+    //     const end_index = Math.min(
+    //         this.items.length,
+    //         Math.ceil((this.scrollTop + this.visibleHeight) / this.itemHeight) + this.overdraw
+    //     );
+
+    //     log.verbose('updateVisibleItems', { old: this.visibleItems, new_start: start_index, new_end: end_index, });
+
+    //     this.leadingSpaceIndex = start_index;
+    //     this.visibleItems = this.items.slice(start_index, end_index);
+    // }
+
+    get gottenVisibleItems() {
         const start_index = Math.max(
             0,
             Math.floor(this.scrollTop / this.itemHeight) - this.overdraw
@@ -101,7 +121,7 @@ export default class VirtualScroller extends Vue {
         log.verbose('updateVisibleItems', { old: this.visibleItems, new_start: start_index, new_end: end_index, });
 
         this.leadingSpaceIndex = start_index;
-        this.visibleItems = this.items.slice(start_index, end_index);
+        return this.items.slice(start_index, end_index);
     }
 
     getItemStyle(i: number) {
@@ -113,13 +133,13 @@ export default class VirtualScroller extends Vue {
 
     onScroll() {
         this.scrollTop = (this.$refs['scroller'] as HTMLDivElement).scrollTop;
-        this.updateVisibleItems();
+        //this.updateVisibleItems();
     }
 
-    @Watch('items')
-    onItemsUpdate() {
-        this.updateVisibleItems();
-    }
+    // @Watch('items')
+    // onItemsUpdate() {
+    //     this.updateVisibleItems();
+    // }
 
     // Potential if we ever desire to make it dynamic:
     // @Watch('itemHeight')

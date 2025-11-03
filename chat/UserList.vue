@@ -16,7 +16,8 @@
             {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
         </h4>
 
-        <virtual-scroller :debug="true" class="flex-grow-1 flex-shrink-1" :items="filteredMembers" :itemHeight="singleItemSize" :overdraw="0">
+        <!-- :debug="true" -->
+        <virtual-scroller class="flex-grow-1 flex-shrink-1" :items="filteredMembers" :itemHeight="singleItemSize" :overdraw="10">
             <template v-slot:default="{ item }">
                 <user style="display:inline-block;width:100%;" class="text-truncate" :character="item.character" :channel="channel" :immediate="true" :hide="false" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
             </template>
@@ -46,7 +47,6 @@
 <script lang="ts">
 import {Component} from '@f-list/vue-ts';
 import Vue from 'vue';
-import { RecycleScroller, DynamicScroller } from 'vue-virtual-scroller';
 import VirtualScroller from '../components/VirtualScroller.vue';
 import Tabs from '../components/tabs';
 import core from './core';
@@ -140,8 +140,6 @@ EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
         user: UserView,
         sidebar: Sidebar,
         tabs: Tabs,
-        'recycle-scroller': RecycleScroller,
-        'dynamic-scroller': DynamicScroller,
         'virtual-scroller': VirtualScroller,
     }
 })
@@ -280,7 +278,6 @@ export default class UserList extends Vue {
 @import "~bootstrap/scss/functions";
 @import "~bootstrap/scss/variables";
 @import "~bootstrap/scss/mixins/breakpoints";
-@import '~vue-virtual-scroller/dist/vue-virtual-scroller';
 
 #user-list {
     flex-direction: column;
