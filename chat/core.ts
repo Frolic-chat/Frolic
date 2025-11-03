@@ -190,7 +190,7 @@ export function init(this: any,
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
             if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilters)) {
-                logS.warn('risingFilter in _settings changed.', newValue.risingFilter);
+                logS.debug('risingFilter in _settings changed.', newValue.risingFilter);
 
                 EventBus.$emit('smartfilters-update', newValue.risingFilter);
 

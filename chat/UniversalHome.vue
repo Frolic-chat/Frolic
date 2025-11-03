@@ -95,17 +95,15 @@
     </page>
 
     <!-- Settings -->
-     <keep-alive>
-        <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
-        <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
-            <!-- header -->
-            <convo-settings :conversation="primaryConversation"></convo-settings>
-            <template v-if="secondaryConversation">
-                <hr>
-                <convo-settings :conversation="secondaryConversation"></convo-settings>
-            </template>
-        </page>
-    </keep-alive>
+    <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
+    <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
+        <!-- header -->
+        <convo-settings :conversation="primaryConversation"></convo-settings>
+        <template v-if="secondaryConversation">
+            <hr>
+            <convo-settings :conversation="secondaryConversation"></convo-settings>
+        </template>
+    </page>
 
     <page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
         <!-- Dev settings/info -->
@@ -137,8 +135,9 @@ import Vue from 'vue';
 import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
 
 import Tabs from '../components/tabs';
-import Home from './home_pages/Home.vue';
 import HomePageLayout from './home_pages/HomePageLayout.vue';
+
+import Home from './home_pages/Home.vue';
 import ConversationView from './ConversationPage.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
@@ -152,7 +151,6 @@ import core from './core';
 import l from './localize';
 
 import NewLogger from '../helpers/log';
-//const l_h = core.state.generalSettings.argv.includes('--debug-home'); // () => l_h
 const log = NewLogger('Home');
 
 @Component({
@@ -275,7 +273,9 @@ export default class HomeScreen extends Vue {
 
         window.addEventListener('keydown', this.onKey);
     }
-    @Hook('beforeDestroy') destroy() { window.removeEventListener('keydown', this.onKey) }
+    @Hook('beforeDestroy') destroy() {
+        window.removeEventListener('keydown', this.onKey);
+    }
 
     /**
      * Watches for alt+left, alt+right hotkeys to switch between tabs.

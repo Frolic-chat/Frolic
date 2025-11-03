@@ -84,7 +84,6 @@
     </template>
 
     <!-- Message box -->
-    <!-- I need `ref="messageBlock" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView"` to apply to the dive that contains this slot. That div is `class="scroll-cage" ref="scrollCage"` in the page component. -->
     <template v-slot:default>
         <template v-for="message in messages">
             <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded" :classes="message == conversation.lastRead ? 'last-read' : ''">
