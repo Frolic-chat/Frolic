@@ -202,8 +202,8 @@
     import { EventBus, MemoEvent } from './preview/event-bus';
     import { Channel, channelModes, Character, Conversation, Settings } from './interfaces';
 
-    import NewLogger from '../helpers/log';
-    const log = NewLogger('conversation');
+    // import NewLogger from '../helpers/log';
+    // const log = NewLogger('conversation');
 
     @Component({
         components: {

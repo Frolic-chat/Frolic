@@ -15,18 +15,14 @@
         <h4 class="flex-shrink-0 flex-grow-0">
             {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
         </h4>
-        <!-- <div class="users" style="flex:1;padding-left:5px"> -->
-            <!--
-            <div v-for="member in filteredMembers" :key="member.character.name">
-                <user :character="member.character" :channel="channel" :hide="true" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
-            </div>
-            -->
-            <!-- itemClass="text-truncate" -->
-        <recycle-scroller :items="filteredMembers" :itemSize="singleElementSize" class="users user-list-scroller flex-shrink-1 flex-grow-1 text-truncate"  :buffer="800" v-slot="{ item }">
-            <user :character="item.character" :channel="channel" :immediate="true" :hide="false" :showStatus="true" @visibility-change="userViewUpdateThrottle" :key="item.character.name"></user>
-        </recycle-scroller>
-        <!-- </div> -->
-        <div class="input-group" style="margin-top:5px;flex-shrink:0">
+
+        <virtual-scroller :debug="true" class="flex-grow-1 flex-shrink-1" :items="filteredMembers" :itemHeight="singleItemSize" :overdraw="0">
+            <template v-slot:default="{ item }">
+                <user style="display:inline-block;width:100%;" class="text-truncate" :character="item.character" :channel="channel" :immediate="true" :hide="false" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
+            </template>
+        </virtual-scroller>
+
+        <div class="input-group flex-shrink-0" style="margin-top:5px">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <span class="fas fa-search"></span>
@@ -51,6 +47,7 @@
 import {Component} from '@f-list/vue-ts';
 import Vue from 'vue';
 import { RecycleScroller, DynamicScroller } from 'vue-virtual-scroller';
+import VirtualScroller from '../components/VirtualScroller.vue';
 import Tabs from '../components/tabs';
 import core from './core';
 import { Channel, Character, Conversation } from './interfaces';
@@ -145,6 +142,7 @@ EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
         tabs: Tabs,
         'recycle-scroller': RecycleScroller,
         'dynamic-scroller': DynamicScroller,
+        'virtual-scroller': VirtualScroller,
     }
 })
 export default class UserList extends Vue {
@@ -155,10 +153,10 @@ export default class UserList extends Vue {
 
     // singleElementSize = core.state.settings.fontSize * 1.25; // 1.25em from fa-fw icons
     // I'm not sure where we get 1.5em line height, but that's what the legacy userlist+useview does.
-    singleElementSize = core.state.settings.fontSize * 1.5;
+    singleItemSize = core.state.settings.fontSize * 1.5;
 
     userListProxy = false;
-    userViewUpdateThrottle = debounce(this.update, { wait: 250, maxWait: 750 });
+    userViewUpdateThrottle = debounce(this.update, { wait: 500, maxWait: 1500 });
 
     /** This was async in testing */
     update(): void {
