@@ -73,6 +73,9 @@
 
         <div v-else-if="isPrivate">
             This is where recon goes. :)
+            - Last spoken to (last message?)
+            - Last note exchange. Write new note? Memo writer.
+            -
         </div>
 
         <!-- parts of personality: -->
@@ -89,7 +92,7 @@
         <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
         <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
             <!-- header -->
-            <convo-settings :conversation="primaryConversation"  ></convo-settings>
+            <convo-settings :conversation="primaryConversation"></convo-settings>
             <template v-if="secondaryConversation">
                 <hr>
                 <convo-settings :conversation="secondaryConversation"></convo-settings>
