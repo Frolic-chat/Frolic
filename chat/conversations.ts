@@ -62,7 +62,7 @@ abstract class Conversation implements Interfaces.Conversation {
             this._settings = Vue.observable(state.settings[key] || new ConversationSettings());
 
             core.watch(() => this._settings, async (newValue, _oldValue) => {
-                log.warn('watch _settings will save conversation.');
+                log.warn(`watch _settings will save conversation ${this.name}.`);
                 state.setSettings(this.key, newValue);
             }, { deep: true });
         }

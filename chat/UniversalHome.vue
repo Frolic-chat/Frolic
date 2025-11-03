@@ -135,8 +135,8 @@ import core from './core';
 import l from './localize';
 
 import NewLogger from '../helpers/log';
-const l_h = core.state.generalSettings.argv.includes('--debug-home');
-const log = NewLogger('Home', () => l_h);
+//const l_h = core.state.generalSettings.argv.includes('--debug-home'); // () => l_h
+const log = NewLogger('Home');
 
 @Component({
     components: {
