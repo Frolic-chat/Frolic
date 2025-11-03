@@ -6,13 +6,13 @@
     </template>
 
     <template v-slot:default>
-        <dropdown :obj="settings" prefix="conversationSettings" setting="notify">
+        <dropdown :obj="conversation.settings" prefix="conversationSettings" setting="notify">
             <option :value="setting.Default">{{ l('settings.useGlobalSetting')  }}</option>
             <option :value="setting.True"   >{{ l('conversationSettings.true')  }}</option>
             <option :value="setting.False"  >{{ l('conversationSettings.false') }}</option>
         </dropdown>
 
-        <dropdown v-show="isChannel" :obj="settings" prefix="conversationSettings" setting="notifyOnFriendMessage">
+        <dropdown v-show="isChannel" :obj="conversation.settings" prefix="conversationSettings" setting="notifyOnFriendMessage">
             <option :value="friendchooser.Default"  >{{ l('settings.useGlobalSetting')             }}</option>
             <option :value="friendchooser.Friends"  >{{ l('settings.relation.friendsOnly')         }}</option>
             <option :value="friendchooser.Bookmarks">{{ l('settings.relation.bookmarksOnly')       }}</option>
@@ -22,23 +22,23 @@
 
         <div class="form-group"><hr></div>
 
-        <dropdown v-show="isChannel" :obj="settings" prefix="conversationSettings" setting="highlight">
+        <dropdown v-show="isChannel" :obj="conversation.settings" prefix="conversationSettings" setting="highlight">
             <option :value="setting.Default">{{ l('settings.useGlobalSetting')  }}</option>
             <option :value="setting.True"   >{{ l('conversationSettings.true')  }}</option>
             <option :value="setting.False"  >{{ l('conversationSettings.false') }}</option>
         </dropdown>
 
-        <checkbox :obj="settings" prefix="conversationSettings" setting="defaultHighlights"></checkbox>
+        <checkbox :obj="conversation.settings" prefix="conversationSettings" setting="defaultHighlights"></checkbox>
 
-        <textfield :obj="settings" prefix="conversationSettings" setting="highlightWords"
+        <textfield :obj="conversation.settings" prefix="conversationSettings" setting="highlightWords"
             :validator="vdHighlightString" :transformer="tfHighlightString"></textfield>
 
-        <textfield v-show="isChannel" :obj="settings" prefix="conversationSettings" setting="highlightUsernames"
+        <textfield v-show="isChannel" :obj="conversation.settings" prefix="conversationSettings" setting="highlightUsernames"
             :validator="vdHighlightString" :transformer="tfHighlightString"></textfield>
 
         <div class="form-group"><hr></div>
 
-        <dropdown :obj="settings" prefix="conversationSettings" setting="joinMessages">
+        <dropdown :obj="conversation.settings" prefix="conversationSettings" setting="joinMessages">
             <option :value="setting.Default">{{ l('settings.useGlobalSetting')  }}</option>
             <option :value="setting.True"   >{{ l('conversationSettings.true')  }}</option>
             <option :value="setting.False"  >{{ l('conversationSettings.false') }}</option>
@@ -49,7 +49,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Hook } from '@f-list/vue-ts';
+import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
 
 import HomePageLayout from './home_pages/HomePageLayout.vue';
 
@@ -79,14 +79,16 @@ export default class ConversationSettings extends Vue {
     @Prop({ required: true })
     readonly conversation!: Conversation;
 
-    settings!: Conversation.Settings
-
     get isChannel() { return Conversation.isChannel(this.conversation) }
-
 
     @Hook('created')
     created() {
-        this.settings = this.conversation.settings;
+        log.debug(`Settings window created while loading ${this.conversation.name}`);
+    }
+
+    @Watch('conversation')
+    onConversationChanged(n: Conversation, o: Conversation) {
+        log.debug('Conversation changed.', { new: n.name, old: o.name });
     }
 
     vdHighlightString(s: string): boolean {
