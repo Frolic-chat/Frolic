@@ -57,7 +57,7 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="goHome()"
+                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
                         class="list-group-item list-group-item-action">
                         {{ l('home') }}
                     </a>
@@ -242,6 +242,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         privateCanGlow = !this.channelConversations?.length;
         channelCanGlow = !this.privateConversations?.length;
+
+        get homeConversation(): Conversation {
+            return core.state.generalSettings.defaultToHome
+                ? core.conversations.activityTab
+                : core.conversations.consoleTab;
+
+        }
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -450,11 +457,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                 return;
             }
 
-            const convo = core.state.generalSettings.defaultToHome
-                ? core.conversations.activityTab
-                : core.conversations.consoleTab;
-
-            convo.show();
+            this.homeConversation.show();
         }
 
         showDevTools(): void {
@@ -491,7 +494,18 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
 
         getClasses(conversation: Conversation): string {
-            return conversation === core.conversations.selectedConversation ? ' active' : unreadClasses[conversation.unread];
+            return conversation === core.conversations.selectedConversation
+                ? ' active'
+                : unreadClasses[conversation.unread];
+        }
+
+        getHomeClasses(): string {
+            const s = core.conversations.selectedConversation;
+
+            return core.conversations.activityTab === s
+                || core.conversations.consoleTab  === s
+                    ? 'active'
+                    : unreadClasses[this.homeConversation.unread];
         }
 
         isColorblindModeActive(): boolean {
