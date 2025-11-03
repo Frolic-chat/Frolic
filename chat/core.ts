@@ -8,7 +8,7 @@ import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
 import { Settings as SettingsClass } from './common';
 import Conversations from './conversations';
-import {Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface} from './interfaces';
+import { Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface, Runtime } from './interfaces';
 import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
 import { AdCenter } from './ads/ad-center';
 import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
@@ -90,6 +90,13 @@ const data = {
     adCoordinator: <AdCoordinatorGuest | undefined>undefined,
     adCenter: <AdCenter | undefined>undefined,
     siteSession: <SiteSession | undefined>undefined,
+    runtime: <Runtime>{
+        dialogStack: [],
+        primaryInput: null,
+        registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement) {
+            this.primaryInput = e;
+        },
+    },
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {
         Vue.set(vue, module, subState);
@@ -249,6 +256,7 @@ export interface Core {
     readonly adCoordinator: AdCoordinatorGuest;
     readonly adCenter: AdCenter;
     readonly siteSession: SiteSession;
+    readonly runtime: Runtime;
 
     watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>, opts?: Vue.WatchOptions): void;
 

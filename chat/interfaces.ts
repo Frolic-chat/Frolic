@@ -10,6 +10,7 @@ export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both']
 import { Ad } from './ads/ad-center';
 import { GeneralSettings } from '../electron/common';
 import { LocalizationKey } from './localize';
+import type Modal from '../components/Modal.vue';
 
 export namespace Relation {
     export enum Chooser {
@@ -307,4 +308,13 @@ export interface State {
     generalSettings: GeneralSettings;
     hiddenUsers: string[];
     favoriteEIcons: Record<string, boolean>;
+}
+
+/**
+ * Miscellaneous elements needed only by the current run of the application. If you need to save anything, you should use `core.state` and its associated disk-writing features.
+ */
+export interface Runtime {
+    dialogStack: Modal[];
+    primaryInput: HTMLInputElement | HTMLTextAreaElement | null;
+    registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement): void;
 }
