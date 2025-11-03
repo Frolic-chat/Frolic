@@ -124,6 +124,11 @@
                 </div>
             </template>
     </page>
+
+    <!-- Modals for the conversation: -->
+    <logs ref="logsDialog" :conversation="conversation"></logs>
+    <command-help ref="commandHelpDialog"></command-help>
+    <!-- + reportDialog -->
 </div>
 </template>
 
@@ -138,9 +143,11 @@ import ConversationView from './ConversationPage.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
-import { Conversation } from './interfaces';
-import ReportDialog from './ReportDialog.vue';
+import type ReportDialog from './ReportDialog.vue';
+import       CommandHelp from './CommandHelp.vue';
+import       Logs        from '../chat/Logs.vue';
 
+import { Conversation } from './interfaces';
 import core from './core';
 import l from './localize';
 
@@ -162,6 +169,10 @@ const log = NewLogger('Home');
         customize:
         data:
         */
+
+        // Modals:
+        logs: Logs,
+        'command-help': CommandHelp,
     }
 })
 export default class HomeScreen extends Vue {
@@ -173,11 +184,8 @@ export default class HomeScreen extends Vue {
     @Prop({ required: true })
     readonly reportDialog!: ReportDialog;
 
-    /**
-     * Used to externally broadcast the current tab. This can go away when tab numbers are synchronized across all chat windows; tab 1 = tab 1 (or tab 2?); tab 3 is always desc/customize/recon, etc.
-     */
-    @Prop({ default: 'conversation' })
-    readonly tabSuggestion!: Conversation.TabType;
+    commandHelp!: CommandHelp;
+    logs!: Logs;
 
     activityTab = core.conversations.activityTab;
     consoleTab  = core.conversations.consoleTab;
@@ -260,6 +268,10 @@ export default class HomeScreen extends Vue {
     mounted() {
         this.primaryView   = this.$refs['primaryView']   as ConversationView;
         this.secondaryView = this.$refs['secondaryView'] as ConversationView | undefined;
+
+        this.logs        = this.$refs['logsDialog'] as Logs;
+        this.commandHelp = this.$refs['commandHelpDialog'] as CommandHelp;
+        // reportDialog is passed in as prop.
 
         window.addEventListener('keydown', this.onKey);
     }

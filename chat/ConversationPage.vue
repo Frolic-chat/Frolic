@@ -21,7 +21,7 @@
                         <span class="fa fa-file-alt"></span>
                         <span class="btn-text">{{ l('logs.title') }}</span>
                     </a>
-                    <a href="#" @click.prevent="reportDialog.report()" class="btn btn-outline-secondary">
+                    <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
                         <span class="fa fa-exclamation-triangle"></span>
                         <span class="btn-text">{{ l('chat.report') }}</span>
                     </a>
@@ -161,7 +161,6 @@
         </bbcode-editor>
 
         <!-- Modals -->
-        <command-help ref="helpDialog"></command-help>
         <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
     </template>
 </page>
@@ -183,12 +182,14 @@
 
 
     import Modal, { isShowing as anyDialogsShown } from '../components/Modal.vue';
-    import Logs from './Logs.vue';
-    import ReportDialog from './ReportDialog.vue';
-    import ConversationAdSettings from './ads/ConversationAdSettings.vue';
-    import ManageChannel from './ManageChannel.vue';
 
-    import CommandHelp from './CommandHelp.vue';
+    import type Logs         from './Logs.vue';
+    import type ReportDialog from './ReportDialog.vue';
+    import type CommandHelp from './CommandHelp.vue';
+
+    import ManageChannel from './ManageChannel.vue';
+    import ConversationAdSettings from './ads/ConversationAdSettings.vue';
+
     // Recon buttons, can go away.
     import CharacterAdView from './character/CharacterAdView.vue';
     import CharacterChannelList from './character/CharacterChannelList.vue';
@@ -216,13 +217,11 @@
             bbcode: BBCodeView(core.bbCodeParser),
 
             dropdown: Dropdown,
+
             channelAdSettings: ConversationAdSettings,
-            'command-help': CommandHelp,
+            'manage-channel': ManageChannel,
 
             modal: Modal,
-
-            'manage-channel': ManageChannel,
-            logs: Logs,
 
             // TODO: Combine into recon
             'ad-view': CharacterAdView,
@@ -233,8 +232,15 @@
         @Prop({ required: true })
         readonly conversation!: Conversation;
 
-        @Prop({required: true})
+        @Prop({ required: true })
+        readonly logs!: Logs;
+
+        @Prop({ required: true })
         readonly reportDialog!: ReportDialog;
+
+        @Prop({ required: true })
+        readonly commandHelp!: CommandHelp;
+
 
         modes = channelModes;
         descriptionExpanded = false;
@@ -325,7 +331,7 @@
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
                 tag: '?',
                 icon: 'fa-question',
-                handler: () => (<CommandHelp>this.$refs['helpDialog']).show()
+                handler: () => this.commandHelp.show()
             }];
             window.addEventListener('resize', this.resizeHandler = () => this.keepScroll());
             window.addEventListener('keypress', this.keypressHandler = () => {
@@ -644,7 +650,11 @@
         }
 
         showLogs(): void {
-            (<Logs>this.$refs['logsDialog']).show();
+            this.logs.show();
+        }
+
+        report(): void {
+            this.reportDialog.report();
         }
 
         showAdSettings(): void {
