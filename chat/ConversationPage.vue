@@ -16,31 +16,31 @@
                     <span class="fa fa-edit"></span>
                     <span class="btn-text">{{l('manageChannel.open')}}</span>
                 </a>
-                <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                    <span class="fa fa-file-alt"></span>
-                    <span class="btn-text">{{ l('logs.title') }}</span>
-                </a>
-                <a href="#" @click.prevent="reportDialog.report()" class="btn btn-outline-secondary">
-                    <span class="fa fa-exclamation-triangle"></span>
-                    <span class="btn-text">{{ l('chat.report') }}</span>
-                </a>
-                <template v-if="isChannel(conversation)">
-                    <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                            {{l('channel.mode.' + mode)}}
-                        </button>
-                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                        <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                            {{l('channel.ads.incompatible')}}
-                        </button>
-                        <template v-show="conversation.settings.adSettings.ads.length">
-                            <div class="dropdown-divider"></div>
-                            <button type="button" class="dropdown-item" @click="showAdSettings()">
-                                {{l('channel.ads.edit')}}
-                            </button>
-                        </template>
-                    </dropdown>
+                <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                    <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                        <span class="fa fa-file-alt"></span>
+                        <span class="btn-text">{{ l('logs.title') }}</span>
+                    </a>
+                    <a href="#" @click.prevent="reportDialog.report()" class="btn btn-outline-secondary">
+                        <span class="fa fa-exclamation-triangle"></span>
+                        <span class="btn-text">{{ l('chat.report') }}</span>
+                    </a>
                 </template>
+                <dropdown v-if="isChannel(conversation)" :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
+                    <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                        {{l('channel.mode.' + mode)}}
+                    </button>
+                    <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                    <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                        {{l('channel.ads.incompatible')}}
+                    </button>
+                    <template v-show="conversation.settings.adSettings.ads.length">
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item" @click="showAdSettings()">
+                            {{l('channel.ads.edit')}}
+                        </button>
+                    </template>
+                </dropdown>
             </span>
         </div>
 
