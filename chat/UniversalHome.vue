@@ -285,6 +285,14 @@ export default class HomeScreen extends Vue {
         if (e.repeat)
             return;
 
+        if (e.key === 'Escape') {
+            if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey)
+            return;
+
+            this.scrollConversation();
+            this.focusInput();
+        }
+
         if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
             if (e.key === "ArrowRight" && this.tabNum < 4) {
                 this.tab = this.tab === '0' && !this.secondaryConversation
@@ -416,6 +424,20 @@ export default class HomeScreen extends Vue {
             }
 
         });
+    }
+
+    scrollConversation() {
+        if (this.tab === '0')
+            this.primaryView.scrollMessageView();
+        if (this.tab === '1')
+            this.secondaryView?.scrollMessageView();
+    }
+
+    focusInput() {
+        if (this.tab === '0' && this.primaryConversation !== this.activityTab)
+            this.primaryView.textBox.focus();
+        else if (this.tab === '1')
+            this.secondaryView?.textBox.focus();
     }
 }
 </script>
