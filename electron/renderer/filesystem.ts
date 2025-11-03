@@ -323,6 +323,6 @@ export class SettingsStore implements Settings.Store {
 
     //tslint:disable-next-line:no-async-without-await
     async set<K extends keyof Settings.Keys>(key: K, value: Settings.Keys[K]): Promise<void> {
-        writeFile(path.join(getSettingsDir(), key), JSON.stringify(value));
+        writeFile(path.join(getSettingsDir(), key), JSON.stringify(value, null, 4));
     }
 }

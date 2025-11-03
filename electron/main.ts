@@ -184,7 +184,7 @@ function saveGeneralSettings(s: GeneralSettings, wc?: Electron.WebContents): voi
     else
         logSettings.debug('Local update; broadcasting general settings...', ts);
 
-    fs.writeFileSync(settingsFile, JSON.stringify(s));
+    fs.writeFileSync(settingsFile, JSON.stringify(s, null, 4));
 
     const id = wc?.id;
     for (const w of Electron.webContents.getAllWebContents())
