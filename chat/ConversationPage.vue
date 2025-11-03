@@ -341,6 +341,9 @@
             });
             window.addEventListener('keydown', this.keydownHandler = ((e: KeyboardEvent) => {
                 if(getKey(e) === Keys.KeyF && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+                    if (core.runtime.dialogStack.length)
+                        return;
+
                     this.showSearch = true;
                     this.$nextTick(() => (<HTMLElement>this.$refs['searchField']).focus());
                 }
