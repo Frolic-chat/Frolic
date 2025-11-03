@@ -20,7 +20,7 @@ import { lastElement } from '../helpers/utils';
 import { matchesSmartFilters } from './filter/smart-filter';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('cache-manager');
+const log = NewLogger('cache-manager', () => core?.state.generalSettings.argv.includes('--debug-cache-manager'));
 
 import { shouldFilterPrivate } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 
