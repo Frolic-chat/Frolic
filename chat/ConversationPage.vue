@@ -863,6 +863,9 @@
 }
 
 .conversation .header .info {
+    /* Name, on/off, memo/shared channels */
+    min-height: 4.5em;
+
     > .mr-auto > * {
         margin-right: 5px;
     }
