@@ -152,7 +152,7 @@
                     </div>
                 </template>
                 <template v-slot:toolbar-end>
-                    <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
+                    <div v-if="!settings.enterSend" class="btn btn-sm btn-primary ml-1" @click="sendButton">
                         {{l('chat.send')}}
                     </div>
                 </template>
