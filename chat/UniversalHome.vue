@@ -272,6 +272,8 @@ export default class HomeScreen extends Vue {
         // reportDialog is passed in as prop.
 
         window.addEventListener('keydown', this.onKey);
+
+        this.moveConvo();
     }
     @Hook('beforeDestroy') destroy() {
         window.removeEventListener('keydown', this.onKey);
@@ -343,11 +345,14 @@ export default class HomeScreen extends Vue {
     @Watch('isHome')
     moveConvo() {
         this.$nextTick(() => {
+            if (!this.primaryView || !this.primaryView.$el)
+                return;
+
             const convoEl = this.primaryView.$el;
             const target = (this.$refs['primaryContainer'] as HTMLDivElement | undefined);
-            if (convoEl && target && target !== convoEl.parentNode) {
+
+            if (target && target !== convoEl.parentNode)
                 target.appendChild(convoEl);
-            }
         });
     }
 
