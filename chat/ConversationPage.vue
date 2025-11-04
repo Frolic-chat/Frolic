@@ -223,7 +223,7 @@
 
     // Recon buttons, can go away.
     import CharacterAdView from './character/CharacterAdView.vue';
-    import CharacterChannelList from './character/CharacterChannelList.vue';
+    //import CharacterChannelList from './character/CharacterChannelList.vue';
     import { MemoManager } from './character/memo';
 
     import core from './core';
@@ -256,7 +256,7 @@
 
             // TODO: Combine into recon
             'ad-view': CharacterAdView,
-            'channel-list': CharacterChannelList,
+            //'channel-list': CharacterChannelList,
         }
     })
     export default class ConversationView extends Vue {
@@ -719,7 +719,7 @@
         showAdSettings(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
         showManage(): void     { (<ManageChannel>this.$refs['manageDialog']).show() }
         showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
-        showChannels(): void   { (<CharacterChannelList>this.$refs['channelList']).show() }
+        //showChannels(): void   { (<CharacterChannelList>this.$refs['channelList']).show() }
 
         isAutopostingAds(): boolean {
             return this.conversation.adManager.isActive();
