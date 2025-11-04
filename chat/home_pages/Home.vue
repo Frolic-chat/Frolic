@@ -1,26 +1,38 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <page>
-    <template v-slot:header>
-        <span class="title">Welcome Home!</span>
-        <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
-            <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
-                <span class="fa-solid fa-screwdriver-wrench"></span>
-            </button>
-        </span>
+    <template v-slot:prescroll>
+        <div class="d-flex justify-content-between">
+            <span class="align-self-center">Welcome Home!</span>
+            <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
+                <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
+                    <span class="fa-solid fa-screwdriver-wrench"></span>
+                </button>
+            </span>
+        </div>
     </template>
 
     <template v-slot:default>
-        Body content!
-        <!-- Important logins and logouts -->
-        <!-- Changelog and update alert -->
-        <!-- Logs? -->
-        <!-- Dev settings/info -->
-         <slot name="chat"></slot>
-         <widget-options ref="widgetOptionsModal"></widget-options>
+        <div class="d-flex flex-column flex-nowrap">
+            <div class="d-flex flex-row">
+                Body content!
+                <!-- Important logins and logouts -->
+                <!-- Changelog and update alert -->
+                <!-- Logs? -->
+                <!-- Dev settings/info -->
+            </div>
+
+            <div class="d-flex flex-row">
+                <div v-show="widgets.activity" class="chat-container ml-auto">
+                    <slot name="chat"></slot>
+                </div>
+            </div>
+
+            <widget-options ref="widgetOptionsModal"></widget-options>
+        </div>
     </template>
 
-    <template v-slot:footer>
+    <template v-slot:postscroll>
         <div>
             Footer content!
             <!-- Version --><!-- License -->
@@ -36,6 +48,8 @@ import { Component } from '@f-list/vue-ts';
 import HomePageLayout from './HomePageLayout.vue';
 import WidgetOptions from './WidgetOptions.vue';
 
+import core from '../core';
+
 @Component({
     components: {
         'page': HomePageLayout,
@@ -43,6 +57,8 @@ import WidgetOptions from './WidgetOptions.vue';
     },
 })
 export default class Home extends Vue {
+    widgets = core.state.generalSettings.widgets;
+
     openWidgetOptions() {
          (<WidgetOptions>this.$refs['widgetOptionsModal']).show();
     }
@@ -50,7 +66,4 @@ export default class Home extends Vue {
 </script>
 
 <style>
-.home-page header .title {
-    align-self: center;
-}
 </style>
