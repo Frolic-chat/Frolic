@@ -132,7 +132,7 @@
                 :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
                 :characterName="ownName"
                 :type="'big'"
-                >
+            >
                 <template v-slot:default>
                     <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
                         <user :character="conversation.character" :match="false" :bookmark="false"></user>
