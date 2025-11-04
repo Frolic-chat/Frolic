@@ -1,7 +1,7 @@
 <template>
 <modal :action="title" ref="dialog" :buttons="false">
-    <div class="form-group">
-        {{ defaultHome }}
+    <div class="d-flex flex-column">
+        <div class="text-center">{{ defaultHome }}</div>
         <div class="btn-group btn-group-toggle" role="group" aria-label="Default to home toggle">
             <label class="btn btn-secondary" :class="{ 'active': settings.defaultToHome }">
                 <input type="radio" v-model="settings.defaultToHome" :value="true">
@@ -17,9 +17,12 @@
 
     <div class="form-group"><hr></div>
 
-    <template v-for="(_, k) in widgets">
-        <checkbox :obj="widgets" prefix="widgets" :setting="k"></checkbox>
-    </template>
+    <div class="form-group">
+        {{  desc }}
+        <template v-for="(_, k) in widgets">
+            <checkbox :obj="widgets" prefix="widgets" :setting="k"></checkbox>
+        </template>
+    </div>
 
 </modal>
 </template>
@@ -50,6 +53,8 @@ export default class WidgetOptions extends CustomDialog {
     defaultHome = l('home.widgetOptions.defaultHome');
     home        = l('home');
     console     = l('chat.consoleTab');
+
+    desc        = l('home.widgetOptions.desc');
 }
 </script>
 

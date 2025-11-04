@@ -335,21 +335,22 @@ Are you sure?`,
 
     // Home page widgets
     'home.widgetOptions.title': 'Customize homepage',
-    'home.widgetOptions.defaultHome': 'Select console or home page by default?',
+    'home.widgetOptions.defaultHome': 'Visit the console or home page by default?',
+    'home.widgetOptions.desc': 'Enable widgets for extra home page functionality',
     'settings.widgets.inbox': 'Notes',
-    'settings.widgets.inbox.help': '',
+    'settings.widgets.inbox.help': 'Lightweight inbox for the f-list note system',
     'settings.widgets.scratchpad': 'Personal scratchpad',
-    'settings.widgets.scratchpad.help': '',
+    'settings.widgets.scratchpad.help': 'Cross-character notepad for quick notetaking',
     'settings.widgets.events': 'Personal notices',
-    'settings.widgets.events.help': 'Example: Rare friend sighting, admin broadcast, front page news post',
+    'settings.widgets.events.help': 'Rare friend sighting, admin broadcasts, site news post, etc.',
     'settings.widgets.news': 'Client news',
     'settings.widgets.news.help': 'Update notices, reminders of new or changed features',
     'settings.widgets.suggestions': 'Profile recommendations',
     'settings.widgets.suggestions.help': '',
     'settings.widgets.activity': 'Recent chat events',
-    'settings.widgets.activity.help': '',
-    'settings.widgets.match': 'High quality matches',
-    'settings.widgets.match.help': 'Infrequently highlight very-high quality matches',
+    'settings.widgets.activity.help': 'Chat window containing most relevant activity',
+    'settings.widgets.match': 'High quality matches', // Inactive
+    'settings.widgets.match.help': 'Infrequently highlight very-high quality matches', // Inactive
 
     // Menu
     'settings.closeToTray': 'Close to tray',
