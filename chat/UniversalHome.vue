@@ -45,14 +45,14 @@
     <!-- home page -->
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
         <template v-slot:chat>
-            <div ref="primaryContainer" style="display: contents;"></div>
+            <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
         </template>
         <!-- Logs? -->
         <!-- License -->
         <!-- Notes -->
         <!-- Drafts -->
     </home>
-    <div v-else ref="primaryContainer" style="display: contents;"></div>
+    <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
 
     <!-- console -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" class="page" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation" :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" role="tabpanel"></convo>
@@ -62,6 +62,10 @@
     <page v-show="tab === '2'" role="tabpanel" class="page" id="recon">
         <div v-if="isHome">
             This is where your personality helper goes.
+
+            Show how you're matching with others.
+
+            Make suggestions.
         </div>
 
         <div v-else-if="isChannel">
@@ -152,6 +156,7 @@ import l from './localize';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('Home');
+const logC = NewLogger('conversation');
 
 @Component({
     components: {
@@ -273,9 +278,16 @@ export default class HomeScreen extends Vue {
 
         window.addEventListener('keydown', this.onKey);
 
+        logC.debug('UniversalHome mounted.', {
+            primaryConvo: this.primaryView?.conversation?.name,
+            secondConvo:  this.secondaryView?.conversation?.name,
+        });
+
         this.moveConvo();
     }
-    @Hook('beforeDestroy') destroy() {
+
+    @Hook('beforeDestroy')
+    destroy() {
         window.removeEventListener('keydown', this.onKey);
     }
 
@@ -289,7 +301,7 @@ export default class HomeScreen extends Vue {
 
         if (e.key === 'Escape') {
             if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey)
-            return;
+                return;
 
             this.scrollConversation();
             this.focusInput();
@@ -345,6 +357,8 @@ export default class HomeScreen extends Vue {
     @Watch('isHome')
     moveConvo() {
         this.$nextTick(() => {
+            logC.debug('Conversation mover triggered.', this.primaryView?.conversation?.name);
+
             if (!this.primaryView || !this.primaryView.$el)
                 return;
 

@@ -149,8 +149,7 @@ export default class UserList extends Vue {
     filter = '';
     l = l;
 
-    // singleElementSize = core.state.settings.fontSize * 1.25; // 1.25em from fa-fw icons
-    // I'm not sure where we get 1.5em line height, but that's what the legacy userlist+useview does.
+    // I'm not sure where we get 1.5em line height, but that's what the legacy userlist+userview does.
     singleItemSize = core.state.settings.fontSize * 1.5;
 
     userListProxy = false;
