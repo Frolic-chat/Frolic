@@ -192,23 +192,25 @@ export default class UserList extends Vue {
         return this.profileName ? profileLink(this.profileName) : undefined;
     }
 
+    // 1.5ms down from 5ms of .map(), increased by duplicating the array - which should have been done anyways so is tough to account time for.
+    addIds(a: Array<Channel.Member & {id?: string }>) {
+        for (const e of a) e.id = e.character.name;
+        return a as Array<Channel.Member & { id: string }>;
+    }
+
     /* If we should ever want to use custom icons for each sort type, combining level-down-alt with:
         * stream (normal)
         * user-clock (status)
         * venus-mars (gender)
         * would be easy and make sense.
         */
-    get filteredMembers(): ReadonlyArray<Channel.Member & { id: string }> {
+    get filteredMembers(): Array<Channel.Member & { id: string }> {
         //Trigger update from UserView
         this.userListProxy;
 
         const members = this.getFilteredMembers();
 
-        // Gross:
-        const sorted = members.map(e => ({
-            ...e,
-            id: e.character.name
-        })) as Array<Channel.Member & { id: string }>;
+        const sorted = this.addIds(members);
 
         if (this.sortType === 'normal')
             return sorted;
@@ -256,8 +258,8 @@ export default class UserList extends Vue {
         });
     }
 
-    prefilterMembers(): ReadonlyArray<Channel.Member> {
-        const sorted = this.channel.sortedMembers;
+    prefilterMembers() {
+        const sorted = [ ...this.channel.sortedMembers ];
 
         if (!this.filter)
             return sorted;
