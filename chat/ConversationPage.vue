@@ -152,32 +152,43 @@
                     </div>
                 </template>
                 <template v-slot:toolbar-end>
-                    <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
-                        {{ messageLength }} / {{ conversation.maxMessageLength }}
-                    </div>
-                    <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
-                        <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
-                            <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                                class="nav-link" @click.prevent="setSendingAds(false)">
-                                {{l('channel.mode.chat')}}
-                            </a>
-                        </li>
-                        <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'ads'))">
-                            <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                                class="nav-link" @click.prevent="setSendingAds(true)">
-                                {{adsMode}}
-                            </a>
-                        </li>
-                    </ul>
                     <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
                         {{l('chat.send')}}
                     </div>
                 </template>
             </bbcode-editor>
-            <span class="d-flex justify-content-between">
-                <span v-show="isChannel(conversation)">{{ conversation.key }}</span>
-                <span></span>
-            </span>
+
+            <!-- footer -->
+            <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
+                <span class="channel-key d-none d-md-inline mr-auto text-left">
+                    {{ isChannel(conversation) ? conversation.key : '' }}
+                </span>
+                <div class="send-ads-switcher mx-auto btn-group btn-group-sm" v-if="isChannel(conversation)">
+                    <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'"
+                        class="btn" :class="{
+                            'btn-secondary': !conversation.isSendingAds,
+                            'btn-outline-secondary': conversation.isSendingAds,
+                            disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
+                        }"
+                        @click.prevent="setSendingAds(false)" href="#"
+                    >
+                        {{ l('channel.mode.chat') }}
+                    </a>
+                    <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'"
+                        class="btn" :class="{
+                            'btn-secondary': conversation.isSendingAds,
+                            'btn-outline-secondary': !conversation.isSendingAds,
+                            disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
+                        }"
+                        @click.prevent="setSendingAds(true)" href="#"
+                    >
+                        {{ adsMode }}
+                    </a>
+                </div>
+                <span class="message-length ml-auto text-right" v-if="isChannel(conversation) || isPrivate(conversation)">
+                    {{ messageLength }}<span class="d-none d-sm-inline"> / {{ conversation.maxMessageLength }}</span>
+                </span>
+            </div>
         </div>
 
         <!-- Modals -->
@@ -846,11 +857,6 @@
 @import "~bootstrap/scss/variables";
 @import "~bootstrap/scss/mixins/breakpoints";
 
-// .toolbar-buttons .message-length {
-//     margin-left: auto;
-//     align-content: center;
-// }
-
 .conversation .header {
     border-bottom: solid 1px rgba(248, 248, 242, 0.125);
     padding-block: 10px;
@@ -887,15 +893,18 @@
 
 .conversation .input {
     padding-inline: 0;
+    padding-bottom: 0;
+}
 
-    .message-length.pm {
-        min-width: 11ch;
-        text-align: right;
-    }
+.conversation .message-length,
+.conversation .channel-key {
+    min-width: 13ch;
+}
 
-    .message-length.channel {
-        min-width: 9ch;
-        text-align: right;
+.send-ads-switcher.btn-group {
+    > .btn {
+        padding-block: 0.2rem;
+        line-height: 1.25;
     }
 }
 
@@ -903,10 +912,6 @@
  * Below this point, css rules may be unreveiwed.
  */
 .conversation {
-    .send-ads-switcher a {
-        padding: 3px 10px;
-    }
-
     .toggle-autopost {
         margin-left: 1px;
     }
