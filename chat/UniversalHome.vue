@@ -464,6 +464,10 @@ export default class HomeScreen extends Vue {
 </script>
 
 <style lang="scss">
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins/breakpoints";
+
 .chat-panel {
     height: 100%;
     display: flex;
