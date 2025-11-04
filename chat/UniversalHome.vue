@@ -36,10 +36,10 @@
     <!-- Pseudo-teleport -->
      <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
         :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
-        :style="isHome ? 'max-width: 50%' : ''"
-        :class="{ page:     !isHome }"
-        :id="{    home:     !isHome }"
-        :role="{  tabpanel: !isHome }"
+        :style="isHome ? activityStyles : ''"
+        :class="isHome ? '' : 'page'"
+           :id="isHome ? '' : 'home'"
+         :role="isHome ? '' : 'tabpanel'"
     ></convo>
 
     <!-- home page -->
@@ -198,6 +198,8 @@ export default class HomeScreen extends Vue {
      * Useful for linking IC + OOC rooms into a cohesive unit.
      */
     linkedChannel = undefined; // Unused; useful for linking IC + OOC channels.
+
+    activityStyles = 'max-width: 50%';
 
     /**
      * Index of the current tab; a string rep of a number. Keep `tab` and `tabNum` in sync.
