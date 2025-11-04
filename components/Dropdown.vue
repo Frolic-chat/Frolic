@@ -4,7 +4,11 @@
         <a :class="linkClass" aria-haspopup="true" :aria-expanded="isOpen" @click.prevent="isOpen = !isOpen" href="#"
             :style="linkStyle" role="button" tabindex="-1" ref="button">
             <i :class="iconClass" v-if="!!iconClass"></i>
-            <slot name="title">{{title}}</slot>
+            <slot name="title">
+                <span :class="{ 'btn-text': hideTextXs }">
+                    {{title}}
+                </span>
+            </slot>
         </a>
         <div class="dropdown-menu" ref="menu" @mousedown.prevent.stop @click.prevent.stop="menuClick()">
             <slot></slot>
@@ -31,6 +35,8 @@
         readonly title?: string;
         @Prop({default: 'width:100%;text-align:left;align-items:center'})
         readonly linkStyle!: string;
+        @Prop({ default: true })
+        readonly hideTextXs!: boolean;
 
         @Watch('isOpen')
         onToggle(): void {

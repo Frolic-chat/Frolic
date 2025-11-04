@@ -636,7 +636,11 @@ class ActivityConversation extends Conversation {
     readonly maxMessageLength = 0;
     readonly enteredText = '';
 
-    async addMessage(): Promise<void> {} // noop
+    async addMessage(message: Interfaces.Message): Promise<void> {
+        this.safeAddMessage(message);
+        if (this !== state.selectedConversation || !state.windowFocused)
+            this.unread = Interfaces.UnreadState.Unread;
+    }
     close(): void {}                     // noop
     onHide(): void {}                    // noop
     protected doSend(): void {}          // noop
