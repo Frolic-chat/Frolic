@@ -1,15 +1,15 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="home-page">
-    <div class="prescroll container-fluid">
+<div class="home-page" :class="bodyClasses">
+    <div class="prescroll container-fluid" :class="prescrollClasses">
         <slot name="prescroll"></slot>
     </div>
 
-    <div class="scroll-cage container-fluid" ref="scrollCage">
+    <div class="scroll-cage container-fluid" ref="scrollCage" :class="scrollcageClasses">
         <slot></slot>
     </div>
 
-    <div class="postscroll container-fluid">
+    <div class="postscroll container-fluid" :class="postscrollClasses">
         <slot name="postscroll"></slot>
     </div>
 </div>
@@ -17,10 +17,22 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from '@f-list/vue-ts';
 
 @Component({})
 export default class HomePageLayout extends Vue {
+    @Prop({ default: '' })
+    readonly bodyClasses!: string;
+
+    @Prop({ default: '' })
+    readonly prescrollClasses!: string;
+
+    @Prop({ default: '' })
+    readonly scrollcageClasses!: string;
+
+    @Prop({ default: '' })
+    readonly postscrollClasses!: string;
+
     scrollCage!: HTMLDivElement;
 
     @Hook('mounted')
@@ -67,12 +79,31 @@ export default class HomePageLayout extends Vue {
     }
 }
 
+.prescroll:empty {
+    padding: 0    !important;
+    margin:  0    !important;
+    border:  none !important;
+}
+
 .prescroll {
     padding-top: 10px;
 }
+
+.scroll-cage:empty {
+    padding: 0    !important;
+    margin:  0    !important;
+    border:  none !important;
+}
+
 .scroll-cage {
     flex: 1 1 0%;
     overflow: auto;
+}
+
+.postscroll:empty {
+    padding: 0    !important;
+    margin:  0    !important;
+    border:  none !important;
 }
 
 .postscroll {
