@@ -936,7 +936,9 @@ export default function(this: any): Interfaces.State {
             state.privateConversations = [];
             state.privateMap = {};
         } else state.consoleTab.unread = Interfaces.UnreadState.None;
-        state.selectedConversation = state.consoleTab;
+        state.selectedConversation = core.state.generalSettings.defaultToHome
+            ? state.activityTab
+            : state.consoleTab;
         EventBus.$emit('select-conversation', { conversation: state.selectedConversation });
         await state.reloadSettings();
     });
