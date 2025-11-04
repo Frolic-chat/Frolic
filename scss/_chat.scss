@@ -193,6 +193,10 @@
 }
 
 .border-bottom {
+  border-bottom: solid 1px $card-border-color;
+}
+
+.border-bottom-thick {
   border-bottom: solid 2px $gray-300;
 }
 
