@@ -1,86 +1,106 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<page ref="pageLayout">
+<page ref="pageLayout"
+    :body-classes="'conversation'"
+    :prescroll-classes="'header d-flex flex-column'"
+    :scrollcage-classes="'messages ' + getMessageWrapperClasses()"
+    :postscroll-classes="'input'"
+>
     <template v-slot:prescroll>
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center">
-            <span v-if="isPrivate(conversation)" class="mr-auto"><!-- left side: userview -->
-                <img v-if="settings.showAvatars" style="height:60px" :src="characterImage"/>
-                <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
-            </span>
-            <span v-else-if="isChannel(conversation)" class="mr-auto"><!-- left side: channel name -->
-                <h5>{{ conversation.name }}</h5>
-            </span>
+        <template v-if="isPrivate(conversation) || isChannel(conversation)">
+            <div class="info d-flex justify-content-between align-items-center">
+                <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
+                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" :style="userMemo ? 'height: 4.5em' : 'height: 3em'"/>
+                    <span class="d-flex flex-column">
+                        <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
+                        <span class="text-truncate">
+                            {{ l('status.' + conversation.character.status) }}
+                            <span v-show="conversation.character.statusText"> – <bbcode :text="conversation.character.statusText"></bbcode></span>
+                        </span>
+                        <span v-show="userMemo" class="text-truncate">
+                            <b>{{ l('chat.memoHeader') }}</b> {{ userMemo }}
+                        </span>
+                        <span v-show="!userMemo" class="text-truncate"><!-- show shared channels --></span>
+                    </span>
+                </span>
+                <span v-else-if="isChannel(conversation)" class="mr-auto"><!-- left side: channel name -->
+                    <h5>{{ conversation.name }}</h5>
+                </span>
 
-            <span class="ml-auto"><!-- right side -->
-                <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
-                    <span class="fa fa-edit"></span>
-                    <span class="btn-text">{{l('manageChannel.open')}}</span>
-                </a>
-                <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                    <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                        <span class="fa fa-file-alt"></span>
-                        <span class="btn-text">{{ l('logs.title') }}</span>
+                <span class="ml-auto flex-shrink-0"><!-- right side -->
+                    <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
+                        <span class="fa fa-edit"></span>
+                        <span class="btn-text">{{l('manageChannel.open')}}</span>
                     </a>
-                    <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
-                        <span class="fa fa-exclamation-triangle"></span>
-                        <span class="btn-text">{{ l('chat.report') }}</span>
-                    </a>
-                </template>
-                <dropdown v-if="isChannel(conversation)" :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                    <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                        {{l('channel.mode.' + mode)}}
-                    </button>
-                    <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                    <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                        {{l('channel.ads.incompatible')}}
-                    </button>
-                    <template v-show="conversation.settings.adSettings.ads.length">
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item" @click="showAdSettings()">
-                            {{l('channel.ads.edit')}}
-                        </button>
+                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                            <span class="fa fa-file-alt"></span>
+                            <span class="btn-text">{{ l('logs.title') }}</span>
+                        </a>
+                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
+                            <span class="fa fa-exclamation-triangle"></span>
+                            <span class="btn-text">{{ l('chat.report') }}</span>
+                        </a>
                     </template>
-                </dropdown>
-            </span>
-        </div>
-
-        <!-- Message filter/search bar -->
-        <div class="search input-group" v-show="showSearch">
-            <div class="input-group-prepend">
-                <div class="input-group-text">
-                    <span class="fas fa-search"></span>
-                </div>
+                    <dropdown v-if="isChannel(conversation)" :keep-open="false" :title="l('channel.mode.title')" :hide-text-xs="true" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
+                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                            {{l('channel.mode.' + mode)}}
+                        </button>
+                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                        <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                            {{l('channel.ads.incompatible')}}
+                        </button>
+                        <template v-show="conversation.settings.adSettings.ads.length">
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item" @click="showAdSettings()">
+                                {{l('channel.ads.edit')}}
+                            </button>
+                        </template>
+                    </dropdown>
+                </span>
             </div>
-            <input v-model="searchInput" @keydown.esc="hideSearch()" @keypress="lastSearchInput = Date.now()"
-                :placeholder="l('chat.search')" ref="searchField" class="form-control"/>
-            <a class="btn btn-sm btn-light" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);line-height:0;z-index:10" @click="hideSearch">
-                <i class="fas fa-times"></i>
-            </a>
-        </div>
 
-        <!-- Ad posting display - Legacy? -->
-        <div class="auto-ads" v-show="isAutopostingAds()">
-            <h4>{{l('admgr.activeHeader')}}</h4>
-            <div class="update">{{adAutoPostUpdate}}</div>
-
-            <div v-show="adAutoPostNextAd" class="next">
-                <h5>
-                    {{l('admgr.comingNext')}} <a @click="skipAd()">
-                        <i class='adAction fas fa-arrow-right'></i>
+            <!-- Message filter/search bar -->
+            <div class="search input-group mt-2" v-show="showSearch">
+                <div class="input-group-prepend">
+                    <div class="input-group-text btn">
+                        <span class="fa-fw fas fa-search"></span>
+                    </div>
+                </div>
+                <input v-model="searchInput" @keydown.esc="hideSearch()" @keypress="lastSearchInput = Date.now()"
+                    :placeholder="l('chat.search')" ref="searchField" class="form-control"/>
+                <div class="input-group-append">
+                    <a class="input-group-text btn btn-sm btn-light" @click="hideSearch">
+                        <i class="fa-fw fas fa-times"></i>
                     </a>
-                </h5>
-                <div>
-                    {{(adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '')}}{{l('general.ellipses')}}
                 </div>
             </div>
 
-            <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
-                {{l('admgr.renew')}}
-            </a>
-            <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
-                {{l('admgr.setup')}}
-            </a>
-        </div>
+            <!-- Ad posting display - Legacy? -->
+            <div class="auto-ads" v-show="isAutopostingAds()">
+                <h4>{{l('admgr.activeHeader')}}</h4>
+                <div class="update">{{adAutoPostUpdate}}</div>
+
+                <div v-show="adAutoPostNextAd" class="next">
+                    <h5>
+                        {{l('admgr.comingNext')}} <a @click="skipAd()">
+                            <i class='adAction fas fa-arrow-right'></i>
+                        </a>
+                    </h5>
+                    <div>
+                        {{(adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '')}}{{l('general.ellipses')}}
+                    </div>
+                </div>
+
+                <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
+                    {{l('admgr.renew')}}
+                </a>
+                <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
+                    {{l('admgr.setup')}}
+                </a>
+            </div>
+        </template>
     </template>
 
     <!-- Message box -->
@@ -101,63 +121,64 @@
                 </span>
             </span>
         </template>
-
-        <!--
-        <div class="border-top messages d-flex flex-column" :class="getMessageWrapperClasses()" ref="messageBlock" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="overflow:auto; margin-top:2px">
-        </div>
-        -->
     </template>
 
     <template v-slot:postscroll>
         <!-- Input box -->
-        <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
-            :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
-            :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
-            :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
-            :characterName="ownName"
-            :type="'big'"
-            >
-            <template v-slot:default>
-                <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-                    <user :character="conversation.character" :match="false" :bookmark="false"></user>
-                    &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
-                </span>
-                <div v-show="conversation.infoText" class="chat-info-text">
-                    <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
-                    <span style="flex:1;margin-left:5px">
-                        {{conversation.infoText}}
+        <div v-show="isPrivate(conversation) || isChannel(conversation)" style="display: contents;">
+            <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
+                :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
+                :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
+                :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
+                :characterName="ownName"
+                :type="'big'"
+                >
+                <template v-slot:default>
+                    <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
+                        <user :character="conversation.character" :match="false" :bookmark="false"></user>
+                        &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
                     </span>
-                </div>
-                <div v-show="conversation.errorText" class="chat-info-text">
-                    <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
-                    <span class="redText" style="flex:1;margin-left:5px">
-                        {{conversation.errorText}}
-                    </span>
-                </div>
-            </template>
-            <template v-slot:toolbar-end>
-                <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
-                    {{ messageLength }} / {{ conversation.maxMessageLength }}
-                </div>
-                <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
-                    <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
-                        <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                            class="nav-link" @click.prevent="setSendingAds(false)">
-                            {{l('channel.mode.chat')}}
-                        </a>
-                    </li>
-                    <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'ads'))">
-                        <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                            class="nav-link" @click.prevent="setSendingAds(true)">
-                            {{adsMode}}
-                        </a>
-                    </li>
-                </ul>
-                <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
-                    {{l('chat.send')}}
-                </div>
-            </template>
-        </bbcode-editor>
+                    <div v-show="conversation.infoText" class="chat-info-text">
+                        <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
+                        <span style="flex:1;margin-left:5px">
+                            {{conversation.infoText}}
+                        </span>
+                    </div>
+                    <div v-show="conversation.errorText" class="chat-info-text">
+                        <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
+                        <span class="redText" style="flex:1;margin-left:5px">
+                            {{conversation.errorText}}
+                        </span>
+                    </div>
+                </template>
+                <template v-slot:toolbar-end>
+                    <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
+                        {{ messageLength }} / {{ conversation.maxMessageLength }}
+                    </div>
+                    <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
+                        <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
+                            <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
+                                class="nav-link" @click.prevent="setSendingAds(false)">
+                                {{l('channel.mode.chat')}}
+                            </a>
+                        </li>
+                        <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'ads'))">
+                            <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
+                                class="nav-link" @click.prevent="setSendingAds(true)">
+                                {{adsMode}}
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
+                        {{l('chat.send')}}
+                    </div>
+                </template>
+            </bbcode-editor>
+            <span class="d-flex justify-content-between">
+                <span v-show="isChannel(conversation)">{{ conversation.key }}</span>
+                <span></span>
+            </span>
+        </div>
 
         <!-- Modals -->
         <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
@@ -240,6 +261,8 @@
         @Prop({ required: true })
         readonly commandHelp!: CommandHelp;
 
+        get isActivity() { return this.conversation === core.conversations.activityTab }
+        get isConsole()  { return this.conversation === core.conversations.consoleTab  }
 
         modes = channelModes;
         descriptionExpanded = false;
@@ -307,17 +330,25 @@
         get messageLength() { return getByteLength(this.conversation.enteredText) }
         get memoLength()    { return getByteLength(this.editorMemo)               }
 
-        @Hook('beforeMount')
-        async onBeforeMount(): Promise<void> {
-          this.updateOwnName();
-
-          this.showNonMatchingAds = !await core.settingsStore.get('hideNonMatchingAds');
+        @Hook('created')
+        created() {
+            log.debug(`Created -> ${this.isActivity ? 'Activity' : 'Console'}`);
         }
 
+        @Hook('beforeMount')
+        async onBeforeMount(): Promise<void> {
+            log.debug(`beforeMount -> ${this.isActivity ? 'Activity' : 'Console'}`);
+
+            this.updateOwnName();
+
+            this.showNonMatchingAds = !await core.settingsStore.get('hideNonMatchingAds');
+        }
 
         @Hook('mounted')
         mounted(): void {
             this.updateOwnName();
+
+            log.debug(`Mounted -> ${this.isActivity ? 'Activity' : 'Console'}`);
 
             this.textBox      = <Editor>this.$refs['mainInput'];
             this.Layout       = <HomePageLayout>this.$refs['pageLayout'];
@@ -423,8 +454,13 @@
         async conversationChanged(): Promise<void> {
             this.updateOwnName();
 
-            if (!anyDialogsShown) this.textBox.focus();
-            this.$nextTick(() => setTimeout(() => this.messageBlock.scrollTop = this.messageBlock.scrollHeight));
+            if (!anyDialogsShown)
+                this.textBox.focus();
+
+            this.$nextTick(() => setTimeout(() =>
+                this.messageBlock.scrollTop = this.messageBlock.scrollHeight
+            ));
+
             this.scrolledDown = true;
 
             this.refreshAutoPostingTimer();
@@ -440,8 +476,10 @@
         @Watch('conversation.messages')
         messageAdded(newValue: Conversation.Message[]): void {
             this.keepScroll();
-            if(!this.scrolledDown && newValue.length === this.messageCount)
+
+            if (!this.scrolledDown && newValue.length === this.messageCount)
                 this.messageBlock.scrollTop -= (this.messageBlock.firstElementChild!).clientHeight;
+
             this.messageCount = newValue.length;
         }
 
@@ -450,24 +488,26 @@
          * Resizing the window; the text input box growing larger; other player's typing indicator being shown or hidden; an error or info message appearing or hiding; receiving a new message.
          */
         keepScroll(): void {
-            if(this.scrolledDown) {
+            if (this.scrolledDown) {
                 this.ignoreScroll = true;
                 this.$nextTick(() => setTimeout(() => {
                     this.ignoreScroll = true;
                     this.messageBlock.scrollTop = this.messageBlock.scrollHeight;
-                }, 0));
+                }));
             }
         }
 
         scrollMessageView(e?: KeyboardEvent) {
             this.ignoreScroll = true;
+
             this.$nextTick(() => setTimeout(() => {
                 this.ignoreScroll = true;
                 this.messageBlock.scrollTop = this.messageBlock.scrollHeight;
                 this.scrolledDown = true;
             }));
 
-            if(e && !anyDialogsShown) this.textBox.focus();
+            if (e && !anyDialogsShown)
+                this.textBox.focus();
         }
 
         /**
@@ -480,31 +520,40 @@
                 this.ignoreScroll = false;
                 return;
             }
-            if(this.messageBlock.scrollTop < 20) {
-                if(!this.scrolledUp) {
+            if (this.messageBlock.scrollTop < 20) {
+                if (!this.scrolledUp) {
                     const firstMessage = this.messageBlock.firstElementChild;
-                    if(this.conversation.loadMore() && firstMessage !== null) {
+
+                    if (this.conversation.loadMore() && firstMessage) {
                         this.messageBlock.style.overflow = 'hidden';
+
                         this.$nextTick(() => {
                             this.messageBlock.scrollTop = (<HTMLElement>firstMessage).offsetTop;
                             this.messageBlock.style.overflow = 'auto';
                         });
                     }
                 }
+
                 this.scrolledUp = true;
-            } else this.scrolledUp = false;
+            }
+            else {
+                this.scrolledUp = false;
+            }
+
             this.scrolledDown = this.messageBlock.scrollTop + this.messageBlock.offsetHeight >= this.messageBlock.scrollHeight - 15;
         }
 
         @Watch('conversation.errorText')
         @Watch('conversation.infoText')
         textChanged(newValue: string, oldValue: string): void {
-            if(oldValue.length === 0 && newValue.length > 0) this.keepScroll();
+            if (oldValue.length === 0 && newValue.length > 0)
+                this.keepScroll();
         }
 
         @Watch('conversation.typingStatus')
         typingStatusChanged(_str: string, oldValue: string): void {
-            if(oldValue === 'clear') this.keepScroll();
+            if (oldValue === 'clear')
+                this.keepScroll();
         }
 
         async onKeyDown(e: KeyboardEvent): Promise<void> {
@@ -600,7 +649,9 @@
 
         setMode(mode: Channel.Mode): void {
             const conv = (<Conversation.ChannelConversation>this.conversation);
-            if(conv.channel.mode === 'both') conv.mode = mode;
+
+            if (conv.channel.mode === 'both')
+                conv.mode = mode;
         }
 
 
@@ -614,19 +665,17 @@
             this.scrolledDown = false;
         }
 
-        /* tslint:disable */
-        getMessageWrapperClasses(): any {
+        getMessageWrapperClasses() {
             const filter = core.state.settings.risingFilter;
-            const classes:any = {};
+            const classes: { [key: string]: boolean } = {};
 
             if (this.isPrivate(this.conversation)) {
               classes['filter-channel-messages'] = filter.hidePrivateMessages;
               return classes;
             }
 
-            if (!this.isChannel(this.conversation)) {
+            if (!this.isChannel(this.conversation))
                 return {};
-            }
 
             const conv = <Conversation.ChannelConversation>this.conversation;
 
@@ -634,70 +683,51 @@
             classes['hide-non-matching'] = !this.showNonMatchingAds;
 
             classes['filter-ads'] = filter.hideAds;
-            classes['filter-channel-messages'] = conv.channel.owner !== '' ? filter.hidePrivateChannelMessages : filter.hidePublicChannelMessages;
+            classes['filter-channel-messages'] = conv.channel.owner !== ''
+                ? filter.hidePrivateChannelMessages
+                : filter.hidePublicChannelMessages;
 
             return classes;
         }
 
         acceptReport(sfc: {callid: number}): void {
-            core.connection.send('SFC', {action: 'confirm', callid: sfc.callid});
+            core.connection.send('SFC', { action: 'confirm', callid: sfc.callid });
         }
 
         setSendingAds(is: boolean): void {
             const conv = (<Conversation.ChannelConversation>this.conversation);
-            if(conv.channel.mode === 'both') {
+
+            if (conv.channel.mode === 'both') {
                 conv.isSendingAds = is;
                 this.textBox.focus();
             }
         }
 
-        showLogs(): void {
-            this.logs.show();
-        }
-
-        report(): void {
-            this.reportDialog.report();
-        }
-
-        showAdSettings(): void {
-            (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show();
-        }
-
-        showManage(): void {
-            (<ManageChannel>this.$refs['manageDialog']).show();
-        }
-
-        showAds(): void {
-            (<CharacterAdView>this.$refs['adViewer']).show();
-        }
-
-        showChannels(): void {
-            (<CharacterChannelList>this.$refs['channelList']).show();
-        }
-
+        showLogs(): void       { this.logs.show() }
+        report(): void         { this.reportDialog.report() }
+        showAdSettings(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
+        showManage(): void     { (<ManageChannel>this.$refs['manageDialog']).show() }
+        showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
+        showChannels(): void   { (<CharacterChannelList>this.$refs['channelList']).show() }
 
         isAutopostingAds(): boolean {
             return this.conversation.adManager.isActive();
         }
-
 
         skipAd(): void {
           this.conversation.adManager.skipAd();
           this.updateAutoPostingState();
         }
 
-
         stopAutoPostAds(): void {
             this.conversation.adManager.stop();
         }
-
 
         renewAutoPosting(): void {
             this.conversation.adManager.renew();
 
             this.refreshAutoPostingTimer();
         }
-
 
         toggleAutoPostAds(): void {
             if(this.isAutopostingAds())
@@ -707,7 +737,6 @@
 
             this.refreshAutoPostingTimer();
         }
-
 
         updateAutoPostingState() {
             const adManager = this.conversation.adManager;
@@ -822,63 +851,65 @@
 //     align-content: center;
 // }
 
-#conversation {
-    .messages:focus {
+.conversation .header {
+    border-bottom: solid 1px rgba(248, 248, 242, 0.125);
+    padding-block: 10px;
+}
+
+.conversation .header .info {
+    > .mr-auto > * {
+        margin-right: 5px;
+    }
+
+    > .ml-auto > * {
+        margin-left: 5px;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        margin: 0;
+    }
+
+    .bbcode {
+        /* Remake of text-truncate :) */
+        overflow:      hidden;
+        text-overflow: ellipsis;
+        white-space:   nowrap;
+    }
+}
+
+.conversation .messages {
+    padding-inline: 0;
+
+    &:focus {
         outline: initial;
     }
+}
 
-    .btn-toolbar {
-        .btn-group {
-            margin-left: 3px;
-            margin-right: 3px;
+.conversation .input {
+    padding-inline: 0;
 
-            &:last-child {
-                margin-right: 0;
-            }
-
-            a.btn {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-                // color: #cbcbe5;
-
-                i {
-                    margin-right: 0.4rem;
-                    font-size: 90%;
-                }
-            }
-
-            button::before {
-                display: inline-block;
-                width: 1.3rem;
-                height: 1rem;
-                content: '';
-                margin-left: -1.3rem;
-                margin-right: 0.1rem;
-                padding-left: 0.3rem;
-                font-weight: bold;
-            }
-
-            button.selected::before {
-                content: '✓';
-            }
-
-            &.views {
-                button.selected::before {
-                    content: '•';
-                }
-            }
-        }
+    .message-length.pm {
+        min-width: 11ch;
+        text-align: right;
     }
 
+    .message-length.channel {
+        min-width: 9ch;
+        text-align: right;
+    }
+}
+
+/*
+ * Below this point, css rules may be unreveiwed.
+ */
+.conversation {
     .send-ads-switcher a {
         padding: 3px 10px;
     }
 
-
     .toggle-autopost {
         margin-left: 1px;
     }
-
 
     .auto-ads {
         background-color: rgb(220, 113, 31);
@@ -947,12 +978,6 @@
         }
 
     }
-
-    @media (max-width: breakpoint-max(sm)) {
-        .mode-switcher a {
-            padding: 5px 8px;
-        }
-    }
 }
 
 .chat-info-text {
@@ -962,16 +987,6 @@
     @media (max-width: breakpoint-max(xs)) {
         flex-basis: 100%;
     }
-}
-
-div.message-length.pm {
-    min-width: 11ch;
-    text-align: right;
-}
-
-div.message-length.channel {
-    min-width: 9ch;
-    text-align: right;
 }
 
 .message-time,
@@ -1004,7 +1019,6 @@ div.message-length.channel {
         border-width: 1px;
     }
 }
-
 
 .user-view {
     .user-rank {
@@ -1058,7 +1072,6 @@ div.message-length.channel {
         }
     }
 }
-
 
 .messages.hide-non-matching .message.message-score {
     &.mismatch {
@@ -1165,7 +1178,7 @@ div.message-length.channel {
     }
 }
 
-.user-avatar {
+.message .user-avatar {
     max-height: 1.2em;
     min-height: 1.2em;
     margin-right: 2px !important;
