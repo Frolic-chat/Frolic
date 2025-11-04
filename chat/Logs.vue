@@ -55,6 +55,7 @@
         <div class="messages messages-both" style="overflow:auto;overscroll-behavior:none;" ref="messageviews" tabindex="-1"
              @scroll="onMessagesScroll">
             <message-view v-for="message in displayedMessages" :message="message" :key="message.id" :logs="true"></message-view>
+            <div v-if="displayedMessages.length === 0" class="message mismatch">No messages found.</div>
         </div>
         <div class="input-group" style="flex-shrink:0">
             <div class="input-group-prepend">
