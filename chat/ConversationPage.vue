@@ -11,7 +11,7 @@
         <template v-if="isPrivate(conversation) || isChannel(conversation)">
             <div class="info d-flex justify-content-between align-items-center">
                 <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
-                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" :style="userMemo ? 'height: 4.5em' : 'height: 3em'"/>
+                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 4.5em"/>
                     <span class="d-flex flex-column">
                         <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
                         <span class="text-truncate">
