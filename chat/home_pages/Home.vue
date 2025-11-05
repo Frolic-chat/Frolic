@@ -33,9 +33,14 @@
     </template>
 
     <template v-slot:postscroll>
-        <div>
-            Footer content!
-            <!-- Version --><!-- License -->
+        <div class="d-flex flex-wrap-reverse justify-content-between align-items-end small border-top">
+            <span>
+                Foot<small>er</small> content!
+            </span>
+            <a href="#" @click.prevent="openLicense()" class="ml-auto d-flex flex-column align-items-end text-muted text-right text-decoration-none p-1"><!-- Version & License -->
+                <span>Frolic is free software!</span>
+                <span><span class="text-primary">Click here</span> to learn what that means.</span>
+            </a>
         </div>
     </template>
 </page>
@@ -61,6 +66,14 @@ export default class Home extends Vue {
 
     openWidgetOptions() {
          (<WidgetOptions>this.$refs['widgetOptionsModal']).show();
+    }
+
+    openLicense() {
+        this.$emit("navigate", {
+            conversation: null, // set selectedConversation to this.
+            tab: 4,             // set tab to this.
+            section: 'license', // try to find id named this in the page and scroll to it.
+        });
     }
 }
 </script>

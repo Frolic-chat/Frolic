@@ -43,7 +43,7 @@
     ></convo>
 
     <!-- home page -->
-    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home">
+    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home" @navigate="handleNavigation">
         <template v-slot:chat>
             <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
         </template>
@@ -109,23 +109,11 @@
         </template>
     </page>
 
-    <page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data">
-        <!-- Dev settings/info -->
-            <div class="row">
-                <div class="col-auto">Logging:</div>
-                <div class="col">Y/N, Log directory</div>
-            </div>
-            <template v-if="isChannel">
-                <div class="row">
-                    <div class="col-auto">Level:</div>
-                    <div class="col">Are you op?</div>
-                </div>
-                <div class="row">
-                    <div class="col-auto">Chat modes:</div>
-                    <div class="col">Ads/Chat/Both?</div>
-                </div>
-            </template>
-    </page>
+    <data-page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data" :conversation="conversation">
+        <template v-slot:title>
+            Data for {{ isHome ? 'Frolic' : conversation.name }}
+        </template>
+    </data-page>
 
     <!-- Modals for the conversation: -->
     <logs ref="logsDialog" :conversation="conversation"></logs>
@@ -142,6 +130,7 @@ import Tabs from '../components/tabs';
 import HomePageLayout from './home_pages/HomePageLayout.vue';
 
 import Home from './home_pages/Home.vue';
+import Data from './home_pages/Data.vue';
 import ConversationView from './ConversationPage.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
@@ -151,6 +140,7 @@ import       CommandHelp from './CommandHelp.vue';
 import       Logs        from '../chat/Logs.vue';
 
 import { Conversation } from './interfaces';
+import { getAsNumber } from '../helpers/utils';
 import core from './core';
 import l from './localize';
 
@@ -162,8 +152,9 @@ const logC = NewLogger('conversation');
     components: {
         tabs:    Tabs,
 
-        home:             Home,
-        page:             HomePageLayout,
+        home: Home,
+        page: HomePageLayout,
+        'data-page': Data,
 
         'convo':          ConversationView,
         'char-settings':  Settings,
@@ -322,6 +313,55 @@ export default class HomeScreen extends Vue {
             }
         }
     };
+
+    /**
+     * Home-page navigation expects this structure:
+     * ```ts
+     * {
+     *   // selectedConversation will be set to this
+     *   conversation: Conversation,
+     *   // change to this tab.
+     *   tab: number | string,
+     *   // Scroll to this id in the page.
+     *   section: string | nullish,
+     * }
+     * ```
+     * @param e
+     */
+    handleNavigation(e: { tab?: any, conversation?: any, section?: any } | string | number | undefined | null) {
+        if (typeof e !== 'object') return;
+        if (!e)                    return;
+
+        if (typeof e.tab === 'number' && e.tab <= 4) {
+            this.tab = e.tab.toString();
+        }
+        else if (typeof e.tab === 'string') {
+            const n = getAsNumber(e.tab);
+            if (n && n <= 4)
+                this.tab = e.tab.toString();
+        }
+
+        if (e.conversation && typeof e.conversation === 'object') {
+            if ('key' in e.conversation || 'channel' in e.conversation || 'character' in e.conversation) {
+                const s = e.conversation as Conversation;
+
+                if (Conversation.isPrivate(s) || Conversation.isChannel(s)
+                ||  Conversation.isConsole(s) || Conversation.isActivity(s)) {
+                    this.$nextTick(() => s.show());
+                }
+            }
+        }
+
+        if (typeof e.section === 'string') {
+            const s = e.section;
+            this.$nextTick(() => {
+                this.$nextTick(() => {
+                    const el = document.getElementById(s);
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                });
+            });
+        }
+    }
 
     /**
      * detect selectedConversation changes; always use new_convo.show() as that calls old_convo.onHide() automatically.

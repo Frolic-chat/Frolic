@@ -68,6 +68,12 @@ import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
+import * as LicenseHandler from './main/license-handler';
+(async () => {
+    if (!(await LicenseHandler.init(app.getAppPath())))
+        console.warn('Failed to load license handler main-side.');
+})();
+
 import { exec } from 'child_process';
 import { FindExeFileFromName } from '../helpers/utils';
 
