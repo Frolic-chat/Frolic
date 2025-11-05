@@ -229,7 +229,7 @@ export default class UserView extends Vue {
             bookmark = 'user-bookmark';
         }
 
-        const gender = ((this.character.overrides.gender || this.character.gender) ?? 'None').toLowerCase();
+        const gender = this.character.gender.toLowerCase(); // for classes; skip custom
 
         return `user-view gender-${gender} ${bookmark}`;
     }

@@ -155,7 +155,7 @@ export function getStatusClasses(character:    CharacterStatus.Character,
         smartFilterIcon = 'user-filter fas fa-filter';
     }
 
-    const gender = (character.overrides.gender || character.gender)?.toLowerCase() ?? 'none';
+    const gender = character.gender.toLowerCase(); // for classes; skip custom
 
     let isBookmark: boolean = false;
     try {
