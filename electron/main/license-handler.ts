@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import path from "path";
 import * as fs from 'fs/promises';
 import { existsSync } from "fs";

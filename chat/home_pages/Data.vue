@@ -62,7 +62,7 @@
                     <p class="card-text">Frolic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.</p>
                     <p class="card-text">You should have received a copy of the GNU Affero General Public License along with this program; if not, see https://www.gnu.org/licenses.</p>
                     <div v-if="licenseFiles.length" class="btn-group-vertical mt-2" role="group" aria-label="license information">
-                        <button v-for="f in licenseFiles" :key="f" class="btn btn-outline-primary" @click="loadLicense(f)">
+                        <button v-for="f in licenseFiles" :key="f" class="btn btn-primary" @click="loadLicense(f)">
                             {{ f }}
                         </button>
                     </div>

@@ -14,7 +14,7 @@
 
     <template v-slot:default>
         <div class="d-flex flex-column flex-nowrap">
-            <div class="d-flex flex-row">
+            <div class="d-flex flex-row"><!-- Top row -->
                 Body content!
                 <!-- Important logins and logouts -->
                 <!-- Changelog and update alert -->
@@ -22,7 +22,7 @@
                 <!-- Dev settings/info -->
             </div>
 
-            <div class="d-flex flex-row">
+            <div class="d-flex flex-row"><!-- Second row -->
                 <div v-show="widgets.activity" class="chat-container ml-auto">
                     <slot name="chat"></slot>
                 </div>

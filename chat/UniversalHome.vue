@@ -143,7 +143,7 @@ const logC = NewLogger('conversation');
 
 @Component({
     components: {
-        tabs:    Tabs,
+        tabs: Tabs,
 
         home: Home,
         page: HomePageLayout,

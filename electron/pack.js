@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /* global process, console */
 //process.env.DEBUG = 'electron-windows-installer:main';
 import path from 'path';
