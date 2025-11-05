@@ -21,7 +21,9 @@
                         <span v-show="userMemo" class="text-truncate">
                             <b>{{ l('chat.memoHeader') }}</b> {{ userMemo }}
                         </span>
-                        <span v-show="!userMemo" class="text-truncate"><!-- show shared channels --></span>
+                        <span v-show="!userMemo" class="text-truncate">
+                            No memo; show shared channels.
+                        </span>
                     </span>
                 </span>
                 <span v-else-if="isChannel(conversation)" class="mr-auto"><!-- left side: channel name -->

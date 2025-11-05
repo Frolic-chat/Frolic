@@ -129,8 +129,8 @@ import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
 import type ReportDialog from './ReportDialog.vue';
-import       CommandHelp from './CommandHelp.vue';
-import       Logs        from '../chat/Logs.vue';
+import      CommandHelp  from './CommandHelp.vue';
+import      Logs         from '../chat/Logs.vue';
 
 import { Conversation } from './interfaces';
 import { getAsNumber } from '../helpers/utils';

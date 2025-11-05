@@ -119,6 +119,14 @@ export namespace Conversation {
         return (<Partial<ChannelConversation>>conversation).channel !== undefined;
     }
 
+    export function isActivity(conversation: Conversation): conversation is ActivityConversation {
+        return (<Partial<ActivityConversation>>conversation).key === '_activity';
+    }
+
+    export function isConsole(conversation: Conversation): conversation is ConsoleConversation {
+        return (<Partial<ConsoleConversation>>conversation).key === '_';
+    }
+
     export interface State {
         readonly privateConversations: ReadonlyArray<PrivateConversation>
         readonly channelConversations: ReadonlyArray<ChannelConversation>
