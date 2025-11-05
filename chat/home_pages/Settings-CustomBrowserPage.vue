@@ -43,7 +43,7 @@
         <div class="row">
             <div class="col">
                 <small class="form-text text-muted">{{l('settings.browser.argumentsHelp')}}</small>
-                <small v-if="settings.browserPath" class="form-text text-muted">{{ l('settings.browser.current') }}{{ example }}</small>
+                <small v-if="settings.browserPath" class="form-text text-muted" style="user-select: text;">{{ l('settings.browser.current') }}{{ example }}</small>
             </div>
         </div>
     </div>
@@ -65,7 +65,7 @@
         <div class="row">
             <div class="col">
                 <small class="form-text text-muted">{{ l('settings.browser.incognito.help') }}</small>
-                <small class="form-text" :class="incognitoMessageTextClass">{{ incognitoMessage }}</small>
+                <small class="form-text" :class="incognitoMessageTextClass" style="user-select: text;">{{ incognitoMessage }}</small>
             </div>
         </div>
     </div>
