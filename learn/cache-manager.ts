@@ -242,9 +242,6 @@ export class CacheManager {
         if (!entry)
             return null;
 
-        // just in case - remove duplicates
-        this.queue = this.queue.filter(q => q.name !== entry.name);
-
         log.debug('PopFromQueue', entry.name, this.queue.length);
 
         return entry;
