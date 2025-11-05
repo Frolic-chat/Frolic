@@ -237,7 +237,7 @@ export class CacheManager {
 
         log.debug('QUEUE', this.queue.map(q => `${q.name}: ${q.score}`));
 
-        const entry = this.queue.pop();
+        const entry = this.queue.shift();
 
         if (!entry)
             return null;
