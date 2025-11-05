@@ -59,15 +59,7 @@
     <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
 
     <!-- Personality -->
-    <customize v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon">
-        This is where your personality helper goes.
-
-        Show how you're matching with others.
-        Make suggestions.
-        Let you know if there's features you're not taking advantage of.
-        IC/OOC distinction
-        Custom gender/orientation
-    </customize>
+    <customize v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon"></customize>
 
     <page v-else-if="isChannel" v-show="tab === '2'">
         <template v-if="primaryDescription">

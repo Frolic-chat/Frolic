@@ -1,29 +1,7 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<page>
-    <div class="suggestion-container">
-        <!-- v-if="!profileHelper.analyzing && !profileHelper.recommendations" -->
-        <div v-if="profileHelper" class="input-group d-flex align-items-stretch flex-nowrap">
-            <div class="form-control d-flex flex-column flex-grow-1">
-                <span class="d-none d-md-inline">
-                    Need advice on your profile?
-                    {{ profileHelperHook }}
-                </span>
-                <span v-if="profileHelper.lastRun">
-                    Last run: {{ profileHelper.lastRun }}
-                </span>
-            </div>
-            <div class="input-group-append flex-shrink-0">
-                <a href="#" @click.prevent="profileHelper.analyze()" class="input-group-text btn">
-                    <span class="fas fa-user-md"></span>
-                    <span class="ml-1 d-none d-md-inline" style="white-space: normal;">{{ profileHelperTitle }}</span>
-                    <span class="ml-2 d-inline d-md-none" style="white-space: normal;">{{ profileHelperTitle }}</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
+<page scrollcageClasses="pt-3">
     <profile-analysis ref="profileHelper"></profile-analysis>
-
     <hr>
 
     <div class="accordion" id="accordionExample">
@@ -53,16 +31,22 @@
 
     <!-- Testing -->
     <slot></slot>
-    <p>
+
+    <pre style="color:inherit;">
+        This is where your personality helper goes.
+
         Here's some potential uses:
         + Per-character theme/styling
         + Profile helper
         + Review what your profile looks like to the matcher
+        + Let you know if there's features you could be using (hqp? custom gender/orientation?)
         + Saved ads editor
         + Saved status editor
         + Eicon favoriter
         + Friends/BM management
-    </p>
+        + IC/OOC chat distinction
+    </pre>
+
     <!-- parts of personality: -->
     <!-- Profile helper/suggestions -->
     <!-- Eidol builder -->
@@ -75,16 +59,10 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import ProfileAnalysis from '../../learn/recommend/ProfileAnalysis.vue';
-
-import core from '../core';
-import l from '../localize';
-
-import NewLogger from '../../helpers/log';
-const log = NewLogger('suggestions');
 
 @Component({
     components: {
@@ -101,24 +79,6 @@ export default class Suggestions extends Vue {
     ];
 
     activeIndex: number | null = null;
-
-    you!: string;
-
-    profileHelperTitle = l('chat.helper');
-    profileHelperHook = l('phelper.hook');
-    profileHelper!: ProfileAnalysis;
-
-    @Hook('beforeMount')
-    beforeMount() {
-        this.you = core.connection.character;
-    }
-
-    @Hook('mounted')
-    mounted() {
-        this.profileHelper = this.$refs['profileHelper'] as ProfileAnalysis;
-
-        log.debug(`Suggestions panel started. You: ${this.you}; profileHelper last run: ${this.profileHelper.lastRun ?? 'never'}`);
-    }
 
     toggle(i: number) { // Close current is re-clicked.
         this.activeIndex = this.activeIndex === i ? null : i;

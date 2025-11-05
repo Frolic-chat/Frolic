@@ -1,32 +1,52 @@
 <template>
-  <div class="card profile-analysis-wrapper">
-    <div class="card-body">
-      <div v-if="!analyzing && recommendations && !recommendations.length" class="card-text">
-        <h3>{{l('phelper.good')}}</h3>
-        <p>{{l('phelper.noImprovements')}}</p>
-      </div>
-
-      <div v-else-if="analyzing" class="card-text">
-        <p>{{l('phelper.hook')}}</p>
-        <p>&nbsp;</p>
-        <p>{{l('phelper.goal')}}</p>
-        <p>&nbsp;</p>
-        <h3>{{l('phelper.working')}}</h3>
-      </div>
-
-      <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text">
-        <p>{{l('phelper.recommendations')}}</p>
-
-        <ul>
-          <li v-for="r in recommendations" class="recommendation" :class="r.level">
-            <h3>{{r.title}}</h3>
-            <p>{{r.desc}}</p>
-            <p class="more-info" v-if="r.helpUrl"><a :href="r.helpUrl">{{l('phelper.heresHow')}}</a></p>
-          </li>
-        </ul>
-      </div>
+<div class="modal-content">
+    <div class="modal-header input-group d-flex align-items-stretch flex-nowrap p-0">
+        <div class="form-control d-flex flex-column flex-grow-1" style="height:auto; border-bottom-left-radius:0;">
+            <span class="d-none d-md-inline">
+                {{ hook }}
+            </span>
+            <span v-if="lastRun">
+                Last run: {{ lastRun }}
+            </span>
+        </div>
+        <div class="input-group-append flex-shrink-0" style="border-bottom-right-radius:0;">
+            <a href="#" @click.prevent="analyze()" class="input-group-text btn">
+                <span class="fas fa-user-md"></span>
+                <span class="ml-1 d-none d-md-inline" style="white-space: normal;">{{ title }}</span>
+                <span class="ml-2 d-inline d-md-none" style="white-space: normal;">{{ title }}</span>
+            </a>
+        </div>
     </div>
-  </div>
+    <div v-if="analyzing || recommendations" class="modal-body profile-analysis-wrapper">
+        <div v-if="!analyzing && recommendations && !recommendations.length" class="card-text">
+            <h3>{{ good }}</h3>
+            <p>{{ noImprovements }}</p>
+        </div>
+
+        <div v-else-if="analyzing" class="card-text">
+            <p>{{ hook }}</p>
+            <p>&nbsp;</p>
+            <p>{{ goal }}</p>
+            <p>&nbsp;</p>
+            <h3>{{ working }}</h3>
+        </div>
+
+        <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text">
+            <p>{{ recc }}</p>
+            <ul>
+                <li v-for="r in recommendations" class="recommendation" :class="r.level">
+                    <h3>{{r.title}}</h3>
+                    <p>{{r.desc}}</p>
+                    <p class="more-info" v-if="r.helpUrl">
+                        <a :href="r.helpUrl">
+                            {{ heresHow }}
+                        </a>
+                    </p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 </template>
 <script lang="ts">
 import { Component } from '@f-list/vue-ts';
@@ -39,36 +59,53 @@ import l from '../../chat/localize';
 
 @Component({})
 export default class ProfileAnalysis extends Vue {
-  recommendations: ProfileRecommendation[] | null = null;
-  analyzing = false;
-  lastRun: string | undefined;
-  l = l;
+    recommendations: ProfileRecommendation[] | null = null;
+    analyzing = false;
+    lastRun: string = '';
 
-  /**
-   * Analyze and report on a character. Currently only useful to analyze yourself.
-   * @param profile A character page from the API
-   */
-  async analyze(character?: string): Promise<void> {
-    if (!character)
-        character = core.characters.ownProfile?.character.name;
+    title          = l('chat.helper');
+    hook           = l('phelper.hook');
+    heresHow       = l('phelper.heresHow');
+    good           = l('phelper.good');
+    noImprovements = l('phelper.noImprovements');
+    goal           = l('phelper.goal');
+    working        = l('phelper.working');
+    recc           = l('phelper.recommendations');
 
-    if (!character)
-        return;
+    /**
+     * Analyze and report on a character. Currently only useful to analyze yourself.
+     * @param profile A character page from the API
+     */
+    async analyze(character?: string): Promise<void> {
+        if (!character)
+            character = core.characters.ownProfile?.character.name;
 
-    this.analyzing = true;
-    this.recommendations = [];
+        if (!character)
+            return;
 
-    const d = new Date();
-    this.lastRun = `${d.getHours().toString().padStart(2)}:${d.getMinutes().toString().padStart(2)}`;
+        this.analyzing = true;
+        this.recommendations = null;
 
-    const char = await methods.characterData(character, undefined, true);
-    const matcher = new CharacterAnalysis(char.character);
-    const analyzer = new ProfileRecommendationAnalyzer(matcher);
+        const d = new Date();
+        this.lastRun = '';
 
-    this.recommendations = await analyzer.analyze();
+        try {
+            const char = await methods.characterData(character, undefined, true);
+            const matcher = new CharacterAnalysis(char.character);
+            const analyzer = new ProfileRecommendationAnalyzer(matcher);
 
-    this.analyzing = false;
-  }
+            this.recommendations = await analyzer.analyze();
+
+            this.lastRun = `${d.getHours().toString().padStart(2)}:${d.getMinutes().toString().padStart(2)}`;
+        }
+        catch {
+            // Avoid outdated report
+            this.recommendations = null;
+        }
+        finally {
+            this.analyzing = false;
+        }
+    }
 }
 </script>
 <style lang="scss">
