@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import Logger from 'electron-log/renderer';
 
 import core from '../chat/core';
