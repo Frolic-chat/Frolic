@@ -155,7 +155,22 @@
         readonly characterMatch!: MatchReport;
 
         readonly shared: SharedStore = Store;
-        readonly quickInfoIds: ReadonlyArray<number> = [1, 3, 2, 49, 9, 29, 15, 41, 25]; // Do not sort these.
+
+        /**
+         * Age
+         * Gender
+         * Orientation
+         * Language
+         * Species
+         * FurryPref
+         * SubDom
+         * Position
+         * post length
+         * RP length
+         *
+         */
+        readonly quickInfoIds: ReadonlyArray<number> = [1, 3, 2, 9, 29, 15, 41, 24, 49, 25]; // Do not sort these.
+
         readonly avatarUrl = Utils.avatarURL;
 
         getAvatarUrl(): string {
