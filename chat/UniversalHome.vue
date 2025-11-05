@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div id="home-screen" class="chat-panel">
-    <tabs class="conversation-tabs" v-model="tab">
+    <tabs class="conversation-tabs flex-shrink-0" v-model="tab">
         <span class="channel-title"><!-- Chat -->
             <span :class="{
                 'fa-solid fa-house-user':  isHome,
