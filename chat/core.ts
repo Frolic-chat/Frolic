@@ -130,6 +130,7 @@ const data = {
             Electron.ipcRenderer.send(channel, {
             settings: state.generalSettings,
             timestamp: VueUpdateCache.timestamp,
+            character: data.connection?.character,
         });
         }
     },
@@ -214,7 +215,13 @@ export function init(this: any,
 
     Electron.ipcRenderer.on('settings', (_e, d: GeneralSettingsUpdate) => {
         if (d.timestamp <= VueUpdateCache.timestamp) {
-            logS.warn('Settings from main stale; skipping', VueUpdateCache.timestamp, d.timestamp);
+            logS.warn('Settings from main stale; skipping', {
+                from:    d.character,
+                to:      data.connection?.character,
+                current: VueUpdateCache.timestamp,
+                new:     d.timestamp,
+            });
+
             return;
         }
 

@@ -964,8 +964,17 @@ function onReady(): void {
             generalSettingsTimestamp = d.timestamp;
             logSettings.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
             Object.assign(settings, d.settings);
-            logSettings.warn('post assignment: SHOULD BE BEST SETTINGS.', settings);
+            logSettings.debug('post assignment: SHOULD BE BEST SETTINGS.', settings);
             saveGeneralSettings(settings, e.sender);
+        }
+        else {
+            logSettings.warn('Outdated settings reached main.', {
+                from:    d.character,
+                'from-wc': e.sender.id,
+                to:      'electron-main',
+                current: generalSettingsTimestamp,
+                new:     d.timestamp,
+            });
         }
     });
 

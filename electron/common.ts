@@ -17,6 +17,7 @@ function getDefaultLanguage(): string {
 export type GeneralSettingsUpdate = {
     settings:  GeneralSettings,
     timestamp: number,
+    character: string | undefined,
 }
 
 export class GeneralSettings {
