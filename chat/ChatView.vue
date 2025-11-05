@@ -43,11 +43,6 @@
                 </span>
             </div>
 
-            <div><a href="#" @click.prevent="showProfileAnalyzer()" class="btn">
-                <span class="fas fa-user-md"></span>
-                {{l('chat.helper')}}
-            </a></div>
-
             <div v-if="env === 'development'">
                 <a href="#" @click.prevent="showDevTools()" class="btn">
                     <span class="fas fa-bug"></span>
@@ -157,17 +152,6 @@
         <image-preview ref="imagePreview"></image-preview>
         <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
         <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
-
-        <modal :buttons="false" ref="profileAnalysis" dialogClass="profile-analysis" >
-            <profile-analysis></profile-analysis>
-            <template slot="title">
-                {{ownCharacter.name}}
-                <a class="btn" @click="showProfileAnalyzer">
-                    <i class="fa fa-sync"></i>
-                </a>
-            </template>
-        </modal>
-
     </div>
 </template>
 
@@ -200,7 +184,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
     import Modal from '../components/Modal.vue';
-    import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
 
     const unreadClasses = {
         [Conversation.UnreadState.None]: '',
@@ -221,7 +204,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
             modal: Modal,
-            'profile-analysis': ProfileAnalysis,
             ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/command_center.vue') } : {})
         }
     })
@@ -464,11 +446,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             if (this.env === 'development') {
                 (this.$refs.devTools as any).show();
             }
-        }
-
-        showProfileAnalyzer(): void {
-          (this.$refs.profileAnalysis as any).show();
-          void (this.$refs.profileAnalysis as any).$children[0].analyze();
         }
 
         addPmPartnerSwitch: boolean = false;

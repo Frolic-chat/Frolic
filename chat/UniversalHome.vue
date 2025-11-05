@@ -59,43 +59,35 @@
     <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
 
     <!-- Personality -->
-    <page v-show="tab === '2'" role="tabpanel" class="page" id="recon">
-        <div v-if="isHome">
-            This is where your personality helper goes.
+    <customize v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon">
+        This is where your personality helper goes.
 
-            Show how you're matching with others.
+        Show how you're matching with others.
+        Make suggestions.
+        Let you know if there's features you're not taking advantage of.
+        IC/OOC distinction
+        Custom gender/orientation
+    </customize>
 
-            Make suggestions.
-        </div>
+    <page v-else-if="isChannel" v-show="tab === '2'">
+        <template v-if="primaryDescription">
+            {{ primaryConversation.name }}
+            <bbcode :text="primaryDescription"></bbcode>
+        </template>
 
-        <div v-else-if="isChannel">
-            <template v-if="primaryDescription">
-                {{ primaryConversation.name }}
-                <bbcode :text="primaryDescription"></bbcode>
-            </template>
+        <hr v-if="primaryDescription && secondaryDescription">
 
-            <hr v-if="primaryDescription && secondaryDescription">
+        <template v-if="secondaryDescription">
+            {{ secondaryConversation ? secondaryConversation.name : '' }}
+            <bbcode :text="secondaryDescription"></bbcode>
+        </template>
+    </page>
 
-            <template v-if="secondaryDescription">
-                {{ secondaryConversation ? secondaryConversation.name : '' }}
-                <bbcode :text="secondaryDescription"></bbcode>
-            </template>
-        </div>
-
-        <div v-else-if="isPrivate">
-            This is where recon goes. :)
-            - Last spoken to (last message?)
-            - Last note exchange. Write new note? Memo writer.
-            -
-        </div>
-
-        <!-- parts of personality: -->
-        <!-- Profile helper/suggestions -->
-        <!-- Eidol builder -->
-        <!-- Saved status editor -->
-        <!-- Saved ads editor -->
-        <!-- Eicon favoriter -->
-        <!-- Friends/BM Manager -->
+    <page v-else-if="isPrivate" v-show="tab === '2'">
+        This is where recon goes. :)
+        - Last spoken to (last message?)
+        - Last note exchange. Write new note? Memo writer.
+        -
     </page>
 
     <!-- Settings -->
@@ -132,6 +124,7 @@ import HomePageLayout from './home_pages/HomePageLayout.vue';
 import Home from './home_pages/Home.vue';
 import Data from './home_pages/Data.vue';
 import ConversationView from './ConversationPage.vue';
+import Suggestions from './home_pages/Suggestions.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
@@ -157,6 +150,7 @@ const logC = NewLogger('conversation');
         'data-page': Data,
 
         'convo':          ConversationView,
+        'customize':      Suggestions,
         'char-settings':  Settings,
         'convo-settings': ConversationSettings,
         /*

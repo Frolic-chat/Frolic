@@ -1,30 +1,30 @@
 <template>
-  <div class="profile-analysis-wrapper" ref="profileAnalysisWrapper">
-    <div v-if="!analyzing && !recommendations.length">
-      <h3>{{l('phelper.good')}}</h3>
-      <p>{{l('phelper.noImprovements')}}</p>
-    </div>
+  <div class="card profile-analysis-wrapper">
+    <div class="card-body">
+      <div v-if="!analyzing && recommendations && !recommendations.length" class="card-text">
+        <h3>{{l('phelper.good')}}</h3>
+        <p>{{l('phelper.noImprovements')}}</p>
+      </div>
 
-    <div v-else-if="analyzing && !recommendations.length">
-      <p>{{l('phelper.hook')}}</p>
-      <p>&nbsp;</p>
-      <p>{{l('phelper.goal')}}</p>
-      <p>&nbsp;</p>
-      <h3>{{l('phelper.working')}}</h3>
-    </div>
+      <div v-else-if="analyzing" class="card-text">
+        <p>{{l('phelper.hook')}}</p>
+        <p>&nbsp;</p>
+        <p>{{l('phelper.goal')}}</p>
+        <p>&nbsp;</p>
+        <h3>{{l('phelper.working')}}</h3>
+      </div>
 
-    <div v-else>
-      <p>{{l('phelper.hook')}}</p>
-      <p>&nbsp;</p>
-      <p>{{l('phelper.recommendations')}}</p>
+      <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text">
+        <p>{{l('phelper.recommendations')}}</p>
 
-      <ul>
-        <li v-for="r in recommendations" class="recommendation" :class="r.level">
-          <h3>{{r.title}}</h3>
-          <p>{{r.desc}}</p>
-          <p class="more-info" v-if="r.helpUrl"><a :href="r.helpUrl">{{l('phelper.heresHow')}}</a></p>
-        </li>
-      </ul>
+        <ul>
+          <li v-for="r in recommendations" class="recommendation" :class="r.level">
+            <h3>{{r.title}}</h3>
+            <p>{{r.desc}}</p>
+            <p class="more-info" v-if="r.helpUrl"><a :href="r.helpUrl">{{l('phelper.heresHow')}}</a></p>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -39,8 +39,9 @@ import l from '../../chat/localize';
 
 @Component({})
 export default class ProfileAnalysis extends Vue {
-  recommendations: ProfileRecommendation[] = [];
+  recommendations: ProfileRecommendation[] | null = null;
   analyzing = false;
+  lastRun: string | undefined;
   l = l;
 
   /**
@@ -56,6 +57,9 @@ export default class ProfileAnalysis extends Vue {
 
     this.analyzing = true;
     this.recommendations = [];
+
+    const d = new Date();
+    this.lastRun = `${d.getHours().toString().padStart(2)}:${d.getMinutes().toString().padStart(2)}`;
 
     const char = await methods.characterData(character, undefined, true);
     const matcher = new CharacterAnalysis(char.character);
