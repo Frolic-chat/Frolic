@@ -88,6 +88,9 @@ import { getStatusIcon } from '../UserView.vue';
 import { kinkMatchWeights, Scoring } from '../../learn/matcher-types';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
 
+import NewLogger from '../../helpers/log';
+const logG = NewLogger('custom-gender');
+
 export interface StatusClasses {
     rankIcon:         string          | null;
     smartFilterIcon:  string          | null;
@@ -260,14 +263,15 @@ export default class CharacterPreview extends Vue {
   // Matcher gender w/account for overrides.
   // Sloppy, but there is no Matcher+Sheet+Chat+Override layered cache, is there?
   get genderText() {
-    if (this.characterName) {
-      const g = core.characters.get(this.characterName).overrides.gender?.string;
-      if (g)
-        return this.readable(g);
-    }
-    else {
-        return this.gender; // already readable()
-    }
+      const g = this.onlineCharacter?.overrides.gender?.string;
+      if (g) {
+          logG.debug(`${this.characterName} is ${g}, a very cool gender.`);
+          return this.readable(g);
+      }
+      else {
+          logG.debug(`No custom gender, using this.gender: ${this.gender}`);
+          return this.gender; // already readable()
+      }
   }
 
   @Hook('mounted')
@@ -291,15 +295,15 @@ export default class CharacterPreview extends Vue {
   }
 
 
-  load(characterName: string, force: boolean = false): void {
+  async load(characterName: string, force: boolean = false): Promise<void> {
     if (this.characterName === characterName
     &&  !force
     &&  this.match
     &&  this.character
     &&  this.ownCharacter && core.characters.ownProfile
     &&  this.ownCharacter.character.name === core.characters.ownProfile.character.name) {
-      this.updateOnlineStatus();
-      this.updateAdStatus();
+      this.updateOnlineStatus(this.characterName);
+      this.updateAdStatus(this.characterName);
       return;
     }
 
@@ -316,20 +320,19 @@ export default class CharacterPreview extends Vue {
     this.smartFilterIsFiltered = false;
     this.smartFilterDetails = [];
 
-    this.updateOnlineStatus();
-    this.updateAdStatus();
+    this.updateOnlineStatus(this.characterName);
+    this.updateAdStatus(this.characterName);
 
-    setTimeout(async () => {
-      this.character = await this.getCharacterData(characterName);
-      this.match = Matcher.identifyBestMatchReport(this.ownCharacter!.character, this.character!.character);
+    // The async bit.
+    this.character = await this.getCharacterData(characterName);
+    this.match = Matcher.identifyBestMatchReport(this.ownCharacter!.character, this.character!.character);
 
-      void this.updateConversationStatus();
+    void this.updateConversationStatus(this.characterName);
 
-      this.updateSmartFilterReport();
-      this.updateCustoms();
-      this.updateDetails();
-      this.updateMemo();
-    }, 0);
+    this.updateSmartFilterReport();
+    this.updateCustoms();
+    this.updateDetails();
+    this.updateMemo();
   }
 
   updateSmartFilterReport() {
@@ -359,9 +362,9 @@ export default class CharacterPreview extends Vue {
       ];
   }
 
-  async updateConversationStatus(): Promise<void> {
+  async updateConversationStatus(name: string): Promise<void> {
     const ownName = core.characters.ownCharacter.name;
-    const logKey = this.characterName!.toLowerCase();
+    const logKey = name.toLowerCase();
     const logDates = await core.logs.getLogDates(ownName, logKey);
 
     if (!logDates.length)
@@ -379,8 +382,8 @@ export default class CharacterPreview extends Vue {
         }));
   }
 
-  updateOnlineStatus(): void {
-    this.onlineCharacter = core.characters.get(this.characterName!);
+  updateOnlineStatus(name: string): void {
+    this.onlineCharacter = core.characters.get(name);
 
     if (!this.onlineCharacter) {
       this.statusClasses = undefined;
@@ -391,8 +394,8 @@ export default class CharacterPreview extends Vue {
     this.statusClasses = getStatusClasses(this.onlineCharacter, true, false, true);
   }
 
-  updateAdStatus(): void {
-    const cache = core.cache.adCache.get(this.characterName!);
+  updateAdStatus(name: string): void {
+    const cache = core.cache.adCache.get(name);
 
     if (
       (!cache)
