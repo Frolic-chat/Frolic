@@ -23,7 +23,7 @@ class Character implements Interfaces.Character {
 
 export interface CharacterOverrides {
     avatarUrl?: string;
-    gender?: Interfaces.Gender;
+    gender?: Interfaces.CustomGender;
     status?: Interfaces.Status;
 }
 
@@ -134,6 +134,73 @@ class State implements Interfaces.State {
         }
     }
 
+    /**
+     * Gets a full gender object even if you don't use a custom gender; filling in your default gender info if you don't use custom.
+     *
+     * Needs to be filled in to acquire the match criteria for default genders.
+     *
+     * You should directly access the `overrides.gender` object if you only want the override.
+     * @param character
+     * @returns
+     */
+    getGender(character: string | Interfaces.Character): Interfaces.CustomGender {
+        const r: Interfaces.CustomGender = {
+            string:   '',
+            match:    [],
+            mismatch: [],
+            version:   1,
+        };
+
+        let c: Interfaces.Character;
+
+        if (typeof character === 'string') {
+            // The most official username regex from Maya herself.
+            const uregex = /^[a-zA-Z0-9_\-\s]+$/;
+            if (!uregex.test(character))
+                return r;
+
+            c = this.get(character);
+        }
+        else {
+            c = character;
+        }
+
+        r.string = c.overrides.gender?.string || c.gender;
+
+        if (c.overrides.gender?.match)
+            r.match = c.overrides.gender.match;
+
+        if (c.overrides.gender?.mismatch)
+            r.mismatch = c.overrides.gender.mismatch;
+
+        return r;
+    }
+
+    /**
+     * Get a characters gender string; custom if they use one, or f-list gender if they don't.
+     *
+     * You should directly access the `overrides.gender` object if you only want the override.
+     * @param character
+     * @returns
+     */
+    getGenderString(character: string | Interfaces.Character): string {
+        let c: Interfaces.Character;
+
+        if (typeof character === 'string') {
+            // The most official username regex from Maya herself.
+            const uregex = /^[a-zA-Z0-9_\-\s]+$/;
+            if (!uregex.test(character))
+                return '';
+
+            c = this.get(character);
+        }
+        else {
+            c = character;
+        }
+
+        return c.overrides.gender?.string || c.gender;
+    }
+
     setStatus(character: Character, status: Interfaces.Status, text: string): void {
         if(character.status === 'offline' && status !== 'offline') {
             if(character.isFriend) this.friends.push(character);
@@ -147,7 +214,7 @@ class State implements Interfaces.State {
     }
 
     setOverride(name: string, type: 'avatarUrl', value: string | undefined): void;
-    setOverride(name: string, type: 'gender', value: Interfaces.Gender | undefined): void;
+    setOverride(name: string, type: 'gender', value: Interfaces.CustomGender | undefined): void;
     setOverride(name: string, type: 'status', value: Interfaces.Status | undefined): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
         const char = this.get(name);

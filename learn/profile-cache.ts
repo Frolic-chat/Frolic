@@ -8,6 +8,8 @@ import { CharacterImage, SimpleCharacter } from '../interfaces';
 import { Scoring } from './matcher-types';
 import { matchesSmartFilters } from './filter/smart-filter';
 import * as remote from '@electron/remote';
+import { Character } from '../fchat/interfaces';
+import { getAsNumber } from '../helpers/utils';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('profile-cache', () => process.env.NODE_ENV === 'development');
@@ -47,6 +49,14 @@ export interface CharacterCacheRecord {
     // counts?: CountRecord;
     match: CharacterMatchSummary;
     meta?: MetaRecord;
+}
+
+const validInlineTags = [ 'hqp', 'fcg' ] as const;
+export type InlineTagProtocol = typeof validInlineTags[number]
+
+export interface InlineTag {
+    type: InlineTagProtocol;
+    value: string;
 }
 
 export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
@@ -160,74 +170,132 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         }
     }
 
-    static isSafeRisingPortraitURL(url: string): boolean {
+    /**
+     * Returns unparsed results as { type: protocol, value: unsanitizedString }.
+     * hqp: [i=hqp://UrlWOutHttps]
+     * fcg: [i=fcg://display=The Wind;match=554;mismatch=;v=1]
+     * @param description
+     * @returns Unsanitized results in tuples.
+     */
+    static getOverridesFromDescription(description: string): InlineTag[] {
+        const query = /\[i=([a-z0-9]+):\/\/([^\]]+)]/gi;
+        const results: InlineTag[] = [];
+
+        for (const match of description.matchAll(query)) {
+            const [, type, value] = match;
+
+            if (validInlineTags.find(tag => type === tag)) {
+                results.push({
+                    type:  type.toLowerCase() as typeof validInlineTags[number],
+                    value: value,
+                });
+            }
+        }
+
+        if (results.some(e => e.type === 'hqp')) {
+            log.verbose('Very cool portrait! From desc:', description.slice(0, 100));
+        }
+        else {
+            const match = description.match(/\[url=([^\]]+)]\s*?Rising\s*?Portrait\s*?\[\/url]/i);
+
+            if (match?.[1].trim())
+                results.push({
+                    type:  'hqp',
+                    value: match[1],
+                });
+        }
+
+        return results;
+    }
+
+    static isSafePortraitURL(url: string): boolean {
         if (url.match(/^https:\/\/(?:static\.f-list\.net|(?:[a-zA-Z0-9\-.]+\.)?(?:imgur\.com|freeimage\.host|iili\.io|redgifs\.com|e621\.net))\//)) {
             return true;
         }
         else {
             return false;
         }
-
-        if (url.match(/^https?:\/\/static\.f-list\.net\//i)) {
-            return true;
-        }
-
-        if (url.match(/^https?:\/\/([a-z0-9\-.]+\.)?imgur\.com\//i)) {
-            return true;
-        }
-
-        if (url.match(/^https?:\/\/([a-z0-9\-.]+\.)?freeimage\.host\//i)) {
-            return true;
-        }
-
-        if (url.match(/^https?:\/\/([a-z0-9\-.]+\.)?iili\.io\//i)) {
-            return true;
-        }
-
-        if (url.match(/^https?:\/\/([a-z0-9\-.]+\.)?redgifs\.com\//i)) {
-            return true;
-        }
-
-        if (url.match(/^https?:\/\/([a-z0-9\-.]+\.)?e621\.net\//i)) {
-            return true;
-        }
-
-        return false;
     }
 
-    static detectRisingPortraitURL(description: string): string | null {
-        if (!core.state.settings.risingShowHighQualityPortraits) {
+    /**
+     *
+     * @param value
+     * @returns
+     */
+    static parsePortraitURL(value: string): string {
+        if (!core.state.settings.risingShowHighQualityPortraits)
+            return '';
+
+        value = value.trim().replace(/^(\w+:\/\/)?/, 'https://');
+
+        return value;
+    }
+
+    /**
+     * Expects to handle: `display=The Wind;match=554;mismatch=;v=1`
+     * @param value
+     * @returns
+     */
+    static parseGenderTag(value: string): Character.CustomGender | null {
+        const parts = Object.fromEntries(
+            value.split(/\s*;\s*/)
+                .map(p => {
+                    const i = p.indexOf('=');
+
+                    if (i === -1)
+                        return [ '', '' ] as [ string, string ];
+
+                    return [ p.slice(0, i).trim(), p.slice(i+1).trim() ] as [ string, string ];
+                })
+                .filter(e => e[0] && e[1])
+        );
+
+        if (getAsNumber(parts.v) === 1) {
+            return {
+                string:   parts.display || '',
+                match:    parts.match?.split(',').map(e => getAsNumber(e) ?? 0) ?? [], // Sanitize
+                mismatch: parts.mismatch?.split(',').map(e => getAsNumber(e) ?? 0) ?? [], // Sanitize
+                version:  getAsNumber(parts.v) ?? 0,
+            }
+        }
+        else {
             return null;
         }
-
-        const _match = description.match(/\[i=hqp:\/\/([^\]]+)]/i);
-        if (_match?.[1].trim()) {
-            log.verbose("Very cool portrait!", _match[1].trim());
-            return 'https://' + _match[1].trim();
-        }
-
-        const match = description.match(/\[url=([^\]]+)]\s*?Rising\s*?Portrait\s*?\[\/url]/i);
-        return match?.[1].trim() ?? null;
     }
 
+
     updateOverrides(c: ComplexCharacter): void {
-        const avatarUrl = ProfileCache.detectRisingPortraitURL(c.character.description);
+        const unparsed = ProfileCache.getOverridesFromDescription(c.character.description);
+        unparsed.forEach(({type, value }) => {
+            if (type === 'hqp') {
+                // If we got this far, it's okay to overwrite with undefined.
+                const parsed = ProfileCache.parsePortraitURL(value);
+                if (ProfileCache.isSafePortraitURL(parsed)) { // domain check
+                    core.characters.setOverride(c.character.name, 'avatarUrl', parsed);
 
-        if (avatarUrl) {
-            if (!ProfileCache.isSafeRisingPortraitURL(avatarUrl)) {
-                log.warn('portrait.hq.invalid.domain', { name: c.character.name, url: avatarUrl });
-                return;
+                    if (c.character.name === core.characters.ownCharacter.name) {
+                        const parent = remote.getCurrentWindow().webContents;
+                        parent.send('update-avatar-url', c.character.name, parsed);
+                    }
+
+                    log.debug('portrait.hq.url', { name: c.character.name, url: parsed });
+                }
+                else {
+                    log.warn('portrait.hq.invalid.domain', {
+                        name: c.character.name,
+                        url: parsed,
+                    });
+                }
             }
+            else if (type === 'fcg') {
+                const parsed = ProfileCache.parseGenderTag(value);
+                if (parsed) {
+                    core.characters.setOverride(c.character.name, 'gender', parsed);
 
-            if (c.character.name === core.characters.ownCharacter.name) {
-                const parent = remote.getCurrentWindow().webContents;
-
-                parent.send('update-avatar-url', c.character.name, avatarUrl);
+                    log.verbose(`${c.character.name} is ${parsed.string}, which is a very cool gender!`);
+                }
             }
-
-            log.info('portrait.hq.url', { name: c.character.name, url: avatarUrl });
-            core.characters.setOverride(c.character.name, 'avatarUrl', avatarUrl);
-        }
+        })
     }
 
     static invalidColorCodes(description: string): string | null {

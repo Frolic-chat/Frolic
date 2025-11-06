@@ -380,7 +380,7 @@ export default class Settings extends Vue {
         if (this.normalLink.includes(']'))
             return 'settings.hqp.errorBrace' as hqpErrorString;
 
-        if (!ProfileCache.isSafeRisingPortraitURL(this.normalLink))
+        if (!ProfileCache.isSafePortraitURL(this.normalLink))
             return 'settings.hqp.errorDomain' as hqpErrorString;
 
         return '' as hqpErrorString;
