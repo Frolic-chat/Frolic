@@ -39,11 +39,9 @@ export class WorkerClient {
   }
 
 
-  private generateMessageProcessor(): ((e: Event) => void) {
-    return (e: Event) => {
-      const res = (e as any).data as IndexedResponse;
-
-      // log.silly('store.worker.client.msg', { res });
+  private generateMessageProcessor(): (e: MessageEvent<IndexedResponse>) => void {
+    return e => {
+      const res = e.data as IndexedResponse;
 
       if (!res) {
         log.error('store.worker.client.msg.invalid', { res });
