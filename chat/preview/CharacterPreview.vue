@@ -22,11 +22,11 @@
             <span class="divider" v-if="species || kemonomimi"> / </span>
           </div>
 
-          <div class="info-text-block" v-if="sexualOrientation || subDomRole || gender">
-            <span class="uc" v-if="gender">{{ gender }}</span>
-            <span class="divider" v-if="gender && subDomRole"> / </span>
+          <div class="info-text-block" v-if="sexualOrientation || subDomRole || genderText">
+            <span class="uc" v-if="genderText">{{ genderText }}</span>
+            <span class="divider" v-if="genderText && subDomRole"> / </span>
             <span class="uc" v-if="subDomRole">{{ subDomRole }}</span>
-            <span class="divider" v-if="(gender || subDomRole) && sexualOrientation"> / </span>
+            <span class="divider" v-if="(genderText || subDomRole) && sexualOrientation"> / </span>
             <span class="uc" v-if="sexualOrientation">{{ sexualOrientation }}</span>
             <span class="divider" v-if="sexualOrientation"> / </span>
           </div>
@@ -257,6 +257,19 @@ export default class CharacterPreview extends Vue {
     return core.characters.getImage(this.characterName ?? this.character?.character.name ?? '');
   }
 
+  // Matcher gender w/account for overrides.
+  // Sloppy, but there is no Matcher+Sheet+Chat+Override layered cache, is there?
+  get genderText() {
+    if (this.characterName) {
+      const g = core.characters.get(this.characterName).overrides.gender?.string;
+      if (g)
+        return this.readable(g);
+    }
+    else {
+        return this.gender; // already readable()
+    }
+  }
+
   @Hook('mounted')
   mounted(): void {
 
@@ -441,13 +454,25 @@ export default class CharacterPreview extends Vue {
       console.error('Missing Orientation', a.orientation, c.name);
     }
 
-    this.age = a.age ? this.readable(`${a.age}`) : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || undefined;
+    this.age = a.age
+        ? this.readable(`${a.age}`)
+        : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || undefined;
     this.species = a.species ? this.readable(Species[a.species]) : (rawSpecies && rawSpecies.string) || undefined;
-    this.kemonomimi = a.isKemonomimi && this.species && !this.species.endsWith('mimi') ? this.readable('kemomimi') : undefined;
-    this.gender = (a.gender && a.gender !== Gender.None) ? this.readable(Gender[a.gender]) : undefined;
-    this.furryPref = a.furryPreference ? this.readable(furryPreferenceMapping[a.furryPreference]) : undefined;
-    this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch) ? this.readable(SubDomRole[a.subDomRole]) : undefined;
-    this.sexualOrientation = a.orientation ? this.readable(Orientation[a.orientation]) : undefined;
+    this.kemonomimi = a.isKemonomimi && this.species && !this.species.endsWith('mimi')
+        ? this.readable('kemomimi')
+        : undefined;
+    this.gender = (a.gender && a.gender !== Gender.None)
+        ? this.readable(Gender[a.gender])
+        : undefined;
+    this.furryPref = a.furryPreference
+        ? this.readable(furryPreferenceMapping[a.furryPreference])
+        : undefined;
+    this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch)
+        ? this.readable(SubDomRole[a.subDomRole])
+        : undefined;
+    this.sexualOrientation = a.orientation
+        ? this.readable(Orientation[a.orientation])
+        : undefined;
   }
 
   // Hard string replacements are english coded. Do these ever risk appearing in another language?
