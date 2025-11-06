@@ -45,6 +45,8 @@
         + Eicon favoriter
         + Friends/BM management
         + IC/OOC chat distinction
+
+        // TOOLS section
     </pre>
 
     <!-- parts of personality: -->

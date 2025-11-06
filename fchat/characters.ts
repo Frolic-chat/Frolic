@@ -33,12 +33,12 @@ class State implements Interfaces.State {
     ownCharacter: Character = new Character('');
     ownProfile?: CharacterProfile;
 
-    friends: Character[] = [];
-    bookmarks: Character[] = [];
-    ignoreList: string[] = [];
-    opList: string[] = [];
-    friendList: string[] = [];
-    bookmarkList: string[] = [];
+    friends:      Character[] = [];
+    bookmarks:    Character[] = [];
+    ignoreList:   string[]    = [];
+    opList:       string[]    = [];
+    friendList:   string[]    = [];
+    bookmarkList: string[]    = [];
 
     /**
      * Turns a potentially-invalid character name into a validation object.
@@ -75,7 +75,7 @@ class State implements Interfaces.State {
     }
 
     /**
-     * Attempt to format a name by F-List site rules.
+     * Attempt to format a name by F-List site rules, allowing for moderators to have custom names that violate the norm.
      * @param name A potentially invalid character name
      * @returns A modified name put through various sanitizers to try to reach a username that could be created on the site.
      */

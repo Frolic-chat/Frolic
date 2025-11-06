@@ -12,7 +12,8 @@
             <span class="tab-text">{{ tab0Name }}</span>
         </span>
         <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
-            <span class="fa-solid fa-terminal"></span>
+            <span v-if="isHome" class="fa-solid fa-terminal"></span>
+            <span v-else class="fa-solid fa-link"></span>
             <span class="tab-text d-none d-sm-inline">{{ tab1Name }}</span>
         </span>
         <span><!-- Personalize/Description/Recon -->
@@ -63,7 +64,6 @@
 
     <page v-else-if="isChannel" v-show="tab === '2'">
         <template v-if="primaryDescription">
-            {{ primaryConversation.name }}
             <bbcode :text="primaryDescription"></bbcode>
         </template>
 
