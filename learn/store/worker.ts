@@ -33,7 +33,7 @@ export class WorkerStore implements PermanentIndexedStore {
 
 
     async getProfile(name: string): Promise<ProfileRecord | undefined> {
-        const record: ProfileRecord | undefined = await this.workerClient.request('get', { name });
+        const record: ProfileRecord | undefined = await this.workerClient.request('get-profile', { name });
 
         // fix custom kinks to prevent hangs
 
@@ -56,7 +56,7 @@ export class WorkerStore implements PermanentIndexedStore {
     }
 
     async storeProfile(character: ComplexCharacter): Promise<void> {
-        return this.workerClient.request('store', { character });
+        return this.workerClient.request('store-profile', { character });
     }
 
 

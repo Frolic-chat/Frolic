@@ -53,9 +53,10 @@ const generateMessageProcessor = () => {
     flush: (params: Record<string, any>) => indexed.flushProfiles(params.daysToExpire),
     start: () => indexed.start(),
     stop: () => indexed.stop(),
-    get: (params: Record<string, any>) => indexed.getProfile(params.name),
-    store: (params: Record<string, any>) => indexed.storeProfile(params.character),
-
+    'get-profile': (params: Record<string, any>) => indexed.getProfile(params.name),
+    'get-overrides': (params: Record<string, any>) => indexed.getOverrides(params.name),
+    'store-profile': (params: Record<string, any>) => indexed.storeProfile(params.character),
+    'store-overrides': (params: Record<string, any>) => indexed.storeOverrides(params.overrides),
     'update-meta': (params: Record<string, any>) =>
       indexed.updateProfileMeta(params.name, params.images, params.guestbook, params.friends, params.groups),
 
