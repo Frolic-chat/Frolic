@@ -52,7 +52,7 @@ export interface CharacterCacheRecord {
 }
 
 const validInlineTags = [ 'hqp', 'fcg' ] as const;
-export type InlineTagProtocol = typeof validInlineTags[number]
+export type InlineTagProtocol = typeof validInlineTags[number];
 
 export interface InlineTag {
     type: InlineTagProtocol;
