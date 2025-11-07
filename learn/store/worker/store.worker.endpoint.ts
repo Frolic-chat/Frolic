@@ -43,6 +43,11 @@ const reply = (req: IndexedRequest, result?: any, err?: string | Error): void =>
 };
 
 
+/**
+ * A list of the commands the thread can run. Must issue one of these to actually get a response.
+ *
+ * Routes commands to their deeper level.
+ */
 const generateMessageProcessor = () => {
   const messageMapper: Record<ProfileStoreCommand, IndexedCallback> = {
     flush: (params: Record<string, any>) => indexed.flushProfiles(params.daysToExpire),
@@ -59,10 +64,10 @@ const generateMessageProcessor = () => {
     }
   };
 
-  return async(e: Event) => {
+  return async(e: MessageEvent<IndexedRequest>) => {
     // log.silly('store.worker.endpoint.msg', { e });
 
-    const req = (e as any).data as IndexedRequest;
+    const req = e.data;
 
     if (!req) {
       return;

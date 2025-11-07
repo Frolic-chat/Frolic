@@ -10,7 +10,10 @@ async function promisifyRequest<T>(req: IDBRequest): Promise<T> {
     });
 }
 
-
+/**
+ * Worker-side of the threaded store.
+ * See WorkerStore for renderer-side.
+ */
 export class IndexedStore implements PermanentIndexedStore {
     protected dbName: string;
     protected db: IDBDatabase;
@@ -26,10 +29,10 @@ export class IndexedStore implements PermanentIndexedStore {
     static async open(dbName: string = 'flist-ascending-profiles'): Promise<IndexedStore> {
         const request = indexedDB.open(dbName, 3);
 
-        request.onupgradeneeded = async(event) => {
+        request.onupgradeneeded = async event => {
             const db = request.result;
 
-            if (event.oldVersion < 1) {
+            if (!db.objectStoreNames.contains(IndexedStore.STORE_NAME)) {
                 db.createObjectStore(IndexedStore.STORE_NAME, { keyPath: 'id' });
             }
 
@@ -137,11 +140,10 @@ export class IndexedStore implements PermanentIndexedStore {
         const data = await this.prepareProfileData(character);
 
         const tx = this.db.transaction(IndexedStore.STORE_NAME, 'readwrite');
-        const store = tx.objectStore(IndexedStore.STORE_NAME);
-        const putRequest = store.put(data);
+        const putRequest = tx.objectStore(IndexedStore.STORE_NAME).put(data);
 
         // tslint:disable-next-line no-any
-        await promisifyRequest<any>(putRequest);
+        await promisifyRequest(putRequest);
 
         // console.log('IDX store profile', c.character.name, data);
     }
@@ -178,7 +180,6 @@ export class IndexedStore implements PermanentIndexedStore {
     //
     //     // console.log('IDX update counts', name, data);
     // }
-
 
     async updateProfileMeta(
         name: string,

@@ -8,6 +8,10 @@ import NewLogger from '../../helpers/log';
 const log = NewLogger('worker');
 
 
+/**
+ * Renderer-side of the threaded store.
+ * See IndexedStore for worker-side.
+ */
 export class WorkerStore implements PermanentIndexedStore {
     // @ts-ignore
     private _isVue = true;
@@ -50,7 +54,6 @@ export class WorkerStore implements PermanentIndexedStore {
 
         return record;
     }
-
 
     async storeProfile(character: ComplexCharacter): Promise<void> {
         return this.workerClient.request('store', { character });

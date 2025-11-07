@@ -38,12 +38,12 @@ export class WorkerClient {
     this.waiters.push({ id, resolve, reject, request, initiated: Date.now() });
   }
 
-
+  // @ts-ignore `TS2315: Type 'MessageEvent' is not generic.` in webpack TS.
   private generateMessageProcessor(): (e: MessageEvent<IndexedResponse>) => void {
     return e => {
-      const res = e.data as IndexedResponse;
+      const res = e.data;
 
-      if (!res) {
+      if (!res) { // A crime happened here.
         log.error('store.worker.client.msg.invalid', { res });
         return;
       }

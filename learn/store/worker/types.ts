@@ -7,7 +7,6 @@ export interface IndexedRequest {
   params: Record<string, any>;
 }
 
-
 export interface IndexedResponse {
   id: string;
   type: 'event' | 'res';
