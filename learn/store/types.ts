@@ -1,9 +1,7 @@
-// tslint:disable-next-line:no-duplicate-imports
-// import * as path from 'path';
-// import core from '../../chat/core';
-
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../../site/character_page/interfaces';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
+import { CharacterOverrides } from '../../fchat/characters';
 import { FurryPreference, Gender, Orientation, Species } from '../matcher-types';
 
 // This design should be refactored; it's bad
@@ -32,6 +30,19 @@ export interface ProfileRecord {
     // friendCount:    number | null;
     // groupCount:     number | null;
 }
+
+/**
+ * Character overrides but with lastFetched information added by the store worker.
+ */
+export interface OverrideRecord extends CharacterOverrides {
+    id: string;
+    lastFetched: number;
+}
+
+export type CharacterOverridesBatch = Record<string, CharacterOverrides>;
+
+export interface ProfileRecordBatch {
+    [key: string]: ProfileRecord;
 }
 
 // export type Statement = any;
@@ -40,6 +51,10 @@ export interface ProfileRecord {
 export interface PermanentIndexedStore {
     getProfile(name: string): Promise<ProfileRecord | undefined>;
     storeProfile(c: ComplexCharacter): Promise<void>;
+    //getProfileBatch(names: string[]): Promise<ProfileRecordBatch>;
+    getOverrides(name: string): Promise<OverrideRecord | undefined>;
+    storeOverrides(name: string, o: CharacterOverrides): Promise<void>;
+    getOverridesBatch(names: string[]): Promise<CharacterOverridesBatch>;
 
     updateProfileMeta(
         name:      string,
@@ -50,6 +65,7 @@ export interface PermanentIndexedStore {
     ): Promise<void>;
 
     flushProfiles(daysToExpire: number): Promise<void>;
+    flushOverrides(daysToExpire: number): Promise<void>;
 
     start(): Promise<void>;
     stop(): Promise<void>;

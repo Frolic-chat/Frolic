@@ -199,7 +199,7 @@ export namespace Character {
         readonly ownProfile?: CharacterProfile;
 
         validateCharacter(name: string): ValidatedCharacter;
-        get(name: string): Character;
+        get(name: string, useStore?: boolean): Character;
         getImage(this: any | never, character: string | Character): string;
         getGender(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): CustomGender;
         getGenderString(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): string;

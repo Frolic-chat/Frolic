@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import core from '../chat/core';
 import { methods } from '../site/character_page/data_store';
 import {decodeHTML} from './common';
 import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
+import { ProfileCache } from '../learn/profile-cache';
 import Vue from 'vue';
 import { EventBus } from '../chat/preview/event-bus';
 import l from '../chat/localize';
@@ -97,7 +99,7 @@ class State implements Interfaces.State {
          */
     }
 
-    get(name: string): Character {
+    get(name: string, useStore = true): Character {
         // Avoid the complexity of converting to `Character | null`
         if (!name.trim()) name = 'Frolic Chat';
         //else       name = this.sanitize(name);
@@ -114,6 +116,14 @@ class State implements Interfaces.State {
             char.isIgnored    = this.ignoreList.includes(key);
 
             this.characters[key] = char;
+
+            if (useStore && core.cache.profileCache) {
+                void core.cache.profileCache.getCachedOverrides(name)
+                    .then(o => {
+                        if (o) ProfileCache.applyOverrides(name, o);
+                    }
+                );
+            }
         }
 
         return char;
@@ -286,7 +296,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
     });
     connection.onMessage('LIS', (data) => {
         for (const char of data.characters) {
-            const character = state.get(char[0]);
+            const character = state.get(char[0], false);
             character.gender = char[1];
             state.setStatus(character, char[2], char[3]);
         }

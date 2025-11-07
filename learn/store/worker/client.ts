@@ -86,7 +86,12 @@ export class WorkerClient {
     // log.silly('store.worker.waiter.clear', this.waiters.length);
   }
 
-
+  /**
+   * Async handlers; the waiters handle caching of the resolve/reject code and the promise remains unresolved until the thread responds. In effect, we handle the thread like other async code.
+   * @param cmd
+   * @param params
+   * @returns
+   */
   async request(cmd: ProfileStoreCommand, params: Record<string, any> = {}): Promise<any> {
     const id = this.generateId();
 

@@ -1,8 +1,15 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../../site/character_page/interfaces';
 import { CharacterAnalysis } from '../matcher';
-import { PermanentIndexedStore, ProfileRecord } from './types';
+import { CharacterOverrides } from '../../fchat/characters';
+import { PermanentIndexedStore, ProfileRecord, OverrideRecord, CharacterOverridesBatch } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
 
+/**
+ * Fancy way to turn callback-style async into promise-style async.
+ * @param req Request you're awaiting.
+ * @returns Promise containing `result` from onsuccess() or `error` from onerror()
+ */
 async function promisifyRequest<T>(req: IDBRequest): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         req.onsuccess = () => resolve(<T>req.result);
@@ -20,6 +27,7 @@ export class IndexedStore implements PermanentIndexedStore {
 
     protected static readonly STORE_NAME = 'profiles';
     protected static readonly LAST_FETCHED_INDEX_NAME = 'idxLastFetched';
+    protected static readonly AUX_STORE_NAME = 'overrides';
 
     constructor(db: IDBDatabase, dbName: string) {
         this.dbName = dbName;
@@ -27,13 +35,19 @@ export class IndexedStore implements PermanentIndexedStore {
     }
 
     static async open(dbName: string = 'flist-ascending-profiles'): Promise<IndexedStore> {
-        const request = indexedDB.open(dbName, 3);
+        // v4+ = Frolic
+        const request = indexedDB.open(dbName, 4);
 
         request.onupgradeneeded = async event => {
             const db = request.result;
 
             if (!db.objectStoreNames.contains(IndexedStore.STORE_NAME)) {
                 db.createObjectStore(IndexedStore.STORE_NAME, { keyPath: 'id' });
+            }
+
+            // technically v4
+            if (!db.objectStoreNames.contains(IndexedStore.AUX_STORE_NAME)) {
+                db.createObjectStore(IndexedStore.AUX_STORE_NAME, { keyPath: 'id' });
             }
 
             if (event.oldVersion < 2) {
@@ -55,6 +69,18 @@ export class IndexedStore implements PermanentIndexedStore {
 
                 await promisifyRequest(req);
             }
+
+            if (event.oldVersion < 4) {
+                const store = request.transaction!.objectStore(IndexedStore.AUX_STORE_NAME);
+
+                store.createIndex(
+                    IndexedStore.LAST_FETCHED_INDEX_NAME,
+                    'lastFetched', {
+                        unique: false,
+                        multiEntry: false
+                   }
+                );
+            }
         };
 
         return new IndexedStore(await promisifyRequest<IDBDatabase>(request), dbName);
@@ -73,7 +99,7 @@ export class IndexedStore implements PermanentIndexedStore {
         const getRequest = store.get(this.toProfileId(name));
 
         // tslint:disable-next-line no-any
-        const data = await promisifyRequest<any>(getRequest);
+        const data = await promisifyRequest<ProfileRecord | undefined>(getRequest);
 
         if (!data) {
             // console.info('IDX empty profile', name);
@@ -86,7 +112,9 @@ export class IndexedStore implements PermanentIndexedStore {
         // fix to clean out extra customs that somehow sometimes appear:
         if (Array.isArray(data.profileData.character.customs)) {
             console.warn('character.customs.strange.indexed.getProfile', {name: data.profileData.character.name, data, customs: data.profileData.character.customs});
+
             data.profileData.character.customs = {};
+
             await this.storeProfile(data.profileData);
         }
 
@@ -148,6 +176,72 @@ export class IndexedStore implements PermanentIndexedStore {
         // console.log('IDX store profile', c.character.name, data);
     }
 
+    async getOverrides(name: string): Promise<OverrideRecord | undefined> {
+        const tx = this.db.transaction(IndexedStore.AUX_STORE_NAME, 'readonly');
+        const getRequest = tx.objectStore(IndexedStore.AUX_STORE_NAME)
+            .get(this.toProfileId(name));
+
+        try {
+            const data = await promisifyRequest<OverrideRecord | undefined>(getRequest);
+            if (!data)
+                return;
+
+            return {
+                id: data.id,
+                ...(data.avatarUrl && { avatarUrl: data.avatarUrl }),
+                ...(data.gender    && { gender:    data.gender    }),
+                ...(data.status    && { status:    data.status    }),
+                lastFetched: data.lastFetched,
+            }
+        }
+        catch {
+            return; // Don't need errors.
+        }
+    }
+
+    async getOverridesBatch(names: string[]): Promise<CharacterOverridesBatch> {
+        const tx = this.db.transaction(IndexedStore.AUX_STORE_NAME, 'readonly');
+        const store = tx.objectStore(IndexedStore.AUX_STORE_NAME);
+
+        // Considered:
+        // const requests = names.map(n => promisifyRequest<CharacterOverrides>(store.get(n)));
+        // const results = await Promise.allSettled(requests);
+        // ...but then looping results and mapping to names by index... seems sketch.
+
+        const results: CharacterOverridesBatch = {};
+
+        const tasks = names.map(async name => {
+            try {
+                const or = await promisifyRequest<OverrideRecord>(store.get(name));
+                if (or) {
+                    const { id, lastFetched, ...rest } = or;
+
+                    if (Object.keys(rest).length)
+                        results[name] = rest;
+                }
+            }
+            catch { /* Devoured. */ }
+        });
+
+        await Promise.allSettled(tasks);
+
+        return results;
+    };
+
+    async storeOverrides(name: string, overrides: CharacterOverrides): Promise<void> {
+        // prepare()
+        const o: OverrideRecord = {
+            ...overrides,
+            id: this.toProfileId(name),
+            lastFetched: Math.round(Date.now() / 1000),
+        }
+
+        const tx = this.db.transaction(IndexedStore.AUX_STORE_NAME, 'readwrite');
+        const auxRequest = tx.objectStore(IndexedStore.AUX_STORE_NAME)
+            .put(o);
+
+        await promisifyRequest<void>(auxRequest);
+    }
 
     // async updateProfileCounts(
     //     name: string,
@@ -255,5 +349,21 @@ export class IndexedStore implements PermanentIndexedStore {
             gen(0);
           }
         );
+    }
+
+    /**
+     * Currently, we don't flush overrides. What's the point? They don't take remotely as much space as a full profile, and we store ~3000 profiles in <100MB.
+     * @param daysToExpire Purge older than this many days.
+     */
+    async flushOverrides(daysToExpire: number): Promise<void> {
+        const tx = this.db.transaction(IndexedStore.STORE_NAME, 'readwrite');
+        const store = tx.objectStore(IndexedStore.STORE_NAME);
+        const idx = store.index(IndexedStore.LAST_FETCHED_INDEX_NAME);
+
+        const expiration = Math.round(Date.now() / 1000) - (daysToExpire * 24 * 60 * 60);
+        const getAllKeysRequest = idx.getAllKeys(IDBKeyRange.upperBound(expiration));
+        const keys = await promisifyRequest<IDBValidKey[]>(getAllKeysRequest);
+
+        await Promise.all(keys.map(k => promisifyRequest<void>(store.delete(k))))
     }
 }

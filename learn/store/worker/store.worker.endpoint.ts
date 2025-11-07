@@ -50,15 +50,17 @@ const reply = (req: IndexedRequest, result?: any, err?: string | Error): void =>
  */
 const generateMessageProcessor = () => {
   const messageMapper: Record<ProfileStoreCommand, IndexedCallback> = {
-    flush: (params: Record<string, any>) => indexed.flushProfiles(params.daysToExpire),
+    'flush-profiles':  (params: Record<string, any>) => indexed.flushProfiles(params.daysToExpire),
+    'flush-overrides': (params: Record<string, any>) => indexed.flushOverrides(params.daysToExpire),
     start: () => indexed.start(),
-    stop: () => indexed.stop(),
-    'get-profile': (params: Record<string, any>) => indexed.getProfile(params.name),
-    'get-overrides': (params: Record<string, any>) => indexed.getOverrides(params.name),
-    'store-profile': (params: Record<string, any>) => indexed.storeProfile(params.character),
-    'store-overrides': (params: Record<string, any>) => indexed.storeOverrides(params.overrides),
-    'update-meta': (params: Record<string, any>) =>
-      indexed.updateProfileMeta(params.name, params.images, params.guestbook, params.friends, params.groups),
+    stop:  () => indexed.stop(),
+    'get-profile':     (params: Record<string, any>) => indexed.getProfile(params.name),
+    // 'get-profile-batch': (params: Record<string, any>) => indexed.getProfileBatch(params.names),
+    'get-overrides':   (params: Record<string, any>) => indexed.getOverrides(params.name),
+    'get-overrides-batch': (params: Record<string, any>) => indexed.getOverridesBatch(params.names),
+    'store-profile':   (params: Record<string, any>) => indexed.storeProfile(params.character),
+    'store-overrides': (params: Record<string, any>) => indexed.storeOverrides(params.name, params.overrides),
+    'update-meta':     (params: Record<string, any>) => indexed.updateProfileMeta(params.name, params.images, params.guestbook, params.friends, params.groups),
 
     init: async(params: Record<string, any>): Promise<void> => {
       indexed = await IndexedStore.open(params.dbName);

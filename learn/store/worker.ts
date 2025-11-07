@@ -1,11 +1,16 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../../site/character_page/interfaces';
-import { PermanentIndexedStore, ProfileRecord } from './types';
+import { PermanentIndexedStore, ProfileRecord, OverrideRecord, CharacterOverridesBatch } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
+import { CharacterOverrides } from '../../fchat/characters';
 
 import { WorkerClient } from './worker/client';
 
+import core from '../../chat/core';
+
 import NewLogger from '../../helpers/log';
 const log = NewLogger('worker');
+const logC = NewLogger('worker', () => core?.state.generalSettings.argv.includes('--debug-custom-gender'));
 
 
 /**
@@ -52,6 +57,8 @@ export class WorkerStore implements PermanentIndexedStore {
             await this.storeProfile(record.profileData);
         }
 
+        logC.silly(`get Profile request for ${name}`);
+
         return record;
     }
 
@@ -59,6 +66,38 @@ export class WorkerStore implements PermanentIndexedStore {
         return this.workerClient.request('store-profile', { character });
     }
 
+    async getOverrides(name: string): Promise<OverrideRecord | undefined> {
+        const record: OverrideRecord = await this.workerClient.request('get-overrides', { name });
+
+        logC.debug('get Overrides request', { name, record });
+
+        return record;
+    }
+
+    async getOverridesBatch(names: string[]): Promise<CharacterOverridesBatch> {
+        const record: CharacterOverridesBatch = await this.workerClient.request('get-overrides-batch', { names });
+
+        logC.debug('get Overrides batch request', { names, record });
+
+        return record;
+    };
+
+    /**
+     * Under what conditons do we store the overrides? How do we tell they're recent? If they're not from cache, presumably.
+     * @param name
+     * @param overrides
+     * @returns
+     */
+    async storeOverrides(name: string, overrides: CharacterOverrides): Promise<void> {
+        const filtered = Object.fromEntries(
+            Object.entries(overrides).filter(([_, v]) => v !== undefined)
+        );
+
+        logC.debug('store Overrides request', { overrides, filtered });
+
+        if (Object.keys(filtered).length)
+            return this.workerClient.request('store-overrides', { name, overrides: filtered });
+    }
 
     async updateProfileMeta(
         name: string,
@@ -85,6 +124,10 @@ export class WorkerStore implements PermanentIndexedStore {
 
 
     async flushProfiles(daysToExpire: number): Promise<void> {
-        return this.workerClient.request('flush', { daysToExpire });
+        return this.workerClient.request('flush-profiles', { daysToExpire });
+    }
+
+    async flushOverrides(daysToExpire: number): Promise<void> {
+        return this.workerClient.request('flush-overrides', { daysToExpire });
     }
 }
