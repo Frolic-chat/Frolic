@@ -1,10 +1,26 @@
 <template>
-    <div class="card bg-light">
-        <div class="card-header" @click="toggle()" style="cursor:pointer" :class="headerClass">
-            <h4>{{title}} <span class="fas" :class="'fa-chevron-' + (collapsed ? 'down' : 'up')"></span></h4>
+    <div class="modal-content">
+        <div class="modal-header input-group flex-nowrap align-items-stretch border-0 p-0" @click="toggle()" style="cursor:pointer" :class="headerClass">
+            <div :style="headerStartStyle" class="form-control d-flex flex-column justify-content-around flex-grow-1 border-0" style="height:auto;">
+                <slot name="header">
+                    <h4>{{ title }}
+                        <span class="fas" :class="'fa-chevron-' + (collapsed ? 'down' : 'up')"></span>
+                    </h4>
+                </slot>
+            </div>
+            <div :style="headerEndStyle" class="input-group-append flex-shrink-0 border-0 header-button-container-container">
+                <div :style="headerEndStyle" class="input-group-text btn p-0 border-0 header-button-container"> <!-- keep border-left -->
+                    <a href="#" @click.prevent="btnClick" :class="btnClass" class="btn justify-content-around h-100 d-flex flex-column border-0">
+                        <slot name="header-button">
+                            "Do it."
+                        </slot>
+                    </a>
+                </div>
+            </div>
         </div>
+
         <div :style="style" style="overflow:hidden">
-            <div class="card-body" ref="content">
+            <div :class="bodyClass" class="modal-body" ref="content">
                 <slot></slot>
             </div>
         </div>
@@ -17,29 +33,62 @@
 
     @Component
     export default class Collapse extends Vue {
-        @Prop({required: true})
-        readonly title!: string;
-        @Prop
+        @Prop({ default: undefined })
+        readonly title?: string;
+
+        @Prop({ default: undefined })
         readonly headerClass?: string;
+
+        @Prop({ default: undefined })
+        readonly btnClass?: string;
+
+        @Prop({ default: undefined })
+        readonly bodyClass?: string;
+
+        @Prop({ default: () => {} })
+        readonly action?: () => void;
+        btnClick(_e: MouseEvent) { this.action?.() }
+
         collapsed = true;
         timeout = 0;
-        style = {height: <string | undefined>'0', transition: 'height .2s'};
+        style = {
+            height: <string | undefined>'0',
+            transition: 'height .3s',
+        };
+
+        get headerStartStyle() { return this.collapsed ? '' : 'border-bottom-left-radius:0;'  }
+        get headerEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
 
         toggle(state?: boolean) {
             clearTimeout(this.timeout);
+
             this.collapsed = state !== undefined ? state : !this.collapsed;
+
             this.$emit(this.collapsed ? 'close' : 'open');
-            if(this.collapsed) {
+
+            if (this.collapsed) {
                 this.style.transition = 'initial';
                 this.style.height = `${(<HTMLElement>this.$refs['content']).scrollHeight}px`;
+
                 setTimeout(() => {
-                    this.style.transition = 'height .2s';
+                    this.style.transition = 'height .3s';
                     this.style.height = '0';
                 }, 0);
-            } else {
+            }
+            else {
                 this.style.height = `${(<HTMLElement>this.$refs['content']).scrollHeight}px`;
-                this.timeout = window.setTimeout(() => this.style.height = undefined, 200);
+
+                this.timeout = window.setTimeout(
+                    () => this.style.height = undefined,
+                    200
+                );
             }
         }
     }
 </script>
+
+<style lang="scss">
+.header-button-container-container:has(.header-button-container:empty) {
+    display: none;
+}
+</style>

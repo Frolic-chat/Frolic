@@ -1,7 +1,15 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <page scrollcageClasses="pt-3">
-    <profile-analysis ref="profileHelper"></profile-analysis>
+    <profile-analysis ref="profileHelper" class="mb-4"></profile-analysis>
+
+
+    <collapse class="mb-4">
+        <template v-slot:header> Hello! Test Title!        </template>
+        <template v-slot:button> BTN                       </template>
+        <template v-slot:default>We vibin'. Chillin', even.</template>
+    </collapse>
+
     <hr>
 
     <div class="accordion" id="accordionExample">
@@ -66,9 +74,12 @@ import { Component } from '@f-list/vue-ts';
 import HomePageLayout from './HomePageLayout.vue';
 import ProfileAnalysis from '../../learn/recommend/ProfileAnalysis.vue';
 
+import Collapse from '../../components/collapse.vue';
+
 @Component({
     components: {
         page: HomePageLayout,
+        collapse: Collapse,
 
         'profile-analysis': ProfileAnalysis,
     }

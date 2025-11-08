@@ -1,8 +1,57 @@
 <template>
+<collapse :action="analyze" btnClass="btn-secondary">
+<template v-slot:header>
+    <span>
+        {{ hook }}
+    </span>
+    <span v-if="lastRun">
+        Last run: {{ lastRun }}
+    </span>
+</template>
+<template v-slot:header-button>
+    <span>
+        <span class="fas fa-user-md"></span>
+        <span class="ml-1 d-none d-md-inline" style="white-space: normal;">{{ title }}</span>
+        <span class="ml-2 d-inline d-md-none" style="white-space: normal;">{{ title }}</span>
+    </span>
+</template>
+<template v-slot:default>
+    <template v-if="analyzing || recommendations"><!-- class="profile-analysis-wrapper" -->
+        <div v-if="!analyzing && recommendations && !recommendations.length" class="card-text">
+            <h3>{{ good }}</h3>
+            <p>{{ noImprovements }}</p>
+        </div>
+
+        <div v-else-if="analyzing" class="card-text">
+            <p>{{ hook }}</p>
+            <p>&nbsp;</p>
+            <p>{{ goal }}</p>
+            <p>&nbsp;</p>
+            <h3>{{ working }}</h3>
+        </div>
+
+        <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text">
+            <p>{{ recc }}</p>
+            <ul>
+                <li v-for="r in recommendations" class="recommendation" :class="r.level">
+                    <h3>{{r.title}}</h3>
+                    <p>{{r.desc}}</p>
+                    <p class="more-info" v-if="r.helpUrl">
+                        <a :href="r.helpUrl">
+                            {{ heresHow }}
+                        </a>
+                    </p>
+                </li>
+            </ul>
+        </div>
+    </template>
+</template>
+</collapse>
+<!--
 <div class="modal-content">
     <div class="modal-header input-group d-flex align-items-stretch flex-nowrap p-0">
         <div class="form-control d-flex flex-column flex-grow-1" style="height:auto; border-bottom-left-radius:0;">
-            <span class="d-none d-md-inline">
+            <span>
                 {{ hook }}
             </span>
             <span v-if="lastRun">
@@ -47,17 +96,26 @@
         </div>
     </div>
 </div>
+-->
 </template>
 <script lang="ts">
 import { Component } from '@f-list/vue-ts';
 import Vue from 'vue';
-import core from '../../chat/core';
+
+import Collapse from '../../components/collapse.vue';
+
 import { ProfileRecommendation, ProfileRecommendationAnalyzer } from './profile-recommendation';
 import { CharacterAnalysis } from '../matcher';
+
+import core from '../../chat/core';
 import { methods } from '../../site/character_page/data_store';
 import l from '../../chat/localize';
 
-@Component({})
+@Component({
+    components: {
+        collapse: Collapse,
+    }
+})
 export default class ProfileAnalysis extends Vue {
     recommendations: ProfileRecommendation[] | null = null;
     analyzing = false;
