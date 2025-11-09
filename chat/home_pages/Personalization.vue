@@ -1,7 +1,11 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <page scrollcageClasses="pt-3">
-    <profile-analysis ref="profileHelper" class="mb-4"></profile-analysis>
+    <profile-analysis class="mb-4"></profile-analysis>
+
+    <hqp class="mb-4"></hqp>
+
+    <gender class="mb-4"></gender>
 
     <!--
     <collapse class="mb-4">
@@ -44,9 +48,11 @@ import Vue from 'vue';
 import { Component } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
-import ProfileAnalysis from '../../learn/recommend/ProfileAnalysis.vue';
-
 import Collapse from '../../components/collapse.vue';
+
+import ProfileAnalysis from '../../learn/recommend/ProfileAnalysis.vue';
+import HQPCreator from './personality/HighQualityPortrait.vue';
+import GenderCreator from './personality/CustomGender.vue';
 
 @Component({
     components: {
@@ -54,21 +60,11 @@ import Collapse from '../../components/collapse.vue';
         collapse: Collapse,
 
         'profile-analysis': ProfileAnalysis,
+        'hqp': HQPCreator,
+        'gender': GenderCreator,
     }
 })
-export default class Personality extends Vue {
-    // import any necessary information via props, probably
-
-    suggestions!: [
-        { [key: string]: any },
-    ];
-
-    activeIndex: number | null = null;
-
-    toggle(i: number) { // Close current is re-clicked.
-        this.activeIndex = this.activeIndex === i ? null : i;
-    }
-}
+export default class Personality extends Vue {}
 </script>
 
 <style lang="scss">
