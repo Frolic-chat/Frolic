@@ -9,6 +9,9 @@ import Vue from 'vue';
 import { EventBus } from '../chat/preview/event-bus';
 import l from '../chat/localize';
 
+import NewLogger from '../helpers/log';
+const logCG = NewLogger('custom-gender');
+
 class Character implements Interfaces.Character {
     gender: Interfaces.Gender = 'None';
     status: Interfaces.Status = 'offline';
@@ -226,6 +229,7 @@ class State implements Interfaces.State {
     setOverride(name: string, type: 'avatarUrl', value: string | undefined): void;
     setOverride(name: string, type: 'gender', value: Interfaces.CustomGender | undefined): void;
     setOverride(name: string, type: 'status', value: Interfaces.Status | undefined): void;
+    setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
         const char = this.get(name);
 
@@ -294,11 +298,27 @@ export default function(this: void, connection: Connection): Interfaces.State {
     connection.onMessage('ADL', (data) => {
         state.opList = data.ops.slice();
     });
-    connection.onMessage('LIS', (data) => {
+    connection.onMessage('LIS', async (data) => {
         for (const char of data.characters) {
             const character = state.get(char[0], false);
             character.gender = char[1];
             state.setStatus(character, char[2], char[3]);
+        }
+
+        const overridesForEveryone = await core.cache.profileCache.getBatchOfOverrides(
+            data.characters.map(([ name ]) => name)
+        );
+
+        logCG.debug(`On LIS, querying for ${data.characters.length} characters, for which only ${overridesForEveryone ? Object.keys(overridesForEveryone).length : 'none'} had entries in the db.`);
+
+        if (overridesForEveryone) {
+            Object.entries(overridesForEveryone).forEach(([ char, indexedOverride ]) => {
+                const c = state.characters[char];
+                if (c && !Object.keys(c.overrides).length) {
+                    for (const indexed of Object.entries(indexedOverride))
+                        state.setOverride(char, indexed[0] as keyof CharacterOverrides, indexed[1]);
+                }
+            });
         }
     });
     connection.onMessage('FLN', (data) => {
