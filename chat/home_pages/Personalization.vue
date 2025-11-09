@@ -3,42 +3,14 @@
 <page scrollcageClasses="pt-3">
     <profile-analysis ref="profileHelper" class="mb-4"></profile-analysis>
 
-
+    <!--
     <collapse class="mb-4">
         <template v-slot:header> Hello! Test Title!        </template>
         <template v-slot:button> BTN                       </template>
         <template v-slot:default>We vibin'. Chillin', even.</template>
     </collapse>
+    -->
 
-    <hr>
-
-    <div class="accordion" id="accordionExample">
-        <div v-for="(item, index) in suggestions" :key="index" class="card">
-            <div class="card-header" :id="`heading-${item.name}`">
-                <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left" type="button" @click="toggle(index)"
-                        :class="{ collapsed: activeIndex !== index }"
-                        data-toggle="collapse" :data-target="`#collapse-${item.name}`"
-                        :aria-expanded="activeIndex === index" :aria-controls="`collapse-${item.name}`"
-                    >
-                        {{ item.title }}
-                    </button>
-                </h2>
-            </div>
-
-            <div :id="`collapse-${item.name}`" class="collapse" :class="{ show: activeIndex === index }"
-                    data-parent="#accordionExample"
-                    :aria-labelledby="`heading-${item.name}`"
-            >
-                <div class="card-body">
-                    {{ item.content }}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Testing -->
-    <slot></slot>
 
     <pre style="color:inherit;">
         This is where your personality helper goes.
@@ -84,7 +56,7 @@ import Collapse from '../../components/collapse.vue';
         'profile-analysis': ProfileAnalysis,
     }
 })
-export default class Suggestions extends Vue {
+export default class Personality extends Vue {
     // import any necessary information via props, probably
 
     suggestions!: [

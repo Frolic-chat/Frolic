@@ -154,10 +154,11 @@ export default class ProfileAnalysis extends Vue {
 
             this.recommendations = await analyzer.analyze();
 
-            this.lastRun = `${d.getHours().toString().padStart(2)}:${d.getMinutes().toString().padStart(2)}`;
+            //this.lastRun = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+            this.lastRun = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         }
         catch {
-            // Avoid outdated report
+            // Stop displaying outdated report
             this.recommendations = null;
         }
         finally {

@@ -35,7 +35,7 @@
     </tabs>
 
     <!-- Pseudo-teleport -->
-     <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
+    <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
         :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
         :style="isHome ? activityStyles : ''"
         :class="isHome ? '' : 'page'"
@@ -53,14 +53,16 @@
         <!-- Notes -->
         <!-- Drafts -->
     </home>
+
     <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
 
     <!-- console -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" class="page" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation" :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" role="tabpanel"></convo>
+
     <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
 
     <!-- Personality -->
-    <customize v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon"></customize>
+    <personality v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon"></personality>
 
     <page v-else-if="isChannel" v-show="tab === '2'">
         <template v-if="primaryDescription">
@@ -84,6 +86,7 @@
 
     <!-- Settings -->
     <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
+
     <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
         <!-- header -->
         <convo-settings :conversation="primaryConversation"></convo-settings>
@@ -116,7 +119,7 @@ import HomePageLayout from './home_pages/HomePageLayout.vue';
 import Home from './home_pages/Home.vue';
 import Data from './home_pages/Data.vue';
 import ConversationView from './ConversationPage.vue';
-import Suggestions from './home_pages/Suggestions.vue';
+import Personality from './home_pages/Personalization.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
@@ -142,7 +145,7 @@ const logC = NewLogger('conversation');
         'data-page': Data,
 
         'convo':          ConversationView,
-        'customize':      Suggestions,
+        'personality':    Personality,
         'char-settings':  Settings,
         'convo-settings': ConversationSettings,
         /*
