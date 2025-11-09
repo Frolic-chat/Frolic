@@ -8,9 +8,10 @@
         Last run: {{ lastRun }}
     </span>
 </template>
-<template v-slot:header-button>
+<template v-slot:button>
     <span>
-        <span class="fas fa-user-md"></span>
+        <span v-if="!analyzing && recommendations && !recommendations.length" class="text-success fa-solid fa-circle-check"></span>
+        <span v-else class="fa-solid fa-user-md"></span>
         <span class="ml-1 d-none d-md-inline" style="white-space: normal;">{{ title }}</span>
         <span class="ml-2 d-inline d-md-none" style="white-space: normal;">{{ title }}</span>
     </span>
@@ -47,56 +48,6 @@
     </template>
 </template>
 </collapse>
-<!--
-<div class="modal-content">
-    <div class="modal-header input-group d-flex align-items-stretch flex-nowrap p-0">
-        <div class="form-control d-flex flex-column flex-grow-1" style="height:auto; border-bottom-left-radius:0;">
-            <span>
-                {{ hook }}
-            </span>
-            <span v-if="lastRun">
-                Last run: {{ lastRun }}
-            </span>
-        </div>
-        <div class="input-group-append flex-shrink-0" style="border-bottom-right-radius:0;">
-            <a href="#" @click.prevent="analyze()" class="input-group-text btn">
-                <span class="fas fa-user-md"></span>
-                <span class="ml-1 d-none d-md-inline" style="white-space: normal;">{{ title }}</span>
-                <span class="ml-2 d-inline d-md-none" style="white-space: normal;">{{ title }}</span>
-            </a>
-        </div>
-    </div>
-    <div v-if="analyzing || recommendations" class="modal-body profile-analysis-wrapper">
-        <div v-if="!analyzing && recommendations && !recommendations.length" class="card-text">
-            <h3>{{ good }}</h3>
-            <p>{{ noImprovements }}</p>
-        </div>
-
-        <div v-else-if="analyzing" class="card-text">
-            <p>{{ hook }}</p>
-            <p>&nbsp;</p>
-            <p>{{ goal }}</p>
-            <p>&nbsp;</p>
-            <h3>{{ working }}</h3>
-        </div>
-
-        <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text">
-            <p>{{ recc }}</p>
-            <ul>
-                <li v-for="r in recommendations" class="recommendation" :class="r.level">
-                    <h3>{{r.title}}</h3>
-                    <p>{{r.desc}}</p>
-                    <p class="more-info" v-if="r.helpUrl">
-                        <a :href="r.helpUrl">
-                            {{ heresHow }}
-                        </a>
-                    </p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
--->
 </template>
 <script lang="ts">
 import { Component } from '@f-list/vue-ts';
