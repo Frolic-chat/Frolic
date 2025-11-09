@@ -39,11 +39,8 @@ export interface OverrideRecord extends CharacterOverrides {
     lastFetched: number;
 }
 
+export type ProfileRecordBatch      = Record<string, ProfileRecord>;
 export type CharacterOverridesBatch = Record<string, CharacterOverrides>;
-
-export interface ProfileRecordBatch {
-    [key: string]: ProfileRecord;
-}
 
 // export type Statement = any;
 // export type Database = any;

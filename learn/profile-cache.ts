@@ -3,7 +3,7 @@ import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../site/
 import { AsyncCache } from './async-cache';
 import { EventBus } from '../chat/preview/event-bus';
 import { Matcher, MatchReport } from './matcher';
-import { PermanentIndexedStore } from './store/types';
+import { PermanentIndexedStore, CharacterOverridesBatch } from './store/types';
 import { Character as CharacterPage, CharacterImage, SimpleCharacter } from '../interfaces';
 import { Scoring } from './matcher-types';
 import { matchesSmartFilters } from './filter/smart-filter';
@@ -352,6 +352,15 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         logC.debug(`Overrides fetched from store for ${name}`, rest);
 
         return rest;
+    }
+
+    async getBatchOfOverrides(names: string[]): Promise<CharacterOverridesBatch | undefined> {
+        const ooo = this.store?.getOverridesBatch(names);
+
+        if (!ooo || !Object.keys(ooo).length) // no maidens???
+            return;
+
+        return ooo;
     }
 
     static invalidColorCodes(description: string): string | null {
