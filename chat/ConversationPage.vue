@@ -127,7 +127,7 @@
 
     <template v-slot:postscroll>
         <!-- Input box -->
-        <div v-show="isPrivate(conversation) || isChannel(conversation)" style="display: contents;">
+        <div v-show="isConsole || isPrivate(conversation) || isChannel(conversation)" style="display: contents;">
             <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
                 :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
                 :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
