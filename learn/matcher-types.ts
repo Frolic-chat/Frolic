@@ -48,6 +48,29 @@ export enum Gender {
     Shemale = 141
 }
 
+export namespace CustomGender {
+    export const KinkMap = {
+        'Female':        554,
+        'Herm-Male':     552,
+        'Male':          553,
+        'Transgender':   551,
+        'Hermaphrodite': 132,
+        'Shemale':       356,
+        'Cunt-boy':      231,
+        'Transwoman':    606,
+        'Transman':      607,
+        'Nonbinary':     712,
+        'Androgynous':   586,
+        'Femboy':        531,
+        'Tomboy':        532,
+        'Feminine':      592,
+        'Masculine':     597,
+    } as const;
+
+    export type KinkWords = keyof typeof KinkMap;
+    export type KinkIds   = typeof KinkMap[keyof typeof KinkMap];
+}
+
 export enum SubDomRole {
     AlwaysSubmissive = 7,
     UsuallySubmissive = 8,

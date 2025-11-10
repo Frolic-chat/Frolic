@@ -5,7 +5,7 @@ import { EventBus } from '../chat/preview/event-bus';
 import { Matcher, MatchReport } from './matcher';
 import { PermanentIndexedStore, CharacterOverridesBatch } from './store/types';
 import { Character as CharacterPage, CharacterImage, SimpleCharacter } from '../interfaces';
-import { Scoring } from './matcher-types';
+import { Scoring, CustomGender } from './matcher-types';
 import { matchesSmartFilters } from './filter/smart-filter';
 import * as remote from '@electron/remote';
 import { Character } from '../fchat/interfaces';
@@ -185,7 +185,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         const results: InlineTag[] = [];
 
         for (const match of description.matchAll(query)) {
-            const [, type, value] = match;
+            const [ , type, value ] = match;
 
             if (validInlineTags.find(tag => type === tag)) {
                 results.push({
@@ -254,11 +254,19 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         );
 
         if (getAsNumber(parts.v) === 1) {
+            const valid_genders = Object.values(CustomGender.KinkMap) as number[];
+
             return {
-                string:   parts.display || '',
-                match:    parts.match?.split(',').map(e => getAsNumber(e) ?? 0) ?? [], // Sanitize
-                mismatch: parts.mismatch?.split(',').map(e => getAsNumber(e) ?? 0) ?? [], // Sanitize
-                version:  getAsNumber(parts.v) ?? 0,
+                string:   parts.display?.slice(0, 21) || '',
+                version:  1,
+                match:    parts.match?.split(',')
+                    .map(e => getAsNumber(e) ?? 0)
+                    .filter(n => valid_genders.includes(n))
+                        ?? [], // If no 'match' provided
+                mismatch: parts.mismatch?.split(',')
+                    .map(e => getAsNumber(e) ?? 0)
+                    .filter(n => valid_genders.includes(n))
+                        ?? [], // If no 'mismatch' provided
             }
         }
         else {
