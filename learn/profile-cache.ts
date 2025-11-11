@@ -363,7 +363,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
     async getBatchOfOverrides(names: string[]): Promise<CharacterOverridesBatch | undefined> {
-        const ooo = this.store?.getOverridesBatch(names);
+        const ooo = await this.store?.getOverridesBatch(names);
 
         if (!ooo || !Object.keys(ooo).length) // no maidens???
             return;

@@ -212,7 +212,7 @@ export class IndexedStore implements PermanentIndexedStore {
 
         const tasks = names.map(async name => {
             try {
-                const or = await promisifyRequest<OverrideRecord | undefined>(store.get(name));
+                const or = await promisifyRequest<OverrideRecord | undefined>(store.get(this.toProfileId(name)));
                 if (or) {
                     const { id, lastFetched, ...rest } = or;
 
