@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from '@f-list/vue-ts';
+import { Component, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
 
 import Collapse from '../../../components/collapse.vue';
@@ -116,6 +116,13 @@ export default class HQPCreator extends Vue {
             return 'settings.hqp.errorDomain' as hqpErrorString;
 
         return '' as hqpErrorString;
+    }
+
+    you = core.characters.ownCharacter.overrides;
+    @Watch('you', { immediate: true })
+    onYouUpdate() {
+        if (this.you.avatarUrl && !this.normalLink)
+            this.normalLink = this.you.avatarUrl;
     }
 }
 </script>
