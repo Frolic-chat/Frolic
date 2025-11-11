@@ -61,9 +61,11 @@
 
     <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
 
+    <keep-alive>
     <!-- Personality -->
     <personality v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon"></personality>
 
+    <!-- Channel description -->
     <page v-else-if="isChannel" v-show="tab === '2'">
         <template v-if="primaryDescription">
             <bbcode :text="primaryDescription"></bbcode>
@@ -77,12 +79,14 @@
         </template>
     </page>
 
+    <!-- Recon -->
     <page v-else-if="isPrivate" v-show="tab === '2'">
         This is where recon goes. :)
         - Last spoken to (last message?)
         - Last note exchange. Write new note? Memo writer.
         -
     </page>
+    </keep-alive>
 
     <!-- Settings -->
     <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
