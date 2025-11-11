@@ -197,8 +197,6 @@ export default class HomeScreen extends Vue {
      */
     tabNum = 0;
 
-    lastTabNum = -1;
-
     get isHome()    { return this.conversation === this.activityTab
                           || this.conversation === this.consoleTab     }
     get isPrivate() { return Conversation.isPrivate(this.conversation) }
@@ -287,10 +285,6 @@ export default class HomeScreen extends Vue {
         if (this.tab === '0') {
             if (this.secondaryConversation)
                 this.tab = '1';
-            else if (this.lastTabNum > -1) {
-                if (!(this.lastTabNum === 1) || this.secondaryConversation) // valid tab
-                    this.tab = this.lastTabNum.toString();
-            }
         }
         else {
             this.tab = '0';
@@ -429,11 +423,10 @@ export default class HomeScreen extends Vue {
     }
 
     /**
-     * Tab change events don't happen automatically. Either the player changed the tab on the current conversation (can trigger a conversation change)
-     * If tab-change event takes us to a channel tab, clear that channel's unread messages.
+     * Tab change events don't happen automatically. Either the player changed the tab on the current conversation (can trigger a conversation change), or the conversation watcher made it change.
      */
     @Watch('tab')
-    onTabChanged(_n: string, o: string) {
+    onTabChanged() {
         log.debug('Watch(tab):', this.tab, {
             isPrimary:   this.conversation === this.primaryConversation,
             isSecondary: this.conversation === this.secondaryConversation,
@@ -442,7 +435,6 @@ export default class HomeScreen extends Vue {
         });
 
         this.tabNum = Number(this.tab);
-        this.lastTabNum = Number(o);
 
         if (this.tab === '0') {
             this.$nextTick(() => {
@@ -458,11 +450,13 @@ export default class HomeScreen extends Vue {
         else if (this.tab === '1') {
             this.$nextTick(() => this.secondaryView?.textBox.focus());
 
-            if (this.conversation === this.secondaryConversation)
+            if (this.conversation === this.secondaryConversation) {
                 this.conversation.clearUnread();
+            }
             else {
-                if (this.secondaryConversation)
+                if (this.secondaryConversation) {
                     this.secondaryConversation.show();
+                }
                 else { // Fallback; shouldn't happen.
                     this.tab = '0';
                     console.warn('tried to swap to tab 1 without secondary conversation, changed tab to 0.');

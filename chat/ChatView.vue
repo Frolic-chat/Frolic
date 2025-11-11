@@ -433,19 +433,16 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
           (<AdLauncherDialog>this.$refs['adLauncher']).show();
         }
 
+        currentClicked = true;
         goHome(): void {
-            if (this.conversations.selectedConversation === this.conversations.activityTab) {
-                this.conversations.consoleTab.show();
+            if (this.conversations.selectedConversation === this.conversations.activityTab
+            ||  this.conversations.selectedConversation === this.conversations.consoleTab) {
+                this.currentClicked = !this.currentClicked;
             }
-            else if (this.conversations.selectedConversation === this.conversations.consoleTab) {
-                this.conversations.activityTab.show();
-            }
-            else {
-                this.homeConversation.show();
-            }
+
+            this.homeConversation.show();
         }
 
-        currentClicked = true;
         showConversation(c: Conversation.Conversation) {
             if (this.conversations.selectedConversation === c) {
                 this.currentClicked = !this.currentClicked;
