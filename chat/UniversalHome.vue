@@ -9,7 +9,7 @@
                 'fa       fa-chart-gannt': isChannel && !isOfficialChannel,
                 'fa-solid fa-user':        isPrivate,
             }"></span>
-            <span class="tab-text">{{ tab0Name }}</span>
+            <span class="tab-text d-none d-sm-inline">{{ tab0Name }}</span>
         </span>
         <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
             <span v-if="isHome" class="fa-solid fa-terminal"></span>
@@ -475,26 +475,25 @@ export default class HomeScreen extends Vue {
             if ('show' in target && typeof target.show === 'function')
                 target.show();
 
-            // ... and second, the conents.
-            if (this.tabNum === 0) {
-                if (this.isHome) {
-                    if (this.conversation !== this.primaryConversation)
-                        this.primaryConversation.show();
-                }
-                else {
-                    if (this.primaryConversation !== this.activityTab)
-                        this.primaryView.textBox.focus();
-                }
-            }
-            else if (this.tabNum === 1) {
-                if (this.isHome) {
-                    if (this.secondaryConversation && this.conversation !== this.secondaryConversation)
-                        this.secondaryConversation.show();
-                }
+            // ... and second, the contents.
+            // if (this.tabNum === 0) {
+            //     if (this.isHome) {
+            //         if (this.conversation !== this.primaryConversation)
+            //             this.primaryConversation.show();
+            //     }
+            //     else {
+            //         if (this.primaryConversation !== this.activityTab)
+            //             this.primaryView.textBox.focus();
+            //     }
+            // }
+            // else if (this.tabNum === 1) {
+            //     if (this.isHome) {
+            //         if (this.secondaryConversation && this.conversation !== this.secondaryConversation)
+            //             this.secondaryConversation.show();
+            //     }
 
-                this.secondaryView?.textBox.focus();
-            }
-
+            //     this.secondaryView?.textBox.focus();
+            // }
         });
     }
 
