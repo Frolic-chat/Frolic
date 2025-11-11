@@ -373,12 +373,15 @@ export default class HomeScreen extends Vue {
         });
 
         if (this.tab === '0') {
-            if (n === this.primaryConversation) { // I don't think this can fail.
+            if (n === this.primaryConversation) {
                 n.clearUnread();
+            }
+            else if (n === this.secondaryConversation) {
+                this.tab = '1';
             }
         }
         if (this.tab === '1') {
-            if (this.secondaryConversation && n === this.secondaryConversation) {
+            if (n === this.secondaryConversation) {
                 n.clearUnread();
             }
             else { // So we're on tab 1 but no conversation on that tab...
