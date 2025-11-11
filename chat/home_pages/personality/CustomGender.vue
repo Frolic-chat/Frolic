@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <collapse>
 <template v-slot:header>
@@ -15,44 +16,52 @@
 <template v-slot:default>
     <p>{{ intro }}</p>
 
-    <div class="border-inline-warning rounded-lg p-3 my-2" style="margin-top: 10px">
+    <!-- Beta-feature warning -->
+    <div class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
         <h5>{{ alert }}</h5>
         <div>{{ alert_desc }}</div>
     </div>
 
+    <!-- Identity -->
     <div class="form-group">
-        {{ inputDesc }}
-        <input type="text" class="form-control" v-model="inputWord" rows="1" :placeholder="inputPh" maxlength="20"></input>
-        <div v-if="inputError">
-            {{ inputErrorMsg }}
+        <p class="lead">{{ identityLead }}</p>
+        <p class="form-text">{{ identityDesc }}</p>
+        <input type="text" class="form-control" v-model="identityPhrase" rows="1" :placeholder="identityPh" maxlength="20" />
+        <div v-if="identityError" class="form-text border-left-warning rounded-lg pl-2">
+            {{ identityErrorMsg }}
         </div>
     </div>
 
-    <div class="form-group">
-        {{ kinkDesc }}
-        <!-- format this!!! -->
-        <div>{{ kinkExample }}</div>
-        <tags class="mt-4" v-model="selectedKinks" :availableTags="availableKinks"></tags>
-        <p v-if="kinkError">
-            {{ kinkErrorMsg }}
-        </p>
-    </div>
+    <template v-if="!identityError">
+    <!-- Kink list  -->
+        <div class="form-group">
+            <p class="lead">{{ kinkLead }}</p>
+            <p class="form-text">{{ kinkDesc }}</p>
+            <p class="text-small form-text">{{ kinkExample }}</p>
+            <tags class="mt-4" v-model="selectedKinks" :availableTags="availableKinks"></tags>
+            <p v-if="kinkError" class="form-text border-left-warning rounded-lg pl-2">
+                {{ kinkErrorMsg }}
+            </p>
+        </div>
 
-    <div class="form-group">
-        {{ outputDesc }}
-        <input type="text" class="form-control" @click="selectAllIfValid" :value="theFinalGender" rows="1" :placeholder="outputPh" reaodnly="true"></input>
-        <!--
-        <p v-if="outputerror">
-            {{ formatErrorMsg }}
-        </p>
-        -->
-    </div>
+        <!-- Final -->
+        <div class="form-group">
+            <p class="lead">{{ outputLead }}</p>
+            <p class="form-text">{{ outputDesc }}</p>
+            <input type="text" class="form-control" @click="selectAllIfValid" :value="theFinalGender" rows="1" :placeholder="outputPh" readonly="true" />
+            <!--
+            <p v-if="outputerror">
+                {{ formatErrorMsg }}
+            </p>
+            -->
+        </div>
+    </template>
 </template>
 </collapse>
 </template>
 
 <script lang="ts">
-import { Component } from '@f-list/vue-ts';
+import { Component, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
 
 import Collapse from '../../../components/collapse.vue';
@@ -72,7 +81,7 @@ type cgKinksErrorString = 'settings.cg.errorEmptyKinks'
 @Component({
     components: {
         collapse: Collapse,
-        tags: TagPicker,
+        tags:     TagPicker,
     }
 })
 export default class GenderCreator extends Vue {
@@ -80,65 +89,92 @@ export default class GenderCreator extends Vue {
     get youHaveGender() { return core.characters.ownCharacter.overrides.gender }
     intro = l('settings.cg.intro');
 
-    alert = l('settings.cg.alert');
+    alert      = l('settings.cg.alert');
     alert_desc = l('settings.cg.experimental');
 
-    inputDesc = l('settings.cg.word');
-    inputWord: string = '';
-    inputPh = l('settings.cg.exampleGender');
+    identityLead = l('settings.cg.identity.lead');
+    identityDesc = l('settings.cg.identity.desc');
+    identityPhrase: string = '';
+    identityPh   = l('settings.cg.identity.example');
     // No gender string, malformed output, etc.
     // is malformed output even possible? remove unused parts.
     // sanitize detection in getstufffromdescription().
-    get inputError(): cgInputErrorString {
-        if (!this.inputWord)
+    get identityError(): cgInputErrorString {
+        if (!this.identityPhrase)
             return 'settings.cg.errorEmpty';
 
-        if (this.inputWord.length > 20)
-            return 'settings.cg.errorLength';
-
-        if (/[=;\]]/.test(this.inputWord))
+        if (/[=;\]]/.test(this.identityPhrase))
             return 'settings.cg.errorCharacters';
+
+        if (this.identityPhrase.length >= 20)
+            return 'settings.cg.errorLength';
 
         return '';
     }
-    inputErrorMsg: string = '';
+    get identityErrorMsg() { return l(this.identityError) };
 
-    kinkDesc = l('settings.cg.kinkDesc');
-    kinkExample = l('settings.cg.kinkExample');
+    kinkLead    = l('settings.cg.kink.lead')
+    kinkDesc    = l('settings.cg.kink.desc');
+    kinkExample = l('settings.cg.kink.example');
     selectedKinks: CustomGender.KinkWords[] = [];
-    get availableKinks() { return Object.keys(CustomGender.KinkMap) }
+    availableKinks = Object.keys(CustomGender.KinkMap);
     get kinkError(): cgKinksErrorString {
-        if (!this.selectedKinks)
+        if (!this.selectedKinks.length)
             return 'settings.cg.errorEmptyKinks';
         else
             return '';
     }
     get kinkErrorMsg() { return l(this.kinkError) }
 
-    outputDesc = l('settings.cg.copy');
+    outputLead = l('settings.cg.output.lead');
+    outputDesc = l('settings.cg.output.desc');
     get selectedKinkIds() {
         return this.selectedKinks
             .map(s => CustomGender.KinkMap[s]).join(',');
     }
-    selectAllIfValid(e: MouseEvent) {
-        if (this.inputError)
-            return;
-        else if (e.target instanceof HTMLTextAreaElement)
-            e.target.select();
-    }
     get theFinalGender() {
         // [i=fcg://display=The Wind;match=554;mismatch=;v=1]
         return '[i=fcg://'
-            + (this.inputWord ? 'display=' + this.inputWord + ';' : '')
+            + (this.identityPhrase ? 'display=' + this.identityPhrase + ';' : '')
             + (this.selectedKinkIds ? 'match=' + this.selectedKinkIds + ';' : '')
             + 'v=1][/i]';
     }
     outputPh = l('settings.cg.exampleOutput');
+
+    selectAllIfValid(e: MouseEvent) {
+        if (this.identityError) {
+            if (e.target instanceof HTMLInputElement)
+                e.target.blur();
+        }
+        else if (e.target instanceof HTMLInputElement) {
+            e.target.select();
+        }
+    }
+
+    you = core.characters.ownCharacter.overrides;
+
+    @Watch('you', { immediate: true })
+    onYouUpdate() {
+        if (!this.you.gender || this.selectedKinks.length)
+            return;
+
+        const rm: Record<number, string> = {};
+        Object.entries(CustomGender.KinkMap)
+            .forEach(([k, v]) => {
+                rm[v] = k;
+            });
+
+        this.identityPhrase = this.you.gender.string;
+        this.selectedKinks = this.you.gender.match.map(id => rm[id] as CustomGender.KinkWords);
+    }
 }
 </script>
 
 <style lang="scss">
 .border-inline-warning {
     border-inline: 2px solid var(--warning);
+}
+.border-left-warning {
+    border-left: 2px solid var(--warning);
 }
 </style>
