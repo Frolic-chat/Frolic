@@ -66,7 +66,7 @@
                 </a>
 
                 <div class="list-group conversation-nav" ref="privateConversations">
-                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
+                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="showConversation(conversation)"
                         :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
                         class="list-group-item list-group-item-action item-private" :key="conversation.key"
                         @click.middle.prevent.stop="conversation.close()">
@@ -98,7 +98,7 @@
                 </a>
 
                 <div class="list-group conversation-nav" ref="channelConversations">
-                    <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
+                    <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="showConversation(conversation)"
                         :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" :key="conversation.key"
                         @click.middle.prevent.stop="conversation.close()">
                         <span class="name">{{conversation.name}}</span>
@@ -124,20 +124,20 @@
                     <span class="fas fa-home conversation-icon"></span>
                     {{conversations.consoleTab.name}}
                 </a>
-                <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
+                <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="showConversation(conversation)"
                     :class="getClasses(conversation)" class="list-group-item list-group-item-action" :key="conversation.key">
                     <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
                     <span class="far fa-user-circle conversation-icon" v-else></span>
                     <div class="name">{{conversation.character.name}}</div>
                 </a>
-                <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
+                <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="showConversation(conversation)"
                     :class="getClasses(conversation)" class="list-group-item list-group-item-action" :key="conversation.key">
                     <span class="fas fa-hashtag conversation-icon"></span>
                     <div class="name">{{conversation.name}}</div>
                 </a>
             </div>
 
-            <home-screen :reportDialog="$refs['reportDialog']"></home-screen>
+            <home-screen :activeConversationClicked="currentClicked" :reportDialog="$refs['reportDialog']"></home-screen>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
@@ -434,12 +434,25 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
 
         goHome(): void {
-            if (this.conversations.selectedConversation === this.conversations.activityTab
-            ||  this.conversations.selectedConversation === this.conversations.consoleTab) {
-                return;
+            if (this.conversations.selectedConversation === this.conversations.activityTab) {
+                this.conversations.consoleTab.show();
             }
+            else if (this.conversations.selectedConversation === this.conversations.consoleTab) {
+                this.conversations.activityTab.show();
+            }
+            else {
+                this.homeConversation.show();
+            }
+        }
 
-            this.homeConversation.show();
+        currentClicked = true;
+        showConversation(c: Conversation.Conversation) {
+            if (this.conversations.selectedConversation === c) {
+                this.currentClicked = !this.currentClicked;
+            }
+            else {
+                c.show(); // Set the conversation, Home will update from watcher.
+            }
         }
 
         showDevTools(): void {

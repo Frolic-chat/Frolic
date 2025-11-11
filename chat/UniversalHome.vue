@@ -165,6 +165,9 @@ const logC = NewLogger('conversation');
 export default class HomeScreen extends Vue {
     get conversation() { return core.conversations.selectedConversation }
 
+    @Prop({ default: false })
+    readonly activeConversationClicked: boolean = false;
+
     /**
      * Use the global report dialog; exclusively here to pass to the conversation.
      */
@@ -193,6 +196,8 @@ export default class HomeScreen extends Vue {
      * Pure numerical rep of current tab; keep `tab` and `tabNum` in sync.
      */
     tabNum = 0;
+
+    lastTabNum = -1;
 
     get isHome()    { return this.conversation === this.activityTab
                           || this.conversation === this.consoleTab     }
@@ -275,6 +280,21 @@ export default class HomeScreen extends Vue {
     @Hook('beforeDestroy')
     destroy() {
         window.removeEventListener('keydown', this.onKey);
+    }
+
+    @Watch('activeConversationClicked')
+    updateFromOnHigh() {
+        if (this.tab === '0') {
+            if (this.secondaryConversation)
+                this.tab = '1';
+            else if (this.lastTabNum > -1) {
+                if (!(this.lastTabNum === 1) || this.secondaryConversation) // valid tab
+                    this.tab = this.lastTabNum.toString();
+            }
+        }
+        else {
+            this.tab = '0';
+        }
     }
 
     /**
@@ -413,7 +433,7 @@ export default class HomeScreen extends Vue {
      * If tab-change event takes us to a channel tab, clear that channel's unread messages.
      */
     @Watch('tab')
-    onTabChanged() {
+    onTabChanged(_n: string, o: string) {
         log.debug('Watch(tab):', this.tab, {
             isPrimary:   this.conversation === this.primaryConversation,
             isSecondary: this.conversation === this.secondaryConversation,
@@ -422,6 +442,7 @@ export default class HomeScreen extends Vue {
         });
 
         this.tabNum = Number(this.tab);
+        this.lastTabNum = Number(o);
 
         if (this.tab === '0') {
             this.$nextTick(() => {
