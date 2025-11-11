@@ -33,10 +33,7 @@
     </template>
 
     <template v-slot:postscroll>
-        <div class="d-flex flex-wrap-reverse justify-content-between align-items-end small border-top">
-            <span>
-                Foot<small>er</small> content!
-            </span>
+        <div class="d-flex flex-wrap-reverse justify-content-between small border-top">
             <a href="#" @click.prevent="openLicense()" class="ml-auto d-flex flex-column align-items-end text-muted text-right text-decoration-none p-1"><!-- Version & License -->
                 <span>Frolic is free software!</span>
                 <span><span class="text-primary">Click here</span> to learn what that means.</span>
