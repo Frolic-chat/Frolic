@@ -10,7 +10,7 @@ import { EventBus } from '../chat/preview/event-bus';
 import l from '../chat/localize';
 
 import NewLogger from '../helpers/log';
-const logCG = NewLogger('custom-gender');
+const logCG = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
 
 class Character implements Interfaces.Character {
     gender: Interfaces.Gender = 'None';
