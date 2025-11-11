@@ -55,7 +55,7 @@ export default class TagPicker extends Vue {
         this.$nextTick(this.updatedSelectedHeight);
     }
 
-    @Watch('value')
+    @Watch('value', { immediate: true })
     onValueChanged() {
         this.selectedTags = [ ...this.value ];
     }
