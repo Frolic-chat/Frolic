@@ -438,8 +438,10 @@ export default class HomeScreen extends Vue {
 
         if (this.tab === '0') {
             this.$nextTick(() => {
-                if (this.primaryConversation !== this.activityTab)
-                        this.primaryView.textBox.focus();
+                if (this.primaryConversation !== this.activityTab) {
+                    this.primaryView.textBox.focus();
+                    this.scrollConversation();
+                }
             });
 
             if (this.conversation === this.primaryConversation)
@@ -448,7 +450,10 @@ export default class HomeScreen extends Vue {
                 this.primaryConversation.show();
         }
         else if (this.tab === '1') {
-            this.$nextTick(() => this.secondaryView?.textBox.focus());
+            this.$nextTick(() => {
+                this.secondaryView?.textBox.focus();
+                this.scrollConversation();
+            });
 
             if (this.conversation === this.secondaryConversation) {
                 this.conversation.clearUnread();
