@@ -4,6 +4,7 @@ import { CharacterAnalysis } from '../matcher';
 import { CharacterOverrides } from '../../fchat/characters';
 import { PermanentIndexedStore, ProfileRecord, OverrideRecord, CharacterOverridesBatch } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
+import core from './worker/slimcore';
 
 /**
  * Fancy way to turn callback-style async into promise-style async.
@@ -132,7 +133,12 @@ export class IndexedStore implements PermanentIndexedStore {
 
     private async prepareProfileData(c: ComplexCharacter): Promise<ProfileRecord> {
         const existing = await this.getProfile(c.character.name);
-        const ca = new CharacterAnalysis(c.character);
+        const overrides = core.characters.get(c.character.name).overrides;
+
+        if (Object.keys(overrides).length)
+            console.debug('Using overrides in indexed:', overrides);
+
+        const ca = new CharacterAnalysis(c.character, overrides);
 
         // fix to clean out extra customs that somehow sometimes appear:
         if (Array.isArray(c.character.customs) || (c.character.customs !== null && !(typeof c.character.customs === 'object'))) {
@@ -192,13 +198,22 @@ export class IndexedStore implements PermanentIndexedStore {
             if (!data)
                 return;
 
-            return {
+            const output = {
                 id: data.id,
                 ...(data.avatarUrl && { avatarUrl: data.avatarUrl }),
                 ...(data.gender    && { gender:    data.gender    }),
                 ...(data.status    && { status:    data.status    }),
                 lastFetched: data.lastFetched,
             }
+
+            const o = core.characters.get(name.toLowerCase()).overrides;
+            if (data.avatarUrl) o.avatarUrl = data.avatarUrl;
+            if (data.gender)    o.gender    = data.gender;
+            if (data.status)    o.status    = data.status;
+
+            // Save character overrides.
+
+            return output;
         }
         catch {
             return; // Don't need errors.
@@ -231,6 +246,15 @@ export class IndexedStore implements PermanentIndexedStore {
 
         await Promise.allSettled(tasks);
 
+        Object.entries(results).forEach(r => {
+            const o = core.characters.get(r[0]).overrides;
+            if (r[1].avatarUrl) o.avatarUrl = r[1].avatarUrl;
+            if (r[1].gender)    o.gender    = r[1].gender;
+            if (r[1].status)    o.status    = r[1].status;
+        })
+
+
+
         return results;
     };
 
@@ -245,6 +269,9 @@ export class IndexedStore implements PermanentIndexedStore {
         const tx = this.db.transaction(IndexedStore.AUX_STORE_NAME, 'readwrite');
         const auxRequest = tx.objectStore(IndexedStore.AUX_STORE_NAME)
             .put(o);
+
+        const c = core.characters.get(name);
+        c.overrides = overrides;
 
         await promisifyRequest<void>(auxRequest);
     }
