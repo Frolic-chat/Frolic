@@ -170,13 +170,15 @@
          * FurryPref
          * SubDom
          * Position
+         *
          * post length
          * RP length
+         * Language
          *
          * List order determines display order.
          */
         readonly charInfoIds: ReadonlyArray<number> = [ 1, 3, 2, 9, 29, 15, 41 ];
-        readonly rpInfoIds: ReadonlyArray<number> = [ 24, 49, 25 ];
+        readonly rpInfoIds: ReadonlyArray<number> = [ 24, 25, 49 ];
 
         // Needs reactivity testing.
         get genderOverrides() {
