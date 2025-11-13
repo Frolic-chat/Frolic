@@ -11,7 +11,10 @@ export interface ProfileRecord {
     profileData:    ComplexCharacter;
     firstSeen:      number;
     lastFetched:    number;
-    gender:          Gender          | null;
+    // In 30 days this can be Gender[] | null
+    // Prevents us having to clear the cache.
+    // Thankfully it's basically unused everywhere.
+    gender:          Gender[] | Gender | null;
     orientation:     Orientation     | null;
     furryPreference: FurryPreference | null;
     species:         Species         | null;

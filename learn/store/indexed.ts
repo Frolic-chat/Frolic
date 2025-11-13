@@ -80,6 +80,12 @@ export class IndexedStore implements PermanentIndexedStore {
                         multiEntry: false
                    }
                 );
+
+                // Upgrading Gender -> Gender[] in profile storage. Thankfully we don't actually need to do this; gender from the store isn't used anywhere, so we can only use new gender arrays and wait for cache expiry to remove the old ones.
+                // const profile_store = request.transaction!.objectStore(IndexedStore.AUX_STORE_NAME);
+                // const req = profile_store.clear();
+
+                // await promisifyRequest(req);
             }
         };
 
