@@ -48,6 +48,8 @@ export class WorkerStore implements PermanentIndexedStore {
             // fix customs because it will crash the client
             const customsObject: ProfileRecord['profileData']['character']['customs'] = {};
 
+            console.warn(`Fixing broken customs object for ${record.name}:`, record.profileData.character.customs);
+
             for (const [key, value] of Object.entries(record.profileData.character.customs)) {
                 if (value !== undefined) customsObject[key] = value;
             }

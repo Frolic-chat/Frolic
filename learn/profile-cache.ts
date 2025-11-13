@@ -470,11 +470,11 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
 
-    static match(c: ComplexCharacter, myOverrides: CharacterOverrides, theirOverrides: CharacterOverrides): MatchReport | null {
-        const you = core.characters.ownProfile;
-        if (!you)
+    static match(subject: ComplexCharacter, sourceOverrides: CharacterOverrides, subjectOverrides: CharacterOverrides): MatchReport | null {
+        const source = core.characters.ownProfile;
+        if (!source)
             return null;
 
-        return Matcher.identifyBestMatchReport(you.character, c.character, myOverrides, theirOverrides);
+        return Matcher.identifyBestMatchReport(source.character, subject.character, sourceOverrides, subjectOverrides);
     }
 }

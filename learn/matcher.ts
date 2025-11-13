@@ -298,11 +298,11 @@ export class Matcher {
         return report;
     }
 
-    static identifyBestMatchReport(source: Character, subject: Character, yourOverrides: CharacterOverrides, theirOverrides: CharacterOverrides): MatchReport {
+    static identifyBestMatchReport(source: Character, subject: Character, sourceOverrides: CharacterOverrides, subjectOverrides: CharacterOverrides): MatchReport {
         //const reportStartTime = Date.now();
 
-        const yourCharacterAnalyses  = Matcher.generateAnalysisVariations(source, yourOverrides);
-        const theirCharacterAnalyses = Matcher.generateAnalysisVariations(subject, theirOverrides);
+        const yourCharacterAnalyses  = Matcher.generateAnalysisVariations(source,  sourceOverrides);
+        const theirCharacterAnalyses = Matcher.generateAnalysisVariations(subject, subjectOverrides);
 
         let bestScore: Scoring | null = null;
         let bestScoreLevelCount = -10000;

@@ -136,7 +136,7 @@ export class IndexedStore implements PermanentIndexedStore {
 
         // fix to clean out extra customs that somehow sometimes appear:
         if (Array.isArray(c.character.customs) || (c.character.customs !== null && !(typeof c.character.customs === 'object'))) {
-            // log.debug('character.customs.strange.indexed.prepareProfileData', {name: c.character.name, c, customs: c.character.customs});
+            console.debug('character.customs.strange.indexed.prepareProfileData', {name: c.character.name, c, customs: c.character.customs});
             c.character.customs = {};
         }
 
