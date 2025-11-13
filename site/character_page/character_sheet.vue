@@ -463,9 +463,6 @@
 
         protected async loadSelfCharacter(): Promise<void> {
             this.selfCharacter = core.characters.ownProfile;
-
-            if (this.selfCharacter && this.character)
-                this.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, this.character.character);
         }
 
         /**
@@ -537,8 +534,12 @@
                 stand.images    = char_record.meta.images;
             }
 
-            if (this.selfCharacter)
-                stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character);
+            if (this.selfCharacter) {
+                const yourOverrides = (await core.characters.getAsync(this.selfCharacter.character.name)).overrides;
+                const theirOverrides = (await core.characters.getAsync(stand.character.character.name)).overrides;
+
+                stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character, yourOverrides, theirOverrides);
+            }
 
             /**
              * Time to dump the armor stand out into a character.
@@ -575,8 +576,14 @@
 
                 stand.descBody = stand.character.character.description;
 
-                if (this.selfCharacter)
-                    stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character);
+                if (this.selfCharacter) {
+                    const [ yourOverrides, theirOverrides ] = await Promise.all([
+                        core.characters.getAsync(this.selfCharacter.character.name).then(c => c.overrides),
+                        core.characters.getAsync(stand.character.character.name).then(c => c.overrides),
+                    ])
+
+                    stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character, yourOverrides, theirOverrides);
+                }
 
                 void this.updateMeta(stand)
                     .catch(err => log.error('refreshCache.updateMeta', stand.character?.character.name, err));

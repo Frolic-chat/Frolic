@@ -403,15 +403,19 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
      * @returns Character with match details
      */
     async register(c: ComplexCharacter, skipStore: boolean = false): Promise<CharacterCacheRecord> {
-        const k = AsyncCache.nameKey(c.character.name);
-        const match = ProfileCache.match(c);
+        const updatedOverrides = ProfileCache.updateOverrides(c.character);
+
+        const [ myOverrides, theirOverrides ] = await Promise.all([
+            core.characters.getAsync(core.characters.ownCharacter.name).then(c => c.overrides),
+            core.characters.getAsync(c.character.name).then(c => c.overrides),
+        ])
+
+        const match = ProfileCache.match(c, myOverrides, theirOverrides);
         let score = (!match || match.score === null) ? Scoring.NEUTRAL : match.score;
 
         if (score === 0) {
             log.verbose('cache.profile.store.zero.score', { name: c.character.name });
         }
-
-        const updatedOverrides = ProfileCache.updateOverrides(c.character);
 
         // const totalScoreDimensions = match ? Matcher.countScoresTotal(match) : 0;
         // const dimensionsAtScoreLevel = match ? (Matcher.countScoresAtLevel(match, score) || 0) : 0;
@@ -439,6 +443,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
             }
         }
 
+        const k = AsyncCache.nameKey(c.character.name);
+
         if (k in this.cache) {
             const rExisting = this.cache[k];
 
@@ -464,13 +470,11 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
 
-    static match(c: ComplexCharacter): MatchReport | null {
+    static match(c: ComplexCharacter, myOverrides: CharacterOverrides, theirOverrides: CharacterOverrides): MatchReport | null {
         const you = core.characters.ownProfile;
-
-        if (!you) {
+        if (!you)
             return null;
-        }
 
-        return Matcher.identifyBestMatchReport(you.character, c.character);
+        return Matcher.identifyBestMatchReport(you.character, c.character, myOverrides, theirOverrides);
     }
 }

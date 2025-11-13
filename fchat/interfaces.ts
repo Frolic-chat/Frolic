@@ -1,5 +1,6 @@
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
 import { CharacterOverrides } from './characters';
+import { Kink as MatcherKink } from '../learn/matcher-types';
 
 //tslint:disable:no-shadowed-variable
 export namespace Connection {
@@ -179,8 +180,8 @@ export namespace Character {
 
     export interface CustomGender {
         string:   string,
-        match:    number[], // KinkIds
-        mismatch: number[], // KinkIds
+        match:    MatcherKink[], // KinkIds
+        mismatch: MatcherKink[], // KinkIds
         colors?: Array<[ number, number, number ]>, // Store oklch colors(?) for custom coloration.
         icon?: string,
         // flag?: string, // Does colors replace this?
@@ -200,6 +201,7 @@ export namespace Character {
 
         validateCharacter(name: string): ValidatedCharacter;
         get(name: string, useStore?: boolean): Character;
+        getAsync(name: string, useStore?: boolean): Promise<Character>;
         getImage(this: any | never, character: string | Character): string;
         getGender(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): CustomGender;
         getGenderString(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): string;

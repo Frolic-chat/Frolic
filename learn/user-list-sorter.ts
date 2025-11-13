@@ -2,7 +2,9 @@
 import { Character } from '../interfaces';
 
 import { Matcher } from './matcher';
-import { genderKinkMapping, Gender, Scoring, KinkPreference, TagId } from './matcher-types';
+import { genderToKinkMap, kinkToGenderMap, Gender, Scoring, KinkPreference, TagId } from './matcher-types';
+
+import core from '../chat/core';
 
 import NewLogger from '../helpers/log';
 const ulslog = NewLogger('UserListSorter');
@@ -12,10 +14,10 @@ const UserListSorter = {
     getGenderPreferenceFromKink(c: Character, fchatGender: string): Scoring | null {
         const gender = Matcher.strToGender(fchatGender) || Gender.None;
 
-        if (!(gender in genderKinkMapping))
+        if (!(gender in genderToKinkMap))
             return null;
 
-        const pref = Matcher.getKinkPreference(c, genderKinkMapping[gender]);
+        const pref = Matcher.getKinkPreference(c, genderToKinkMap[gender]);
 
         ulslog.silly('userlist.sorter.genderfromkink', {
             character: c.name,
@@ -36,21 +38,34 @@ const UserListSorter = {
             return null;
     },
 
-    GetGenderPreferenceFromOrientation(c: Character, fchatGender: string): Scoring {
-        const myGender    = Matcher.getTagValueList(TagId.Gender, c);
-        const orientation = Matcher.getTagValueList(TagId.Orientation, c);
-        const theirGender = Matcher.strToGender(fchatGender);
+    GetGenderArray(c: Character): Gender[] | null {
+        const overrides = core.characters.get(c.name).overrides.gender?.match ?? [];
+        if (overrides)
+            return overrides
+                .map(k => kinkToGenderMap[k])
+                .filter((g): g is Gender => g !== undefined); // Imagine having to spell it out. Nice, TS.
 
-        // TODO: Rip out scoreOrientationByGender and try a new version inline here, without being so cisfocused.
-        const score = Matcher.scoreOrientationByGender(myGender, orientation, theirGender).score;
+        const tag = Matcher.getTagValueList(TagId.Gender, c);
+        return tag ? [ tag ] : null;
+    },
+
+    GetGenderPreferenceFromOrientation(you: Character, fchatGender: string): Scoring {
+        const myGenders = this.GetGenderArray(you);
+        const orientation = Matcher.getTagValueList(TagId.Orientation, you);
+
+        const thatGender = Matcher.strToGender(fchatGender);
+        const theirGenders = thatGender ? [ thatGender ] : null;
+
+        const score = Matcher.scoreOrientationByGender(myGenders, orientation, theirGenders).score;
 
         ulslog.silly('userlist.sorter.genderfromorientation', {
-            character: c.name,
-            fchatGender: fchatGender,
-            myGender: myGender,
-            orientation: orientation,
-            theirGender: theirGender,
-            score: score,
+            you: you.name,
+            fchatGender,
+            myGenders,
+            orientation,
+            thatGender,
+            theirGenders,
+            score,
         });
 
         return score;

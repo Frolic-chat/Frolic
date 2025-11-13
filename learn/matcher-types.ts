@@ -45,7 +45,17 @@ export enum Gender {
     MaleHerm = 51,
     Cuntboy = 69,
     None = 105,
-    Shemale = 141
+    Shemale = 141,
+
+    Transman    =  99992,
+    Transwoman  =  99993,
+    Femboy      =  99996,
+    Tomboy      =  99997,
+
+    Nonbinary   = 999994,
+    Androgynous = 999995,
+    Feminine    = 999998,
+    Masculine   = 999999,
 }
 
 export namespace CustomGender {
@@ -144,6 +154,14 @@ export enum Kink {
     TransFemales = 606,
     TransMales = 607,
     Nonbinary = 712,
+
+    // Bonus genders
+    Androgynous = 586,
+    Femboy      = 531,
+    Tomboy      = 532,
+    Feminine    = 592,
+    Masculine   = 597,
+    None        = 1000000,
 
     OlderCharacters = 109,
     YoungerCharacters = 197,
@@ -356,11 +374,10 @@ export const postLengthPreferenceScoreMapping = {
     }
 };
 
-export interface GenderKinkIdMap {
-    [key: number]: Kink
-}
+export type GenderKinkIdMap = { [k in Gender]: Kink }
+export type KinkIdGenderMap = { [k in Kink]: Gender }
 
-export const genderKinkMapping: GenderKinkIdMap = {
+export const genderToKinkMap: GenderKinkIdMap = {
     [Gender.Female]:      Kink.Females,
     [Gender.Male]:        Kink.Males,
     [Gender.Cuntboy]:     Kink.Cuntboys,
@@ -368,7 +385,60 @@ export const genderKinkMapping: GenderKinkIdMap = {
     [Gender.MaleHerm]:    Kink.MaleHerms,
     [Gender.Shemale]:     Kink.Shemales,
     [Gender.Transgender]: Kink.Transgenders,
+
+    // Bonus genders!?!
+    [Gender.Transman]:    Kink.TransMales,
+    [Gender.Transwoman]:  Kink.TransFemales,
+    [Gender.Nonbinary]:   Kink.Nonbinary, //  712,
+    [Gender.Androgynous]: Kink.Androgynous, //  586,
+    [Gender.Femboy]:      Kink.Femboy,   // 531,
+    [Gender.Tomboy]:      Kink.Tomboy,  // 532,
+    [Gender.Feminine]:    Kink.Feminine,  // 592,
+    [Gender.Masculine]:   Kink.Masculine,  // 597,
+
+    [Gender.None]:        Kink.None, // Source: I made it up.
 };
+
+export const kinkToGenderMap: Partial<KinkIdGenderMap> = {
+    [Kink.Females]:      Gender.Female,
+    [Kink.Males]:        Gender.Male,
+    [Kink.Cuntboys]:     Gender.Cuntboy,
+    [Kink.Herms]:        Gender.Herm,
+    [Kink.MaleHerms]:    Gender.MaleHerm,
+    [Kink.Shemales]:     Gender.Shemale,
+    [Kink.Transgenders]: Gender.Transgender,
+
+    // Bonus genders!?!
+    [Kink.TransMales]:   Gender.Transman,
+    [Kink.TransFemales]: Gender.Transwoman,
+    [Kink.Nonbinary]:    Gender.Nonbinary, //  712,
+    [Kink.Androgynous]:  Gender.Androgynous, //  586,
+    [Kink.Femboy]:       Gender.Femboy,   // 531,
+    [Kink.Tomboy]:       Gender.Tomboy,  // 532,
+    [Kink.Feminine]:     Gender.Feminine,  // 592,
+    [Kink.Masculine]:    Gender.Masculine,  // 597,
+
+    [Kink.None]:         Gender.None, // Source: I made it up.
+};
+
+export const genderKinkStringMap: { [k in Kink]?: [ string, string ] } = {
+    [Kink.Androgynous]:  [ 'androgyne',     'androgynes'     ],
+    [Kink.Cuntboys]:     [ 'cuntboy',       'cuntboys'       ],
+    [Kink.Females]:      [ 'female',        'females'        ],
+    [Kink.Femboy]:       [ 'femboy',        'femboys'        ],
+    [Kink.Feminine]:     [ 'femininity',    'femininity'     ],
+    [Kink.Herms]:        [ 'herm',          'herms'          ],
+    [Kink.Males]:        [ 'male',          'males'          ],
+    [Kink.MaleHerms]:    [ 'male-herm',     'male-herms'     ],
+    [Kink.Masculine]:    [ 'masculinity',   'masculinity'    ],
+    [Kink.Nonbinary]:    [ 'nonbinary',     'enbies'         ],
+    [Kink.None]:         [ 'ungendered',    'the ungendered' ],
+    [Kink.Shemales]:     [ 'shemale',       'shemales'       ],
+    [Kink.Tomboy]:       [ 'tomboy',        'tomboys'        ],
+    [Kink.Transgenders]: [ 'transgendered', 'trans people'   ],
+    [Kink.TransMales]:   [ 'transman',      'transmen'       ],
+    [Kink.TransFemales]: [ 'transwoman',    'transwomen'     ],
+}
 
 export interface BodyTypeKinkIdMap {
     [key: number]: Kink

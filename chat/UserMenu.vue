@@ -321,16 +321,20 @@ const log = NewLogger('UserMenu');
             this.match = null;
 
             if (core.state.settings.risingComparisonInUserMenu) {
-              const myProfile = core.characters.ownProfile;
-              const theirProfile = await core.cache.profileCache.get(this.character.name);
+                const myProfile = core.characters.ownProfile;
 
-              if (myProfile && theirProfile) {
-                const match = Matcher.identifyBestMatchReport(myProfile.character, theirProfile.character.character);
+                const [ theirProfile, myOverrides, theirOverrides ] = await Promise.all([
+                    core.cache.profileCache.get(this.character.name),
+                    core.characters.getAsync(core.characters.ownCharacter.name).then(c => c.overrides),
+                    core.characters.getAsync(this.character.name).then(c => c.overrides),
+                ]);
 
-                if (Object.keys(match.merged).length > 0) {
-                  this.match = match;
+                if (myProfile && theirProfile) {
+                    const match = Matcher.identifyBestMatchReport(myProfile.character, theirProfile.character.character, myOverrides, theirOverrides);
+
+                    if (Object.keys(match.merged).length)
+                        this.match = match;
                 }
-              }
             }
 
             this.$nextTick(() => {

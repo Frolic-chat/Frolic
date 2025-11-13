@@ -120,13 +120,27 @@ class State implements Interfaces.State {
 
             this.characters[key] = char;
 
-            if (useStore && core.cache.profileCache) {
+            if (useStore && !Object.keys(char.overrides).length && core.cache.profileCache) {
                 void core.cache.profileCache.getCachedOverrides(name)
-                    .then(o => {
-                        if (o) ProfileCache.applyOverrides(name, o);
-                    }
-                );
+                    .then(o => { if (o) ProfileCache.applyOverrides(name, o) });
             }
+        }
+
+        return char;
+    }
+
+    /**
+     * An async version of getting a chat character where we wait for the overrides to resolve.
+     * @param name
+     * @param useStore
+     * @returns
+     */
+    async getAsync(name: string, useStore = true): Promise<Character> {
+        const char = this.get(name, false);
+
+        if (useStore && !Object.keys(char.overrides).length && core.cache.profileCache) {
+            await core.cache.profileCache.getCachedOverrides(name)
+                .then(o => { if (o) ProfileCache.applyOverrides(name, o) });
         }
 
         return char;

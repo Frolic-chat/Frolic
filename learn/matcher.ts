@@ -1,4 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { Character, CharacterInfotag, KinkChoice } from '../interfaces';
+import type { CharacterOverrides } from '../fchat/characters';
 
 // Because matcher is loaded in the worker, we can't rely on anything that chains into core, so we must use a custom log implementation for the portion in worker. This is just NewLogger without defaults dependent on `core`.
 import Logger from 'electron-log';
@@ -26,7 +28,9 @@ import {
     fchatGenderMap,
     FurryPreference,
     Gender,
-    genderKinkMapping,
+    genderKinkStringMap,
+    genderToKinkMap,
+    kinkToGenderMap,
     Kink,
     KinkBucketScore,
     kinkComparisonExclusionGroups,
@@ -76,7 +80,6 @@ export interface MatchResultScores {
     // String keys fix Object.entries() broken inference
     readonly [key: string]: Score;
     [key: number]: Score;
-    [TagId.Orientation]: Score;
     [TagId.Gender]: Score;
     [TagId.Age]: Score;
     [TagId.FurryPreference]: Score;
@@ -95,7 +98,6 @@ export interface MatchResult {
     you: Character,
     them: Character,
     scores: MatchResultScores;
-    omittedScores: OmittedScores;
     info: MatchResultCharacterInfo;
     total: number;
 
@@ -175,7 +177,7 @@ export interface CharacterAnalysisVariation {
 export class CharacterAnalysis {
     readonly character: Character;
 
-    readonly gender: Gender | null;
+    readonly gender: Gender[] | null;
     readonly orientation: Orientation | null;
     readonly species: Species | null;
     readonly furryPreference: FurryPreference | null;
@@ -198,17 +200,26 @@ export class CharacterAnalysis {
      */
     readonly tiltHuman: boolean;
 
-    constructor(c: Character) {
+    constructor(c: Character, overrides: CharacterOverrides = {}) {
         this.character = c;
 
-        this.gender = Matcher.getTagValueList(TagId.Gender, c);
-        this.orientation = Matcher.getTagValueList(TagId.Orientation, c);
-        this.species = Matcher.species(c);
-        this.furryPreference = Matcher.getTagValueList(TagId.FurryPreference, c);
-        this.subDomRole = Matcher.getTagValueList(TagId.SubDomRole, c);
-        this.position = Matcher.getTagValueList(TagId.Position, c);
+        if (overrides.gender?.match.length) {
+            this.gender = overrides.gender.match
+                .map(k => kinkToGenderMap[k])
+                .filter((g): g is Gender => g !== undefined); // Imagine having to spell it out. Nice, TS.
+        }
+        else {
+            const r = Matcher.getTagValueList(TagId.Gender, c);
+            this.gender = r ? [ r ] : null;
+        }
+
+        this.orientation =          Matcher.getTagValueList(TagId.Orientation, c);
+        this.species =              Matcher.species(c);
+        this.furryPreference =      Matcher.getTagValueList(TagId.FurryPreference, c);
+        this.subDomRole =           Matcher.getTagValueList(TagId.SubDomRole, c);
+        this.position =             Matcher.getTagValueList(TagId.Position, c);
         this.postLengthPreference = Matcher.getTagValueList(TagId.PostLength, c);
-        this.bodyType = Matcher.getTagValueList(TagId.BodyType, c);
+        this.bodyType =             Matcher.getTagValueList(TagId.BodyType, c);
 
         this.age = Matcher.age(c);
 
@@ -245,20 +256,20 @@ export class Matcher {
     readonly yourAnalysis:  CharacterAnalysis;
     readonly theirAnalysis: CharacterAnalysis;
 
-    constructor(you: Character, them: Character, yourAnalysis?: CharacterAnalysis, theirAnalysis?: CharacterAnalysis) {
-        this.you  = you;
-        this.them = them;
+    constructor(source: Character, subject: Character, options?: { sourceAnalysis?: CharacterAnalysis, subjectAnalysis?: CharacterAnalysis, sourceOverrides?: CharacterOverrides, subjectOverrides?: CharacterOverrides }) {
+        this.you  = source;
+        this.them = subject;
 
-        this.yourAnalysis  = yourAnalysis  || new CharacterAnalysis(you);
-        this.theirAnalysis = theirAnalysis || new CharacterAnalysis(them);
+        this.yourAnalysis  = options?.sourceAnalysis  || new CharacterAnalysis(source, options?.sourceOverrides);
+        this.theirAnalysis = options?.subjectAnalysis || new CharacterAnalysis(subject, options?.subjectOverrides);
     }
 
-    static generateReport(you: Character, them: Character): MatchReport {
-        const yourAnalysis  = new CharacterAnalysis(you);
-        const theirAnalysis = new CharacterAnalysis(them);
+    static generateReport(source: Character, subject: Character, sourceOverrides?: CharacterOverrides, subjectOverrides?: CharacterOverrides): MatchReport {
+        const sourceAnalysis  = new CharacterAnalysis(source, sourceOverrides);
+        const subjectAnalysis = new CharacterAnalysis(subject, subjectOverrides);
 
-        const youThem = new Matcher(you,  them, yourAnalysis,  theirAnalysis);
-        const themYou = new Matcher(them, you,  theirAnalysis, yourAnalysis);
+        const youThem = new Matcher(source,  subject, { sourceAnalysis, subjectAnalysis });
+        const themYou = new Matcher(subject, source,  { sourceAnalysis: subjectAnalysis, subjectAnalysis: sourceAnalysis });
 
         const youThemMatch = youThem.match('their');
         const themYouMatch = themYou.match('your');
@@ -287,11 +298,11 @@ export class Matcher {
         return report;
     }
 
-    static identifyBestMatchReport(you: Character, them: Character): MatchReport {
+    static identifyBestMatchReport(source: Character, subject: Character, yourOverrides: CharacterOverrides, theirOverrides: CharacterOverrides): MatchReport {
         //const reportStartTime = Date.now();
 
-        const yourCharacterAnalyses  = Matcher.generateAnalysisVariations(you);
-        const theirCharacterAnalyses = Matcher.generateAnalysisVariations(them);
+        const yourCharacterAnalyses  = Matcher.generateAnalysisVariations(source, yourOverrides);
+        const theirCharacterAnalyses = Matcher.generateAnalysisVariations(subject, theirOverrides);
 
         let bestScore: Scoring | null = null;
         let bestScoreLevelCount = -10000;
@@ -301,10 +312,10 @@ export class Matcher {
             for (const theirAnalysis of theirCharacterAnalyses) {
                 const youThem = new Matcher(
                     yourAnalysis.character, theirAnalysis.character,
-                    yourAnalysis.analysis,  theirAnalysis.analysis);
+                    { sourceAnalysis: yourAnalysis.analysis, subjectAnalysis: theirAnalysis.analysis });
                 const themYou = new Matcher(
                     theirAnalysis.character, yourAnalysis.character,
-                    theirAnalysis.analysis,  yourAnalysis.analysis);
+                    { sourceAnalysis: theirAnalysis.analysis, subjectAnalysis: yourAnalysis.analysis });
 
                 const youThemMatch = youThem.match('their');
                 const themYouMatch = themYou.match('your');
@@ -378,7 +389,7 @@ export class Matcher {
     }
 
 
-    static generateAnalysisVariations(c: Character): CharacterAnalysisVariation[] {
+    static generateAnalysisVariations(c: Character, overrides: CharacterOverrides): CharacterAnalysisVariation[] {
         const speciesOptions = Matcher.getAllSpeciesAsStr(c);
 
         if (speciesOptions.length === 0)
@@ -388,7 +399,7 @@ export class Matcher {
             species => {
                 const nc = {...c, infotags: {...c.infotags, [TagId.Species]: {string: species}}};
 
-                return { character: nc, analysis: new CharacterAnalysis(nc) };
+                return { character: nc, analysis: new CharacterAnalysis(nc, overrides) };
             }
         );
     }
@@ -444,7 +455,6 @@ export class Matcher {
             total: 0,
 
             scores: {
-                [TagId.Orientation]:     this.resolveOrientationScore(),
                 [TagId.Gender]:          this.resolveGenderorOrientationScore(),
                 [TagId.Age]:             this.resolveAgeScore(),
                 [TagId.FurryPreference]: this.resolveFurryPairingsScore(),
@@ -456,8 +466,6 @@ export class Matcher {
                 [TagId.BodyType]:        this.resolveBodyTypeScore(),
             },
 
-            omittedScores: [ TagId.Orientation, TagId.FurryPreference ],
-
             info: {
                 species:     Matcher.species(this.you),
                 gender:      Matcher.getTagValueList(TagId.Gender,      this.you),
@@ -467,7 +475,6 @@ export class Matcher {
 
 
         data.total = Object.keys(data.scores)
-                .filter(key => !data.omittedScores.includes(Number(key) as TagId))
                 .reduce((accum: number, key: string) => accum + data.scores[Number(key)].score, 0);
 
         return data;
@@ -480,10 +487,10 @@ export class Matcher {
     }
 
 
-    static scoreOrientationByGender(yourGender: Gender | null, yourOrientation: Orientation | null, theirGender: Gender | null): Score {
-        function doesntHaveGender(g: Gender | null): g is null {
+    static scoreOrientationByGender(yourGenders: Gender[] | null, yourOrientation: Orientation | null, theirGenders: Gender[] | null): Score {
+        function doesntHaveGender(g: Gender[] | null): g is null {
             return !g
-                || g === Gender.None;
+                || g.length === 1 && g[0] === Gender.None;
         }
 
         function lovesEveryone(o: Orientation | null): boolean {
@@ -493,22 +500,27 @@ export class Matcher {
                 || o === Orientation.Unsure;
         }
 
-        if (doesntHaveGender(yourGender) || doesntHaveGender(theirGender) || lovesEveryone(yourOrientation))
+        if (doesntHaveGender(yourGenders) || doesntHaveGender(theirGenders) || lovesEveryone(yourOrientation))
             return new Score(Scoring.NEUTRAL);
 
-        if (yourOrientation === Orientation.Gay && theirGender === yourGender
-        && yourGender !== Gender.Transgender)
+        const yourConcrete  = Matcher.excludeNebulousGenders(...yourGenders);
+        const theirConcrete = Matcher.excludeNebulousGenders(...theirGenders);
+        if (!yourConcrete.length || !theirConcrete.length)
+            return new Score(Scoring.NEUTRAL);
+
+        if (yourOrientation === Orientation.Gay && yourConcrete.some(g => theirConcrete.includes(g)))
             return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
 
-        if (yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Female)
+        if (yourOrientation === Orientation.BiFemalePreference && theirConcrete.includes(Gender.Female))
             return new Score(Scoring.MATCH, 'Loves <span>female</span> partners');
-        if (yourOrientation === Orientation.BiMalePreference   && theirGender === Gender.Male)
+        if (yourOrientation === Orientation.BiMalePreference   && theirConcrete.includes(Gender.Male))
             return new Score(Scoring.MATCH, 'Loves <span>male</span> partners');
 
         // CIS
-        // tslint:disable-next-line curly
-        if (Matcher.isCisGender(yourGender)) {
-            if (yourGender === theirGender) {
+        const theirCisgender = Matcher.isCisGender(...theirGenders);
+        const yourCisgender  = Matcher.isCisGender(...yourGenders);
+        if (theirCisgender && yourCisgender) {
+            if (yourCisgender === theirCisgender) { // Gay cis
                 // same sex CIS
                 if (yourOrientation === Orientation.Straight)
                     return new Score(Scoring.MISMATCH, 'No <span>same sex</span> partners');
@@ -516,18 +528,16 @@ export class Matcher {
                 if (yourOrientation === Orientation.Gay
                 ||  yourOrientation === Orientation.Bisexual
                 ||  yourOrientation === Orientation.Pansexual
-                ||  yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Female
-                ||  yourOrientation === Orientation.BiMalePreference && theirGender === Gender.Male
-                )
+                ||  yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Female
+                ||  yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Male)
                     return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
 
                 if (yourOrientation === Orientation.BiCurious
-                || yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Male
-                || yourOrientation === Orientation.BiMalePreference   && theirGender === Gender.Female)
+                || yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Male
+                || yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Female)
                     return new Score(Scoring.WEAK_MATCH, 'Likes <span>same sex</span> partners');
             }
-            else if (Matcher.isCisGender(theirGender)) {
-                // straight CIS
+            else { // Straight cis
                 if (yourOrientation === Orientation.Gay)
                     return new Score(Scoring.MISMATCH, 'No <span>opposite sex</span> partners');
 
@@ -535,12 +545,12 @@ export class Matcher {
                 ||  yourOrientation === Orientation.Bisexual
                 ||  yourOrientation === Orientation.BiCurious
                 ||  yourOrientation === Orientation.Pansexual
-                ||  yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Female
-                ||  yourOrientation === Orientation.BiMalePreference   && theirGender === Gender.Male)
+                ||  yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Female
+                ||  yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Male)
                     return new Score(Scoring.MATCH, 'Loves <span>opposite sex</span> partners');
 
-                if (yourOrientation === Orientation.BiFemalePreference && theirGender === Gender.Male
-                ||  yourOrientation === Orientation.BiMalePreference   && theirGender === Gender.Female)
+                if (yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Male
+                ||  yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Female)
                     return new Score(Scoring.WEAK_MATCH, 'Likes <span>opposite sex</span> partners');
             }
         }
@@ -909,36 +919,43 @@ export class Matcher {
     private resolveGenderScore(): Score {
         const you = this.you;
 
-        const yourGender = this.yourAnalysis.gender;
+        const yourGenders = this.yourAnalysis.gender;
         const yourOrientation = this.yourAnalysis.orientation;
-        const theirGender = this.theirAnalysis.gender;
+        const theirGenders = this.theirAnalysis.gender;
 
-        if (theirGender === null)
+        if (theirGenders === null || !theirGenders.length || theirGenders.includes(Gender.None))
             return new Score(Scoring.NEUTRAL);
 
-        const genderName = `${Gender[theirGender].toLowerCase()}s`;
-        const genderKinkScore = Matcher.getKinkGenderPreference(you, theirGender);
+        console.log('Genders:', theirGenders, yourGenders);
 
-        if (genderKinkScore !== null)
-            return Matcher.formatKinkScore(genderKinkScore, genderName);
+        for (const theirG of theirGenders) {
+            const genderKinkScore = Matcher.getKinkGenderPreference(you, theirG);
 
-        if (yourGender && yourOrientation) {
-            if (Matcher.isCisGender(yourGender) && !Matcher.isCisGender(theirGender)) {
-                if ([
-                    Orientation.Straight,
-                    Orientation.Gay,
-                    Orientation.Bisexual,
-                    Orientation.BiCurious,
-                    Orientation.BiFemalePreference,
-                    Orientation.BiMalePreference,
-                ].includes(yourOrientation)) {
-                    const nonBinaryPref = Matcher.getKinkPreference(you, Kink.Nonbinary);
+            if (genderKinkScore !== null) {
+                const genderName = genderKinkStringMap[genderToKinkMap[theirG]]?.[1] ?? `${Gender[theirG]}s`;
+                console.log('Problem gender?', theirG, genderName);
 
-                    if (nonBinaryPref) {
-                        return Matcher.formatKinkScore(nonBinaryPref, 'non-binary genders');
+                return Matcher.formatKinkScore(genderKinkScore, genderName);
+            }
+
+            if (yourGenders && yourOrientation) {
+                for (const yourG of yourGenders) {
+                    if (Matcher.isCisGender(yourG) && !Matcher.isCisGender(theirG)) {
+                        if ([ // straight+bi orientations
+                            Orientation.Straight,
+                            Orientation.Gay,
+                            Orientation.Bisexual,
+                            Orientation.BiCurious,
+                            Orientation.BiFemalePreference,
+                            Orientation.BiMalePreference,
+                        ].includes(yourOrientation)) {
+                            const nonBinaryPref = Matcher.getKinkPreference(you, Kink.Nonbinary);
+                            if (nonBinaryPref)
+                                return Matcher.formatKinkScore(nonBinaryPref, 'non-binary genders');
+
+                            return new Score(Scoring.MISMATCH, 'No <span>non-binary</span> genders');
+                        }
                     }
-
-                    return new Score(Scoring.MISMATCH, 'No <span>non-binary</span> genders');
                 }
             }
         }
@@ -1242,8 +1259,52 @@ export class Matcher {
         return t.list;
     }
 
-    static isCisGender(...genders: Gender[]): boolean {
-        return genders.every(g => g === Gender.Female || g === Gender.Male);
+    /**
+     * Selecting non-ambiguous genders results in faster match-making.
+     */
+    static isCisGender(...genders: Gender[]): Gender.Male | Gender.Female | false {
+        const nb = new Set([ Gender.Herm, Gender.MaleHerm, Gender.Cuntboy, Gender.Shemale, Gender.Transman, Gender.Transwoman, Gender.Transgender, Gender.Nonbinary, Gender.None ]);
+
+        for (const g of genders) {
+            if (nb.has(g))
+                return false;
+        }
+
+        const m = new Set([ Gender.Male,   Gender.Femboy ]);
+        const f = new Set([ Gender.Female, Gender.Tomboy ]);
+
+        if (genders.some(g => m.has(g)) && genders.every(g => !f.has(g)))
+            return Gender.Male;
+
+        if (genders.some(g => f.has(g)) && genders.every(g => !m.has(g)))
+            return Gender.Female;
+
+        return false;
+    }
+
+    /**
+     * Used as a last-ditch effort after all the good ways to resolve gender compatibility have been exhausted without match.
+     */
+    static excludeNebulousGenders(...genders: Gender[]): Gender[] {
+        const sanitized = genders.filter(g => ![Gender.Androgynous, Gender.Feminine, Gender.Masculine, Gender.Nonbinary, Gender.None, Gender.Transgender].includes(g));
+
+        const femb = sanitized.indexOf(Gender.Femboy);
+        if (femb > -1) {
+            if (sanitized.includes(Gender.Male))
+                sanitized.splice(femb, 1);
+            else
+                sanitized.splice(femb, 1, Gender.Male);
+        }
+
+        const tomb = sanitized.indexOf(Gender.Tomboy);
+        if (tomb > -1) {
+            if (sanitized.includes(Gender.Female))
+                sanitized.splice(tomb, 1);
+            else
+                sanitized.splice(tomb, 1, Gender.Female);
+        }
+
+        return sanitized;
     }
 
     static getKinkPreference(c: Character, kinkId: number): KinkPreference | null {
@@ -1264,10 +1325,10 @@ export class Matcher {
     }
 
     static getKinkGenderPreference(c: Character, gender: Gender): KinkPreference | null {
-        if (!(gender in genderKinkMapping))
+        if (gender in genderToKinkMap) // TS cannot figure out runtime assertion so f it
+            return Matcher.getKinkPreference(c, genderToKinkMap[gender]);
+        else
             return null;
-
-        return Matcher.getKinkPreference(c, genderKinkMapping[gender]);
     }
 
     static getKinkSpeciesPreference(c: Character, species: Species): KinkPreference | null {
