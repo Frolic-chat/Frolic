@@ -122,7 +122,10 @@ class State implements Interfaces.State {
 
             if (useStore && !Object.keys(char.overrides).length && core.cache.profileCache) {
                 void core.cache.profileCache.getCachedOverrides(name)
-                    .then(o => { if (o) ProfileCache.applyOverrides(name, o) });
+                    .then(o => {
+                        if (o && char && !Object.keys(char.overrides).length)
+                            ProfileCache.applyOverrides(name, o);
+                    });
             }
         }
 
@@ -245,7 +248,7 @@ class State implements Interfaces.State {
     setOverride(name: string, type: 'status', value: Interfaces.Status | undefined): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
-        const char = this.get(name);
+        const char = this.get(name, false);
 
         Vue.set(char.overrides, type, value);
     }
