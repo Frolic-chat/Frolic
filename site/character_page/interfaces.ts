@@ -16,7 +16,7 @@ export interface StoreMethods {
     characterBlock?(id: number, block: boolean, reason?: string): Promise<void>
     characterCustomKinkAdd(id: number, name: string, description: string, choice: KinkChoice): Promise<void>
     /**
-     * This is the, "I need the data returned right now" version of `CacheManager.addProfile`. Where that function adds the profile fetching to a queue (which adds the character profile to the profile cache), this function directly returns the character profile.
+     * This is the, "I need the data returned right now" version of `CacheManager.addProfile`. Where that function adds the profile fetching to a queue (which adds the character profile to the profile cache), this function directly returns the character profile. Unlike the Rising cache manager, this (and other character_page methods) don't automatically register with the profile cache.
      *
      * All values are passed to `executeCharacterData`. `id` is unused.
      * @param name Character name
