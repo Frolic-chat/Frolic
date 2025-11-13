@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
   <div class="character-preview">
     <div v-if="match && character" class="row">
@@ -10,7 +11,7 @@
           <span class="character-name" :class="(statusClasses || {}).userClass">{{ character.character.name }}</span>
           <span v-if="((statusClasses) && (statusClasses.matchScore === 'unicorn'))" :class="(statusClasses || {}).matchClass">Unicorn</span>
         </h1>
-        <h3>{{ getOnlineStatus() }}</h3>
+        <h3>{{ status }}</h3>
 
         <div class="summary">
           <div class="info-text-block" v-if="age || species || kemonomimi">
@@ -22,11 +23,11 @@
             <span class="divider" v-if="species || kemonomimi"> / </span>
           </div>
 
-          <div class="info-text-block" v-if="sexualOrientation || subDomRole || genderText">
-            <span class="uc" v-if="genderText">{{ genderText }}</span>
-            <span class="divider" v-if="genderText && subDomRole"> / </span>
+          <div class="info-text-block" v-if="sexualOrientation || subDomRole || gender">
+            <span class="uc" v-if="gender">{{ gender }}</span>
+            <span class="divider" v-if="gender && subDomRole"> / </span>
             <span class="uc" v-if="subDomRole">{{ subDomRole }}</span>
-            <span class="divider" v-if="(genderText || subDomRole) && sexualOrientation"> / </span>
+            <span class="divider" v-if="(gender || subDomRole) && sexualOrientation"> / </span>
             <span class="uc" v-if="sexualOrientation">{{ sexualOrientation }}</span>
             <span class="divider" v-if="sexualOrientation"> / </span>
           </div>
@@ -34,9 +35,9 @@
 
         <match-tags v-if="match" :match="match"></match-tags>
 
-        <div class="filter-matches" v-if="smartFilterIsFiltered">
+        <div class="filter-matches" v-if="isFiltered">
           <span class="matched-tags">
-            <span v-for="filterName in smartFilterDetails" class="mismatch smart-filter-tag" :class="filterName">
+            <span v-for="filterName in filtersDetails" class="mismatch smart-filter-tag" :class="filterName">
               <i class="fas fa-solid fa-filter"></i>
               {{ (smartFilterLabels[filterName] || {}).name }}
             </span>
@@ -53,7 +54,7 @@
         </div>
 
         <div class="status-message" v-if="statusMessage">
-          <h4>{{ l('character.status') }} <span v-if="latestAd && (statusMessage === latestAd.message)">{{ l('characterPreview.status2') }}</span></h4>
+          <h4>{{ l('character.status') }} <span v-if="latestAd && statusMessage === latestAd.message">{{ l('characterPreview.status2') }}</span></h4>
           <bbcode :text="statusMessage"></bbcode>
         </div>
 
@@ -64,8 +65,8 @@
           </message-view>
         </div>
 
-        <div class="latest-ad-message" v-if="latestAd && (latestAd.message !== statusMessage)">
-          <h4>{{ l('characterPreview.ad') }} <span class="message-time">{{formatTime(latestAd.datePosted)}}</span></h4>
+        <div class="latest-ad-message" v-if="latestAd && latestAd.message !== statusMessage">
+          <h4>{{ l('characterPreview.ad') }} <span class="message-time">{{ formatTime(latestAd.datePosted) }}</span></h4>
           <bbcode :text="latestAd.message"></bbcode>
         </div>
       </div>
@@ -77,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
 import core from '../core';
 import { methods } from '../../site/character_page/data_store';
@@ -85,8 +86,29 @@ import {Character as ComplexCharacter} from '../../site/character_page/interface
 import { Matcher, MatchReport, Score } from '../../learn/matcher';
 import { Character as CharacterStatus } from '../../fchat';
 import { getStatusIcon } from '../UserView.vue';
-import { kinkMatchWeights, Scoring } from '../../learn/matcher-types';
+import { kinkMatchWeights, Scoring, genderToKinkMap, genderKinkStringMap } from '../../learn/matcher-types';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
+
+import l from '../localize';
+import {formatTime} from '../common';
+import MatchTags from './MatchTags.vue';
+import {
+  furryPreferenceMapping,
+  Gender,
+//   kinkMapping,
+  Orientation,
+  Species,
+  SubDomRole,
+  TagId
+} from '../../learn/matcher-types';
+import { BBCodeView } from '../../bbcode/view';
+import { EventBus, CharacterScoreEvent } from './event-bus';
+// import { CustomKink } from '../../interfaces';
+import { testSmartFilters } from '../../learn/filter/smart-filter';
+import { smartFilterTypes } from '../../learn/filter/types';
+import { Conversation } from '../interfaces';
+import MessageView from '../message_view';
+import { lastElement } from '../../helpers/utils';
 
 import NewLogger from '../../helpers/log';
 const logG = NewLogger('custom-gender');
@@ -181,109 +203,171 @@ export function getStatusClasses(character:    CharacterStatus.Character,
     };
 }
 
-import l from '../localize';
-import { AdCachedPosting } from '../../learn/ad-cache';
-import {formatTime} from '../common';
-import MatchTags from './MatchTags.vue';
-import {
-  furryPreferenceMapping,
-  Gender, kinkMapping,
-  Orientation,
-  Species,
-  SubDomRole,
-  TagId
-} from '../../learn/matcher-types';
-import { BBCodeView } from '../../bbcode/view';
-import { EventBus, CharacterScoreEvent } from './event-bus';
-import { CustomKink } from '../../interfaces';
-import { testSmartFilters } from '../../learn/filter/smart-filter';
-import { smartFilterTypes } from '../../learn/filter/types';
-import { Conversation } from '../interfaces';
-import MessageView from '../message_view';
-import { lastElement } from '../../helpers/utils';
-
-interface CustomKinkWithScore extends CustomKink {
-  score: number;
-  name: string;
+// Hard string replacements are english coded. Do these ever risk appearing in another language?
+function readable(s: string): string {
+    return s
+        .replace(/([A-Z])/g, ' $1').trim().toLowerCase()
+        .replace(/(always|usually) (submissive|dominant|top|bottom)/, '$2')
+        .replace(/bi ((?:fe)?male) preference/, '$1-favoring bi')
+        .replace(/bi curious/, 'bi-curious');
 }
+
+// interface CustomKinkWithScore extends CustomKink {
+//     score: number;
+//     name: string;
+// }
 
 @Component({
     components: {
-      'match-tags': MatchTags,
-      bbcode: BBCodeView(core.bbCodeParser),
-      'message-view': MessageView
+        'match-tags': MatchTags,
+        bbcode: BBCodeView(core.bbCodeParser),
+        'message-view': MessageView
     }
 })
 export default class CharacterPreview extends Vue {
-  @Prop
-  readonly id?: number;
+    l = l;
+    formatTime = formatTime;
+    TagId = TagId;
+    Score = Score;
 
-  characterName?: string;
-  character?: ComplexCharacter;
-  match?: MatchReport;
-  ownCharacter?: ComplexCharacter;
-  onlineCharacter?: CharacterStatus;
-  statusClasses?: StatusClasses;
-  latestAd?: AdCachedPosting;
-  statusMessage?: string;
-  memo: string | null = null;
-  l = l;
+    characterName?: string;
+    character?: ComplexCharacter;
+    onlineCharacter?: CharacterStatus;
+    ownCharacter?: ComplexCharacter;
+    match?: MatchReport;
 
-  smartFilterIsFiltered?: boolean;
-  smartFilterDetails?: string[];
-
-  smartFilterLabels: Record<string, { name: string }> = {
-    ...smartFilterTypes,
-    ageMin: { name: 'Min age' },
-    ageMax: { name: 'Max age' }
-  };
-
-  age?: string;
-  sexualOrientation?: string;
-  species?: string;
-  kemonomimi?: string;
-  gender?: string;
-  furryPref?: string;
-  subDomRole?: string;
-
-  formatTime = formatTime;
-
-  TagId = TagId;
-  Score = Score;
-
-  scoreWatcher: ((e: CharacterScoreEvent) => Promise<void>) | null = null;
-  customs?: CustomKinkWithScore[];
-
-  conversation?: Conversation.Message[];
-
-  get avatarUrl() {
-    return core.characters.getImage(this.characterName ?? this.character?.character.name ?? '');
-  }
-
-  // Matcher gender w/account for overrides.
-  // Sloppy, but there is no Matcher+Sheet+Chat+Override layered cache, is there?
-  get genderText() {
-      const g = this.onlineCharacter?.overrides.gender?.string;
-      if (g) {
-          logG.debug(`${this.characterName} is ${g}, a very cool gender.`);
-          return this.readable(g);
-      }
-      else {
-          logG.debug(`No custom gender, using this.gender: ${this.gender}`);
-          return this.gender; // already readable()
-      }
-  }
-
-  @Hook('mounted')
-  mounted(): void {
-
-    this.scoreWatcher = async ({ profile }): Promise<void> => {
-        if (this.characterName && profile.character.name === this.characterName)
-            this.load(this.characterName, true);
+    smartFilterLabels: Record<string, { name: string }> = {
+        ...smartFilterTypes,
+        ageMin: { name: 'Min age' },
+        ageMax: { name: 'Max age' }
     };
 
-    EventBus.$on('character-score', this.scoreWatcher);
-  }
+    conversation?: Conversation.Message[];
+
+    scoreWatcher: ((e: CharacterScoreEvent) => Promise<void>) | null = null;
+
+    get avatarUrl() {
+        this.recomputer;
+        return core.characters.getImage(this.characterName ?? this.character?.character.name ?? '');
+    }
+
+    get status() {
+        this.recomputer;
+        const s = this.onlineCharacter?.status;
+        return s
+            ? `${s.substring(0, 1).toUpperCase()}${s.substring(1)}`
+            : 'Offline';
+    }
+
+    get statusClasses(): StatusClasses | undefined {
+        this.recomputer;
+        return this.onlineCharacter
+            ? getStatusClasses(this.onlineCharacter, true, false, true)
+            : undefined;
+    }
+
+    get statusMessage(): string | undefined {
+        this.recomputer;
+        return this.onlineCharacter?.statusText;
+    }
+
+    get age() {
+        this.recomputer;
+        if (!this.match)
+            return undefined;
+
+        const age = this.match.them.yourAnalysis.age;
+        if (age)
+            return age;
+
+        const raw = Matcher.getTagValue(TagId.Age, this.match.them.you)?.string;
+        return raw && /[0-9]/.test(raw) ? raw : undefined;
+    }
+
+    get species() {
+        this.recomputer;
+        if (!this.match)
+            return undefined;
+
+        const species = this.match.them.yourAnalysis.species;
+        if (species)
+            return readable(Species[species]);
+
+        const raw = Matcher.getTagValue(TagId.Species, this.match.them.you)?.string;
+
+        return raw ?? undefined;
+
+    }
+
+    get kemonomimi() {
+        this.recomputer;
+        return this.match?.them.yourAnalysis.isKemonomimi && (!this.species || !this.species.endsWith('mimi'))
+            ? readable('kemomimi')
+            : undefined;
+    }
+
+    get sexualOrientation() {
+        this.recomputer;
+        return this.match?.them.yourAnalysis.orientation
+            ? readable(Orientation[this.match.them.yourAnalysis.orientation])
+            : undefined;
+    }
+
+    get subDomRole() {
+        this.recomputer;
+        const sdr = this.match?.them.yourAnalysis.subDomRole;
+        return sdr && sdr !== SubDomRole.Switch
+            ? readable(SubDomRole[sdr])
+            : undefined;
+    };
+
+    get gender() {
+        this.recomputer;
+        const g = this.onlineCharacter?.overrides.gender?.string
+        if (g)
+            return readable(g);
+
+        const kink_map = this.match?.them.yourAnalysis.gender
+            ?.filter(g => g === Gender.None)
+             .map(g => genderToKinkMap[g]);
+
+        if (!kink_map?.length)
+            return undefined;
+
+        const gender_string = genderKinkStringMap[kink_map[0]];
+        if (gender_string) {
+            logG.debug(`No custom gender, using: ${gender_string[0]}`);
+            return readable(gender_string[0]);
+        }
+    }
+
+    get memo() {
+        this.recomputer;
+        return this.character?.memo?.memo ?? null;
+    }
+
+    // Unused, but updated anyways.
+    get furryPref() {
+        this.recomputer;
+        if (!this.match)
+            return;
+
+        const pref = this.match.them.yourAnalysis.furryPreference;
+
+        return pref
+            ? readable(furryPreferenceMapping[pref])
+            : undefined;
+    }
+
+    @Hook('mounted')
+    mounted(): void {
+        this.scoreWatcher = async ({ profile }): Promise<void> => {
+            if (this.characterName && profile.character.name === this.characterName)
+                this.load(this.characterName, true);
+        };
+
+        EventBus.$on('character-score', this.scoreWatcher);
+    }
 
 
   @Hook('beforeDestroy')
@@ -294,218 +378,141 @@ export default class CharacterPreview extends Vue {
       }
   }
 
+    recomputer = false;
+    async load(characterName: string, force: boolean = false): Promise<void> {
+        if (force)
+            this.recomputer = !this.recomputer;
 
-  async load(characterName: string, force: boolean = false): Promise<void> {
-    if (this.characterName === characterName
-    &&  !force
-    &&  this.match
-    &&  this.character
-    &&  this.ownCharacter && core.characters.ownProfile
-    &&  this.ownCharacter.character.name === core.characters.ownProfile.character.name) {
-      this.updateOnlineStatus(this.characterName);
-      this.updateAdStatus(this.characterName);
-      return;
+        if (!force && this.characterName === characterName && this.match && this.character && this.onlineCharacter)
+            return;
+
+        // Step 1: Void the current character. `this.character` and `this.match` must be true to show the tooltip.
+        //
+        this.character       = undefined;
+        this.onlineCharacter = undefined;
+        this.character       = undefined;
+        this.ownCharacter    = core.characters.ownProfile; // safety, likely unnecessary
+        this.match           = undefined;
+        this.conversation    = undefined;
+
+        const char_name = characterName;
+
+        // Step 2. Load the core attributes necessary for computed getters to operate.
+        // `this.characterName` is the character sheet and `this.onlineCharacter` is the chat character.
+        const promises = await Promise.all([
+            core.characters.getAsync(char_name),
+            this.getCharacterData(char_name),
+            this.ownCharacter && core.characters.getAsync(this.ownCharacter.character.name),
+        ]);
+
+        this.onlineCharacter     = promises[0];
+        this.character           = promises[1];
+        const ownOnlineCharacter = promises[2];
+
+        if (this.ownCharacter && ownOnlineCharacter) { // && this.character) ...exists, errored if it didn't.
+            const theirOverrides = this.onlineCharacter.overrides;
+            const yourOverrides = ownOnlineCharacter.overrides;
+
+            this.match = Matcher.identifyBestMatchReport(this.ownCharacter?.character, this.character.character, yourOverrides, theirOverrides);
+        }
+
+        // Wait to set this until after the awaits so that computed getters don't update based on it.
+        this.characterName = char_name;
+
+        // Step 3. The computed getters see their observed variables change and update themselves accordingly.
+        // :)
     }
 
-    this.characterName = characterName;
-
-    this.match = undefined;
-    this.character = undefined;
-    this.customs = undefined;
-    this.memo = null;
-    this.ownCharacter = core.characters.ownProfile;
-
-    this.conversation = undefined;
-
-    this.smartFilterIsFiltered = false;
-    this.smartFilterDetails = [];
-
-    this.updateOnlineStatus(this.characterName);
-    this.updateAdStatus(this.characterName);
-
-    // The async bit.
-    this.character = await this.getCharacterData(characterName);
-    this.match = Matcher.identifyBestMatchReport(this.ownCharacter!.character, this.character!.character);
-
-    void this.updateConversationStatus(this.characterName);
-
-    this.updateSmartFilterReport();
-    this.updateCustoms();
-    this.updateDetails();
-    this.updateMemo();
-  }
-
-  updateSmartFilterReport() {
-      if (!this.character)
-          return;
-
-      // Zero-out dirty cache
-      this.smartFilterDetails = [];
-
-      const results = testSmartFilters(this.character.character, core.state.settings.risingFilter);
-
-      if (!results)
-          return;
-
-      // The below block is near verbatim `matchSmartFilters` but that requires a second call to `testSmartFilters` so it's better to inline it since we're using the results.
-      this.smartFilterIsFiltered = Object.values(results.filters).some(r => r && r.isFiltered);
-
-      if (results.ageCheck.ageMax || results.ageCheck.ageMin)
-          this.smartFilterIsFiltered = true;
-
-      if (!this.smartFilterIsFiltered)
-          return;
-
-      this.smartFilterDetails = [
-          ...Object.entries(results.ageCheck).filter(v => v[1]).map(v => v[0]),
-          ...Object.entries(results.filters).filter(v => v[1] && v[1].isFiltered).map(v => v[0]),
-      ];
-  }
-
-  async updateConversationStatus(name: string): Promise<void> {
-    const ownName = core.characters.ownCharacter.name;
-    const logKey = name.toLowerCase();
-    const logDates = await core.logs.getLogDates(ownName, logKey);
-
-    if (!logDates.length)
-        return;
-
-    const messages = await core.logs.getLogs(ownName, logKey, lastElement(logDates));
-    const matcher = /\[AUTOMATED MESSAGE]/;
-
-    this.conversation = messages
-        .filter(m => !matcher.exec(m.text))
-        .slice(-3)
-        .map(m => ({
-            ...m,
-            text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text
-        }));
-  }
-
-  updateOnlineStatus(name: string): void {
-    this.onlineCharacter = core.characters.get(name);
-
-    if (!this.onlineCharacter) {
-      this.statusClasses = undefined;
-      return;
+    // Only used for other getters.
+    get filtersResults() {
+        this.recomputer;
+        return this.character
+            ? testSmartFilters(this.character.character, core.state.settings.risingFilter)
+            : undefined;
     }
 
-    this.statusMessage = this.onlineCharacter.statusText;
-    this.statusClasses = getStatusClasses(this.onlineCharacter, true, false, true);
-  }
+    get isFiltered() {
+        if (!this.filtersResults)
+            return false;
 
-  updateAdStatus(name: string): void {
-    const cache = core.cache.adCache.get(name);
+        const kink_filtered = Object.values(this.filtersResults.filters)
+                .some(r => r && r.isFiltered);
+        const age_filtered = this.filtersResults.ageCheck.ageMax || this.filtersResults.ageCheck.ageMin;
 
-    if (
-      (!cache)
-      || (cache.posts.length === 0)
-      || (Date.now() - cache.posts[cache.posts.length - 1].datePosted.getTime() > (45 * 60 * 1000))
-    ) {
-      this.latestAd = undefined;
-      return;
+        return kink_filtered || age_filtered;
     }
 
-    this.latestAd = cache.posts[cache.posts.length - 1];
-  }
+    get filtersDetails() {
+        if (!this.isFiltered || !this.filtersResults)
+            return [];
 
-  updateMemo(): void {
-    this.memo = this.character?.memo?.memo || null;
-  }
-
-  updateCustoms(): void {
-      if (!this.character?.character.customs) {
-          this.customs = undefined;
-          return;
-      }
-
-    this.customs = Object.values(this.character.character.customs)
-        .filter(c => !!c)
-        .map(c => ({
-            ...c,
-            // @ts-ignore Webpack TS says possibly undefined, probably ignoring `!!c`
-            score: kinkMapping[c.choice],
-            // @ts-ignore Webpack TS says possibly undefined, probably ignoring `!!c`
-            name: c.name.trim().replace(/^\W+/, '').replace(/\W+$/, ''),
-        } as CustomKinkWithScore))
-        .sort((a,b) => {
-            const s = b.score - a.score;
-            return s || a.name.localeCompare(b.name);
-        });
-  }
-
-
-  updateDetails(): void {
-    if (!this.match) {
-      this.age = undefined;
-      this.species = undefined;
-      this.kemonomimi = undefined;
-      this.gender = undefined;
-      this.furryPref = undefined;
-      this.subDomRole = undefined;
-      this.sexualOrientation = undefined;
-      return;
+        return [
+            ...Object.entries(this.filtersResults.ageCheck)
+                .filter(v => v[1])
+                .map(v => v[0]),
+            ...Object.entries(this.filtersResults.filters)
+                .filter(v => v[1] && v[1].isFiltered)
+                .map(v => v[0]),
+        ]
     }
 
-    const a = this.match.them.yourAnalysis;
-    const c = this.match.them.you;
+    @Watch('recomputer') onRecomputer() { this.characterName && void this.updateConversationStatus(this.characterName) }
+    @Watch('characterName') onName()    { this.characterName && void this.updateConversationStatus(this.characterName) }
 
-    const rawSpecies = Matcher.getTagValue(TagId.Species, c);
-    const rawAge = Matcher.getTagValue(TagId.Age, c);
+    async updateConversationStatus(name: string): Promise<void> {
+        const ownName = core.characters.ownCharacter.name;
+        const logKey = name.toLowerCase();
+        const logDates = await core.logs.getLogDates(ownName, logKey);
 
-    if ((a.orientation) && (!Orientation[a.orientation])) {
-      console.error('Missing Orientation', a.orientation, c.name);
+        if (!logDates.length)
+            return;
+
+        const messages = await core.logs.getLogs(ownName, logKey, lastElement(logDates));
+        const matcher = /\[AUTOMATED MESSAGE]/;
+
+        this.conversation = messages
+            .filter(m => !matcher.exec(m.text))
+            .slice(-3)
+            .map(m => ({
+                ...m,
+                text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text
+            }));
     }
 
-    this.age = a.age
-        ? this.readable(`${a.age}`)
-        : (rawAge && /[0-9]/.test(rawAge.string || '') && rawAge.string) || undefined;
-    this.species = a.species ? this.readable(Species[a.species]) : (rawSpecies && rawSpecies.string) || undefined;
-    this.kemonomimi = a.isKemonomimi && this.species && !this.species.endsWith('mimi')
-        ? this.readable('kemomimi')
-        : undefined;
-    this.gender = (a.gender && a.gender !== Gender.None)
-        ? this.readable(Gender[a.gender])
-        : undefined;
-    this.furryPref = a.furryPreference
-        ? this.readable(furryPreferenceMapping[a.furryPreference])
-        : undefined;
-    this.subDomRole = (a.subDomRole && a.subDomRole !== SubDomRole.Switch)
-        ? this.readable(SubDomRole[a.subDomRole])
-        : undefined;
-    this.sexualOrientation = a.orientation
-        ? this.readable(Orientation[a.orientation])
-        : undefined;
-  }
+    get latestAd() {
+        if (!this.characterName)
+            return;
 
-  // Hard string replacements are english coded. Do these ever risk appearing in another language?
-  readable(s: string): string {
-    return s.replace(/([A-Z])/g, ' $1').trim().toLowerCase()
-      .replace(/(always|usually) (submissive|dominant|top|bottom)/, '$2')
-      .replace(/bi ((?:fe)?male) preference/, '$1-favoring bi')
-      .replace(/bi curious/, 'bi-curious');
-  }
+        const cache = core.cache.adCache.get(this.characterName);
 
-  getOnlineStatus(): string {
-    if (!this.onlineCharacter) {
-      return 'Offline';
+        if (!cache?.posts.length || Date.now() - cache.posts[cache.posts.length - 1].datePosted.getTime() > (45 * 60 * 1000))
+            return;
+
+        return cache.posts[cache.posts.length - 1];
     }
 
-    const s = this.onlineCharacter.status;
+    // Unused
+    // get customs(): CustomKinkWithScore[] | undefined {
+    //     if (!this.character?.character.customs)
+    //         return;
 
-    return `${s.substring(0, 1).toUpperCase()}${s.substring(1)}`;
-  }
+    //     return Object.values(this.character.character.customs)
+    //         .filter((c): c is CustomKink => c !== undefined)
+    //         .map(c => ({
+    //             ...c,
+    //             score: kinkMapping[c.choice],
+    //             name: c.name.trim().replace(/^\W+/, '').replace(/\W+$/, ''),
+    //         } as CustomKinkWithScore))
+    //         .sort((a,b) => b.score - a.score || a.name.localeCompare(b.name));
+    // }
 
+    async getCharacterData(characterName: string): Promise<ComplexCharacter> {
+        const cache = await core.cache.profileCache.get(characterName);
+        if (cache)
+            return cache.character;
 
-  async getCharacterData(characterName: string): Promise<ComplexCharacter> {
-      const cache = await core.cache.profileCache.get(characterName);
-
-      if (cache) {
-        return cache.character;
-      }
-
-      return methods.characterData(characterName, this.id, false);
-  }
+        return methods.characterData(characterName, undefined, false);
+    }
 }
 </script>
 
