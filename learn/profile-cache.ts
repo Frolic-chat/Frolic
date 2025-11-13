@@ -14,7 +14,7 @@ import { CharacterOverrides } from '../fchat/characters';
 
 import NewLogger from '../helpers/log';
 const log  = NewLogger('profile-cache');
-const logC = NewLogger('custom-gender');
+const logC = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('---debug-custom-gender'));
 
 
 export interface MetaRecord {

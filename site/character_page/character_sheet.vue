@@ -535,8 +535,10 @@
             }
 
             if (this.selfCharacter) {
-                const yourOverrides = (await core.characters.getAsync(this.selfCharacter.character.name)).overrides;
-                const theirOverrides = (await core.characters.getAsync(stand.character.character.name)).overrides;
+                const [ yourOverrides, theirOverrides ] = await Promise.all([
+                    core.characters.getAsync(this.selfCharacter.character.name).then(c => c.overrides),
+                    core.characters.getAsync(stand.character.character.name).then(c => c.overrides),
+                ]);
 
                 stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character, yourOverrides, theirOverrides);
             }
