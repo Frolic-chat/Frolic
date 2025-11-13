@@ -413,7 +413,7 @@ export default class CharacterPreview extends Vue {
             const theirOverrides = this.onlineCharacter.overrides;
             const yourOverrides = ownOnlineCharacter.overrides;
 
-            this.match = Matcher.identifyBestMatchReport(this.ownCharacter?.character, this.character.character, yourOverrides, theirOverrides);
+            this.match = Matcher.identifyBestMatchReport(this.ownCharacter.character, this.character.character, yourOverrides, theirOverrides);
         }
 
         // Wait to set this until after the awaits so that computed getters don't update based on it.
