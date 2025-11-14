@@ -86,7 +86,7 @@ import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
 import { IncognitoArgFromBrowserPath } from '../constants/general';
-import checkForGitRelease from './main/updater';
+import * as UpdateCheck from './main/updater';
 import versionUpgradeRoutines from './main/version-upgrade';
 
 //region: 2nd Instance
@@ -685,7 +685,7 @@ function onReady(): void {
     //region Updater
     const updateCheckTimer = setInterval(
         async () => {
-            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
 
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
@@ -702,7 +702,7 @@ function onReady(): void {
 
     setTimeout(
         async () => {
-            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
 
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
@@ -716,6 +716,8 @@ function onReady(): void {
         },
         6000 // 6 seconds
     );
+
+    UpdateCheck.registerReleaseInfoIpc();
 
     const updateReadyMenuItem = {
         label: l('action.updateAvailable'),

@@ -26,7 +26,7 @@ export function registerReleaseInfoIpc() {
     ipcMain.handle('get-release-info', () => versions.current.version ? versions : null);
 }
 
-export default async function checkForGitRelease(currentSemver: string, url: string, beta: boolean = false): Promise<boolean> {
+export async function checkForGitRelease(currentSemver: string, url: string, beta: boolean = false): Promise<boolean> {
     try {
         const releases = (await Axios.get<ReleaseInfo[]>(url)).data;
         const modern_versions: ReleaseInfo[] = [];
