@@ -175,6 +175,10 @@ async function toggleDictionary(lang: string): Promise<void> {
 }
 
 let generalSettingsTimestamp = 0;
+
+/**
+ * Call update instead of save when we need to update the timestamp - IE, the update is generated in electron main side. `saveGeneralSettings` is invoked internally and will broadcast the new timestamp to the renderers with the new settings object. Failure to call this function and update the timestamp will cause renderers to ignore your "out-of-date" update.
+ */
 function updateGeneralSettings(s: GeneralSettings): void {
     generalSettingsTimestamp = Date.now();
     logSettings.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", generalSettingsTimestamp);
@@ -1023,9 +1027,11 @@ function onReady(): void {
             PrimaryWindow?.webContents.send('open-tab');
     });
     Electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
+        if (account !== settings.account || host !== settings.host)
+            updateGeneralSettings(settings);
+
         settings.account = account;
         settings.host = host;
-        updateGeneralSettings(settings);
     });
 
     Electron.ipcMain.on('connect', (e, character: string) => { //hack
@@ -1135,21 +1141,6 @@ function onReady(): void {
 
         return dir?.[0] ?? '';
     });
-
-    function updateBrowserOption(_e: Electron.IpcMainEvent,
-                                 path: string,
-                                 args: string,
-                                 incognito: string
-                                ): void {
-        logBrowser.debug('Browser Path settings update:', path, args, incognito);
-
-        settings.browserPath = path;
-        settings.browserArgs = args;
-        settings.browserIncognitoArg = incognito;
-        updateGeneralSettings(settings);
-    }
-
-    Electron.ipcMain.on('browser-option-update', updateBrowserOption);
 
     Electron.ipcMain.on('open-url-externally', (_e, url: string, incognito: boolean = false) => {
         openURLExternally(url, incognito);

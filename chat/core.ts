@@ -17,7 +17,7 @@ import { SettingsMerge } from '../helpers/utils';
 
 import { EventBus } from './preview/event-bus';
 import NewLogger from '../helpers/log';
-const log = NewLogger('chat/core', () => process.env.NODE_ENV === 'development');
+const log = NewLogger('core', () => process.env.NODE_ENV === 'development');
 const logS = NewLogger('settings');
 
 function createBBCodeParser(): BBCodeParser {
@@ -126,12 +126,14 @@ const data = {
     },
 
     updateMain(channel: 'settings'): void {
+        logS.warn('core.data.updateMain.settings', state.generalSettings);
+
         if (channel === 'settings') {
             Electron.ipcRenderer.send(channel, {
-            settings: state.generalSettings,
-            timestamp: VueUpdateCache.timestamp,
-            character: data.connection?.character,
-        });
+                settings: state.generalSettings,
+                timestamp: VueUpdateCache.timestamp,
+                character: data.connection?.character,
+            });
         }
     },
 };
@@ -158,6 +160,7 @@ export function init(this: any,
     data.adCenter = new AdCenter();
     data.siteSession = new SiteSession();
 
+    // Last point of assignment before placing observers on it.
     data.state.generalSettings = settings;
 
     data.register('characters', Characters(connection));
@@ -227,9 +230,13 @@ export function init(this: any,
 
         VueUpdateCache.timestamp = d.timestamp;
 
-        const prev_settings = JSON.stringify(state.generalSettings);
-        Object.assign(state.generalSettings, d.settings);
-        VueUpdateCache.skipWatch = JSON.stringify(state.generalSettings) !== prev_settings;
+        // const prev_settings = JSON.stringify(state.generalSettings);
+        // Main dispatching an identical settings object will still cause `Object.assign` to change the internal references, causing an update without changing anything.
+        // if (JSON.stringify(state.generalSettings) !== prev_settings) {
+        if (!deepEqual(state.generalSettings, d.settings)) {
+            Object.assign(state.generalSettings, d.settings);
+            VueUpdateCache.skipWatch = true;
+        }
 
         logS.debug(
             VueUpdateCache.skipWatch

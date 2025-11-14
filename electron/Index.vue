@@ -4,7 +4,7 @@
         <div v-if="!characters" style="display:flex; align-items:center; justify-content:center; height: 100%;">
             <div class="card bg-light" style="width: 400px;">
 
-                <BBCodeTester v-show="false"></BBCodeTester>
+                <BBCodeTester v-show="debugBBCode"></BBCodeTester>
 
                 <h3 class="card-header" style="margin-top:0;display:flex">
                     {{l('title')}}
@@ -203,6 +203,7 @@
 
         settings!: GeneralSettings;
         hasCompletedUpgrades!: boolean;
+        debugBBCode = false;
 
         importProgress = 0;
         profileName = '';
@@ -273,6 +274,8 @@
             // Event bus is supposed to be for only character/cache/preview updates.
             EventBus.$on('error', ErrorHandler.capture);
 
+            this.debugBBCode = this.settings.argv.includes('--debug-bbcode');
+
             await this.start.taskDisplay();
 
             this.awaitStartUpTask('core',  this.start.cache);
@@ -284,7 +287,8 @@
             electron.ipcRenderer.send('rising-upgrade-complete');
             this.hasCompletedUpgrades = true;
 
-            Vue.set(core.state, 'generalSettings', this.settings);
+            // Pointless, this is the same object we just passed into initcore()
+            //Vue.set(core.state, 'generalSettings', this.settings);
 
             await this.start.listeners();
 
@@ -299,6 +303,7 @@
 
             try {
                 if (!this.saveLogin) {
+                    log.debug('login.savelogin.deletePassword');
                     await ipcRenderer.invoke('deletePassword', 'f-list-net', this.settings.account);
                 }
 
@@ -515,7 +520,9 @@
             }
             catch (e) {
                 if ((<Error & { code: string }>e).code === 'ENOENT' && this.settings.theme !== 'default') {
+                    log.warn("Couldn't read file matching current theme; safely resetting to default.");
                     this.settings.theme = 'default';
+
                     return this.styling;
                 }
 

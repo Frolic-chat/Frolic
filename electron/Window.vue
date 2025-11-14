@@ -128,7 +128,7 @@
 
             electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, d: GeneralSettingsUpdate) => {
                 if (d.timestamp > this.generalSettingsTimestamp) {
-                    log.debug('settings.update.window');
+                    log.debug('generalSettings.update.window');
 
                     this.generalSettingsTimestamp = d.timestamp;
                     this.settings = d.settings;

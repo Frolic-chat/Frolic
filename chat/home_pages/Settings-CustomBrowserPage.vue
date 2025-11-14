@@ -112,27 +112,16 @@ export default class BrowserSettings extends Vue {
 
     @Hook('mounted')
     async onMount() {
-        let queueSend = false;
-
         if (!this.settings.browserArgs) {
             this.settings.browserArgs = '%s';
-            queueSend = true;
         }
         else if (!this.settings.browserArgs.includes('%s')) {
             this.settings.browserArgs += ' %s';
-            queueSend = true;
         }
 
         if (!this.settings.browserIncognitoArg) {
-            const oldarg = this.settings.browserIncognitoArg;
             this.autoFillIncognitoArg();
-
-            if (this.settings.browserIncognitoArg !== oldarg)
-                queueSend = true;
         }
-
-        if (queueSend)
-            Electron.ipcRenderer.send('browser-option-update', this.settings.browserPath, this.settings.browserArgs, this.settings.browserIncognitoArg);
 
         this.updateExample();
     }
@@ -151,10 +140,8 @@ export default class BrowserSettings extends Vue {
         log.debug('setBrowserArgs', { old: this.settings.browserArgs, new: v });
 
         if (!v)
-            //input.value = this.settings.browserArgs = '%s';
             this.settings.browserArgs = '%s';
         else if (!v.includes('%s'))
-            //input.value = this.settings.browserArgs = v + ' %s';
             this.settings.browserArgs = v + ' %s';
         else
             this.settings.browserArgs = v;
