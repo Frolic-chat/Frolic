@@ -1,5 +1,5 @@
 <template>
-<collapse :action="analyze" btnClass="btn-secondary">
+<collapse :action="analyze" btnClass="btn-secondary" ref="collapse">
 <template v-slot:header>
     <span>
         {{ hook }}
@@ -31,15 +31,24 @@
             <h3>{{ working }}</h3>
         </div>
 
-        <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text">
+        <div v-else-if="!analyzing && recommendations && recommendations.length" class="card-text profile-analysis-results">
             <p>{{ recc }}</p>
-            <ul>
-                <li v-for="r in recommendations" class="recommendation" :class="r.level">
-                    <h3>{{r.title}}</h3>
+            <ul class="list-group list-group-flush">
+                <li v-for="r in recommendations" class="recommendation list-group-item py-2 mx-2" :class="{
+                    'list-group-item-danger':    r.level === 'critical',
+                    'list-group-item-warning':   r.level === 'note',
+                    'list-group-item-secondary': r.level !== 'critical' && r.level !== 'note',
+                 }">
+                    <h3 class="mb-0">{{r.title}}</h3>
                     <p>{{r.desc}}</p>
                     <p class="more-info" v-if="r.helpUrl">
-                        <a :href="r.helpUrl">
+                        <a :href="r.helpUrl" class="btn mx-auto my-2" :class="{
+                            'btn-outline-danger':    r.level === 'critical',
+                            'btn-outline-warning':   r.level === 'note',
+                            'btn-outline-secondary': r.level !== 'critical' && r.level !== 'note',
+                        }">
                             {{ heresHow }}
+                            <span class="fa-solid fa-up-right-from-square ml-2"></span>
                         </a>
                     </p>
                 </li>
@@ -83,9 +92,10 @@ export default class ProfileAnalysis extends Vue {
 
     /**
      * Analyze and report on a character. Currently only useful to analyze yourself.
-     * @param profile A character page from the API
      */
     async analyze(character?: string): Promise<void> {
+        (this.$refs['collapse'] as Collapse).open();
+
         if (!character)
             character = core.characters.ownProfile?.character.name;
 
@@ -119,46 +129,9 @@ export default class ProfileAnalysis extends Vue {
 }
 </script>
 <style lang="scss">
-
-.profile-analysis-wrapper {
-  h3 {
-    font-size: 130%;
-    margin-bottom: 0;
-  }
-
-  p {
-    font-size: 95%;
-    margin: 0;
-  }
-
-  ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  li {
-    padding: 10px;
-    margin: 5px;
-    line-height: 120%;
-    border-radius: 3px;
-
-    &.critical {
-      background-color: var(--scoreMismatchBg);
+.profile-analysis-results {
+    li {
+        line-height: 1.25;
     }
-
-    &.note {
-      background-color: var(--scoreWeakMismatchBg);
-    }
-  }
-
-  .more-info {
-    margin-top: 1em;
-
-    a {
-      color: var(--linkForcedColor) !important;
-      font-weight: bold;
-    }
-  }
 }
 </style>

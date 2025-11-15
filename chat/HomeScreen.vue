@@ -30,7 +30,6 @@
     <!-- Changelog and update alert -->
     <!-- Logs? -->
     <!-- Dev settings/info -->
-    <!-- License -->
 
     <!-- Notes -->
 

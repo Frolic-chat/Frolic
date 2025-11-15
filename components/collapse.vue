@@ -11,9 +11,7 @@
             <div :style="headerEndStyle" class="input-group-append flex-shrink-0 border-0 header-button-container-container">
                 <div :style="headerEndStyle" class="input-group-text btn p-0 border-0 header-button-container"> <!-- keep border-left -->
                     <a href="#" @click.prevent="btnClick" :class="btnClass" class="btn justify-content-around h-100 d-flex flex-column border-0">
-                        <slot name="button">
-                            "Do it."
-                        </slot>
+                        <slot name="button"></slot>
                     </a>
                 </div>
             </div>
@@ -47,7 +45,15 @@
 
         @Prop({ default: () => {} })
         readonly action?: () => void;
-        btnClick(_e: MouseEvent) { this.action?.() }
+        btnClick(e: MouseEvent) {
+            if (this.action) {
+                e.stopPropagation();
+                this.action();
+            }
+        }
+
+        @Prop({ default: false })
+        readonly state!: boolean;
 
         collapsed = true;
         timeout = 0;
@@ -58,6 +64,9 @@
 
         get headerStartStyle() { return this.collapsed ? '' : 'border-bottom-left-radius:0;'  }
         get headerEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
+
+        open()  { this.toggle(false) }
+        close() { this.toggle(true)  }
 
         toggle(state?: boolean) {
             clearTimeout(this.timeout);

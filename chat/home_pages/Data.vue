@@ -99,6 +99,7 @@ import Vue from 'vue';
 import { Component, Prop, Hook } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
+import Collapse from '../../components/collapse.vue';
 
 import Modal from '../../components/Modal.vue';
 
@@ -112,6 +113,7 @@ const log = NewLogger('home-data');
 @Component({
     components: {
         page: HomePageLayout,
+        collapse: Collapse,
         modal: Modal,
     },
 })
