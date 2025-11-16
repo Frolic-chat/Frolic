@@ -1179,11 +1179,18 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('FLN', async(data, time) => {
         const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
-        if(isOfInterest(core.characters.get(data.character))) await addEventMessage(message);
+
+        if (isOfInterest(core.characters.get(data.character)))
+            await addEventMessage(message);
+
         const conv = state.privateMap[data.character.toLowerCase()];
-        if(conv === undefined) return;
+        if (!conv)
+            return;
+
         conv.typingStatus = 'clear';
-        if(!core.state.settings.eventMessages || conv !== state.selectedConversation) await conv.addMessage(message);
+
+        if (!core.state.settings.eventMessages || conv !== state.selectedConversation)
+            await conv.addMessage(message);
     });
     connection.onMessage('TPN', (data) => {
         const conv = state.privateMap[data.character.toLowerCase()];
@@ -1196,21 +1203,27 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('CBU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
+        if (!conv)
+            return core.channels.leave(data.channel);
+
         const text = l('events.ban', conv.name, data.character, data.operator);
         conv.infoText = text;
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('CKU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
+        if (!conv)
+            return core.channels.leave(data.channel);
+
         const text = l('events.kick', conv.name, data.character, data.operator);
         conv.infoText = text;
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('CTU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
+        if (!conv)
+            return core.channels.leave(data.channel);
+
         const text = l('events.timeout', conv.name, data.character, data.operator, data.length.toString());
         conv.infoText = text;
         return addEventMessage(new EventMessage(text, time));
@@ -1255,7 +1268,9 @@ export default function(this: any): Interfaces.State {
     });
 
     connection.onMessage('IGN', async(data, time) => {
-        if(data.action !== 'add' && data.action !== 'delete') return;
+        if (data.action !== 'add' && data.action !== 'delete')
+            return;
+
         const text = l(`events.ignore_${data.action}`, data.character);
         state.selectedConversation.infoText = text;
         return addEventMessage(new EventMessage(text, time));
@@ -1263,6 +1278,7 @@ export default function(this: any): Interfaces.State {
     connection.onMessage('RTB', async(data, time) => {
         let url = 'https://www.f-list.net/';
         let text: string, character: string;
+
         if (data.type === 'comment') {
             switch(data.target_type) {
                 case 'newspost':
@@ -1336,30 +1352,51 @@ export default function(this: any): Interfaces.State {
             (<Interfaces.SFCMessage>message).sfc = data;
         } else {
             text = l('events.report.confirmed', `[user]${data.moderator}[/user]`, `[user]${data.character}[/user]`);
-            for(const item of sfcList)
+            for (const item of sfcList) {
                 if(item.sfc.logid === data.logid) {
                     item.sfc.confirmed = true;
                     break;
                 }
+            }
             message = new EventMessage(text, time);
         }
         return addEventMessage(message);
     });
     connection.onMessage('STA', async(data, time) => {
-        if(data.character === core.connection.character) {
-            await addEventMessage(new EventMessage(l(data.statusmsg.length > 0 ? 'events.status.ownMessage' : 'events.status.own',
-                l(`status.${data.status}`), decodeHTML(data.statusmsg)), time));
-            return;
-        }
         const char = core.characters.get(data.character);
-        if(!isOfInterest(char)) return;
-        const status = l(`status.${data.status}`);
-        const key = data.statusmsg.length > 0 ? 'events.status.message' : 'events.status';
-        const message = new EventMessage(l(key, `[user]${data.character}[/user]`, status, decodeHTML(data.statusmsg)), time);
+        const isSelf = data.character === core.connection.character;
+
+        if (!isOfInterest(char))
+            return;
+
+        const l_msg: string[] = [];
+        let key: string;
+
+        if (isSelf) {
+            key = data.statusmsg ? 'events.status.ownMessage' : 'events.status.own';
+            l_msg.push(
+                l(`status.${data.status}`),
+                decodeHTML(data.statusmsg)
+            );
+        }
+        else {
+            key = data.statusmsg ? 'events.status.message' : 'events.status',
+            l_msg.push(
+                `[user]${data.character}[/user]`,
+                l(`status.${data.status}`),
+                decodeHTML(data.statusmsg)
+            );
+        }
+
+        const text = l(key, ...l_msg);
+        const message = new EventMessage(text, time);
         await addEventMessage(message);
-        const conv = state.privateMap[data.character.toLowerCase()];
-        if(conv !== undefined && (!core.state.settings.eventMessages || conv !== state.selectedConversation))
-            await conv.addMessage(message);
+
+        if (!isSelf) {
+            const conv = state.privateMap[data.character.toLowerCase()];
+            if (conv && (!core.state.settings.eventMessages || conv !== state.selectedConversation))
+                await conv.addMessage(message);
+        }
     });
     connection.onMessage('SYS', async(data, time) => {
         state.selectedConversation.infoText = data.message;
