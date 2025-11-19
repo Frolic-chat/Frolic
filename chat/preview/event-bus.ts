@@ -3,7 +3,7 @@ import { Character, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Settings } from '../interfaces';
 import { SmartFilterSettings } from '../../learn/filter/types';
-import { Conversation } from '../interfaces';
+import { Conversation, Character as ChatCharacter } from '../interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
@@ -60,6 +60,18 @@ export interface CharacterDataEvent {
     profile: Character;
 }
 
+export interface ActivityEvent {
+    character: ChatCharacter;
+    date?:     Date;
+}
+
+export interface ActivityStatusEvent extends ActivityEvent {
+    status:       string;
+    statusmsg:    string;
+    oldStatus:    string;
+    oldStatusMsg: string;
+}
+
 export interface SelectConversationEvent {
     conversation: Conversation | null;
 }
@@ -106,6 +118,12 @@ class EventBusManager {
 
     $on(event: 'own-profile-update',     callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'note-counts-update',     callback: () => void | Promise<void>): void;
+    $on(event: 'activity-friend-login'
+             | 'activity-friend-logout'
+             | 'activity-bookmark-login'
+             | 'activity-bookmark-logout',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
+    $on(event: 'activity-friend-status'
+             | 'activity-bookmark-status',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
     $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'character-score',        callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
     $on(event: 'character-memo',         callback: (e: MemoEvent) => void | Promise<void>): void;
@@ -207,6 +225,12 @@ class EventBusManager {
 
     $emit(event: 'own-profile-update',     data: CharacterDataEvent): void;
     $emit(event: 'note-counts-update',     data: NoteCountsEvent): void;
+    $emit(event: 'activity-friend-login'
+               | 'activity-friend-logout'
+               | 'activity-bookmark-login'
+               | 'activity-bookmark-logout',  data: ActivityEvent): void;
+    $emit(event: 'activity-friend-status'
+               | 'activity-bookmark-status',  data: ActivityStatusEvent): void;
     $emit(event: 'character-data',         data: CharacterDataEvent): void;
     $emit(event: 'character-score',        data: CharacterScoreEvent): void;
     $emit(event: 'character-memo',         data: MemoEvent): void;

@@ -11,6 +11,7 @@ import { Ad } from './ads/ad-center';
 import { GeneralSettings } from '../electron/common';
 import { LocalizationKey } from './localize';
 import type Modal from '../components/Modal.vue';
+import type { ActivityStatusEvent } from './preview/event-bus';
 
 export namespace Relation {
     export enum Chooser {
@@ -69,6 +70,21 @@ export namespace Conversation {
         }
     }
 
+    export type ActivityContext =
+        | { e?: undefined; data?: undefined; time?: Date }
+        | {
+            e: 'EBE';
+        } & ActivityStatusEvent
+        | {
+            [K in keyof Connection.ServerCommands]: {
+                e: K;
+                data: Connection.ServerCommands[K];
+                time: Date;
+            } & (K extends 'BRO'
+                ? { message: Message }
+                : {})
+        }[keyof Connection.ServerCommands];
+
     export type RecentChannelConversation = {readonly channel: string, readonly name: string};
     export type RecentPrivateConversation = {readonly character: string};
 
@@ -109,6 +125,9 @@ export namespace Conversation {
         // We're opting to include these to overwrite them with readonlies:
         readonly errorText: string;
         readonly infoText:  string;
+        messages: Array<Message>;
+
+        parse(activity: ActivityContext): Promise<void>;
     }
 
     export function isPrivate(conversation: Conversation): conversation is PrivateConversation {
@@ -169,7 +188,7 @@ export namespace Conversation {
         enteredText: string;
         infoText: string;
         readonly name: string;
-        readonly messages: ReadonlyArray<Message>;
+        messages: Array<Message>;
         readonly reportMessages: ReadonlyArray<Message>;
         readonly lastRead: Message | undefined
         errorText: string

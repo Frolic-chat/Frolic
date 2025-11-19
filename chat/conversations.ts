@@ -617,7 +617,7 @@ class ConsoleConversation extends Conversation {
     }
 }
 
-class ActivityConversation extends Conversation {
+class ActivityConversation extends Conversation implements Interfaces.ActivityConversation {
     constructor() {
         super('_activity', false);
         this.allMessages = [];
@@ -626,14 +626,178 @@ class ActivityConversation extends Conversation {
         this._settings.notify = Interfaces.Setting.False;
         this._settings.highlight = Interfaces.Setting.False;
         this._settings.defaultHighlights = false;
+
+        EventBus.$on('activity-friend-login',    e => this.handleLogin({ e: 'EBE', ...e }));
+        EventBus.$on('activity-friend-logout',   e => this.handleLogout({ e: 'EBE', ...e }));
+        EventBus.$on('activity-friend-status',   e => this.handleStatus({ e: 'EBE', ...e }));
+        EventBus.$on('activity-bookmark-login',  e => this.handleLogin({ e: 'EBE', ...e }));
+        EventBus.$on('activity-bookmark-logout', e => this.handleLogout({ e: 'EBE', ...e }));
+        EventBus.$on('activity-bookmark-status', e => this.handleStatus({ e: 'EBE', ...e }));
     }
+
+    //override messages: Array<Interfaces.Message | undefined> = [];
 
     readonly context = CommandContext.Console;
     readonly name = l('chat.activityTab');
     readonly maxMessageLength = 0;
     readonly enteredText = '';
+    // We're opting to include these to overwrite them with readonlies:
+    readonly errorText = '';
+    readonly infoText  = '';
+    _messages: Array<Interfaces.Message | undefined> = [];
+    get messages(): Interfaces.Message[] {
+        return this._messages.filter((m): m is Interfaces.Message => m !== undefined);
+    }
+    set messages(v: Interfaces.Message[]) {
+        this._messages = v;
+    }
 
+    protected readonly MAX_LOGINS = 5;
+    protected readonly MAX_STATUS = 3;
+
+    static importance = {
+        login: 0,
+        status: 1,
+        looking: 2,
+    } as const;
+
+    /**
+     * The styles of messages we want to preserve.
+     */
+
+    /**
+     * Recent login notifications. Not that important, since you can see online people in the sidebar.
+     * Amount: 3
+     * Track: logins
+     * hook into state.windowFocused to determine new?
+     */
+    protected readonly login: Map<string, number> = new Map();
+
+    /**
+     * Statuses are important if they're important to the person reading them. Recent returns from busy/away/dnd can be useful to see.
+     * Amount: 2
+     * Track: status changes to online from busy/away/dnd
+     */
+    protected readonly status: Map<string, number> = new Map();
+
+    /**
+     * People with looking status.
+     * Amount: All friends with a looking status; all bookmarks with custom status.
+     * Track: Status changes to looking; then check
+     */
+    protected readonly looking: Map<string, number> = new Map();
+    /**
+     * Heuristics
+     */
+    protected readonly ignoreKeywords = [ "work", "busy", "away", "idle" ];
+    protected readonly preferKeywords = [ "looking", "want", "new", "you" ];
+
+    protected removeCharacter(name: string): void {
+        // update this.messages[];
+        // For an entry in each of the groups, use the entry to remove the message from messages[];
+        const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name);
+        if (!i)
+            return;
+
+        this.messages[i] = undefined;
+
+        [ this.login, this.status, this.looking ]
+            .forEach(m => m.delete(name));
+    };
+
+    isTracked(name: string): boolean {
+        return this.login.has(name) ?? this.status.has(name) ?? this.looking.has(name);
+    }
+
+    protected isHere(status: Character.Status): status is 'online' | 'looking' | 'crown' {
+        return [ 'online', 'looking', 'crown' ].includes(status);
+    }
+
+    protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
+        // Login is any status change with the character 'offline' but the status 'online'.
+        if (activity.character.isFriend) {
+            // ???
+        }
+        else if (this.isTracked(activity.character.name)) { // bookmark
+            // ???
+            return;
+        }
+    }
+
+    // Logout is any status change with the character 'online' but the status 'offline'.
+    protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
+        if (this.isTracked(activity.character.name)) {
+            // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking up maps.
+            this.removeCharacter(activity.character.name);
+        }
+    }
+
+    protected async handleStatus(_activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
+        // Status change is any non-login, non-logout status change event.
+    }
+
+    async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {
+    //     const { e, data } = activity;
+    //     log.debug(`conversations.ActivityConversation.activity: ${e}:`, data);
+
+    //     // If this.trackedCharacters.get(character), check for removal conditions. (offline, dnd, or busy)
+    //     const not_here     = e === 'STA' && !this.isHere(data.status);
+    //     const went_offline = e === 'FLN';
+    //     if ((not_here || went_offline) && this.isTracked(data.character)) {
+    //         // @ts-ignore webpack ts :)
+    //         this.removeCharacter(data.character);
+    //         return;
+    //     }
+
+    //     // else check for watch conditions
+    //     else if (e === 'NLN') {
+    //         // user login event...
+    //         // Add to logins,
+    //         // Remove oldest login.
+    //     }
+    //     else if (e === 'STA' && this.isHere(data.status)) {
+    //         // const character = core.characters.get(data.character);
+
+    //         // Three types of status:
+    //         // shows up from dnd/afk/etc
+    //         //
+
+    //         if (data.statusmsg) {
+    //             // Status message:
+    //         }
+    //         // No message but arrived; now lets make distinct looking and here.
+
+    //     }
+
+    };
+
+    protected safeAddMessage(message: Interfaces.Message): void {
+        // safeAddMessage(this.reportMessages, message, 500);
+        safeAddMessage(this.allMessages, message, 500); // replace with constant?
+        safeAddMessage(this.messages, message, this.maxMessages);
+    }
+
+    /**
+     * Questionable whether we really need an "intercept" rather than just calling addMessage and letting and throw it out.
+     */
     async addMessage(message: Interfaces.Message): Promise<void> {
+        // Judge for relevance.
+        if (message.type === MessageType.Action) {
+            log.debug('activity.addMessage.action', message);
+        }
+        if (message.type === MessageType.Bcast) {
+            log.debug('activity.addMessage.bcast', message);
+        }
+        if (message.type === MessageType.Event) {
+            log.debug('activity.addMessage.event', message);
+        }
+        if (message.type === MessageType.Message) {
+            log.debug('activity.addMessage.message', message);
+        }
+        if (message.type === MessageType.Warn) {
+            log.debug('activity.addMessage.warn', message);
+        }
+
         this.safeAddMessage(message);
         if (this !== state.selectedConversation || !state.windowFocused)
             this.unread = Interfaces.UnreadState.Unread;
@@ -641,10 +805,6 @@ class ActivityConversation extends Conversation {
     close(): void {}                     // noop
     onHide(): void {}                    // noop
     protected doSend(): void {}          // noop
-
-    // We're opting to include these to overwrite them with readonlies:
-    readonly errorText = '';
-    readonly infoText  = '';
 }
 
 class State implements Interfaces.State {
@@ -996,6 +1156,8 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('PRI', async(data, time) => {
+        //state.activityTab.parse({ e: 'PRI', data, time });
+
         const char = core.characters.get(data.character);
         if(char.isIgnored) return connection.send('IGN', {action: 'notify', character: data.character});
         const message = createMessage(MessageType.Message, char, decodeHTML(data.message), time);
@@ -1012,6 +1174,9 @@ export default function(this: any): Interfaces.State {
         await conv.addMessage(message);
     });
     connection.onMessage('MSG', async(data, time) => {
+        // channel message... this DEFINITELY needs to be moved further down.
+        //state.activityTab.parse({ e: 'MSG', data, time });
+
         const char = core.characters.get(data.character);
         if (char.isIgnored)
             return;
@@ -1240,6 +1405,7 @@ export default function(this: any): Interfaces.State {
             const char = core.characters.get(data.character);
             const message = new BroadcastMessage(l('events.broadcast', `[user]${data.character}[/user]`, content), char, time);
 
+            //state.activityTab.parse({ e: 'BRO', data, time, message });
             await state.consoleTab.addMessage(message);
 
             await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, core.characters.getImage(data.character), 'attention');
@@ -1259,6 +1425,8 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('CIU', async(data, time) => {
+        //state.activityTab.parse({ e: 'CIU', data, time });
+
         const text = l('events.invite', `[user]${data.sender}[/user]`, `[session=${data.title}]${data.name}[/session]`);
         return addEventMessage(new EventMessage(text, time));
     });
@@ -1276,6 +1444,10 @@ export default function(this: any): Interfaces.State {
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('RTB', async(data, time) => {
+        //state.activityTab.parse({ e: 'RTB', data, time });
+
+        log.warn(`${time} conversations.RTB`, data);
+
         let url = 'https://www.f-list.net/';
         let text: string, character: string;
 

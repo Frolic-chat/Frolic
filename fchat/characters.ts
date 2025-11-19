@@ -231,14 +231,77 @@ class State implements Interfaces.State {
         return c.overrides.gender?.string || c.gender;
     }
 
-    setStatus(character: Character, status: Interfaces.Status, text: string): void {
-        if(character.status === 'offline' && status !== 'offline') {
-            if(character.isFriend) this.friends.push(character);
-            if(character.isBookmarked) this.bookmarks.push(character);
-        } else if(status === 'offline' && character.status !== 'offline') {
-            if(character.isFriend) this.friends.splice(this.friends.indexOf(character), 1);
-            if(character.isBookmarked) this.bookmarks.splice(this.bookmarks.indexOf(character), 1);
+    /**
+     * Reactive-style character status updater. All status changes should go through here.
+     *
+     * The date object is used during broadcast of the friend/bookmark status-change event; so don't provide a date if you don't want to trigger activity listeners.
+     *
+     * Don't forget to call this anytime you set your own status.
+     * @param character Chat character
+     * @param status new status; `character.status` is the old status.
+     * @param text new status message; `character.statusText` is the old status message.
+     * @param date date if received from date-based event (server message, for example)
+     */
+    setStatus(character: Character, status: Interfaces.Status, text: string, date?: Date): void {
+        if (character.isFriend) {
+            if (character.status === 'offline' && status !== 'offline') {
+                this.friends.push(character);
+
+                if (date)
+                    EventBus.$emit('activity-friend-login', { character, date });
+            }
+            else if (character.status !== 'offline' && status === 'offline') {
+                const i = this.friends.indexOf(character);
+                if (i >= 0) this.friends.splice(i, 1);
+
+                if (date)
+                    EventBus.$emit('activity-friend-logout', { character, date });
+            }
+
+            // Cache in case our listeners are async.
+            const old_status     = character.status;
+            const old_status_msg = character.statusText;
+            if (date) {
+                EventBus.$emit('activity-friend-status', {
+                    character,
+                    status,
+                    statusmsg:    text,
+                    oldStatus:    old_status,
+                    oldStatusMsg: old_status_msg,
+                    date,
+                });
+            }
         }
+        else if (character.isBookmarked) {
+            if (character.status === 'offline' && status !== 'offline') {
+                this.bookmarks.push(character);
+
+                if (date)
+                    EventBus.$emit('activity-bookmark-login', { character, date });
+            }
+            else if (character.status !== 'offline' && status === 'offline') {
+                const i = this.bookmarks.indexOf(character);
+                if (i >= 0) this.bookmarks.splice(i, 1);
+
+                if (date)
+                    EventBus.$emit('activity-bookmark-logout', { character, date });
+            }
+
+            // Cache in case our listeners are async.
+            const old_status     = character.status;
+            const old_status_msg = character.statusText;
+            if (date) {
+                EventBus.$emit('activity-bookmark-status', {
+                    character,
+                    status,
+                    statusmsg:    text,
+                    oldStatus:    old_status,
+                    oldStatusMsg: old_status_msg,
+                    date,
+                });
+            }
+        }
+
         character.status = status;
         character.statusText = decodeHTML(text);
     }
@@ -338,10 +401,10 @@ export default function(this: void, connection: Connection): Interfaces.State {
             });
         }
     });
-    connection.onMessage('FLN', (data) => {
-        state.setStatus(state.get(data.character), 'offline', '');
+    connection.onMessage('FLN', (data, date) => {
+        state.setStatus(state.get(data.character), 'offline', '', date);
     });
-    connection.onMessage('NLN', async(data) => {
+    connection.onMessage('NLN', async(data, date) => {
         const character = state.get(data.identity);
 
         if (data.identity === connection.character) {
@@ -359,10 +422,10 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         character.name = data.identity;
         character.gender = data.gender;
-        state.setStatus(character, data.status, '');
+        state.setStatus(character, data.status, '', date);
     });
-    connection.onMessage('STA', (data) => {
-        state.setStatus(state.get(data.character), data.status, data.statusmsg);
+    connection.onMessage('STA', (data, date) => {
+        state.setStatus(state.get(data.character), data.status, data.statusmsg, date);
     });
     connection.onMessage('AOP', (data) => {
         state.opList.push(data.character);
