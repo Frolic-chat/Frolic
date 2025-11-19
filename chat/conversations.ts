@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import {queuedJoin} from '../fchat/channels';
 import {decodeHTML} from '../fchat/common';
-// import { CharacterCacheRecord } from '../learn/profile-cache';
 import { AdManager } from './ads/ad-manager';
 import { ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
@@ -206,7 +205,6 @@ abstract class Conversation implements Interfaces.Conversation {
         return (this.adManager.getAds().length > 0);
     }
 }
-
 
 class PrivateConversation extends Conversation implements Interfaces.PrivateConversation {
     readonly name: string;
@@ -593,7 +591,6 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     }
 }
 
-
 class ConsoleConversation extends Conversation {
     readonly context = CommandContext.Console;
     readonly name = l('chat.consoleTab');
@@ -791,6 +788,16 @@ async function withNeutralVisibilityPrivateConversation(character: Character.Cha
     if (!isVisibleConversation) {
         await conv.close();
     }
+}
+
+function shouldNotifyOnFriendLogin(): boolean {
+    return core.state.settings.notifyFriendSignIn === Relation.Chooser.Friends
+        || core.state.settings.notifyFriendSignIn === Relation.Chooser.Both;
+}
+
+function shouldNotifyOnBookmarkLogin(): boolean {
+    return core.state.settings.notifyFriendSignIn === Relation.Chooser.Bookmarks
+        || core.state.settings.notifyFriendSignIn === Relation.Chooser.Both;
 }
 
 /**
@@ -1149,48 +1156,41 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('NLN', async(data, time) => {
-        const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
-        if(isOfInterest(core.characters.get(data.identity))) {
+        const interesting = isOfInterest(core.characters.get(data.identity));
+        if (interesting) {
+            const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
             await addEventMessage(message);
 
-            function shouldNotifyOnFriendLogin(): boolean {
-                const settings = core.state.settings;
-                const chooser = Relation.Chooser;
-                return settings.notifyFriendSignIn === chooser.Friends
-                    || settings.notifyFriendSignIn === chooser.Both;
-            }
-
-            function shouldNotifyOnBookmarkLogin(): boolean {
-                const settings = core.state.settings;
-                const chooser = Relation.Chooser;
-                return settings.notifyFriendSignIn === chooser.Bookmarks
-                    || settings.notifyFriendSignIn === chooser.Both;
-            }
-
-            if (
-                   (shouldNotifyOnFriendLogin()   && core.characters.friendList.includes(data.identity))
-                || (shouldNotifyOnBookmarkLogin() && core.characters.bookmarkList.includes(data.identity))
-            )
+            const should_notify = (shouldNotifyOnFriendLogin()   && core.characters.friendList.includes(data.identity))
+                               || (shouldNotifyOnBookmarkLogin() && core.characters.bookmarkList.includes(data.identity));
+            if (should_notify) {
                 await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), core.characters.getImage(data.identity), 'silence');
+            }
         }
+
         const conv = state.privateMap[data.identity.toLowerCase()];
-        if(conv !== undefined && (!core.state.settings.eventMessages || conv !== state.selectedConversation))
+        const relevant = (!core.state.settings.eventMessages || conv !== state.selectedConversation);
+        if (conv && relevant) {
+            const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
             await conv.addMessage(message);
+        }
     });
     connection.onMessage('FLN', async(data, time) => {
-        const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
-
-        if (isOfInterest(core.characters.get(data.character)))
+        const interesting = isOfInterest(core.characters.get(data.character));
+        if (interesting) {
+            const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
             await addEventMessage(message);
+        }
 
         const conv = state.privateMap[data.character.toLowerCase()];
-        if (!conv)
-            return;
+        if (conv) {
+            conv.typingStatus = 'clear';
 
-        conv.typingStatus = 'clear';
-
-        if (!core.state.settings.eventMessages || conv !== state.selectedConversation)
-            await conv.addMessage(message);
+            if (!core.state.settings.eventMessages || conv !== state.selectedConversation) {
+                const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
+                await conv.addMessage(message);
+            }
+        }
     });
     connection.onMessage('TPN', (data) => {
         const conv = state.privateMap[data.character.toLowerCase()];
@@ -1230,14 +1230,11 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('BRO', async(data, time) => {
         if(data.character !== undefined) {
-
-            log.error(
-                'devtools.debug.BRO', {
-                    sender: data.character,
-                    msg: data.message,
-                    time: time
-                }
-            )
+            log.error('devtools.debug.BRO', {
+                sender: data.character,
+                msg:    data.message,
+                time,
+            });
 
             const content = decodeHTML(data.message.substring(data.character.length + 24));
             const char = core.characters.get(data.character);
@@ -1255,8 +1252,11 @@ export default function(this: any): Interfaces.State {
                     await conv.addMessage(message);
             }
         }
-        else
-            return addEventMessage(new EventMessage(decodeHTML(data.message), time));
+        else {
+            const message = new EventMessage(decodeHTML(data.message), time)
+            //state.activityTab.parse({ e: 'BRO', data, time, message });
+            return addEventMessage(message);
+        }
     });
     connection.onMessage('CIU', async(data, time) => {
         const text = l('events.invite', `[user]${data.sender}[/user]`, `[session=${data.title}]${data.name}[/session]`);

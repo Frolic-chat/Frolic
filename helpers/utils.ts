@@ -342,3 +342,8 @@ export function err<T>(msg: string): NonNullable<T> { throw msg ?? "Object is nu
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// Still uncertain how to use this reliably.
+export function has<K, T extends K>(set: ReadonlySet<T> | ReadonlyMap<T, any>, key: K): key is T {
+    return set.has(key as T);
+}

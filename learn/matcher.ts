@@ -926,14 +926,14 @@ export class Matcher {
         if (theirGenders === null || !theirGenders.length || theirGenders.includes(Gender.None))
             return new Score(Scoring.NEUTRAL);
 
-        console.log('Genders:', theirGenders, yourGenders);
+        // console.log('Genders:', theirGenders, yourGenders);
 
         for (const theirG of theirGenders) {
             const genderKinkScore = Matcher.getKinkGenderPreference(you, theirG);
 
             if (genderKinkScore !== null) {
                 const genderName = genderKinkStringMap[genderToKinkMap[theirG]]?.[1] ?? `${Gender[theirG]}s`;
-                console.log('Problem gender?', theirG, genderName);
+                // console.log('Problem gender?', theirG, genderName);
 
                 return Matcher.formatKinkScore(genderKinkScore, genderName);
             }
