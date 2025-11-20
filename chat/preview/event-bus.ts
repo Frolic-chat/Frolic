@@ -62,7 +62,7 @@ export interface CharacterDataEvent {
 
 export interface ActivityEvent {
     character: ChatCharacter;
-    date?:     Date;
+    date:      Date;
 }
 
 export interface ActivityStatusEvent extends ActivityEvent {

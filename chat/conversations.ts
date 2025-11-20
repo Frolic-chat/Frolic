@@ -647,9 +647,6 @@ class ActivityConversation extends Conversation {
 
     _messages: Array<Interfaces.Message | undefined> = [];
 
-    protected readonly MAX_LOGINS  = 3;
-    protected readonly MAX_LOOKING = 5;
-
     static importance = {
         login: 0,
         status: 1,
@@ -667,42 +664,110 @@ class ActivityConversation extends Conversation {
      * hook into state.windowFocused to determine new?
      */
     protected readonly login: Map<string, number> = new Map();
+    protected readonly MAX_LOGINS  = 3;
 
     /**
-     * Statuses are important if they're important to the person reading them. Recent returns from busy/away/dnd can be useful to see.
-     * Amount: 2
-     * Track: status changes to online from busy/away/dnd
+     * Custom statuses are important because they're directly from the user.
+     * Amount: All?
+     * Track: has set custom status.
      */
     protected readonly status: Map<string, number> = new Map();
+    protected readonly MAX_STATUS = 0; // Infinity
 
     /**
      * People with looking status.
-     * Amount: All friends with a looking status; all bookmarks with custom status.
-     * Track: Status changes to looking; then check
+     * Amount: All?
+     * Track: Status changes to looking
      */
     protected readonly looking: Map<string, number> = new Map();
+    protected readonly MAX_LOOKING = 5;
+
+    /**
+     * People who recently returned.
+     * Amount: 3
+     * Track: Status changed from away/busy/dnd to online or crown.
+     */
+    protected readonly returned: Map<string, number> = new Map();
+    protected readonly MAX_RETURNED = 3;
+
     /**
      * Heuristics
+     * Unused yet. Useful to check custom statuses if showing all custom statuses doesn't work.
      */
     protected readonly ignoreKeywords = [ "work", "busy", "away", "idle" ];
     protected readonly preferKeywords = [ "looking", "want", "new", "you" ];
 
-    /** Evict oldest entry if no empty slots. */
-    // This depends on knowing the map and its maximum entries.
-    // MAX_LOGINS and MAX_LOOKING are important to tell if we need to boot someone.
-    // No maximum for looking_w_status, always add new.
-    protected getEmptySlot() {}
+    protected updateDisplay(addedAny?: boolean): void {
+        this.messages = this._messages.filter((m): m is Interfaces.Message => m !== undefined); // webpack ts
 
-    protected removeCharacter(name: string): void {
+        if (addedAny && this !== state.selectedConversation || !state.windowFocused)
+            this.unread = Interfaces.UnreadState.Unread;
+    }
+
+    /**
+     * Get the oldest slot in a full map or the first empty slot in the message array. Modifies the map to remove the entry we're replacing. The default index for a slot is _messages.length; ie after the last.
+     * @param map The map to check for empty slots.
+     * @param MAX Maximum number of entries in the map allowed. Will remove oldest entry and return the index of the now-empty slot.
+     * @returns index in _messages where a new message can go.
+     */
+    protected freeSlot(map: Map<string, number>, MAX?: number): number {
+        let index = this._messages.length;
+
+        if (MAX && MAX > 0 && map.size >= MAX) {
+            let oldestKey:  string | undefined;
+            let oldestTime: number | undefined;
+
+            for (const [name, i] of map.entries()) {
+                const m = this._messages[i];
+                if (!m) { // mystery orphan, use it
+                    map.delete(name);
+                    return i;
+                }
+
+                const this_time = m.time.getTime();
+                if (oldestTime === undefined || this_time < oldestTime) {
+                    logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
+
+                    oldestTime = this_time;
+                    oldestKey = name;
+                }
+            }
+
+            if (oldestKey) {
+                const i = map.get(oldestKey);
+                map.delete(oldestKey);
+
+                // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
+                if (i !== undefined) // bad TS check; it exists
+                    return i;
+            }
+        }
+         else { // not full - find existing undefined slot; use default is there isn't one.
+            const i = this._messages.findIndex(e => !e);
+            if (i !== -1)
+                return i;
+        }
+
+        return index;
+    }
+
+    /**
+     * Remove a character from the map and return a free slot if one was freed; or the end of the messages array if one wasn't.
+     * @param name Character name to look for in the maps.
+     * @returns index of slot in `_messages` that's now undefined; or end of array if no free slot.
+     */
+    protected removeCharacter(name: string): number {
         // For an entry in each of the groups, use the entry to remove the message from messages[];
-        const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name);
-        if (!i)
-            return;
+        const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name) ?? this.returned.get(name);
+
+        [ this.login, this.status, this.looking, this.returned ]
+            .forEach(map => map.delete(name));
+
+        if (i === undefined)
+            return this._messages.length;
 
         this._messages[i] = undefined;
-
-        [ this.login, this.status, this.looking ]
-            .forEach(m => m.delete(name));
+        return i;
     };
 
     protected isTracked(name: string): boolean {
@@ -716,59 +781,57 @@ class ActivityConversation extends Conversation {
     // Login is any status change with the character 'offline' but the status 'online'.
     protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
         if (activity.character.isFriend || activity.character.isBookmarked) { // expanded to bookmarks for now.
+            //let index = this._messages.length;
+            // Eviction
+            // if (this.login.size >= this.MAX_LOGINS) {
+            //     let oldestKey: string | undefined;
+            //     let oldestTime: number | undefined;
+
+            //     for (const [name, i] of this.login.entries()) {
+            //         const m = this._messages[i];
+            //         if (!m) { // Error: key with no message - fine, use it.
+            //             this.login.delete(name);
+            //             index = i;
+            //             break;
+            //         }
+
+            //         const this_time = m.time.getTime();
+            //         if (oldestTime === undefined || this_time < oldestTime) {
+            //             logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
+
+            //             oldestTime = this_time;
+            //             oldestKey = name;
+            //         }
+            //     }
+
+            //     if (oldestKey) {
+            //         const i = this.login.get(oldestKey);
+            //         this.login.delete(oldestKey);
+
+            //         // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
+            //         if (i !== undefined) // This awful TS check
+            //             index = i;
+            //     }
+            // }
+            // else { // find existing undefined slot, or just push if there isn't one.
+            //     const i = this._messages.findIndex(e => !e);
+            //     if (i !== -1)
+            //         index = i;
+            // }
+
+            //const index = this.getEmptySlot(this.login, this.MAX_LOGINS);
             logA.debug('ActivityConversation.handleLogin.start.friend');
 
-            let index = this._messages.length;
-            const message = new EventMessage(l('events.login', `[user]${activity.character.name}[/user]`), activity.date)
-
-            // Eviction
-            if (this.login.size >= this.MAX_LOGINS) {
-                let oldestKey: string | undefined;
-                let oldestTime: number | undefined;
-
-                for (const [name, i] of this.login.entries()) {
-                    const m = this._messages[i];
-                    if (!m) { // Error: key with no message - fine, use it.
-                        this.login.delete(name);
-                        index = i;
-                        break;
-                    }
-
-                    const this_time = m.time.getTime();
-                    if (oldestTime === undefined || this_time < oldestTime) {
-                        logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
-
-                        oldestTime = this_time;
-                        oldestKey = name;
-                    }
-                }
-
-                if (oldestKey) {
-                    const i = this.login.get(oldestKey);
-                    this.login.delete(oldestKey);
-
-                    // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
-                    if (i !== undefined) // This awful TS check
-                        index = i;
-                }
-            }
-            else { // find existing undefined slot, or just push if there isn't one.
-                const i = this._messages.findIndex(e => !e);
-                if (i !== -1)
-                    index = i;
-            }
-
-            logA.debug('ActivityConversation.handleLogin.preAdd', {
-                name: activity.character.name,
-                index,
-                message,
-                messages: this._messages,
-            });
+            // Clear a spot.
+            const index = this.removeCharacter(activity.character.name);
+            this.freeSlot(this.login, this.MAX_LOGINS);
 
             // add index to login map.
-            this.removeCharacter(activity.character.name);
             this.login.set(activity.character.name, index);
+            const message = new EventMessage(l('events.login', `[user]${activity.character.name}[/user]`), activity.date);
             this._messages[index] = message;
+
+            this.updateDisplay(true);
 
             logA.debug('ActivityConversation.handleLogin.postAdd', {
                 name: activity.character.name,
@@ -792,14 +855,60 @@ class ActivityConversation extends Conversation {
             });
 
             this.removeCharacter(activity.character.name);
+
+            this.updateDisplay();
         }
     }
 
-    // Status change is any non-login, non-logout status change event.
-    protected async handleStatus(_activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
-        // Check is gaining or losing good status.
-        // 1. If looking and no status, remove from looking then add to
-        //if (status)
+    /**
+     * Status change is any non-login, non-logout status change event. Specifically:
+     * 1. Going away/busy/dnd. Add to `this.away`.
+     * 2. Coming out of away/busy/dnd. Remove from `this.away`, add to `this.returned`.
+     * 3. Set looking status. add to `this.looking`.
+     * 4. Set custom message. add to `this.status`.
+     */
+    protected async handleStatus(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
+        const index = this.removeCharacter(activity.character.name);
+
+        let target_map: Map<string, number> | undefined;
+        let message: Interfaces.Message | undefined;
+
+        // bucket
+        if (activity.statusmsg && [ 'online', 'crown', 'looking' ].includes(activity.status)) {
+            target_map = this.status;
+            message = new EventMessage(
+                l('events.activity.custom', `[user]${activity.character.name}[/user]: ${activity.statusmsg}`),
+                activity.date
+            );
+        }
+        else if (activity.status === 'looking') {
+            target_map = this.looking;
+            message = new EventMessage(
+                l('events.activity.look', `[user]${activity.character.name}[/user]`),
+                activity.date
+            );
+
+            this.freeSlot(target_map, this.MAX_LOOKING);
+        }
+        else if ([ 'away', 'busy', 'dnd' ].includes(activity.oldStatus)
+              && [ 'online', 'crown' ].includes(activity.status)) {
+            target_map = this.returned;
+            message = new EventMessage(
+                l('events.activity.return', `[user]${activity.character.name}[/user]`),
+                activity.date
+            );
+
+            this.freeSlot(target_map, this.MAX_RETURNED);
+        }
+        else {
+            this.updateDisplay(); // removed
+            return; // Other status changes shouldn't be received here.
+        }
+
+        target_map.set(activity.character.name, index);
+        this._messages[index] = message;
+
+        this.updateDisplay(true);
     }
 
     async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {}
