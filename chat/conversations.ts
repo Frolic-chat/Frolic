@@ -16,6 +16,7 @@ import throat from 'throat';
 import NewLogger from '../helpers/log';
 const log = NewLogger('conversations', () => core?.state.generalSettings.argv.includes('--debug-conversations'));
 const logS = NewLogger('conversation-settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
+const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
 
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {
@@ -617,10 +618,9 @@ class ConsoleConversation extends Conversation {
     }
 }
 
-class ActivityConversation extends Conversation implements Interfaces.ActivityConversation {
+class ActivityConversation extends Conversation {
     constructor() {
         super('_activity', false);
-        this.allMessages = [];
 
         // Not sure how many of these are necessary.
         this._settings.notify = Interfaces.Setting.False;
@@ -644,16 +644,11 @@ class ActivityConversation extends Conversation implements Interfaces.ActivityCo
     // We're opting to include these to overwrite them with readonlies:
     readonly errorText = '';
     readonly infoText  = '';
-    _messages: Array<Interfaces.Message | undefined> = [];
-    get messages(): Interfaces.Message[] {
-        return this._messages.filter((m): m is Interfaces.Message => m !== undefined);
-    }
-    set messages(v: Interfaces.Message[]) {
-        this._messages = v;
-    }
 
-    protected readonly MAX_LOGINS = 5;
-    protected readonly MAX_STATUS = 3;
+    _messages: Array<Interfaces.Message | undefined> = [];
+
+    protected readonly MAX_LOGINS  = 3;
+    protected readonly MAX_LOOKING = 5;
 
     static importance = {
         login: 0,
@@ -692,20 +687,25 @@ class ActivityConversation extends Conversation implements Interfaces.ActivityCo
     protected readonly ignoreKeywords = [ "work", "busy", "away", "idle" ];
     protected readonly preferKeywords = [ "looking", "want", "new", "you" ];
 
+    /** Evict oldest entry if no empty slots. */
+    // This depends on knowing the map and its maximum entries.
+    // MAX_LOGINS and MAX_LOOKING are important to tell if we need to boot someone.
+    // No maximum for looking_w_status, always add new.
+    protected getEmptySlot() {}
+
     protected removeCharacter(name: string): void {
-        // update this.messages[];
         // For an entry in each of the groups, use the entry to remove the message from messages[];
         const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name);
         if (!i)
             return;
 
-        this.messages[i] = undefined;
+        this._messages[i] = undefined;
 
         [ this.login, this.status, this.looking ]
             .forEach(m => m.delete(name));
     };
 
-    isTracked(name: string): boolean {
+    protected isTracked(name: string): boolean {
         return this.login.has(name) ?? this.status.has(name) ?? this.looking.has(name);
     }
 
@@ -713,13 +713,71 @@ class ActivityConversation extends Conversation implements Interfaces.ActivityCo
         return [ 'online', 'looking', 'crown' ].includes(status);
     }
 
+    // Login is any status change with the character 'offline' but the status 'online'.
     protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
-        // Login is any status change with the character 'offline' but the status 'online'.
-        if (activity.character.isFriend) {
-            // ???
+        if (activity.character.isFriend || activity.character.isBookmarked) { // expanded to bookmarks for now.
+            logA.debug('ActivityConversation.handleLogin.start.friend');
+
+            let index = this._messages.length;
+            const message = new EventMessage(l('events.login', `[user]${activity.character.name}[/user]`), activity.date)
+
+            // Eviction
+            if (this.login.size >= this.MAX_LOGINS) {
+                let oldestKey: string | undefined;
+                let oldestTime: number | undefined;
+
+                for (const [name, i] of this.login.entries()) {
+                    const m = this._messages[i];
+                    if (!m) { // Error: key with no message - fine, use it.
+                        this.login.delete(name);
+                        index = i;
+                        break;
+                    }
+
+                    const this_time = m.time.getTime();
+                    if (oldestTime === undefined || this_time < oldestTime) {
+                        logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
+
+                        oldestTime = this_time;
+                        oldestKey = name;
+                    }
+                }
+
+                if (oldestKey) {
+                    const i = this.login.get(oldestKey);
+                    this.login.delete(oldestKey);
+
+                    // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
+                    if (i !== undefined) // This awful TS check
+                        index = i;
+                }
+            }
+            else { // find existing undefined slot, or just push if there isn't one.
+                const i = this._messages.findIndex(e => !e);
+                if (i !== -1)
+                    index = i;
+            }
+
+            logA.debug('ActivityConversation.handleLogin.preAdd', {
+                name: activity.character.name,
+                index,
+                message,
+                messages: this._messages,
+            });
+
+            // add index to login map.
+            this.removeCharacter(activity.character.name);
+            this.login.set(activity.character.name, index);
+            this._messages[index] = message;
+
+            logA.debug('ActivityConversation.handleLogin.postAdd', {
+                name: activity.character.name,
+                index,
+                messages: this._messages,
+            });
         }
-        else if (this.isTracked(activity.character.name)) { // bookmark
-            // ???
+        else { // bookmark; don't log logins.
+            logA.debug('ActivityConversation.handleLogin.start.bookmark');
             return;
         }
     }
@@ -727,16 +785,24 @@ class ActivityConversation extends Conversation implements Interfaces.ActivityCo
     // Logout is any status change with the character 'online' but the status 'offline'.
     protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
         if (this.isTracked(activity.character.name)) {
-            // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking up maps.
+            logA.debug('ActivityConversation.handleLogout.tracked', {
+                name:      activity.character.name,
+                status:    activity.status,
+                oldStatus: activity.oldStatus,
+            });
+
             this.removeCharacter(activity.character.name);
         }
     }
 
+    // Status change is any non-login, non-logout status change event.
     protected async handleStatus(_activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
-        // Status change is any non-login, non-logout status change event.
+        // Check is gaining or losing good status.
+        // 1. If looking and no status, remove from looking then add to
+        //if (status)
     }
 
-    async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {
+    async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {}
     //     const { e, data } = activity;
     //     log.debug(`conversations.ActivityConversation.activity: ${e}:`, data);
 
@@ -768,40 +834,31 @@ class ActivityConversation extends Conversation implements Interfaces.ActivityCo
     //         // No message but arrived; now lets make distinct looking and here.
 
     //     }
+    // };
 
-    };
+    // Noop placeholder
+    async addMessage(_message: Interfaces.Message): Promise<void> {}
+    //     // Judge for relevance.
+    //     if (message.type === MessageType.Action) {
+    //         log.debug('activity.addMessage.action', message);
+    //     }
+    //     if (message.type === MessageType.Bcast) {
+    //         log.debug('activity.addMessage.bcast', message);
+    //     }
+    //     if (message.type === MessageType.Event) {
+    //         log.debug('activity.addMessage.event', message);
+    //     }
+    //     if (message.type === MessageType.Message) {
+    //         log.debug('activity.addMessage.message', message);
+    //     }
+    //     if (message.type === MessageType.Warn) {
+    //         log.debug('activity.addMessage.warn', message);
+    //     }
 
-    protected safeAddMessage(message: Interfaces.Message): void {
-        // safeAddMessage(this.reportMessages, message, 500);
-        safeAddMessage(this.allMessages, message, 500); // replace with constant?
-        safeAddMessage(this.messages, message, this.maxMessages);
-    }
-
-    /**
-     * Questionable whether we really need an "intercept" rather than just calling addMessage and letting and throw it out.
-     */
-    async addMessage(message: Interfaces.Message): Promise<void> {
-        // Judge for relevance.
-        if (message.type === MessageType.Action) {
-            log.debug('activity.addMessage.action', message);
-        }
-        if (message.type === MessageType.Bcast) {
-            log.debug('activity.addMessage.bcast', message);
-        }
-        if (message.type === MessageType.Event) {
-            log.debug('activity.addMessage.event', message);
-        }
-        if (message.type === MessageType.Message) {
-            log.debug('activity.addMessage.message', message);
-        }
-        if (message.type === MessageType.Warn) {
-            log.debug('activity.addMessage.warn', message);
-        }
-
-        this.safeAddMessage(message);
-        if (this !== state.selectedConversation || !state.windowFocused)
-            this.unread = Interfaces.UnreadState.Unread;
-    }
+    //     this.safeAddMessage(message);
+    //     if (this !== state.selectedConversation || !state.windowFocused)
+    //         this.unread = Interfaces.UnreadState.Unread;
+    // }
     close(): void {}                     // noop
     onHide(): void {}                    // noop
     protected doSend(): void {}          // noop
