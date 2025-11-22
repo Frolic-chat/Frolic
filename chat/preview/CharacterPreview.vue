@@ -95,7 +95,6 @@ import MatchTags from './MatchTags.vue';
 import {
   furryPreferenceMapping,
   Gender,
-//   kinkMapping,
   Orientation,
   Species,
   SubDomRole,
@@ -328,7 +327,7 @@ export default class CharacterPreview extends Vue {
             return readable(g);
 
         const kink_map = this.match?.them.yourAnalysis.gender
-            ?.filter(g => g === Gender.None)
+            ?.filter(g => g !== Gender.None)
              .map(g => genderToKinkMap[g]);
 
         if (!kink_map?.length)
