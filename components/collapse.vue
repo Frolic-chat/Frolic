@@ -26,7 +26,7 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import {Component, Prop} from '@f-list/vue-ts';
+    import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
 
     @Component
     export default class Collapse extends Vue {
@@ -51,8 +51,23 @@
             }
         }
 
-        @Prop({ default: false })
+        /**
+         * External collapsed signal
+         */
+        @Prop({ default: true })
         readonly state!: boolean;
+
+        @Hook('mounted')
+        onMount() {
+            if (this.collapsed !== this.state)
+                this.toggle();
+        }
+
+        @Watch('state')
+        onExternalChange(newVal: boolean) {
+            if (newVal !== this.collapsed)
+                this.toggle();
+        }
 
         collapsed = true;
         timeout = 0;
