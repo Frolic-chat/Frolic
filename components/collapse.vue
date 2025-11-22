@@ -16,8 +16,8 @@
             </div>
         </div>
 
-        <div :style="style" style="overflow:hidden">
-            <div :class="bodyClass" class="modal-body" ref="content">
+        <div :style="style" class="collapse-wrapper" style="overflow:hidden"><!-- animation wrapper -->
+            <div :class="bodyClass" class="modal-body" ref="content" :style="maxHeight ? `max-height: ${maxHeight}` : ''">
                 <slot></slot>
             </div>
         </div>
@@ -41,6 +41,12 @@
 
         @Prop({ default: undefined })
         readonly bodyClass?: string;
+
+        /**
+         * When specifying a maxHeight, please specify units! Em's are better than pixels in some contexts!
+         */
+        @Prop({ default: undefined })
+        readonly maxHeight?: string;
 
         @Prop({ default: () => {} })
         readonly action?: () => void;
@@ -84,7 +90,7 @@
         close() { this.toggle(true)  }
 
         toggle(state?: boolean, emitSignal: boolean = true) {
-            clearTimeout(this.timeout);
+            window.clearTimeout(this.timeout);
 
             this.collapsed = state !== undefined ? state : !this.collapsed;
 
@@ -93,19 +99,22 @@
 
             if (this.collapsed) {
                 this.style.transition = 'initial';
-                this.style.height = `${(<HTMLElement>this.$refs['content']).scrollHeight}px`;
+                this.style.height = `${(<HTMLElement>this.$refs['content']).clientHeight}px`;
 
-                setTimeout(() => {
-                    this.style.transition = 'height .3s';
-                    this.style.height = '0';
-                }, 0);
+                window.setTimeout(
+                    () => {
+                        this.style.transition = 'height .225s';
+                        this.style.height = '0';
+                    },
+                    0
+                );
             }
             else {
-                this.style.height = `${(<HTMLElement>this.$refs['content']).scrollHeight}px`;
+                this.style.height = `${(<HTMLElement>this.$refs['content']).clientHeight}px`;
 
                 this.timeout = window.setTimeout(
                     () => this.style.height = undefined,
-                    200
+                    225
                 );
             }
         }
@@ -115,5 +124,8 @@
 <style lang="scss">
 .header-button-container-container:has(.header-button-container:empty) {
     display: none;
+}
+.modal-content > .collapse-wrapper > .modal-body {
+    overflow: auto;
 }
 </style>
