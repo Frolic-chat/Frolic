@@ -15,11 +15,8 @@
     <template v-slot:default>
         <div class="d-flex flex-column flex-nowrap">
             <div class="d-flex flex-row"><!-- Top row -->
-                Body content!
-                <!-- Important logins and logouts -->
                 <!-- Changelog and update alert -->
                 <!-- Logs? -->
-                <!-- Dev settings/info -->
             </div>
 
             <div class="d-flex flex-row"><!-- Second row -->
@@ -75,5 +72,5 @@ export default class Home extends Vue {
 }
 </script>
 
-<style>
+<style lang="scss">
 </style>

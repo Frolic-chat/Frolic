@@ -18,7 +18,7 @@ import { SettingsMerge } from '../helpers/utils';
 import { EventBus } from './preview/event-bus';
 import NewLogger from '../helpers/log';
 const log = NewLogger('core', () => process.env.NODE_ENV === 'development');
-const logS = NewLogger('settings');
+const logS = NewLogger('settings', () => core.state ? core.state.generalSettings.argv.includes('--debug-settings') : process.env.NODE_ENV === 'development');
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();

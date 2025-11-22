@@ -106,7 +106,7 @@
     </data-page>
 
     <!-- Modals for the conversation: -->
-    <logs ref="logsDialog" :conversation="conversation"></logs>
+    <logs         ref="logsDialog" :conversation="conversation"></logs>
     <command-help ref="commandHelpDialog"></command-help>
     <!-- + reportDialog -->
 </div>

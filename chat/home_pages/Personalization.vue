@@ -21,9 +21,7 @@
 
         Here's some potential uses:
         + Per-character theme/styling
-        + Profile helper
         + Review what your profile looks like to the matcher
-        + Let you know if there's features you could be using (hqp? custom gender/orientation?)
         + Saved ads editor
         + Saved status editor
         + Eicon favoriter
@@ -68,7 +66,4 @@ export default class Personality extends Vue {}
 </script>
 
 <style lang="scss">
-.suggestion-container .form-control {
-    height: auto;
-}
 </style>

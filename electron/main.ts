@@ -71,7 +71,7 @@ remoteMain.initialize();
 import * as LicenseHandler from './main/license-handler';
 (async () => {
     if (!(await LicenseHandler.init(app.getAppPath())))
-        console.warn('Failed to load license handler main-side.');
+        log.warn('Failed to load license handler main-side.');
 })();
 
 import { exec } from 'child_process';

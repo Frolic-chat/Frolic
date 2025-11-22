@@ -1466,13 +1466,14 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('NLN', async(data, time) => {
-        const interesting = isOfInterest(core.characters.get(data.identity));
+        const c = core.characters.get(data.identity);
+        const interesting = isOfInterest(c);
         if (interesting) {
             const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
             await addEventMessage(message);
 
-            const should_notify = (shouldNotifyOnFriendLogin()   && core.characters.friendList.includes(data.identity))
-                               || (shouldNotifyOnBookmarkLogin() && core.characters.bookmarkList.includes(data.identity));
+            const should_notify = shouldNotifyOnFriendLogin()   && c.isFriend
+                               || shouldNotifyOnBookmarkLogin() && c.isBookmarked;
             if (should_notify) {
                 await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), core.characters.getImage(data.identity), 'silence');
             }

@@ -124,7 +124,7 @@ export default class Data extends Vue {
      */
 
     @Prop({ required: false })
-    conversation: Conversation | undefined;
+    readonly conversation: Conversation | undefined;
 
     convoIsPrivate  = Conversation.isPrivate;
     convoIsChannel  = Conversation.isChannel;
