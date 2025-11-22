@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Character, CharacterMemo } from '../../site/character_page/interfaces';
+import { Character as CharacterApiResponse, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Settings } from '../interfaces';
 import { SmartFilterSettings } from '../../learn/filter/types';
 import { Conversation, Character as ChatCharacter } from '../interfaces';
+import { Character as CharacterState } from '../../fchat/interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
 import { GeneralSettings } from '../../electron/common';
-
-// import NewLogger from '../helpers/log';
-// const log = NewLogger('event-bus');
 
 export interface EmptyEvent {}
 
@@ -57,7 +55,7 @@ export interface CharacterScoreEvent extends CharacterDataEvent {
 }
 
 export interface CharacterDataEvent {
-    profile: Character;
+    profile: CharacterApiResponse;
 }
 
 export interface ActivityEvent {
@@ -66,7 +64,7 @@ export interface ActivityEvent {
 }
 
 export interface ActivityStatusEvent extends ActivityEvent {
-    status:       string;
+    status:       CharacterState.Status;
     statusmsg:    string;
     oldStatus:    string;
     oldStatusMsg: string;
@@ -121,7 +119,7 @@ class EventBusManager {
     $on(event: 'activity-friend-login'
              | 'activity-friend-logout'
              | 'activity-bookmark-login'
-             | 'activity-bookmark-logout',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
+             | 'activity-bookmark-logout',  callback: (e: ActivityEvent) => void | Promise<void>): void;
     $on(event: 'activity-friend-status'
              | 'activity-bookmark-status',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
     $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;

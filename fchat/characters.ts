@@ -242,29 +242,29 @@ class State implements Interfaces.State {
      * @param text new status message; `character.statusText` is the old status message.
      * @param date date if received from date-based event (server message, for example)
      */
-    setStatus(character: Character, status: Interfaces.Status, text: string, date?: Date): void {
+    setStatus(character: Character, newStatus: Interfaces.Status, text: string, date?: Date): void {
         if (character.isFriend) {
-            if (character.status === 'offline' && status !== 'offline') {
+            if (character.status === 'offline' && newStatus !== 'offline') {
                 this.friends.push(character);
 
                 if (date)
                     EventBus.$emit('activity-friend-login', { character, date });
             }
-            else if (character.status !== 'offline' && status === 'offline') {
+            else if (character.status !== 'offline' && newStatus === 'offline') {
                 const i = this.friends.indexOf(character);
                 if (i >= 0) this.friends.splice(i, 1);
 
                 if (date)
                     EventBus.$emit('activity-friend-logout', { character, date });
             }
+            else if (date) {
+                // Cache in case our listeners are async.
+                const old_status     = character.status;
+                const old_status_msg = character.statusText;
 
-            // Cache in case our listeners are async.
-            const old_status     = character.status;
-            const old_status_msg = character.statusText;
-            if (date) {
                 EventBus.$emit('activity-friend-status', {
                     character,
-                    status,
+                    status:       newStatus,
                     statusmsg:    text,
                     oldStatus:    old_status,
                     oldStatusMsg: old_status_msg,
@@ -273,27 +273,27 @@ class State implements Interfaces.State {
             }
         }
         else if (character.isBookmarked) {
-            if (character.status === 'offline' && status !== 'offline') {
+            if (character.status === 'offline' && newStatus !== 'offline') {
                 this.bookmarks.push(character);
 
                 if (date)
                     EventBus.$emit('activity-bookmark-login', { character, date });
             }
-            else if (character.status !== 'offline' && status === 'offline') {
+            else if (character.status !== 'offline' && newStatus === 'offline') {
                 const i = this.bookmarks.indexOf(character);
                 if (i >= 0) this.bookmarks.splice(i, 1);
 
                 if (date)
                     EventBus.$emit('activity-bookmark-logout', { character, date });
             }
+            else if (date) {
+                // Cache in case our listeners are async.
+                const old_status     = character.status;
+                const old_status_msg = character.statusText;
 
-            // Cache in case our listeners are async.
-            const old_status     = character.status;
-            const old_status_msg = character.statusText;
-            if (date) {
                 EventBus.$emit('activity-bookmark-status', {
                     character,
-                    status,
+                    status:       newStatus,
                     statusmsg:    text,
                     oldStatus:    old_status,
                     oldStatusMsg: old_status_msg,
@@ -302,7 +302,7 @@ class State implements Interfaces.State {
             }
         }
 
-        character.status = status;
+        character.status = newStatus;
         character.statusText = decodeHTML(text);
     }
 

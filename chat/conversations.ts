@@ -627,12 +627,12 @@ class ActivityConversation extends Conversation {
         this._settings.highlight = Interfaces.Setting.False;
         this._settings.defaultHighlights = false;
 
-        EventBus.$on('activity-friend-login',    e => this.handleLogin({ e: 'EBE', ...e }));
-        EventBus.$on('activity-friend-logout',   e => this.handleLogout({ e: 'EBE', ...e }));
-        EventBus.$on('activity-friend-status',   e => this.handleStatus({ e: 'EBE', ...e }));
-        EventBus.$on('activity-bookmark-login',  e => this.handleLogin({ e: 'EBE', ...e }));
-        EventBus.$on('activity-bookmark-logout', e => this.handleLogout({ e: 'EBE', ...e }));
-        EventBus.$on('activity-bookmark-status', e => this.handleStatus({ e: 'EBE', ...e }));
+        EventBus.$on('activity-friend-login',    e => this.handleLogin({ e: 'EBL', ...e }));
+        EventBus.$on('activity-friend-logout',   e => this.handleLogout({ e: 'EBL', ...e }));
+        EventBus.$on('activity-friend-status',   e => this.handleStatus({ e: 'EBS', ...e }));
+        EventBus.$on('activity-bookmark-login',  e => this.handleLogin({ e: 'EBL', ...e }));
+        EventBus.$on('activity-bookmark-logout', e => this.handleLogout({ e: 'EBL', ...e }));
+        EventBus.$on('activity-bookmark-status', e => this.handleStatus({ e: 'EBS', ...e }));
     }
 
     //override messages: Array<Interfaces.Message | undefined> = [];
@@ -694,14 +694,21 @@ class ActivityConversation extends Conversation {
      * Heuristics
      * Unused yet. Useful to check custom statuses if showing all custom statuses doesn't work.
      */
-    protected readonly ignoreKeywords = [ "work", "busy", "away", "idle" ];
-    protected readonly preferKeywords = [ "looking", "want", "new", "you" ];
+    protected readonly ignoreKeywords = [ "at work", "working", "busy", "away", "not here", "idle" ];
+    protected readonly preferKeywords = [ "looking for", "want", "new", "you" ];
 
-    protected updateDisplay(addedAny?: boolean): void {
+    protected updateDisplay(addedAny?: boolean, elevateAlertLevel?: boolean): void {
         this.messages = this._messages.filter((m): m is Interfaces.Message => m !== undefined); // webpack ts
 
-        if (addedAny && this !== state.selectedConversation || !state.windowFocused)
-            this.unread = Interfaces.UnreadState.Unread;
+        if (addedAny && this !== state.selectedConversation || !state.windowFocused) {
+            if (!this.messages.length) // needs better detection.
+                this.unread = Interfaces.UnreadState.None;
+            else if (elevateAlertLevel)
+                this.unread = Interfaces.UnreadState.Mention;
+            else
+                this.unread = Interfaces.UnreadState.Unread;
+        }
+
     }
 
     /**
@@ -721,6 +728,7 @@ class ActivityConversation extends Conversation {
                 const m = this._messages[i];
                 if (!m) { // mystery orphan, use it
                     map.delete(name);
+                    logA.debug('ActivityConversation.freeSlot.orphan', name, i);
                     return i;
                 }
 
@@ -737,13 +745,17 @@ class ActivityConversation extends Conversation {
                 const i = map.get(oldestKey);
                 map.delete(oldestKey);
 
+                logA.debug('ActivityConversation.freeSlot.oldestKey', oldestKey, i);
+
                 // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
                 if (i !== undefined) // bad TS check; it exists
                     return i;
             }
         }
          else { // not full - find existing undefined slot; use default is there isn't one.
+                // if removeCharacter just ran, this is at least going to find that empty slot.
             const i = this._messages.findIndex(e => !e);
+            logA.debug('ActivityConversation.freeSlot.unsaturated', i);
             if (i !== -1)
                 return i;
         }
@@ -752,26 +764,32 @@ class ActivityConversation extends Conversation {
     }
 
     /**
-     * Remove a character from the map and return a free slot if one was freed; or the end of the messages array if one wasn't.
+     * Remove a character from the map and return a free slot if one was freed; null otherwise.
      * @param name Character name to look for in the maps.
-     * @returns index of slot in `_messages` that's now undefined; or end of array if no free slot.
+     * @returns index of slot in `_messages` that's now undefined; null if a character wasn't removed.
      */
-    protected removeCharacter(name: string): number {
+    protected removeCharacter(name: string): number | null {
+        logA.debug('ActivityConversation.removeCharacter.start', name);
+
         // For an entry in each of the groups, use the entry to remove the message from messages[];
         const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name) ?? this.returned.get(name);
 
         [ this.login, this.status, this.looking, this.returned ]
             .forEach(map => map.delete(name));
 
-        if (i === undefined)
-            return this._messages.length;
-
-        this._messages[i] = undefined;
-        return i;
+        if (i === undefined) {
+            logA.debug('ActivityConversation.removeCharacter.none');
+            return null;
+        }
+        else {
+            logA.debug('ActivityConversation.removeCharacter.found', i, this._messages[i]);
+            this._messages[i] = undefined;
+            return i;
+        }
     };
 
     protected isTracked(name: string): boolean {
-        return this.login.has(name) ?? this.status.has(name) ?? this.looking.has(name);
+        return this.login.has(name) ?? this.status.has(name) ?? this.looking.has(name) ?? this.returned.has(name);
     }
 
     protected isHere(status: Character.Status): status is 'online' | 'looking' | 'crown' {
@@ -779,85 +797,45 @@ class ActivityConversation extends Conversation {
     }
 
     // Login is any status change with the character 'offline' but the status 'online'.
-    protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
-        if (activity.character.isFriend || activity.character.isBookmarked) { // expanded to bookmarks for now.
-            //let index = this._messages.length;
-            // Eviction
-            // if (this.login.size >= this.MAX_LOGINS) {
-            //     let oldestKey: string | undefined;
-            //     let oldestTime: number | undefined;
-
-            //     for (const [name, i] of this.login.entries()) {
-            //         const m = this._messages[i];
-            //         if (!m) { // Error: key with no message - fine, use it.
-            //             this.login.delete(name);
-            //             index = i;
-            //             break;
-            //         }
-
-            //         const this_time = m.time.getTime();
-            //         if (oldestTime === undefined || this_time < oldestTime) {
-            //             logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
-
-            //             oldestTime = this_time;
-            //             oldestKey = name;
-            //         }
-            //     }
-
-            //     if (oldestKey) {
-            //         const i = this.login.get(oldestKey);
-            //         this.login.delete(oldestKey);
-
-            //         // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
-            //         if (i !== undefined) // This awful TS check
-            //             index = i;
-            //     }
-            // }
-            // else { // find existing undefined slot, or just push if there isn't one.
-            //     const i = this._messages.findIndex(e => !e);
-            //     if (i !== -1)
-            //         index = i;
-            // }
-
-            //const index = this.getEmptySlot(this.login, this.MAX_LOGINS);
-            logA.debug('ActivityConversation.handleLogin.start.friend');
+    protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+        const c = activity.character;
+        if (c.isFriend || c.isBookmarked) { // expanded to bookmarks for now.
+            logA.debug('ActivityConversation.handleLogin.start.friend', c.name);
 
             // Clear a spot.
-            const index = this.removeCharacter(activity.character.name);
-            this.freeSlot(this.login, this.MAX_LOGINS);
+            const index = this.removeCharacter(c.name);
+            const index2 = this.freeSlot(this.login, this.MAX_LOGINS); // This does not remove properly.
 
             // add index to login map.
-            this.login.set(activity.character.name, index);
-            const message = new EventMessage(l('events.login', `[user]${activity.character.name}[/user]`), activity.date);
-            this._messages[index] = message;
+            this.login.set(c.name, index ?? index2);
+            const message = new EventMessage(l('events.login', `[user]${c.name}[/user]`), activity.date);
+            this._messages[index ?? index2] = message;
 
             this.updateDisplay(true);
+            // c.isFriend && shouldNotifyOnFriendLogin() || c.isBookmarked && shouldNotifyOnBookmarkLogin()
 
             logA.debug('ActivityConversation.handleLogin.postAdd', {
-                name: activity.character.name,
-                index,
-                messages: this._messages,
+                name: c.name,
+                index: index ?? index2,
+                loginEntries: [ ...this.login.entries() ].map(e => `${e[0]}->${e[1]}`),
             });
         }
         else { // bookmark; don't log logins.
-            logA.debug('ActivityConversation.handleLogin.start.bookmark');
+            logA.debug('ActivityConversation.handleLogin.start.unused');
             return;
         }
     }
 
     // Logout is any status change with the character 'online' but the status 'offline'.
-    protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
-        if (this.isTracked(activity.character.name)) {
-            logA.debug('ActivityConversation.handleLogout.tracked', {
-                name:      activity.character.name,
-                status:    activity.status,
-                oldStatus: activity.oldStatus,
-            });
+    protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+        logA.debug('ActivityConversation.handleLogout.tracked', {
+            name: activity.character.name,
+            x:    activity.date
+        });
 
-            this.removeCharacter(activity.character.name);
+        this.removeCharacter(activity.character.name);
 
-            this.updateDisplay();
-        }
+        this.updateDisplay();
     }
 
     /**
@@ -867,83 +845,84 @@ class ActivityConversation extends Conversation {
      * 3. Set looking status. add to `this.looking`.
      * 4. Set custom message. add to `this.status`.
      */
-    protected async handleStatus(activity: Interfaces.ActivityContext & { e: 'EBE' }): Promise<void> {
-        const index = this.removeCharacter(activity.character.name);
-
+    protected async handleStatus(activity: Interfaces.ActivityContext & { e: 'EBS' }): Promise<void> {
         let target_map: Map<string, number> | undefined;
+        let target_max: number | undefined;
         let message: Interfaces.Message | undefined;
 
         // bucket
         if (activity.statusmsg && [ 'online', 'crown', 'looking' ].includes(activity.status)) {
+            logA.debug('ActivityConversation.handleStatus.status');
+
             target_map = this.status;
+
             message = new EventMessage(
-                l('events.activity.custom', `[user]${activity.character.name}[/user]: ${activity.statusmsg}`),
+                l(activity.statusmsg ? 'events.status.message' : 'events.status',
+                    `[user]${activity.character.name}[/user]`,
+                    l(`status.${activity.status}`),
+                    decodeHTML(activity.statusmsg)
+                ),
                 activity.date
             );
         }
         else if (activity.status === 'looking') {
+            logA.debug('ActivityConversation.handleStatus.looking');
+
             target_map = this.looking;
+            target_max = this.MAX_LOOKING;
+
             message = new EventMessage(
-                l('events.activity.look', `[user]${activity.character.name}[/user]`),
+                l(activity.statusmsg ? 'events.status.message' : 'events.status',
+                    `[user]${activity.character.name}[/user]`,
+                    l(`status.${activity.status}`),
+                    decodeHTML(activity.statusmsg)
+                ),
                 activity.date
             );
-
-            this.freeSlot(target_map, this.MAX_LOOKING);
         }
         else if ([ 'away', 'busy', 'dnd' ].includes(activity.oldStatus)
               && [ 'online', 'crown' ].includes(activity.status)) {
+            logA.debug('ActivityConversation.handleStatus.returned');
+
             target_map = this.returned;
+            target_max = this.MAX_RETURNED;
+
             message = new EventMessage(
-                l('events.activity.return', `[user]${activity.character.name}[/user]`),
+                l(activity.statusmsg ? 'events.status.message' : 'events.status',
+                    `[user]${activity.character.name}[/user]`,
+                    l(`status.${activity.status}`),
+                    decodeHTML(activity.statusmsg)
+                ),
                 activity.date
             );
-
-            this.freeSlot(target_map, this.MAX_RETURNED);
+        }
+        else if (activity.oldStatus === activity.status) {
+            // online -> online frequently seen for some logins.
+            // above we already capture "status === looking" and "here w/statusmsg"
+            return;
         }
         else {
+            logA.debug('ActivityConversation.handleStatus.shouldntBeHitbyLogin', {
+                name:      activity.character.name,
+                status:    activity.status,
+                oldStatus: activity.oldStatus,
+            });
+            this.removeCharacter(activity.character.name);
             this.updateDisplay(); // removed
             return; // Other status changes shouldn't be received here.
         }
 
-        target_map.set(activity.character.name, index);
-        this._messages[index] = message;
+        const index =  this.removeCharacter(activity.character.name);
+        const index2 = this.freeSlot(target_map, target_max);
+
+        target_map.set(activity.character.name, index ?? index2);
+        this._messages[index ?? index2] = message;
 
         this.updateDisplay(true);
     }
 
-    async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {}
-    //     const { e, data } = activity;
-    //     log.debug(`conversations.ActivityConversation.activity: ${e}:`, data);
-
-    //     // If this.trackedCharacters.get(character), check for removal conditions. (offline, dnd, or busy)
-    //     const not_here     = e === 'STA' && !this.isHere(data.status);
-    //     const went_offline = e === 'FLN';
-    //     if ((not_here || went_offline) && this.isTracked(data.character)) {
-    //         // @ts-ignore webpack ts :)
-    //         this.removeCharacter(data.character);
-    //         return;
-    //     }
-
-    //     // else check for watch conditions
-    //     else if (e === 'NLN') {
-    //         // user login event...
-    //         // Add to logins,
-    //         // Remove oldest login.
-    //     }
-    //     else if (e === 'STA' && this.isHere(data.status)) {
-    //         // const character = core.characters.get(data.character);
-
-    //         // Three types of status:
-    //         // shows up from dnd/afk/etc
-    //         //
-
-    //         if (data.statusmsg) {
-    //             // Status message:
-    //         }
-    //         // No message but arrived; now lets make distinct looking and here.
-
-    //     }
-    // };
+    async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {
+    }; // placeholder; not yet needed
 
     // Noop placeholder
     async addMessage(_message: Interfaces.Message): Promise<void> {}

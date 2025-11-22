@@ -5,13 +5,16 @@ import {Channel, Character} from '../fchat/interfaces';
 import { AdManager } from './ads/ad-manager';
 import { SmartFilterSettings } from '../learn/filter/types';
 export {Connection, Channel, Character} from '../fchat/interfaces';
+/**
+ * User statuses are specifically the statuses that users can set for themselves via UIs and alash commands.
+ */
 export const userStatuses: ReadonlyArray<Character.Status> = ['online', 'looking', 'away', 'busy', 'dnd'];
 export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both'];
 import { Ad } from './ads/ad-center';
 import { GeneralSettings } from '../electron/common';
 import { LocalizationKey } from './localize';
 import type Modal from '../components/Modal.vue';
-import type { ActivityStatusEvent } from './preview/event-bus';
+import type { ActivityEvent, ActivityStatusEvent } from './preview/event-bus';
 
 export namespace Relation {
     export enum Chooser {
@@ -72,9 +75,8 @@ export namespace Conversation {
 
     export type ActivityContext =
         | { e?: undefined; data?: undefined; time?: Date }
-        | {
-            e: 'EBE';
-        } & ActivityStatusEvent
+        | { e: 'EBL'; } & ActivityEvent
+        | { e: 'EBS'; } & ActivityStatusEvent
         | {
             [K in keyof Connection.ServerCommands]: {
                 e: K;
