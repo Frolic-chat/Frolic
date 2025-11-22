@@ -68,12 +68,13 @@
         open()  { this.toggle(false) }
         close() { this.toggle(true)  }
 
-        toggle(state?: boolean) {
+        toggle(state?: boolean, emitSignal: boolean = true) {
             clearTimeout(this.timeout);
 
             this.collapsed = state !== undefined ? state : !this.collapsed;
 
-            this.$emit(this.collapsed ? 'close' : 'open');
+            if (emitSignal)
+                this.$emit(this.collapsed ? 'close' : 'open');
 
             if (this.collapsed) {
                 this.style.transition = 'initial';
