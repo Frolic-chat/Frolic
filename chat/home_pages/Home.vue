@@ -20,9 +20,7 @@
             </div>
 
             <div class="d-flex flex-row"><!-- Second row -->
-                <div v-show="widgets.activity" class="chat-container ml-auto">
-                    <slot name="chat"></slot>
-                </div>
+                <slot name="chat"></slot>
             </div>
 
             <widget-options ref="widgetOptionsModal"></widget-options>

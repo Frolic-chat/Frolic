@@ -48,7 +48,12 @@
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
     >
         <template v-slot:chat>
-            <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
+            <collapse v-show="shouldShowActivity" class="chat-container" :state="false" bodyClass="p-0">
+                <template v-slot:header>
+                    Recent Activity
+                </template>
+                <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
+            </collapse>
         </template>
         <!-- Logs? -->
         <!-- License -->
@@ -143,6 +148,7 @@ import HomePageLayout from './home_pages/HomePageLayout.vue';
 import Home from './home_pages/Home.vue';
 import Data from './home_pages/Data.vue';
 import ConversationView from './ConversationPage.vue';
+import Collapse from '../components/collapse.vue';
 import Personality from './home_pages/Personalization.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
@@ -166,10 +172,12 @@ const logC = NewLogger('conversation');
 
         home: Home,
         page: HomePageLayout,
-        'data-page': Data,
+
+        'data-page':      Data,
+        'personality':    Personality,
 
         'convo':          ConversationView,
-        'personality':    Personality,
+        'collapse':       Collapse,
         'char-settings':  Settings,
         'convo-settings': ConversationSettings,
         /*
@@ -270,6 +278,8 @@ export default class HomeScreen extends Vue {
 
     primaryView!:  ConversationView;
     secondaryView: ConversationView | undefined;
+
+    get shouldShowActivity() { return !!this.activityTab.messages.length }
 
     @Hook('created')
     created() {}
