@@ -389,14 +389,14 @@ export const genderToKinkMap: GenderKinkIdMap = {
     // Bonus genders!?!
     [Gender.Transman]:    Kink.TransMales,
     [Gender.Transwoman]:  Kink.TransFemales,
-    [Gender.Nonbinary]:   Kink.Nonbinary, //  712,
-    [Gender.Androgynous]: Kink.Androgynous, //  586,
-    [Gender.Femboy]:      Kink.Femboy,   // 531,
-    [Gender.Tomboy]:      Kink.Tomboy,  // 532,
-    [Gender.Feminine]:    Kink.Feminine,  // 592,
-    [Gender.Masculine]:   Kink.Masculine,  // 597,
+    [Gender.Nonbinary]:   Kink.Nonbinary,   // 712,
+    [Gender.Androgynous]: Kink.Androgynous, // 586,
+    [Gender.Femboy]:      Kink.Femboy,      // 531,
+    [Gender.Tomboy]:      Kink.Tomboy,      // 532,
+    [Gender.Feminine]:    Kink.Feminine,    // 592,
+    [Gender.Masculine]:   Kink.Masculine,   // 597,
 
-    [Gender.None]:        Kink.None, // Source: I made it up.
+    [Gender.None]:        Kink.None,        // Source: I made it up.
 };
 
 export const kinkToGenderMap: Partial<KinkIdGenderMap> = {
@@ -411,14 +411,14 @@ export const kinkToGenderMap: Partial<KinkIdGenderMap> = {
     // Bonus genders!?!
     [Kink.TransMales]:   Gender.Transman,
     [Kink.TransFemales]: Gender.Transwoman,
-    [Kink.Nonbinary]:    Gender.Nonbinary, //  712,
-    [Kink.Androgynous]:  Gender.Androgynous, //  586,
-    [Kink.Femboy]:       Gender.Femboy,   // 531,
-    [Kink.Tomboy]:       Gender.Tomboy,  // 532,
-    [Kink.Feminine]:     Gender.Feminine,  // 592,
-    [Kink.Masculine]:    Gender.Masculine,  // 597,
+    [Kink.Nonbinary]:    Gender.Nonbinary,   // 712,
+    [Kink.Androgynous]:  Gender.Androgynous, // 586,
+    [Kink.Femboy]:       Gender.Femboy,      // 531,
+    [Kink.Tomboy]:       Gender.Tomboy,      // 532,
+    [Kink.Feminine]:     Gender.Feminine,    // 592,
+    [Kink.Masculine]:    Gender.Masculine,   // 597,
 
-    [Kink.None]:         Gender.None, // Source: I made it up.
+    [Kink.None]:         Gender.None,        // Source: I made it up.
 };
 
 export const genderKinkStringMap: { [k in Kink]?: [ string, string ] } = {
