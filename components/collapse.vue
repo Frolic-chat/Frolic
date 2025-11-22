@@ -10,7 +10,7 @@
             </div>
             <div :style="headerEndStyle" class="input-group-append flex-shrink-0 border-0 header-button-container-container">
                 <div :style="headerEndStyle" class="input-group-text btn p-0 border-0 header-button-container"> <!-- keep border-left -->
-                    <a href="#" @click.prevent="btnClick" :class="btnClass" class="btn justify-content-around h-100 d-flex flex-column border-0">
+                    <a href="#" @click.prevent="btnClick" :class="btnClass" class="btn justify-content-around h-100 d-flex flex-column border-0" :style="buttonEndStyle">
                         <slot name="button"></slot>
                     </a>
                 </div>
@@ -64,6 +64,7 @@
 
         get headerStartStyle() { return this.collapsed ? '' : 'border-bottom-left-radius:0;'  }
         get headerEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
+        get buttonEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
 
         open()  { this.toggle(false) }
         close() { this.toggle(true)  }
