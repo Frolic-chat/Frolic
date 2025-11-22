@@ -79,7 +79,7 @@
     import Vue from 'vue';
 
     import NewLogger from '../../helpers/log';
-    const log = NewLogger('cahracter_sheet');
+    const log = NewLogger('character-sheet');
 
     import {StandardBBCodeParser} from '../../bbcode/standard';
     import {BBCodeView} from '../../bbcode/view';
