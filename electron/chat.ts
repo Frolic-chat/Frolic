@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
- * @license AGPL-3.0-or-later
+ * @license
  * This file is part of Frolic!
  * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
  *

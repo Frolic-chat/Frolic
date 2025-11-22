@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import Vue from 'vue';
 import {queuedJoin} from '../fchat/channels';
 import {decodeHTML} from '../fchat/common';
