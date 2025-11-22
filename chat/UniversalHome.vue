@@ -36,6 +36,7 @@
 
     <!-- Pseudo-teleport -->
     <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
+        :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
         :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
         :class="isHome ? '' : 'page'"
            :id="isHome ? '' : 'home'"
@@ -43,7 +44,9 @@
     ></convo>
 
     <!-- home page -->
-    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home" @navigate="handleNavigation">
+    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
+        :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
+    >
         <template v-slot:chat>
             <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
         </template>
@@ -56,16 +59,26 @@
     <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
 
     <!-- console -->
-    <convo v-if="secondaryConversation" v-show="tab === '1'" class="page" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation" :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" role="tabpanel"></convo>
+    <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
+        class="page" role="tabpanel"
+        :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
+        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
+    ></convo>
 
-    <page v-else v-show="tab === '1'" role="tabpanel" class="page" id="linked-conversation"></page>
+    <page v-else v-show="tab === '1'" id="linked-conversation" role="tabpanel" class="page"
+        :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
+    ></page>
 
     <keep-alive>
     <!-- Personality -->
-    <personality v-if="isHome" v-show="tab === '2'" role="tabpanel" class="page" id="recon"></personality>
+    <personality v-if="isHome" v-show="tab === '2'" id="recon" role="tabpanel" class="page"
+        :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+    ></personality>
 
     <!-- Channel description -->
-    <page v-else-if="isChannel" v-show="tab === '2'">
+    <page v-else-if="isChannel" v-show="tab === '2'"
+        :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+    >
         <template v-if="primaryDescription">
             <bbcode :text="primaryDescription"></bbcode>
         </template>
@@ -79,7 +92,9 @@
     </page>
 
     <!-- Recon -->
-    <page v-else-if="isPrivate" v-show="tab === '2'">
+    <page v-else-if="isPrivate" v-show="tab === '2'"
+        :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+    >
         This is where recon goes. :)
         - Last spoken to (last message?)
         - Last note exchange. Write new note? Memo writer.
@@ -88,9 +103,13 @@
     </keep-alive>
 
     <!-- Settings -->
-    <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"></char-settings>
+    <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"
+        :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
+    ></char-settings>
 
-    <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings">
+    <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings"
+        :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
+    >
         <!-- header -->
         <convo-settings :conversation="primaryConversation"></convo-settings>
         <template v-if="secondaryConversation">
@@ -99,7 +118,9 @@
         </template>
     </page>
 
-    <data-page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data" :conversation="conversation">
+    <data-page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data" :conversation="conversation"
+        :navigationRequest="navRequestData.tab === '4' && navRequestData" @navigate="handleNavigation"
+    >
         <template v-slot:title>
             Data for {{ isHome ? 'Frolic' : conversation.name }}
         </template>
@@ -318,6 +339,8 @@ export default class HomeScreen extends Vue {
         }
     };
 
+    navRequestData: { tab: string, conversation?: any, section: any } = { tab: '-1', section: '' };
+
     /**
      * Home-page navigation expects this structure:
      * ```ts
@@ -336,13 +359,18 @@ export default class HomeScreen extends Vue {
         if (typeof e !== 'object') return;
         if (!e)                    return;
 
+        const nrd = { tab: '-1', section: '' };
+
         if (typeof e.tab === 'number' && e.tab <= 4) {
             this.tab = e.tab.toString();
+            nrd.tab = this.tab;
         }
         else if (typeof e.tab === 'string') {
             const n = getAsNumber(e.tab);
-            if (n && n <= 4)
+            if (n && n <= 4) {
                 this.tab = e.tab.toString();
+                nrd.tab = this.tab;
+            }
         }
 
         if (e.conversation && typeof e.conversation === 'object') {
@@ -364,7 +392,12 @@ export default class HomeScreen extends Vue {
                     if (el) el.scrollIntoView({ behavior: "smooth" });
                 });
             });
+
+            nrd.section = e.section;
         }
+
+        if (nrd.tab !== '-1')
+            this.navRequestData = nrd;
     }
 
     /**

@@ -50,15 +50,19 @@
 
             <!-- License -->
             <div v-if="isHome" id="frolic-licenses" class="card modal-content d-flex flex-column">
-                <collapse bodyClass="d-flex flex-column user-select-auto">
+                <collapse bodyClass="d-flex flex-column user-select-auto"
+                    :state="licenseCollapsed" @open="licenseCollapsed = false" @close="licenseCollapsed = true"
+                >
                     <template v-slot:header>
                         Applicable Licenses
                     </template>
-                    <template v-slot:default style="user-select: text;">
-                        <p class="card-text">Frolic! Copyright <span class="fa-regular fa-copyright" style="position:relative; bottom:-1px;"></span> 2025 <a style="text-primary" href="https://github.com/FireUnderTheMountain">Fire Under the Mountain</a></p>
-                        <p class="card-text">Frolic is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
-                        <p class="card-text">Frolic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.</p>
-                        <p class="card-text">You should have received a copy of the GNU Affero General Public License along with this program; if not, see https://www.gnu.org/licenses.</p>
+                    <template v-slot:default>
+                        <div style="user-select:text;">
+                            <p class="card-text">Frolic! Copyright <span class="fa-regular fa-copyright" style="position:relative; bottom:-1px;"></span> 2025 <a style="text-primary" href="https://github.com/FireUnderTheMountain">Fire Under the Mountain</a></p>
+                            <p class="card-text">Frolic is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
+                            <p class="card-text">Frolic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.</p>
+                            <p class="card-text">You should have received a copy of the GNU Affero General Public License along with this program; if not, see https://www.gnu.org/licenses.</p>
+                        </div>
                         <div v-if="licenseFiles.length" class="btn-group-vertical mx-auto my-2" role="group" aria-label="license information">
                             <button v-for="f in licenseFiles" :key="f" class="btn btn-primary" @click="loadLicense(f)">
                                 {{ f }}
@@ -96,7 +100,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Hook } from '@f-list/vue-ts';
+import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import Collapse from '../../components/collapse.vue';
@@ -185,6 +189,21 @@ export default class Data extends Vue {
         }
         finally {
             this.loading_a_license = false;
+        }
+    }
+
+    @Prop({ default: false })
+    readonly navigationRequest!: { tab: string, conversation?: any, section: any };
+
+    licenseCollapsed = false;
+
+    @Watch('navigationRequest')
+    onNavigationRequest() {
+        if (!this.navigationRequest)
+            return;
+
+        if (this.navigationRequest.section === 'frolic-licenses') {
+            this.licenseCollapsed = false;
         }
     }
 }

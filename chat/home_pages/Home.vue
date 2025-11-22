@@ -66,7 +66,7 @@ export default class Home extends Vue {
         this.$emit("navigate", {
             conversation: null, // set selectedConversation to this.
             tab: 4,             // set tab to this.
-            section: 'license', // try to find id named this in the page and scroll to it.
+            section: 'frolic-licenses', // try to find id named this in the page and scroll to it.
         });
     }
 }
