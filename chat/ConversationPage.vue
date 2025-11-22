@@ -3,7 +3,7 @@
 <page ref="pageLayout"
     :body-classes="'conversation'"
     :prescroll-classes="'header d-flex flex-column'"
-    :scrollcage-classes="'messages ' + getMessageWrapperClasses()"
+    :scrollcage-classes="[ 'messages ', getMessageWrapperClasses() ]"
     :postscroll-classes="'input'"
 >
     <template v-slot:prescroll>
