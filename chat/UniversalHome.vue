@@ -519,26 +519,6 @@ export default class HomeScreen extends Vue {
             // If the tab has custom show() functionality...
             if ('show' in target && typeof target.show === 'function')
                 target.show();
-
-            // ... and second, the contents.
-            // if (this.tabNum === 0) {
-            //     if (this.isHome) {
-            //         if (this.conversation !== this.primaryConversation)
-            //             this.primaryConversation.show();
-            //     }
-            //     else {
-            //         if (this.primaryConversation !== this.activityTab)
-            //             this.primaryView.textBox.focus();
-            //     }
-            // }
-            // else if (this.tabNum === 1) {
-            //     if (this.isHome) {
-            //         if (this.secondaryConversation && this.conversation !== this.secondaryConversation)
-            //             this.secondaryConversation.show();
-            //     }
-
-            //     this.secondaryView?.textBox.focus();
-            // }
         });
     }
 

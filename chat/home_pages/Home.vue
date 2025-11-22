@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<page>
+<page prescrollClasses="p-2" scrollcageClasses="px-2" postscrollClasses="px-2 py-0">
     <template v-slot:prescroll>
         <div class="d-flex justify-content-between">
             <span class="align-self-center">Welcome Home!</span>

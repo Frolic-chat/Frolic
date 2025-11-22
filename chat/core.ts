@@ -193,6 +193,7 @@ export function init(this: any,
             if (oldValue.notifications !== newValue.notifications)
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
+            // Not working?
             if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilters)) {
                 logS.debug('risingFilter in _settings changed.', newValue.risingFilter);
 

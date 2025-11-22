@@ -85,10 +85,6 @@ export default class HomePageLayout extends Vue {
     border:  none !important;
 }
 
-.prescroll {
-    padding-top: 10px;
-}
-
 .scroll-cage:empty {
     padding: 0    !important;
     margin:  0    !important;
@@ -104,9 +100,5 @@ export default class HomePageLayout extends Vue {
     padding: 0    !important;
     margin:  0    !important;
     border:  none !important;
-}
-
-.postscroll {
-    padding-bottom: 10px;
 }
 </style>
