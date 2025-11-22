@@ -36,8 +36,8 @@ export class IndexedStore implements PermanentIndexedStore {
     }
 
     static async open(dbName: string = 'flist-ascending-profiles'): Promise<IndexedStore> {
-        // v4+ = Frolic
-        const request = indexedDB.open(dbName, 4);
+        // v3 = last Rising version
+        const request = indexedDB.open(dbName, 3);
 
         request.onupgradeneeded = async event => {
             const db = request.result;
@@ -46,9 +46,21 @@ export class IndexedStore implements PermanentIndexedStore {
                 db.createObjectStore(IndexedStore.STORE_NAME, { keyPath: 'id' });
             }
 
-            // technically v4
+            // technically v4 "upgrade"
             if (!db.objectStoreNames.contains(IndexedStore.AUX_STORE_NAME)) {
                 db.createObjectStore(IndexedStore.AUX_STORE_NAME, { keyPath: 'id' });
+                const store = request.transaction!.objectStore(IndexedStore.AUX_STORE_NAME);
+
+                store.createIndex(
+                    IndexedStore.LAST_FETCHED_INDEX_NAME,
+                    'lastFetched', {
+                        unique: false,
+                        multiEntry: false
+                   }
+                );
+
+                // Upgrading Gender -> Gender[] in profile storage?
+                // Thankfully we don't need to; gender from the store isn't used anywhere, so we can only use new gender arrays and wait for cache expiry to remove the old ones. TIME solves all problems. :)
             }
 
             if (event.oldVersion < 2) {
@@ -69,24 +81,6 @@ export class IndexedStore implements PermanentIndexedStore {
                 const req = store.clear();
 
                 await promisifyRequest(req);
-            }
-
-            if (event.oldVersion < 4) {
-                const store = request.transaction!.objectStore(IndexedStore.AUX_STORE_NAME);
-
-                store.createIndex(
-                    IndexedStore.LAST_FETCHED_INDEX_NAME,
-                    'lastFetched', {
-                        unique: false,
-                        multiEntry: false
-                   }
-                );
-
-                // Upgrading Gender -> Gender[] in profile storage. Thankfully we don't actually need to do this; gender from the store isn't used anywhere, so we can only use new gender arrays and wait for cache expiry to remove the old ones.
-                // const profile_store = request.transaction!.objectStore(IndexedStore.AUX_STORE_NAME);
-                // const req = profile_store.clear();
-
-                // await promisifyRequest(req);
             }
         };
 
