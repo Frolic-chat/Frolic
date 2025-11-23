@@ -2,8 +2,14 @@
 <template>
 <page prescrollClasses="p-2" scrollcageClasses="px-2" postscrollClasses="px-2 py-0">
     <template v-slot:prescroll>
-        <div class="d-flex justify-content-between">
-            <span class="align-self-center">Welcome Home!</span>
+        <div class="d-flex align-items-center" style="gap: 0.5rem;">
+            <span class="mr-auto">Welcome Home!</span>
+            <span v-if="logs">
+                <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                    <span class="fa fa-file-alt"></span>
+                    <span class="btn-text">{{ logsTitle }}</span>
+                </a>
+            </span>
             <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
                 <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
                     <span class="fa-solid fa-screwdriver-wrench"></span>
@@ -43,14 +49,16 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component } from '@f-list/vue-ts';
+import { Component, Prop } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import WidgetOptions from './WidgetOptions.vue';
 
 import NewsWidget from './widgets/News.vue'
+import Logs from '../Logs.vue';
 
 import core from '../core';
+import l from '../localize';
 
 @Component({
     components: {
@@ -66,6 +74,14 @@ export default class Home extends Vue {
     openWidgetOptions() {
          (<WidgetOptions>this.$refs['widgetOptionsModal']).show();
     }
+
+
+    @Prop({ default: undefined })
+    readonly logs: Logs | undefined;
+
+    logsTitle = l('logs.title');
+    showLogs() { this.logs?.show() }
+
 
     openLicense() {
         this.$emit("navigate", {

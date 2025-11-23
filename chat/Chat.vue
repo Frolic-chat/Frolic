@@ -27,7 +27,7 @@
             <div class="alert alert-danger" v-show="error">{{error}}</div>
             {{l('chat.disconnected')}}
         </modal>
-        <logs ref="logsDialog"></logs>
+        <logs v-if="!connected" ref="logsDialog"></logs>
         <div v-if="version && !connected" style="position:absolute;bottom:0;right:0">{{version}}</div>
     </div>
 </template>

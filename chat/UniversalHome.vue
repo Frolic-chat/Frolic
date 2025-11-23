@@ -45,6 +45,7 @@
 
     <!-- home page -->
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
+        :logs="logs"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
     >
         <template v-slot:chat>
@@ -132,7 +133,7 @@
     </data-page>
 
     <!-- Modals for the conversation: -->
-    <logs         ref="logsDialog" :conversation="conversation"></logs>
+    <logs         ref="logsDialog" :conversation="logsConversation"></logs>
     <command-help ref="commandHelpDialog"></command-help>
     <!-- + reportDialog -->
 </div>
@@ -192,6 +193,12 @@ const logC = NewLogger('conversation');
 })
 export default class HomeScreen extends Vue {
     get conversation() { return core.conversations.selectedConversation }
+
+    get logsConversation() {
+        return this.primaryConversation === this.activityTab
+            ? this.consoleTab
+            : this.conversation;
+    }
 
     @Prop({ default: false })
     readonly activeConversationClicked: boolean = false;
@@ -298,6 +305,12 @@ export default class HomeScreen extends Vue {
         logC.debug('UniversalHome mounted.', {
             primaryConvo: this.primaryView?.conversation?.name,
             secondConvo:  this.secondaryView?.conversation?.name,
+        });
+
+        log.debug('UniversalHome.mounted.modals', {
+            logs:         this.logs,
+            commandHelp:  this.commandHelp,
+            // x-origin blocked: reportdialog: this.reportDialog,
         });
 
         this.moveConvo();
