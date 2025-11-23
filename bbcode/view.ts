@@ -14,8 +14,8 @@ export const BBCodeView = (parser: BBCodeParser): FunctionalComponentOptions<Def
                 if(context.props.afterInsert !== undefined) context.props.afterInsert(node.elm);
             },
             destroy(node: VNode): void {
-                const element = (<BBCodeElement>(<Element>node.elm).firstChild);
-                if(element.cleanup !== undefined) element.cleanup();
+                const element = (<BBCodeElement | undefined>(<Element>node.elm).firstChild);
+                if (element?.cleanup) element.cleanup();
             }
         };
         const vnode = createElement('span', context.data);
