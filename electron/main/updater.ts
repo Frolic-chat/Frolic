@@ -14,11 +14,11 @@ type ReleaseInfo = {
 
 // version -> changelog mapping
 const versions: {
-    current:  { version: string, changelog: string },
+    current:  { version: string, changelog: string, known: boolean },
     latest?:  { version: string, changelog: string },
     updateCount: number,
 } = {
-    current: { version: '', changelog: '' },
+    current: { version: '', changelog: '', known: false },
     updateCount: 0,
 };
 
@@ -51,6 +51,7 @@ export async function checkForGitRelease(currentSemver: string, url: string, bet
             versions.current = {
                 version:   currentSemver,
                 changelog: '',
+                known: false,
             };
 
             if (modern_versions.length) {
@@ -66,6 +67,7 @@ export async function checkForGitRelease(currentSemver: string, url: string, bet
             versions.current = {
                 version:   modern_versions[last].tag_name,
                 changelog: modern_versions[last].body,
+                known:     true,
             };
 
             log.verbose(`Using latest Frolic version: ${currentSemver}`);
@@ -75,6 +77,7 @@ export async function checkForGitRelease(currentSemver: string, url: string, bet
             versions.current = {
                 version:   modern_versions[our_index].tag_name,
                 changelog: modern_versions[our_index].body,
+                known:     true,
             };
 
             versions.latest = {

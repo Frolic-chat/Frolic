@@ -13,10 +13,13 @@
     </template>
 
     <template v-slot:default>
-        <div class="d-flex flex-column flex-nowrap">
+        <div class="d-flex flex-column flex-nowrap" style="gap: 1em;">
             <div class="d-flex flex-row"><!-- Top row -->
-                <!-- Changelog and update alert -->
-                <!-- Logs? -->
+
+            </div>
+
+            <div class="d-flex flex-row">
+                <news></news>
             </div>
 
             <div class="d-flex flex-row"><!-- Second row -->
@@ -45,12 +48,16 @@ import { Component } from '@f-list/vue-ts';
 import HomePageLayout from './HomePageLayout.vue';
 import WidgetOptions from './WidgetOptions.vue';
 
+import NewsWidget from './widgets/News.vue'
+
 import core from '../core';
 
 @Component({
     components: {
         'page': HomePageLayout,
         'widget-options': WidgetOptions,
+
+        'news': NewsWidget,
     },
 })
 export default class Home extends Vue {
