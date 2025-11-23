@@ -44,6 +44,7 @@
     ></convo>
 
     <!-- home page -->
+    <keep-alive>
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
         :logs="logs"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
@@ -53,16 +54,16 @@
                 <template v-slot:header>
                     Recent Activity
                 </template>
+                <template v-slot:button></template>
                 <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
             </collapse>
         </template>
-        <!-- Logs? -->
-        <!-- License -->
         <!-- Notes -->
         <!-- Drafts -->
     </home>
 
     <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
+    </keep-alive>
 
     <!-- console -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
@@ -164,7 +165,7 @@ import core from './core';
 import l from './localize';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('Home');
+const log = NewLogger('home');
 const logC = NewLogger('conversation');
 
 @Component({
@@ -302,7 +303,7 @@ export default class HomeScreen extends Vue {
 
         window.addEventListener('keydown', this.onKey);
 
-        logC.debug('UniversalHome mounted.', {
+        logC.debug('UniversalHome.mounted.conversation', {
             primaryConvo: this.primaryView?.conversation?.name,
             secondConvo:  this.secondaryView?.conversation?.name,
         });

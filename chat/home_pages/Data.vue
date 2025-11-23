@@ -50,7 +50,7 @@
 
             <!-- License -->
             <div v-if="isHome" id="frolic-licenses" class="card modal-content d-flex flex-column">
-                <collapse bodyClass="d-flex flex-column user-select-auto"
+                <collapse bodyClass="d-flex flex-column"
                     :state="licenseCollapsed" @open="licenseCollapsed = false" @close="licenseCollapsed = true"
                 >
                     <template v-slot:header>
