@@ -50,9 +50,7 @@
 
             <!-- License -->
             <div v-if="isHome" id="frolic-licenses" class="card modal-content d-flex flex-column">
-                <collapse bodyClass="d-flex flex-column"
-                    :state="licenseCollapsed" @open="licenseCollapsed = false" @close="licenseCollapsed = true"
-                >
+                <collapse ref="licenseCollapse" bodyClass="d-flex flex-column">
                     <template v-slot:header>
                         Applicable Licenses
                     </template>
@@ -144,6 +142,7 @@ export default class Data extends Vue {
     get isLogging() {
         if (this.isPrivate)      return core.state.settings.logMessages;
         else if (this.isChannel) return core.state.settings.logChannels;
+        else                     return false;
     }
 
     /**
@@ -195,16 +194,13 @@ export default class Data extends Vue {
     @Prop({ default: false })
     readonly navigationRequest!: { tab: string, conversation?: any, section: any };
 
-    licenseCollapsed = false;
-
     @Watch('navigationRequest')
     onNavigationRequest() {
         if (!this.navigationRequest)
             return;
 
-        if (this.navigationRequest.section === 'frolic-licenses') {
-            this.licenseCollapsed = false;
-        }
+        if (this.navigationRequest.section === 'frolic-licenses')
+            (this.$refs['licenseCollapse'] as Collapse).open();
     }
 }
 </script>
