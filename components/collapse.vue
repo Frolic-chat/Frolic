@@ -26,7 +26,10 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
+    import { Component, Prop, Hook } from '@f-list/vue-ts';
+
+    import NewLogger from '../helpers/log';
+    const log = NewLogger('collapse');
 
     @Component
     export default class Collapse extends Vue {
@@ -60,34 +63,38 @@
         /**
          * External collapsed signal
          */
-        @Prop({ default: true })
-        readonly state!: boolean;
+        @Prop({ default: undefined })
+        readonly initial?: boolean;
 
-        @Hook('mounted')
-        onMount() {
-            if (this.collapsed !== this.state)
-                this.toggle();
-        }
-
-        @Watch('state')
-        onExternalChange(newVal: boolean) {
-            if (newVal !== this.collapsed)
-                this.toggle();
-        }
-
+        // Internal copy of state.
         collapsed = true;
+
+        @Hook('created')
+        created() {
+            log.debug('Collapse.created', {
+                initial:   this.initial,
+                collapsed: this.collapsed,
+            });
+            this.collapsed = this.initial ?? true;
+            this.setInitialState();
+        }
+
         timeout = 0;
         style = {
             height: <string | undefined>'0',
-            transition: 'height .3s',
+            transition: 'height .225s',
         };
 
         get headerStartStyle() { return this.collapsed ? '' : 'border-bottom-left-radius:0;'  }
         get headerEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
         get buttonEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
 
-        open()  { this.toggle(false) }
-        close() { this.toggle(true)  }
+        open()  { this.toggle(false, true) }
+        close() { this.toggle(true,  true) }
+
+        setInitialState() {
+            this.style.height = this.collapsed ? '0' : undefined;
+        }
 
         toggle(state?: boolean, emitSignal: boolean = true) {
             window.clearTimeout(this.timeout);

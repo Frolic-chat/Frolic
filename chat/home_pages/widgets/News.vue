@@ -1,5 +1,7 @@
 <template>
-<collapse bodyClass="d-flex flex-column user-select-auto" :state="collapsed" @open="collapsed = false" @close="collapsed = true">
+<collapse bodyClass="d-flex flex-column"
+    :initial="yohhlrf" @open="toggle.news = false" @close="toggle.news = true"
+>
     <template v-slot:header>
         {{ headerText }}
     </template>
@@ -34,9 +36,11 @@ import { Component, Hook } from '@f-list/vue-ts';
 import Collapse from '../../../components/collapse.vue';
 
 import * as Electron from 'electron';
+import core from '../../core';
 
 import NewLogger from '../../../helpers/log';
 const logU = NewLogger('updater');
+const logC = NewLogger('collapse');
 
 interface VersionInfo {
     version:   string;
@@ -78,19 +82,24 @@ export default class NewsWidget extends Vue {
         else                          return 'text-success fa-regular fa-sun';
     }
 
-    @Hook('mounted')
-    mounted() {
+    @Hook('beforeMount')
+    beforeMount() {
         Electron.ipcRenderer.on('update-available', (_e, u) => {
             logU.debug('checkForUpdates', u);
 
             if (u && u.current && u.updateCount) { // probably approximately good enough maybe
                 this.update = u;
-                if (this.update.latest) this.collapsed = false;
-                else                    this.collapsed = true;
             }
         });
 
         setImmediate(() => this.getUpdate());
+
+        logC.debug('NewsWidget.beforeCreate', { runtimeToggle: this.toggle.news })
+        if (this.toggle.news === undefined) {
+            //Vue.set(core.runtime.userToggles, 'news', false);
+            this.toggle.news = false;
+            logC.debug('NewsWidget.beforeCreate.createToggle', { runtimeToggle: this.toggle.news });
+        }
     }
 
     async getUpdate(): Promise<void> {
@@ -99,32 +108,15 @@ export default class NewsWidget extends Vue {
 
         if (u && u.current && u.updateCount) { // probably approximately good enough maybe
             this.update = u;
-            if (this.update.latest) this.collapsed = false;
-            else                    this.collapsed = true;
         }
     }
 
     /**
      * Visuals
      */
+    get yohhlrf() { return this.toggle.news ?? !!this.update.latest }
 
-     collapsed = false;
-    /**
-     * Electron main will infrequently run the update check, which calls `PrimaryWindow?.webContents.send('update-available', true);` - but this component may not be loaded even in those circumstances.
-     * However, the update check does register this signal to get the current version as an object:
-     * ipcMain.handle('get-release-info', () => versions.current.version ? versions : null);
-     * which gets an object that looks like this:
-        // version -> changelog mapping
-        const versions: {
-            current:  { version: string, changelog: string },
-            latest?:  { version: string, changelog: string },
-            updateCount: number,
-        } = {
-            current: { version: '', changelog: '' },
-            updateCount: 0,
-        };
-     *
-     */
+    toggle = core.runtime.userToggles;
 }
 </script>
 

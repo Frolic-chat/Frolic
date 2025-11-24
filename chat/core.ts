@@ -96,6 +96,7 @@ const data = {
         registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement) {
             this.primaryInput = e;
         },
+        userToggles: {},
     },
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {

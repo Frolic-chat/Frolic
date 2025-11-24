@@ -44,26 +44,18 @@
     ></convo>
 
     <!-- home page -->
-    <keep-alive>
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
         :logs="logs"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
     >
         <template v-slot:chat>
-            <collapse v-show="shouldShowActivity" class="chat-container" :state="false" bodyClass="p-0">
-                <template v-slot:header>
-                    Recent Activity
-                </template>
-                <template v-slot:button></template>
-                <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
-            </collapse>
+            <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
         </template>
         <!-- Notes -->
         <!-- Drafts -->
     </home>
 
     <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
-    </keep-alive>
 
     <!-- console -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
@@ -167,6 +159,8 @@ import l from './localize';
 import NewLogger from '../helpers/log';
 const log = NewLogger('home');
 const logC = NewLogger('conversation');
+//const logA = NewLogger('activity');
+const logCo = NewLogger('collapse');
 
 @Component({
     components: {
@@ -184,7 +178,6 @@ const logC = NewLogger('conversation');
         'convo-settings': ConversationSettings,
         /*
         customize:
-        data:
         */
 
         // Modals:
@@ -286,11 +279,6 @@ export default class HomeScreen extends Vue {
 
     primaryView!:  ConversationView;
     secondaryView: ConversationView | undefined;
-
-    get shouldShowActivity() { return !!this.activityTab.messages.length }
-
-    @Hook('created')
-    created() {}
 
     @Hook('mounted')
     mounted() {
@@ -440,6 +428,8 @@ export default class HomeScreen extends Vue {
             tab: this.tab,
         });
 
+        logCo.debug('UniversalHome.onConversationChanged.collapse', ...Object.entries(core.runtime.userToggles))
+
         if (this.tab === '0') {
             if (n === this.primaryConversation) {
                 n.clearUnread();
@@ -465,7 +455,7 @@ export default class HomeScreen extends Vue {
         this.$nextTick(() => {
             logC.debug('Conversation mover triggered.', this.primaryView?.conversation?.name);
 
-            if (!this.primaryView || !this.primaryView.$el)
+            if (!this.primaryView?.$el)
                 return;
 
             const convoEl = this.primaryView.$el;
