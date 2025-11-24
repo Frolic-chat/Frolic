@@ -719,8 +719,6 @@ class ActivityConversation extends Conversation {
      * @returns index in _messages where a new message can go.
      */
     protected freeSlot(map: Map<string, number>, MAX?: number): number {
-        let index = this._messages.length;
-
         if (MAX && MAX > 0 && map.size >= MAX) {
             let oldestKey:  string | undefined;
             let oldestTime: number | undefined;
@@ -761,7 +759,7 @@ class ActivityConversation extends Conversation {
                 return i;
         }
 
-        return index;
+        return this._messages.length;
     }
 
     /**
@@ -915,6 +913,8 @@ class ActivityConversation extends Conversation {
 
         const index =  this.removeCharacter(activity.character.name);
         const index2 = this.freeSlot(target_map, target_max);
+
+        logA.debug('handleStatus.indexDecided', { i1: index, i2: index2 });
 
         target_map.set(activity.character.name, index ?? index2);
         this._messages[index ?? index2] = message;

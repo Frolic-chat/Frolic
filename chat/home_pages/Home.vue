@@ -14,6 +14,8 @@
                 <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
                     <span class="fa-solid fa-screwdriver-wrench"></span>
                 </button>
+
+                <widget-options ref="widgetOptionsModal"></widget-options>
             </span>
         </div>
     </template>
@@ -41,8 +43,6 @@
                     </template>
                 </collapse>
             </div>
-
-            <widget-options ref="widgetOptionsModal"></widget-options>
         </div>
     </template>
 
