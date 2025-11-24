@@ -1,7 +1,5 @@
-import { Cache, CacheCollection } from './cache';
-
 export abstract class AsyncCache<RecordType> {
-    protected cache: CacheCollection<RecordType> = {};
+    protected cache: Map<string, RecordType> = new Map();
 
     abstract get(name: string): Promise<RecordType | null>;
 
@@ -9,10 +7,10 @@ export abstract class AsyncCache<RecordType> {
     abstract register(record: any): void;
 
     static nameKey(name: string): string {
-        return Cache.nameKey(name);
+        return name.toLowerCase();
     }
 
     clear(): void {
-        this.cache = {};
+        this.cache = new Map();
     }
 }

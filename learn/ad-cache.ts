@@ -53,13 +53,13 @@ export class AdCache<RecordType extends AdCacheRecord = AdCacheRecord> extends C
     register(ad: AdPosting): void {
         const k = Cache.nameKey(ad.name);
 
-        if (k in this.cache) {
-            const adh = this.cache[k];
+        if (this.cache.has(k)) {
+            const adh = this.cache.get(k)!;
 
             adh.add(ad);
             return;
         }
 
-        this.cache[k] = new AdCacheRecord(ad.name, ad) as RecordType;
+        this.cache.set(k, new AdCacheRecord(ad.name, ad) as RecordType);
     }
 }

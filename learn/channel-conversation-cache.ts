@@ -19,14 +19,14 @@ export class ChannelConversationCache extends AdCache<ChannelCacheRecord> {
     register(ad: ChannelPosting): void {
         const k = Cache.nameKey(ad.name);
 
-        if (k in this.cache) {
-            const adh = this.cache[k];
+        if (this.cache.has(k)) {
+            const adh = this.cache.get(k)!;
 
             adh.add(ad);
             return;
         }
 
-        this.cache[k] = new ChannelCacheRecord(ad.name, ad);
+        this.cache.set(k, new ChannelCacheRecord(ad.name, ad));
     }
 
 }

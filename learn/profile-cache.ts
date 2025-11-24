@@ -74,7 +74,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
 
     onEachInMemory(cb: (c: CharacterCacheRecord, key: string) => void): void {
-        Object.entries(this.cache).forEach(([k, v]) => cb(v, k));
+        // @ts-ignore Webpack TS.
+        this.cache.entries().forEach(([k, v]) => cb(v, k));
     }
 
 
@@ -86,12 +87,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
      * @returns Character profile if it's cached; null otherwise
      */
     getSync(name: string): CharacterCacheRecord | null {
-        const key = AsyncCache.nameKey(name);
-
-        if (key in this.cache)
-            return this.cache[key];
-
-        return null;
+        return this.cache.get(AsyncCache.nameKey(name)) ?? null;
     }
 
 
@@ -107,16 +103,16 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
      * @returns Preferably a character; null if not in cache and `skipStore`; null if profile is not in the store
      */
     async get(name: string, skipStore: boolean = false, _fromChannel?: string): Promise<CharacterCacheRecord | null> {
-        const key = AsyncCache.nameKey(name);
+        const k = AsyncCache.nameKey(name);
 
         // This portion is identical to the sync version.
-        if (key in this.cache)
-            return this.cache[key];
+        if (this.cache.has(k))
+            return this.cache.get(k)!;
 
         if (!this.store || skipStore)
             return null;
 
-        const profile_data = await this.store.getProfile(name);
+        const profile_data = await this.store.getProfile(k);
         if (!profile_data)
             return null;
 
@@ -445,8 +441,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         const k = AsyncCache.nameKey(c.character.name);
 
-        if (k in this.cache) {
-            const rExisting = this.cache[k];
+        if (this.cache.has(k)) {
+            const rExisting = this.cache.get(k)!;
 
             rExisting.character = c;
             rExisting.lastFetched = new Date();
@@ -462,7 +458,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
             match: matchDetails,
         };
 
-        this.cache[k] = rNew;
+        this.cache.set(k, rNew);
 
         EventBus.$emit('character-score', { profile: c, score, isFiltered });
 
