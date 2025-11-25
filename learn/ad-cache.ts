@@ -23,13 +23,11 @@ export class AdCacheRecord {
     }
 
     add(ad: AdPosting): void {
-        this.posts.push(
-            {
-                channelName: ad.channelName,
-                datePosted: ad.datePosted,
-                message: ad.message
-            }
-        );
+        this.posts.push({
+            channelName: ad.channelName,
+            datePosted:  ad.datePosted,
+            message:     ad.message
+        });
 
         this.posts = this.posts.slice(-25);
     }
@@ -41,7 +39,7 @@ export class AdCacheRecord {
 
 
     getDateLastPosted(): Date | null {
-        if (this.posts.length === 0)
+        if (!this.posts.length)
             return null;
 
         return this.posts[this.posts.length - 1].datePosted;

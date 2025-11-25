@@ -14,11 +14,12 @@ import { AdCenter } from './ads/ad-center';
 import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
 import { SiteSession } from '../site/site-session';
 import { SettingsMerge } from '../helpers/utils';
+import type { SmartFilterSettings } from '../learn/filter/types';
 
 import { EventBus } from './preview/event-bus';
 import NewLogger from '../helpers/log';
 const log = NewLogger('core', () => process.env.NODE_ENV === 'development');
-const logS = NewLogger('settings', () => core.state ? core.state.generalSettings.argv.includes('--debug-settings') : process.env.NODE_ENV === 'development');
+const logS = NewLogger('settings', () => core.state.generalSettings.argv.includes('--debug-settings'));
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();
@@ -140,10 +141,14 @@ const data = {
 };
 
 // Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
-const VueUpdateCache = {
-    staleFilters: {},
-    timestamp: 0,
-    skipWatch: false,
+const VueUpdateCache: {
+    staleFilter: SmartFilterSettings | {};
+    timestamp:   number;
+    skipWatch:   boolean,
+} = {
+    staleFilter: {},
+    timestamp:   0,
+    skipWatch:   false,
 };
 
 export function init(this: any,
@@ -177,7 +182,7 @@ export function init(this: any,
             return;
         }
         else if (!oldValue) {
-            VueUpdateCache.staleFilters = structuredClone(newValue.risingFilter);
+            VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
         }
         else {
             log.debug('watch _settings will save core.', newValue);
@@ -195,12 +200,12 @@ export function init(this: any,
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
             // Not working?
-            if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilters)) {
+            if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilter)) {
                 logS.debug('risingFilter in _settings changed.', newValue.risingFilter);
 
                 EventBus.$emit('smartfilters-update', newValue.risingFilter);
 
-                VueUpdateCache.staleFilters = structuredClone(newValue.risingFilter);
+                VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
             }
         }
 

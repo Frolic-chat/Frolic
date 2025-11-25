@@ -646,18 +646,10 @@
                     (<Modal>this.$refs['fixLogsModal']).show();
                 });
 
-                electron.ipcRenderer.on('update-zoom', (_e, zoomLevel) => {
-                    webContents.setZoomLevel(zoomLevel);
-                    // log.info('INDEXVUE ZOOM UPDATE', zoomLevel);
-                });
+                electron.ipcRenderer.on('update-zoom', (_e, zoomLevel) => webContents.setZoomLevel(zoomLevel));
 
-                electron.ipcRenderer.on('active-tab', () => {
-                    core.cache.setTabActive(true);
-                });
-
-                electron.ipcRenderer.on('inactive-tab', () => {
-                    core.cache.setTabActive(false);
-                });
+                electron.ipcRenderer.on('active-tab',   () => core.cache.setTabActive(true));
+                electron.ipcRenderer.on('inactive-tab', () => core.cache.setTabActive(false));
 
                 log.debug('init.chat.listeners.done');
             },

@@ -49,7 +49,7 @@ export default class WidgetOptions extends CustomDialog {
     settings = core.state.generalSettings
     widgets  = core.state.generalSettings.widgets;
 
-    title = l('home.widgetOptions.title');
+    title       = l('home.widgetOptions.title');
 
     defaultHome = l('home.widgetOptions.defaultHome');
     home        = l('home');

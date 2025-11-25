@@ -118,7 +118,7 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
  * @param subj Anything
  * @returns true if the object is a normal object.
  */
-function isPlainObject(subj: any): subj is object {
+function isPlainObject(subj: any): subj is NonNullable<object> {
     return subj !== null && typeof subj === 'object' && !Array.isArray(subj);
 }
 
