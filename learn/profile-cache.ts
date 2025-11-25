@@ -1,20 +1,27 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import core from '../chat/core';
-import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../site/character_page/interfaces';
-import { AsyncCache } from './async-cache';
-import { EventBus } from '../chat/preview/event-bus';
-import { Matcher, MatchReport } from './matcher';
-import { PermanentIndexedStore, CharacterOverridesBatch } from './store/types';
-import { Character as CharacterPage, CharacterImage, SimpleCharacter } from '../interfaces';
-import { Scoring, CustomGender } from './matcher-types';
-import { matchesSmartFilters } from './filter/smart-filter';
 import * as remote from '@electron/remote';
-import { Character } from '../fchat/interfaces';
+import { EventBus } from '../chat/preview/event-bus';
+import { AsyncCache } from './cache';
+
+import type { PermanentIndexedStore, CharacterOverridesBatch } from './store/types';
+import type { CharacterOverrides } from '../fchat/characters';
+
+import type { Character as ComplexCharacter, CharacterGroup, Guestbook } from '../site/character_page/interfaces';
+import type { Character as CharacterPage, CharacterImage, SimpleCharacter } from '../interfaces';
+import type { Character } from '../fchat/interfaces';
+import { Conversation } from '../chat/interfaces';
+import { Matcher, MatchReport } from './matcher';
+import { Scoring, CustomGender } from './matcher-types';
+
+import { matchesSmartFilters } from './filter/smart-filter';
 import { getAsNumber } from '../helpers/utils';
-import { CharacterOverrides } from '../fchat/characters';
+
 
 import NewLogger from '../helpers/log';
 const log  = NewLogger('profile-cache');
-const logC = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('---debug-custom-gender'));
+const logC = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
+const logCache = NewLogger('cache', () => core.state.generalSettings.argv.includes('--debug-cache'));
 
 
 export interface MetaRecord {
@@ -63,21 +70,89 @@ export interface InlineTag {
 }
 
 export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
+    constructor() {
+        super();
+        EventBus.$on('friend-list',        l => this.setFriendCount(l.length));
+        EventBus.$on('bookmark-list',      l => this.setBookmarkCount(l.length));
+        EventBus.$on('settings-from-main', s => this.setSettingsCount(s.profileCacheEntries));
+        // Trigger on PM open/close, channel join/leave; remove from recalc when you do.
+
+        logCache.debug('ProfileCache.constructor', this.MAX_CACHE_SIZE);
+    }
     protected store?: PermanentIndexedStore;
 
-    protected lastFetch = Date.now();
+    MAX_CACHE_SIZE = 50;
+    protected readonly MAX_CACHE_BUFFER    = 100; // buffer bad decisions
+    protected          friend_cache_size   =  10; // heuristic
+    protected          bookmark_cache_size = 100; // heuristic
+    protected          channel_cache_size  = 300; // heuristic
+    protected          user_cache_size     = 500; // default
 
+    protected recalcCacheSize() {
+        // Move update check out once we actually check for channel/pm updates.
+        // - PM open/close
+        // - Channel join/leave
+        // - Channel mode change? Happen often enough to matter?
+        this.setChannelCount([ ...core.conversations.channelConversations, ...core.conversations.privateConversations ]);
+
+        this.MAX_CACHE_SIZE = this.MAX_CACHE_BUFFER + this.friend_cache_size + this.bookmark_cache_size + this.channel_cache_size + this.user_cache_size;
+
+        logCache.debug('ProfileCache.recalcCacheSize', this.MAX_CACHE_SIZE);
+    }
+
+    protected setFriendCount(n: number) {
+        if (n >= 0) this.friend_cache_size = n;
+        else        this.friend_cache_size = 0;
+
+        this.recalcCacheSize();
+    }
+
+    protected setBookmarkCount(n: number) {
+        if (n >= 0) this.bookmark_cache_size = n;
+        else        this.bookmark_cache_size = 0;
+
+        this.recalcCacheSize();
+    }
+
+    setChannelCount(conversations: Conversation[]) {  // Scale per-channel.
+        this.channel_cache_size = conversations.reduce(
+            (count, conv) => {
+                if (Conversation.isPrivate(conv))
+                    return count + 1;
+
+                if (Conversation.isChannel(conv)) {
+                    switch (conv.mode) {
+                    case 'chat': return count +  40;
+                    case 'ads':  return count +  60;
+                    case 'both': return count + 100;
+                    }
+                }
+
+                return count;
+            },
+            0
+        );
+
+        //this.recalcCacheSize();
+    }
+
+    protected setSettingsCount(n: number) {
+        if (n >= 0) this.user_cache_size = n;
+        else        this.user_cache_size = 0;
+
+        this.recalcCacheSize();
+    }
+
+    protected lastFetch = Date.now();
 
     setStore(store: PermanentIndexedStore): void {
         this.store = store;
     }
 
-
     onEachInMemory(cb: (c: CharacterCacheRecord, key: string) => void): void {
         // @ts-ignore Webpack TS.
         this.cache.entries().forEach(([k, v]) => cb(v, k));
     }
-
 
     /**
      * Query the cache for a player record, returning immediately. Fails with `null` if the character hasn't been cached. Use {@link get | `get` (async)} if you want to reach deeper and get the profile from the disk-backed store and cache it in readily-accessible memory.
@@ -86,10 +161,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
      * @param name Character to query the cache for
      * @returns Character profile if it's cached; null otherwise
      */
-    getSync(name: string): CharacterCacheRecord | null {
-        return this.cache.get(AsyncCache.nameKey(name)) ?? null;
-    }
-
+    // getSync(name: string): CharacterCacheRecord | null;
 
     /**
      * Asynchronously gets a character from the in-memory cache, or from the PermanentIndexedStore if it's not in memory. Then register it with the matcher (was matcher data not saved before...?).
@@ -103,16 +175,14 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
      * @returns Preferably a character; null if not in cache and `skipStore`; null if profile is not in the store
      */
     async get(name: string, skipStore: boolean = false, _fromChannel?: string): Promise<CharacterCacheRecord | null> {
-        const k = AsyncCache.nameKey(name);
-
-        // This portion is identical to the sync version.
-        if (this.cache.has(k))
-            return this.cache.get(k)!;
+        const v = super.getSync(AsyncCache.nameKey(name));
+        if (v)
+            return v;
 
         if (!this.store || skipStore)
             return null;
 
-        const profile_data = await this.store.getProfile(k);
+        const profile_data = await this.store.getProfile(name);
         if (!profile_data)
             return null;
 
@@ -297,7 +367,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
                     log.debug('portrait.hq.url', { name: c.name, url: url });
                 }
                 else {
-                    log.warn('portrait.hq.invalid.domain', {
+                    log.info('portrait.hq.invalid.domain', {
                         name: c.name,
                         url: url,
                     });
@@ -458,13 +528,13 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
             match: matchDetails,
         };
 
-        this.cache.set(k, rNew);
+        this.update(k, rNew);
+        this.evictOutdated({ chatChar: (name: string) => core.characters.get(name), privates: core.conversations.privateConversations });
 
         EventBus.$emit('character-score', { profile: c, score, isFiltered });
 
         return rNew;
     }
-
 
     static match(subject: ComplexCharacter, sourceOverrides: CharacterOverrides, subjectOverrides: CharacterOverrides): MatchReport | null {
         const source = core.characters.ownProfile;
@@ -472,5 +542,48 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
             return null;
 
         return Matcher.identifyBestMatchReport(source.character, subject.character, sourceOverrides, subjectOverrides);
+    }
+
+    /**
+     * Cache override: We want to keep some profiles, actually.
+     * @returns
+     */
+    async evictOutdated(options?: { chatChar?: (name: string) => Character, privates?: Conversation.PrivateConversation[] | ReadonlyArray<Conversation.PrivateConversation> }): Promise<boolean> {
+        await Promise.resolve(); // no-op await if necessary
+
+        /**
+         * Disable for now.
+         */
+        // const exceeded = !!this.MAX_CACHE_SIZE && this.cache.size > this.MAX_CACHE_SIZE;
+        const exceeded = false;
+
+        if (exceeded) {
+            const i = this.cache.keys();
+            while (this.cache.size > this.MAX_CACHE_SIZE) {
+                const { value: k, done } = i.next();
+                if (done)
+                    return false;
+
+                if (k !== undefined) {
+                    const v = this.cache.get(k)!;
+                    const c = options?.chatChar?.(k);
+                    const active_in_pm = options?.privates?.find(c => c.key === k);
+
+                    const relevant = active_in_pm
+                                  || (c?.isBookmarked || c?.isFriend) && c.status !== 'offline'
+                                  || v.character.is_self;
+
+                    if (relevant) {
+                        logCache.silly('ProfileCache.evictOutdated.skipRelevant', k);
+                    }
+                    else {
+                        logCache.debug('ProfileCache.evictOutdated.delete', k);
+                        this.cache.delete(k);
+                    }
+                }
+            }
+        }
+
+        return exceeded;
     }
 }

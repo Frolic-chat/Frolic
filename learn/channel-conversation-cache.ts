@@ -15,7 +15,6 @@ export class ChannelCacheRecord extends AdCacheRecord {}
 
 
 export class ChannelConversationCache extends AdCache<ChannelCacheRecord> {
-
     register(ad: ChannelPosting): void {
         const k = Cache.nameKey(ad.name);
 
@@ -26,7 +25,7 @@ export class ChannelConversationCache extends AdCache<ChannelCacheRecord> {
             return;
         }
 
-        this.cache.set(k, new ChannelCacheRecord(ad.name, ad));
+        this.update(k, new ChannelCacheRecord(ad.name, ad));
+        this.evictOutdated();
     }
-
 }

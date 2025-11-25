@@ -122,6 +122,8 @@ class EventBusManager {
              | 'activity-bookmark-logout',  callback: (e: ActivityEvent) => void | Promise<void>): void;
     $on(event: 'activity-friend-status'
              | 'activity-bookmark-status',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
+    $on(event: 'bookmark-list'
+             | 'friend-list',            callback: (e: CharacterState[]) => void | Promise<void>): void;
     $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'character-score',        callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
     $on(event: 'character-memo',         callback: (e: MemoEvent) => void | Promise<void>): void;
@@ -229,6 +231,8 @@ class EventBusManager {
                | 'activity-bookmark-logout',  data: ActivityEvent): void;
     $emit(event: 'activity-friend-status'
                | 'activity-bookmark-status',  data: ActivityStatusEvent): void;
+    $emit(event: 'bookmark-list'
+               | 'friend-list',            data: CharacterState[]): void;
     $emit(event: 'character-data',         data: CharacterDataEvent): void;
     $emit(event: 'character-score',        data: CharacterScoreEvent): void;
     $emit(event: 'character-memo',         data: MemoEvent): void;

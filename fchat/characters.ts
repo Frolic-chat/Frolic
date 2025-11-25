@@ -242,22 +242,26 @@ class State implements Interfaces.State {
      * @param text new status message; `character.statusText` is the old status message.
      * @param date date if received from date-based event (server message, for example)
      */
-    setStatus(character: Character, newStatus: Interfaces.Status, text: string, date?: Date): void {
+    setStatus(character: Character, newStatus: Interfaces.Status, text: string, options?: { date?: Date, emitEvents?: boolean }): void {
+        const emit = options?.emitEvents ?? true;
+
         if (character.isFriend) {
             if (character.status === 'offline' && newStatus !== 'offline') {
                 this.friends.push(character);
+                if (emit) EventBus.$emit('friend-list', state.friends);
 
-                if (date)
-                    EventBus.$emit('activity-friend-login', { character, date });
+                if (emit && options?.date)
+                    EventBus.$emit('activity-friend-login', { character, date: options.date });
             }
             else if (character.status !== 'offline' && newStatus === 'offline') {
                 const i = this.friends.indexOf(character);
                 if (i >= 0) this.friends.splice(i, 1);
+                if (emit) EventBus.$emit('friend-list', state.friends);
 
-                if (date)
-                    EventBus.$emit('activity-friend-logout', { character, date });
+                if (emit && options?.date)
+                    EventBus.$emit('activity-friend-logout', { character, date: options.date });
             }
-            else if (date) {
+            else if (options?.date) {
                 // Cache in case our listeners are async.
                 const old_status     = character.status;
                 const old_status_msg = character.statusText;
@@ -268,25 +272,27 @@ class State implements Interfaces.State {
                     statusmsg:    text,
                     oldStatus:    old_status,
                     oldStatusMsg: old_status_msg,
-                    date,
+                    date:         options?.date,
                 });
             }
         }
         else if (character.isBookmarked) {
             if (character.status === 'offline' && newStatus !== 'offline') {
                 this.bookmarks.push(character);
+                if (emit) EventBus.$emit('bookmark-list', state.bookmarks);
 
-                if (date)
-                    EventBus.$emit('activity-bookmark-login', { character, date });
+                if (emit && options?.date)
+                    EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
             }
             else if (character.status !== 'offline' && newStatus === 'offline') {
                 const i = this.bookmarks.indexOf(character);
                 if (i >= 0) this.bookmarks.splice(i, 1);
+                if (emit) EventBus.$emit('bookmark-list', state.bookmarks);
 
-                if (date)
-                    EventBus.$emit('activity-bookmark-logout', { character, date });
+                if (emit && options?.date)
+                    EventBus.$emit('activity-bookmark-logout', { character, date: options?.date });
             }
-            else if (date) {
+            else if (options?.date) {
                 // Cache in case our listeners are async.
                 const old_status     = character.status;
                 const old_status_msg = character.statusText;
@@ -297,7 +303,7 @@ class State implements Interfaces.State {
                     statusmsg:    text,
                     oldStatus:    old_status,
                     oldStatusMsg: old_status_msg,
-                    date,
+                    date:         options?.date,
                 });
             }
         }
@@ -332,9 +338,14 @@ export default function(this: void, connection: Connection): Interfaces.State {
         state.friends   = [];
         state.bookmarks = [];
 
-        state.bookmarkList = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
-        state.friendList   = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php'))
-                .friends.map(x => x.dest);
+        const bm_list = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
+        const fr_list = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php')).friends.map(x => x.dest);
+
+        state.bookmarkList = new Set(bm_list);
+        state.friendList   = new Set(fr_list);
+
+        EventBus.$emit('bookmark-list', state.bookmarks);
+        EventBus.$emit('friend-list',   state.friends);
 
         if (isReconnect && (<Character | undefined>state.ownCharacter) !== undefined)
             reconnectStatus = {status: state.ownCharacter.status, statusmsg: state.ownCharacter.statusText};
@@ -402,7 +413,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
         }
     });
     connection.onMessage('FLN', (data, date) => {
-        state.setStatus(state.get(data.character), 'offline', '', date);
+        state.setStatus(state.get(data.character), 'offline', '', { date });
     });
     connection.onMessage('NLN', async(data, date) => {
         const character = state.get(data.identity);
@@ -422,10 +433,10 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         character.name = data.identity;
         character.gender = data.gender;
-        state.setStatus(character, data.status, '', date);
+        state.setStatus(character, data.status, '', { date });
     });
     connection.onMessage('STA', (data, date) => {
-        state.setStatus(state.get(data.character), data.status, data.statusmsg, date);
+        state.setStatus(state.get(data.character), data.status, data.statusmsg, { date });
     });
     connection.onMessage('AOP', (data) => {
         state.opList.push(data.character);
@@ -448,12 +459,20 @@ export default function(this: void, connection: Connection): Interfaces.State {
             case 'trackadd':
                 state.bookmarkList.push(data.name);
                 character.isBookmarked = true;
-                if (character.status !== 'offline') state.bookmarks.push(character);
+
+                if (character.status !== 'offline')
+                    state.bookmarks.push(character);
+
+                EventBus.$emit('bookmark-list', state.bookmarks);
                 break;
             case 'trackrem':
                 state.bookmarkList.splice(state.bookmarkList.indexOf(data.name), 1);
                 character.isBookmarked = false;
-                if (character.status !== 'offline') state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
+
+                if (character.status !== 'offline')
+                    state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
+
+                EventBus.$emit('bookmark-list', state.bookmarks);
                 break;
             case 'friendadd':
                 if (character.isFriend)
@@ -461,12 +480,23 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
                 state.friendList.push(data.name);
                 character.isFriend = true;
-                if (character.status !== 'offline') state.friends.push(character);
+
+                if (character.status !== 'offline') {
+                    state.friends.push(character);
+                    EventBus.$emit('friend-list',   state.friends);
+                }
+
                 break;
             case 'friendremove':
                 state.friendList.splice(state.friendList.indexOf(data.name), 1);
                 character.isFriend = false;
-                if (character.status !== 'offline') state.friends.splice(state.friends.indexOf(character), 1);
+
+                if (character.status !== 'offline') {
+                    state.friends.splice(state.friends.indexOf(character), 1);
+                    EventBus.$emit('friend-list', state.friends);
+                }
+
+                break;
         }
     });
     return state;
