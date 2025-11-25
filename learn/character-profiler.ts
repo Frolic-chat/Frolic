@@ -90,7 +90,7 @@ export class CharacterProfiler {
 
 
     getLastAdvertisementStatus(c: CharacterFChatInf.Character): Scoring {
-        const ads = this.adCache.get(c.name);
+        const ads = this.adCache.getSync(c.name);
 
         if (!ads)
             return Scoring.NEUTRAL;

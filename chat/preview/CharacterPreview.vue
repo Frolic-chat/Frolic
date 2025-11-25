@@ -482,7 +482,7 @@ export default class CharacterPreview extends Vue {
         if (!this.characterName)
             return;
 
-        const cache = core.cache.adCache.get(this.characterName);
+        const cache = core.cache.adCache.getSync(this.characterName);
 
         if (!cache?.posts.length || Date.now() - cache.posts[cache.posts.length - 1].datePosted.getTime() > (45 * 60 * 1000))
             return;

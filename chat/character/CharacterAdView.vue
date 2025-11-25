@@ -63,7 +63,7 @@ export default class CharacterAdView extends CustomDialog {
             return;
         }
 
-        const cache = core.cache.adCache.get(this.character.name);
+        const cache = core.cache.adCache.getSync(this.character.name);
 
         this.messages = cache
             ? cache.posts.slice(-10).reverse()

@@ -234,7 +234,7 @@ const log = NewLogger('UserMenu');
                 return false;
             }
 
-            const cache = core.cache.adCache.get(this.character.name);
+            const cache = core.cache.adCache.getSync(this.character.name);
 
             if (!cache) {
                 return false;

@@ -39,6 +39,7 @@ export class GeneralSettings {
     browserArgs: string = '%s';
     browserIncognitoArg: string = '';
     defaultToHome: boolean = true;
+    profileCacheEntries: number = 1000;
     widgets = {
         inbox:       true,  // Display of notes from site
         scratchpad:  true,  // Text box for player notes
