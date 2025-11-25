@@ -326,7 +326,7 @@ const commands: { readonly [key: string]: Command | undefined } = {
         exec: (conv: Conversation) =>
             (conv.infoText = l(
                 "chat.ignoreList",
-                core.characters.ignoreList.join(", ")
+                Array.from(core.characters.ignoreList).join(", ")
             )),
     },
     makeroom: {

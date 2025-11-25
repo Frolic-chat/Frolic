@@ -190,12 +190,12 @@ export namespace Character {
 
     export interface State {
         readonly ownCharacter: Character
-        readonly friends: ReadonlyArray<Character>
-        readonly bookmarks: ReadonlyArray<Character>
-        readonly ignoreList: ReadonlyArray<string>
-        readonly opList: ReadonlyArray<string>
-        readonly friendList: ReadonlyArray<string>
-        readonly bookmarkList: ReadonlyArray<string>
+        readonly friends:      Character[]
+        readonly bookmarks:    Character[]
+        readonly ignoreList:   Set<string>
+        readonly opList:       Set<string>
+        readonly friendList:   Set<string>
+        readonly bookmarkList: Set<string>
 
         readonly ownProfile?: CharacterProfile;
 
