@@ -57,7 +57,7 @@
                                     <character-images ref="tab3" :images="images"></character-images>
                                 </div>
                                 <div v-if="character.settings.guestbook" role="tabpanel" v-show="tab === '4'" id="guestbook">
-                                    <character-guestbook :character="character" :oldApi="oldApi" ref="tab4"></character-guestbook>
+                                    <character-guestbook :character="character" :parentIsReloading="guestbookLoading" :oldApi="oldApi" ref="tab4"></character-guestbook>
                                 </div>
                                 <div v-if="character.is_self || character.settings.show_friends" role="tabpanel" v-show="tab === '5'" id="friends">
                                     <character-friends :character="character" ref="tab5"></character-friends>
@@ -169,8 +169,12 @@
 
         shared: SharedStore = Store;
         character: Character | undefined;
-        loading = true;
-        refreshing = false;
+        loading     = true;
+        imagesLoading    = false;
+        guestbookLoading = false;
+        friendsLoading   = false;
+        groupsLoading    = false;
+        refreshing  = false;
         error = '';
         tab = '0';
 
@@ -397,6 +401,11 @@
                 return;
             }
 
+            this.imagesLoading    = true;
+            this.guestbookLoading = true;
+            this.friendsLoading   = true;
+            this.groupsLoading    = true;
+
             if (!this.isCurrentCharacter(stand.character.character.name)) {
                 log.debug("Abandoning meta stand; it isn't for this character.", { this_char: stand.character.character.name, on_sheet: this.name, stand });
                 return;
@@ -407,10 +416,10 @@
             log.debug('updateMeta.start', name);
 
             await Promise.allSettled([
-                this.updateImages(stand),
-                this.updateGuestbook(stand),
-                this.updateFriends(stand),
-                this.updateGroups(stand),
+                this.updateImages(stand).finally(   () => this.imagesLoading    = false),
+                this.updateGuestbook(stand).finally(() => this.guestbookLoading = false),
+                this.updateFriends(stand).finally(  () => this.friendsLoading   = false),
+                this.updateGroups(stand).finally(   () => this.groupsLoading    = false),
             ]);
 
             log.debug('updateMeta.resolved', name);

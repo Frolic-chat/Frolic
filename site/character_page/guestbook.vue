@@ -52,11 +52,15 @@
         @Prop({required: true})
         readonly character!: Character;
 
+        @Prop({ default: false })
+        readonly parentIsReloading: boolean = false;
+
         @Prop
         readonly oldApi?: true;
 
         loading = false;
-        lastLoad = Date.now();
+        waitingOnParent = false;
+        lastLoad = 0;
         RELOAD_THROTTLE = 10000;
 
         error = '';
@@ -140,12 +144,22 @@
         }
 
         async show(): Promise<void> {
-            if (!this.loading && (Date.now() - this.lastLoad) > this.RELOAD_THROTTLE) { // don't spam!!!
+            if (this.parentIsReloading) {
+                log.debug('guestbook.show.parentIsReloading');
+                this.waitingOnParent = true;
+                setTimeout(() => this.show(), 200);
+            }
+            else if (this.waitingOnParent /* inherent: !parentIsReloading */
+                  || !this.loading && (Date.now() - this.lastLoad) > this.RELOAD_THROTTLE) { // don't spam!!!
                 log.debug('guestbook.show.refreshing');
                 await this.getPage();
             }
             else {
-                log.debug('guestbook.show.skipping');
+                log.debug('guestbook.show.skipping', {
+                    parent:  this.parentIsReloading,
+                    loading: this.loading,
+                    elapsed: (Date.now() - this.lastLoad),
+                });
             }
         }
     }
