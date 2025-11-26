@@ -6,7 +6,7 @@
             <span :class="{
                 'fa-solid fa-house-user':  isHome,
                 'fa       fa-star':        isOfficialChannel,
-                'fa       fa-chart-gannt': isChannel && !isOfficialChannel,
+                'fa       fa-chart-gantt': isChannel && !isOfficialChannel,
                 'fa-solid fa-user':        isPrivate,
             }"></span>
             <span class="tab-text d-none d-md-inline">{{ tab0Name }}</span>

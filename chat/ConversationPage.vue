@@ -11,18 +11,14 @@
         <template v-if="isPrivate(conversation) || isChannel(conversation)">
             <div class="info d-flex justify-content-between align-items-center">
                 <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
-                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 4.5em"/>
-                    <span class="d-flex flex-column">
-                        <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
-                        <span class="text-truncate">
-                            {{ l('status.' + conversation.character.status) }}
-                            <span v-show="conversation.character.statusText"> – <bbcode :text="conversation.character.statusText"></bbcode></span>
-                        </span>
-                        <span v-show="userMemo" class="text-truncate">
-                            <b>{{ l('chat.memoHeader') }}</b> {{ userMemo }}
-                        </span>
-                        <span v-show="!userMemo" class="text-truncate">
-                            No memo; show shared channels.
+                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 3em"/>
+                    <span class="d-flex flex-column align-self-start mr-0">
+                        <user :character="conversation.character" :match="true" :reusable="true" :showStatus="true" :immediate="true"></user>
+                        <bbcode v-if="conversation.character.statusText" class="text-truncate" :text="conversation.character.statusText"></bbcode>
+                        <span v-else-if="userMemo" class="text-truncate">
+                            <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}:</b>
+                            <b class="d-lg-none fa-solid fa-square-pen"></b>
+                             {{ userMemo }}
                         </span>
                     </span>
                 </span>
@@ -865,9 +861,6 @@
 }
 
 .conversation .header .info {
-    /* Name, on/off, memo/shared channels */
-    min-height: 4.5em;
-
     > .mr-auto > * {
         margin-right: 5px;
     }
