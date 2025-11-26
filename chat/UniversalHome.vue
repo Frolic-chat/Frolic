@@ -9,12 +9,12 @@
                 'fa       fa-chart-gannt': isChannel && !isOfficialChannel,
                 'fa-solid fa-user':        isPrivate,
             }"></span>
-            <span class="tab-text d-none d-sm-inline">{{ tab0Name }}</span>
+            <span class="tab-text d-none d-md-inline">{{ tab0Name }}</span>
         </span>
         <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
             <span v-if="isHome" class="fa-solid fa-terminal"></span>
             <span v-else class="fa-solid fa-link"></span>
-            <span class="tab-text d-none d-sm-inline">{{ tab1Name }}</span>
+            <span class="tab-text d-none d-lg-inline">{{ tab1Name }}</span>
         </span>
         <span><!-- Personalize/Description/Recon -->
             <span :class="{
@@ -22,15 +22,15 @@
                 'fa-solid fa-align-left':     isChannel,
                 'fa-solid fa-satellite-dish': isPrivate,
             }"></span>
-            <span class="tab-text d-none d-sm-inline">{{ tab2Name }}</span>
+            <span class="tab-text d-none d-lg-inline">{{ tab2Name }}</span>
         </span>
         <span><!-- Settings -->
             <span class="fa-solid fa-screwdriver-wrench"></span>
-            <span class="tab-text d-none d-sm-inline">{{ tab3Name }}</span>
+            <span class="tab-text d-none d-lg-inline">{{ tab3Name }}</span>
         </span>
         <span><!-- Data -->
             <span class="fa-solid fa-file-contract"></span>
-            <span class="tab-text d-none d-sm-inline">{{ tab4Name }}</span>
+            <span class="tab-text d-none d-lg-inline">{{ tab4Name }}</span>
         </span>
     </tabs>
 
