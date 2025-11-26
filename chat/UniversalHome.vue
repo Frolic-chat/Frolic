@@ -70,7 +70,7 @@
 
     <keep-alive>
     <!-- Personality -->
-    <personality v-if="isHome" v-show="tab === '2'" id="recon" role="tabpanel" class="page"
+    <personality v-if="isHome" v-show="tab === '2'" id="comms" role="tabpanel" class="page"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     ></personality>
 
@@ -94,10 +94,10 @@
     <page v-else-if="isPrivate" v-show="tab === '2'"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
-        This is where recon goes. :)
+        This is where communications goes. :)
+        - Memo + editing
         - Last spoken to (last message?)
-        - Last note exchange. Write new note? Memo writer.
-        -
+        - Last note exchange. Write new note?
     </page>
     </keep-alive>
 
@@ -269,7 +269,7 @@ export default class HomeScreen extends Vue {
 
     get tab2Name() {
         if (this.isHome)    return core.connection.character;
-        if (this.isPrivate) return l('home.tab.recon');
+        if (this.isPrivate) return l('home.tab.comms');
         if (this.isChannel) return l('home.tab.description');
     }
 
