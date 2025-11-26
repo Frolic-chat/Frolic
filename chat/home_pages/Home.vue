@@ -22,15 +22,15 @@
 
     <template v-slot:default>
         <div class="d-flex flex-column flex-nowrap" style="gap: 1em;">
-            <div class="d-flex flex-row"><!-- Top row -->
+            <div class="home-row flex-row"><!-- Top row -->
 
             </div>
 
-            <div class="d-flex flex-row">
+            <div v-show="widgets.news" class="home-row flex-row">
                 <news></news>
             </div>
 
-            <div class="d-flex flex-row"><!-- Second row -->
+            <div v-show="widgets.activity" class="home-row flex-row"><!-- Second row -->
                 <collapse v-show="shouldShowActivity" class="chat-container" bodyClass="p-0"
                     :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true"
                 >
@@ -73,6 +73,7 @@ import l from '../localize';
 
 import NewLogger from '../../helpers/log';
 const logC = NewLogger('collapse');
+//const logW = NewLogger('widgets');
 
 @Component({
     components: {
@@ -125,4 +126,7 @@ export default class Home extends Vue {
 </script>
 
 <style lang="scss">
+.home-row {
+    display: flex;
+}
 </style>

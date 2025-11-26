@@ -46,7 +46,7 @@ import l from '../localize';
     },
 })
 export default class WidgetOptions extends CustomDialog {
-    settings = core.state.generalSettings
+    settings = core.state.generalSettings;
     widgets  = core.state.generalSettings.widgets;
 
     title       = l('home.widgetOptions.title');
