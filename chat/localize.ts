@@ -348,7 +348,7 @@ Are you sure?`,
     'settings.useGlobalSetting': 'Use global setting',
 
     'home.tab.home': 'Home',
-    'home.tab.recon': 'Recon',
+    'home.tab.comms': 'Comms',
     'home.tab.description': 'Description',
     'home.tab.settings': 'Settings',
     'home.tab.data': 'Data',
