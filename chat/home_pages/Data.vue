@@ -2,9 +2,9 @@
 <template>
 <page>
     <template v-slot:prescroll>
-        <div class="d-flex justify-content-between">
-            <slot class="mr-auto align-self-center" name="title"></slot>
-            <slot class="ml-auto align-self-center" name="title-end"></slot>
+        <div class="page-header d-flex">
+            <div class="mr-auto align-self-center"><slot name="title"></slot></div>
+            <div class="ml-auto align-self-center"><slot name="title-end"></slot></div>
         </div>
     </template>
 
@@ -206,6 +206,10 @@ export default class Data extends Vue {
 </script>
 
 <style>
+.page-header {
+    height: 3em;
+}
+
 .preformatted-shrink-wrap {
     color:inherit; /* Claaaaassic bootstrap! HaHaHa! */
 

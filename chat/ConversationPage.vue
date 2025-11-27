@@ -8,12 +8,12 @@
 >
     <template v-slot:prescroll>
         <!-- Header -->
-        <template v-if="isPrivate(conversation) || isChannel(conversation)">
-            <div class="info d-flex justify-content-between align-items-center">
+        <template v-if="isPrivate(conversation) || isChannel(conversation) || isConsole">
+            <div class="info d-flex align-items-center">
                 <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
                     <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 3em"/>
                     <span class="d-flex flex-column align-self-start mr-0">
-                        <user :character="conversation.character" :match="true" :reusable="true" :showStatus="true" :immediate="true"></user>
+                        <user :character="conversation.character" :match="userViewMatch()" :reusable="true" :showStatus="true" :immediate="true"></user>
                         <bbcode v-if="conversation.character.statusText" class="text-truncate" :text="conversation.character.statusText"></bbcode>
                         <span v-else-if="userMemo" class="text-truncate">
                             <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}:</b>
@@ -22,40 +22,55 @@
                         </span>
                     </span>
                 </span>
-                <span v-else-if="isChannel(conversation)" class="mr-auto"><!-- left side: channel name -->
-                    <h5>{{ conversation.name }}</h5>
+                <span v-else class="mr-auto"><!-- left side: channel name -->
+                    <h5 class="text-truncate">{{ conversation.name }}</h5>
                 </span>
 
-                <span class="ml-auto flex-shrink-0"><!-- right side -->
-                    <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
-                        <span class="fa fa-edit"></span>
-                        <span class="btn-text">{{l('manageChannel.open')}}</span>
-                    </a>
-                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                            <span class="fa fa-file-alt"></span>
-                            <span class="btn-text">{{ l('logs.title') }}</span>
+                <span class="ml-auto d-flex"><!-- right side -->
+                    <span style="display:contents;">
+                        <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
+                            <span class="fa fa-edit"></span>
+                            <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span>
                         </a>
-                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
-                            <span class="fa fa-exclamation-triangle"></span>
-                            <span class="btn-text">{{ l('chat.report') }}</span>
-                        </a>
-                    </template>
-                    <dropdown v-if="isChannel(conversation)" :keep-open="false" :title="l('channel.mode.title')" :hide-text-xs="true" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                            {{l('channel.mode.' + mode)}}
-                        </button>
-                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                        <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                            {{l('channel.ads.incompatible')}}
-                        </button>
-                        <template v-show="conversation.settings.adSettings.ads.length">
-                            <div class="dropdown-divider"></div>
-                            <button type="button" class="dropdown-item" @click="showAdSettings()">
-                                {{l('channel.ads.edit')}}
-                            </button>
+                        <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                            <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                                <span class="fa fa-file-alt"></span>
+                                <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
+                            </a>
+                            <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
+                                <span class="fa fa-exclamation-triangle"></span>
+                                <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
+                            </a>
                         </template>
-                    </dropdown>
+                        <dropdown v-if="isChannel(conversation)" title=""
+                            v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
+                            :keep-open="false"
+                            text-class="d-none d-lg-inline"
+                            :icon-class="{
+                                fas: true,
+                                'fa-comments': conversation.mode === 'chat',
+                                'fa-ad':       conversation.mode === 'ads',
+                                'fa-asterisk': conversation.mode === 'both',
+                            }"
+                            wrap-class="btn-group views"
+                            link-class="btn btn-outline-secondary dropdown-toggle"
+                        >
+                            <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                                {{l('channel.mode.' + mode)}}
+                            </button>
+                            <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                            <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                                {{l('channel.ads.incompatible')}}
+                            </button>
+                            <template v-show="conversation.settings.adSettings.ads.length">
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item" @click="showAdSettings()">
+                                    {{l('channel.ads.edit')}}
+                                </button>
+                            </template>
+                        </dropdown>
+                    </span>
+                    <slot name="title-end"></slot>
                 </span>
             </div>
 
@@ -124,9 +139,10 @@
     <template v-slot:postscroll>
         <!-- Input box -->
         <div v-show="isConsole || isPrivate(conversation) || isChannel(conversation)" style="display: contents;">
-            <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
+            <bbcode-editor v-model="conversation.enteredText" ref="mainInput" style="position:relative;margin-top:5px" @keydown="onKeyDown"
+                :extras="extraButtons" @input="keepScroll"
                 :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
-                :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
+                :hasToolbar="settings.bbCodeBar"
                 :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
                 :characterName="ownName"
                 :type="'big'"
@@ -847,6 +863,11 @@
             const member = this.conversation.channel.members[core.connection.character];
             return member !== undefined && member.rank > Channel.Rank.Member;
         }
+
+
+        userViewMatch(): boolean {
+            return this.isPrivate(this.conversation) && window.innerWidth >= 992;
+        }
     }
 </script>
 
@@ -857,10 +878,12 @@
 
 .conversation .header {
     border-bottom: solid 1px rgba(248, 248, 242, 0.125);
-    padding-block: 10px;
+    /* padding-block: 10px; */
 }
 
 .conversation .header .info {
+    height: 3em;
+
     > .mr-auto > * {
         margin-right: 5px;
     }

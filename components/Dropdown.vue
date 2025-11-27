@@ -5,7 +5,7 @@
             :style="linkStyle" role="button" tabindex="-1" ref="button">
             <i :class="iconClass" v-if="!!iconClass"></i>
             <slot name="title">
-                <span :class="{ 'btn-text': hideTextXs }">
+                <span class="btn-text" :class="textClass">
                     {{title}}
                 </span>
             </slot>
@@ -35,8 +35,8 @@
         readonly title?: string;
         @Prop({default: 'width:100%;text-align:left;align-items:center'})
         readonly linkStyle!: string;
-        @Prop({ default: true })
-        readonly hideTextXs!: boolean;
+        @Prop
+        readonly textClass?: string;
 
         @Watch('isOpen')
         onToggle(): void {

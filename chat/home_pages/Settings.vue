@@ -2,7 +2,16 @@
 <template>
 <page ref="homePageLayout">
     <template v-slot:prescroll>
-        <h5>{{ l('settings') }}</h5>
+        <div class="page-header d-flex align-items-center">
+            <div class="mr-auto">
+                <h5>{{ l('settings') }}</h5>
+            </div>
+            <div class="ml-auto">
+                <slot name="title-end"></slot>
+            </div>
+        </div>
+
+        <!-- Settings tabs; redo later. -->
         <tabs v-model="tab"
             :tabs="[
                 l('settings.tabs.general'),
@@ -417,6 +426,10 @@ export default class Settings extends Vue {
 </script>
 
 <style lang="scss">
+.page-header {
+    height: 3em;
+}
+
 #settings > .prescroll .nav-tabs-scroll {
     margin-left:  -10px; /* Offset for bootstrap .container */
     margin-right: -10px; /* Offset for bootstrap .container */

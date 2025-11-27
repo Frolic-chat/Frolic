@@ -1,23 +1,29 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<page prescrollClasses="p-2" scrollcageClasses="px-2" postscrollClasses="px-2 py-0">
+<page scrollcageClasses="px-2" postscrollClasses="px-2 py-0">
     <template v-slot:prescroll>
-        <div class="d-flex align-items-center" style="gap: 0.5rem;">
-            <span class="mr-auto">Welcome Home!</span>
-            <span v-if="logs">
-                <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                    <span class="fa fa-file-alt"></span>
-                    <span class="btn-text">{{ logsTitle }}</span>
-                </a>
+        <div class="page-header d-flex align-items-center">
+            <span class="mr-auto">
+                <h5>Welcome Home!</h5>
             </span>
-            <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
-                <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
-                    <span class="fa-solid fa-screwdriver-wrench"></span>
-                </button>
+            <span class="ml-auto d-flex" style="gap: 0.5rem;">
+                <span v-if="logs">
+                    <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                        <span class="fa fa-file-alt"></span>
+                        <span class="btn-text">{{ logsTitle }}</span>
+                    </a>
+                </span>
+                <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
+                    <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
+                        <span class="fa-solid fa-screwdriver-wrench"></span>
+                    </button>
+                </span>
 
-                <widget-options ref="widgetOptionsModal"></widget-options>
+                <slot name="title-end"></slot>
             </span>
         </div>
+
+        <widget-options ref="widgetOptionsModal"></widget-options>
     </template>
 
     <template v-slot:default>
@@ -126,6 +132,10 @@ export default class Home extends Vue {
 </script>
 
 <style lang="scss">
+.page-header {
+    height: 3em;
+}
+
 .home-row {
     display: flex;
 }

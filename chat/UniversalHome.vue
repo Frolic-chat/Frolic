@@ -1,36 +1,42 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div id="home-screen" class="chat-panel">
-    <tabs class="conversation-tabs flex-shrink-0" v-model="tab">
+    <!-- navClasses="nav-tab-scroll"
+            listClasses="nav nav-tabs"
+            itemClasses="nav-item"
+            linkClasses="nav-link" -->
+    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" linkClasses="btn btn-secondary-outline">
         <span class="channel-title"><!-- Chat -->
             <span :class="{
-                'fa-solid fa-house-user':  isHome,
-                'fa       fa-star':        isOfficialChannel,
-                'fa       fa-chart-gantt': isChannel && !isOfficialChannel,
-                'fa-solid fa-user':        isPrivate,
+                'fa-fw fa-solid fa-house-user':   isHome,
+                'fa-fw fa       fa-star':         isOfficialChannel,
+                'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
+                'fa-fw fa-solid fa-user':         isPrivate,
             }"></span>
-            <span class="tab-text d-none d-md-inline">{{ tab0Name }}</span>
+            <!-- <span class="tab-text d-none d-xl-inline">{{ tab0Name }}</span> -->
         </span>
         <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
-            <span v-if="isHome" class="fa-solid fa-terminal"></span>
-            <span v-else class="fa-solid fa-link"></span>
-            <span class="tab-text d-none d-lg-inline">{{ tab1Name }}</span>
+            <span v-if="isHome" :class="{
+                'fa-fw fa-solid fa-terminal':  isHome,
+                'fa-fw fa-solid fa-link':     !isHome,
+            }"></span>
+            <!-- <span class="tab-text d-none d-xl-inline">{{ tab1Name }}</span> -->
         </span>
         <span><!-- Personalize/Description/Recon -->
             <span :class="{
-                'fa-solid fa-user-pen':       isHome,
-                'fa-solid fa-align-left':     isChannel,
-                'fa-solid fa-satellite-dish': isPrivate,
+                'fa-fw fa-solid fa-user-pen':       isHome,
+                'fa-fw fa-solid fa-align-left':     isChannel,
+                'fa-fw fa-solid fa-satellite-dish': isPrivate,
             }"></span>
-            <span class="tab-text d-none d-lg-inline">{{ tab2Name }}</span>
+            <!-- <span class="tab-text d-none d-xl-inline">{{ tab2Name }}</span> -->
         </span>
         <span><!-- Settings -->
-            <span class="fa-solid fa-screwdriver-wrench"></span>
-            <span class="tab-text d-none d-lg-inline">{{ tab3Name }}</span>
+            <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
+            <!-- <span class="tab-text d-none d-xl-inline">{{ tab3Name }}</span> -->
         </span>
         <span><!-- Data -->
-            <span class="fa-solid fa-file-contract"></span>
-            <span class="tab-text d-none d-lg-inline">{{ tab4Name }}</span>
+            <span class="fa-fw fa-solid fa-file-contract"></span>
+            <!-- <span class="tab-text d-none d-xl-inline">{{ tab4Name }}</span> -->
         </span>
     </tabs>
 
@@ -41,13 +47,21 @@
         :class="isHome ? '' : 'page'"
            :id="isHome ? '' : 'home'"
          :role="isHome ? '' : 'tabpanel'"
-    ></convo>
+    >
+        <template v-slot:title-end>
+            <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
+        </template>
+    </convo>
 
     <!-- home page -->
     <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
         :logs="logs"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
     >
+        <template v-slot:title-end>
+            <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
+        </template>
+
         <template v-slot:chat>
             <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
         </template>
@@ -62,22 +76,50 @@
         class="page" role="tabpanel"
         :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
         :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
-    ></convo>
+    >
+        <template v-slot:title-end>
+            <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>
+        </template>
+    </convo>
 
     <page v-else v-show="tab === '1'" id="linked-conversation" role="tabpanel" class="page"
         :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-    ></page>
+    >
+        <template v-slot:prescroll>
+            <div class="page-header d-flex align-items-center">
+                <div class="mr-auto">
+                </div>
+                <div class="ml-auto">
+                    <div ref="tabsContainer1" id="tabs-container-in-linkconvdialog" style="display: contents;"></div>
+                </div>
+            </div>
+        </template>
+    </page>
 
     <keep-alive>
     <!-- Personality -->
     <personality v-if="isHome" v-show="tab === '2'" id="comms" role="tabpanel" class="page"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
-    ></personality>
+    >
+        <template v-slot:title-end>
+            <div ref="tabsContainer2home" id="tabs-container-in-personality" style="display: contents;"></div>
+        </template>
+    </personality>
 
     <!-- Channel description -->
     <page v-else-if="isChannel" v-show="tab === '2'"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
+        <template v-slot:prescroll>
+            <div class="page-header d-flex align-items-center">
+                <div class="mr-auto">
+                </div>
+                <div class="ml-auto">
+                    <div ref="tabsContainer2channel" id="tabs-container-in-channeldesc" style="display: contents;"></div>
+                </div>
+            </div>
+        </template>
+
         <template v-if="primaryDescription">
             <bbcode :text="primaryDescription"></bbcode>
         </template>
@@ -90,10 +132,20 @@
         </template>
     </page>
 
-    <!-- Recon -->
+    <!-- Comms -->
     <page v-else-if="isPrivate" v-show="tab === '2'"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
+        <template v-slot:prescroll>
+            <div class="page-header d-flex align-items-center">
+                <div class="mr-auto">
+                </div>
+                <div class="ml-auto">
+                    <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
+                </div>
+            </div>
+        </template>
+
         This is where communications goes. :)
         - Memo + editing
         - Last spoken to (last message?)
@@ -104,12 +156,26 @@
     <!-- Settings -->
     <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"
         :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
-    ></char-settings>
+    >
+        <template v-slot:title-end>
+            <div ref="tabsContainer3" id="tabs-container-in-charsettings" style="display: contents;"></div>
+        </template>
+    </char-settings>
 
     <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings"
         :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
     >
+        <template v-slot:prescroll>
+            <div class="page-header d-flex align-items-center">
+                <div class="mr-auto">
+                </div>
+                <div class="ml-auto">
+                    <div ref="tabsContainer3" id="tabs-container-in-convosettings" style="display: contents;"></div>
+                </div>
+            </div>
+        </template>
         <!-- header -->
+
         <convo-settings :conversation="primaryConversation"></convo-settings>
         <template v-if="secondaryConversation">
             <hr>
@@ -122,6 +188,10 @@
     >
         <template v-slot:title>
             Data for {{ isHome ? 'Frolic' : conversation.name }}
+        </template>
+
+        <template v-slot:title-end>
+            <div ref="tabsContainer4" id="tabs-container-in-data" style="display: contents;"></div>
         </template>
     </data-page>
 
@@ -303,6 +373,7 @@ export default class HomeScreen extends Vue {
         });
 
         this.moveConvo();
+        this.moveTabs();
     }
 
     @Hook('beforeDestroy')
@@ -428,6 +499,8 @@ export default class HomeScreen extends Vue {
             tab: this.tab,
         });
 
+        this.moveTabs();
+
         logCo.debug('UniversalHome.onConversationChanged.collapse', ...Object.entries(core.runtime.userToggles))
 
         if (this.tab === '0') {
@@ -480,6 +553,8 @@ export default class HomeScreen extends Vue {
 
         this.tabNum = Number(this.tab);
 
+        this.moveTabs();
+
         if (this.tab === '0') {
             this.$nextTick(() => {
                 if (this.primaryConversation !== this.activityTab) {
@@ -526,6 +601,24 @@ export default class HomeScreen extends Vue {
         });
     }
 
+    moveTabs() {
+        this.$nextTick(() => {
+            log.debug('Tabs mover triggered.', this.tab);
+
+            const extra = this.tab === '2'
+                ?    this.isPrivate && 'private'
+                  || this.isChannel && 'channel'
+                  || this.isHome    && 'home'
+                : '';
+
+            const tabs      = (this.$refs['tabsBar'] as Vue | undefined)?.$el;
+            const container = (this.$refs['tabsContainer' + this.tab + extra] as HTMLDivElement | undefined);
+
+            if (tabs && container && container !== tabs.parentNode)
+                container.appendChild(tabs);
+        });
+    }
+
     scrollConversation() {
         if (this.tab === '0')
             this.primaryView.scrollMessageView();
@@ -556,18 +649,10 @@ export default class HomeScreen extends Vue {
 .conversation-tabs {
     /* Don't overlap the sidebar toggle */
      @media (min-width: breakpoint-min(md)) {
-        margin-right: 32px;
+        margin-right: 32px !important;
     }
 
-    .nav-link {
-        height: calc(100% + 1px);
-        line-height: 1;
-
-        padding-top:    0.25rem;
-        padding-bottom: 0.25rem;
-
-        align-content: end;
-
+    .nav-item {
         &:has(.hidden-tab) {
             display: none;
         }
@@ -588,11 +673,15 @@ export default class HomeScreen extends Vue {
     }
 }
 
-.chat-panel .page {
+.chat-panel .home-page {
     /* normal margins for a conversation */
     margin: 0px 5px;
     display: flex;
     flex-direction: column;
     flex: 1 1 0%;
+}
+
+.chat-panel .collapse-wrapper .home-page {
+    margin: 0;
 }
 </style>
