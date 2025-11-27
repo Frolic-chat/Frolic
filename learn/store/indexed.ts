@@ -5,6 +5,7 @@ import { CharacterOverrides } from '../../fchat/characters';
 import { PermanentIndexedStore, ProfileRecord, OverrideRecord, CharacterOverridesBatch } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
 import core from './worker/slimcore';
+import { deepEqual } from '../../helpers/utils';
 
 /**
  * Fancy way to turn callback-style async into promise-style async.
@@ -253,6 +254,16 @@ export class IndexedStore implements PermanentIndexedStore {
     };
 
     async storeOverrides(name: string, overrides: CharacterOverrides): Promise<void> {
+        const existing_overrides = core.characters.get(name).overrides;
+
+        if (deepEqual(existing_overrides, overrides)) {
+            console.debug('Storing same overrides? Aborting.', {
+                existing_overrides,
+                overrides,
+            });
+            return;
+        }
+
         // prepare()
         const o: OverrideRecord = {
             ...overrides,
@@ -263,9 +274,6 @@ export class IndexedStore implements PermanentIndexedStore {
         const tx = this.db.transaction(IndexedStore.AUX_STORE_NAME, 'readwrite');
         const auxRequest = tx.objectStore(IndexedStore.AUX_STORE_NAME)
             .put(o);
-
-        const c = core.characters.get(name);
-        c.overrides = overrides;
 
         await promisifyRequest<void>(auxRequest);
     }
