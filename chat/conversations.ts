@@ -19,6 +19,8 @@ const log = NewLogger('conversations', () => core?.state.generalSettings.argv.in
 const logS = NewLogger('conversation-settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
 const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
 
+const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
+
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {
         type = MessageType.Action;
@@ -810,6 +812,7 @@ class ActivityConversation extends Conversation {
             const message = new EventMessage(l('events.login', `[user]${c.name}[/user]`), activity.date);
             this._messages[index ?? index2] = message;
 
+            this.cleanseOutdatedData();
             this.updateDisplay(true);
             // c.isFriend && shouldNotifyOnFriendLogin() || c.isBookmarked && shouldNotifyOnBookmarkLogin()
 
@@ -834,6 +837,7 @@ class ActivityConversation extends Conversation {
 
         this.removeCharacter(activity.character.name);
 
+        this.cleanseOutdatedData();
         this.updateDisplay();
     }
 
@@ -919,7 +923,21 @@ class ActivityConversation extends Conversation {
         target_map.set(activity.character.name, index ?? index2);
         this._messages[index ?? index2] = message;
 
+        this.cleanseOutdatedData();
         this.updateDisplay(true);
+    }
+
+    protected cleanseOutdatedData(): void {
+        const current_time = Date.now();
+
+        [ this.login, this.status, this.looking, this.returned ]
+            .forEach(map => map.forEach((i, name) => {
+                // @ts-ignore Webpack TS :)
+                if (!this._messages[i] || current_time - this._messages[i].time.getTime() > TWENTY_MINUTES_IN_MS) {
+                    map.delete(name);
+                    this._messages[i] = undefined;
+                }
+            }));
     }
 
     async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {
