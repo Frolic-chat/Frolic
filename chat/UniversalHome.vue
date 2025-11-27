@@ -673,6 +673,16 @@ export default class HomeScreen extends Vue {
     }
 }
 
+.page-header {
+    > .mr-auto {
+        gap: 0.5rem;
+    }
+
+    > .ml-auto {
+        gap: 0.5rem;
+    }
+}
+
 .chat-panel .home-page {
     /* normal margins for a conversation */
     margin: 0px 5px;

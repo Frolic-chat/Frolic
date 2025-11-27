@@ -884,12 +884,12 @@
 .conversation .header .info {
     height: 3em;
 
-    > .mr-auto > * {
-        margin-right: 5px;
+    > .mr-auto {
+        gap: 0.5rem;
     }
 
-    > .ml-auto > * {
-        margin-left: 5px;
+    > .ml-auto {
+        gap: 0.5rem;
     }
 
     h1, h2, h3, h4, h5, h6 {

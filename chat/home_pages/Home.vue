@@ -6,7 +6,7 @@
             <span class="mr-auto">
                 <h5>Welcome Home!</h5>
             </span>
-            <span class="ml-auto d-flex" style="gap: 0.5rem;">
+            <span class="ml-auto d-flex">
                 <span v-if="logs">
                     <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>
@@ -134,6 +134,14 @@ export default class Home extends Vue {
 <style lang="scss">
 .page-header {
     height: 3em;
+
+    > .mr-auto {
+        gap: 0.5rem;
+    }
+
+    > .ml-auto {
+        gap: 0.5rem;
+    }
 }
 
 .home-row {
