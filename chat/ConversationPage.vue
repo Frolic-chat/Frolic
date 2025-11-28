@@ -13,11 +13,14 @@
                 <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
                     <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 3em"/>
                     <span class="d-flex flex-column align-self-start">
-                        <user :character="conversation.character" style="height: 1.5em;" :match="false" :reusable="true" :showStatus="false" :immediate="true"></user>
-                        <span v-if="conversation.character.status" style="height: 1.5em;" class="text-truncate">
+                        <user :character="conversation.character"
+                            classes="text-truncate" style="height: 1.5em;"
+                            :match="false" :reusable="true" :showStatus="true" :immediate="true"
+                        ></user>
+                        <span v-if="conversation.character.status !== 'online'" style="height: 1.5em;" class="text-truncate">
                             {{ userStatusWord }}
                         </span>
-                        <span v-else-if="userMemo" class="text-truncate">
+                        <span v-else-if="userMemo" class="text-truncate" style="height: 1.5em;">
                             <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}</b>
                             <b class="d-lg-none fa-solid fa-square-pen"></b>
                              {{ userMemo.split('\n')[0] }}
