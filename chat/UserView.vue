@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Linebreaks inside this template will break BBCode views
      v-bind character and channel are used in UserMenu handleEvent when crawling up the DOM -->
-<template><span v-show="showing" :class="userClass" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
+<template><span v-show="showing" :class="[ userClass, classes ]" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
 
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
@@ -23,7 +23,7 @@ export function getStatusIcon(status: Character.Status): string {
     case 'dnd':
         return 'fa fa-minus-circle';
     case 'offline':
-        return 'fa fa-ban';
+        return 'fa fa-user-slash';
     case 'away':
         return 'far fa-circle';
     case 'busy':
