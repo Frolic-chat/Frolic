@@ -6,7 +6,7 @@
             <span class="mr-auto">
                 <h5>Welcome Home!</h5>
             </span>
-            <span class="ml-auto d-flex">
+            <span class="ml-auto d-flex flex-shrink-0">
                 <span v-if="logs">
                     <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>

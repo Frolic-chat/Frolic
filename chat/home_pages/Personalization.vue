@@ -6,7 +6,7 @@
             <div class="mr-auto">
                 <h5>About You</h5>
             </div>
-            <div class="ml-auto">
+            <div class="ml-auto flex-shrink-0">
                 <slot name="title-end"></slot>
             </div>
         </div>

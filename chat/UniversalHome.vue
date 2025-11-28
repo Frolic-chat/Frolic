@@ -89,7 +89,7 @@
             <div class="page-header d-flex align-items-center">
                 <div class="mr-auto">
                 </div>
-                <div class="ml-auto">
+                <div class="ml-auto flex-shrink-0">
                     <div ref="tabsContainer1" id="tabs-container-in-linkconvdialog" style="display: contents;"></div>
                 </div>
             </div>
@@ -114,7 +114,7 @@
             <div class="page-header d-flex align-items-center">
                 <div class="mr-auto">
                 </div>
-                <div class="ml-auto">
+                <div class="ml-auto flex-shrink-0">
                     <div ref="tabsContainer2channel" id="tabs-container-in-channeldesc" style="display: contents;"></div>
                 </div>
             </div>
@@ -140,7 +140,7 @@
             <div class="page-header d-flex align-items-center">
                 <div class="mr-auto">
                 </div>
-                <div class="ml-auto">
+                <div class="ml-auto flex-shrink-0">
                     <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
                 </div>
             </div>
@@ -169,7 +169,7 @@
             <div class="page-header d-flex align-items-center">
                 <div class="mr-auto">
                 </div>
-                <div class="ml-auto">
+                <div class="ml-auto flex-shrink-0">
                     <div ref="tabsContainer3" id="tabs-container-in-convosettings" style="display: contents;"></div>
                 </div>
             </div>

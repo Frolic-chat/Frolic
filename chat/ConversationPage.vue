@@ -26,7 +26,7 @@
                     <h5 class="text-truncate">{{ conversation.name }}</h5>
                 </span>
 
-                <span class="ml-auto d-flex"><!-- right side -->
+                <span class="ml-auto d-flex flex-shrink-0"><!-- right side -->
                     <span style="display:contents;">
                         <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
                             <span class="fa fa-edit"></span>

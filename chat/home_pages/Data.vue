@@ -4,7 +4,7 @@
     <template v-slot:prescroll>
         <div class="page-header d-flex">
             <div class="mr-auto align-self-center"><slot name="title"></slot></div>
-            <div class="ml-auto align-self-center"><slot name="title-end"></slot></div>
+            <div class="ml-auto align-self-center flex-shrink-0"><slot name="title-end"></slot></div>
         </div>
     </template>
 
