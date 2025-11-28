@@ -12,13 +12,15 @@
             <div class="info d-flex align-items-center">
                 <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
                     <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 3em"/>
-                    <span class="d-flex flex-column align-self-start mr-0">
-                        <user :character="conversation.character" :match="userViewMatch()" :reusable="true" :showStatus="true" :immediate="true"></user>
-                        <bbcode v-if="conversation.character.statusText" class="text-truncate" :text="conversation.character.statusText"></bbcode>
+                    <span class="d-flex flex-column align-self-start">
+                        <user :character="conversation.character" style="height: 1.5em;" :match="false" :reusable="true" :showStatus="false" :immediate="true"></user>
+                        <span v-if="conversation.character.status" style="height: 1.5em;" class="text-truncate">
+                            {{ userStatusWord }}
+                        </span>
                         <span v-else-if="userMemo" class="text-truncate">
-                            <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}:</b>
+                            <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}</b>
                             <b class="d-lg-none fa-solid fa-square-pen"></b>
-                             {{ userMemo }}
+                             {{ userMemo.split('\n')[0] }}
                         </span>
                     </span>
                 </span>
@@ -864,9 +866,12 @@
             return member !== undefined && member.rank > Channel.Rank.Member;
         }
 
+        get userStatusWord(): string | undefined {
+            if (!this.isPrivate(this.conversation))
+                return undefined;
 
-        userViewMatch(): boolean {
-            return this.isPrivate(this.conversation) && window.innerWidth >= 992;
+            const s = this.conversation.character.status;
+            return s.charAt(0).toUpperCase() + s.slice(1);
         }
     }
 </script>
