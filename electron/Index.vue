@@ -50,16 +50,19 @@
                         </label>
                     </div>
                     <div class="form-group" style="margin:0;text-align:right"><!-- login button -->
-                        <button v-if="!createHookFinished || tasksStillRunning" key="login-denied" class="btn btn-primary" disabled>
+                        <button v-if="!createHookFinished || tasksStillRunning" class="btn btn-primary" disabled>
                             <span class="text-center">Loading...</span>
                         </button>
 
-                        <button v-else-if="!fatalError()" key="login" class="btn btn-primary" @click="login" :disabled="loggingIn">
+                        <button v-else-if="!fatalError()" class="btn btn-primary" @click="login" :disabled="loggingIn">
                             {{ l(loggingIn ? 'login.working' : 'login.submit') }}
                         </button>
                     </div>
 
                     <div class="container form-group loading-block">
+                        <div v-if="!createHookFinished || tasksStillRunning" class="my-2">
+                            {{ upgradeMessage }}
+                        </div>
                         <login-tasks :tasks="tasks"></login-tasks>
                     </div>
                 </div>
@@ -122,8 +125,9 @@
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
 
-    import electronLog from 'electron-log';
-    const log = electronLog.scope('Index');
+    import NewLogger from '../helpers/log';
+    const log = NewLogger('Index');
+    // const logBB = NewLogger('bbcode');
 
     import * as fs from 'fs';
     import * as path from 'path';
@@ -201,10 +205,12 @@
         defaultCharacter?: number;
         l = l;
 
+        // This data is passed in via new Index() in chat.ts
         settings!: GeneralSettings;
         hasCompletedUpgrades!: boolean;
-        debugBBCode = false;
 
+        upgradeMessage = '';
+        debugBBCode = false;
         importProgress = 0;
         profileName = '';
         profileStatus = '';
@@ -271,24 +277,25 @@
 
         @Hook('created')
         async created(): Promise<void> {
-            // Event bus is supposed to be for only character/cache/preview updates.
             EventBus.$on('error', ErrorHandler.capture);
 
             this.debugBBCode = this.settings.argv.includes('--debug-bbcode');
 
             await this.start.taskDisplay();
 
-            this.awaitStartUpTask('core',  this.start.cache);
-            this.awaitStartUpTask('eicon', this.start.eicons);
+            void this.awaitStartUpTask('core',  this.start.cache);
+            void this.awaitStartUpTask('eicon', this.start.eicons);
             if (this.settings.account)
-                this.awaitStartUpTask('index', this.start.restoreLogin);
+                void this.awaitStartUpTask('index', this.start.restoreLogin);
 
-            parent.send('rising-upgrade-complete');
-            electron.ipcRenderer.send('rising-upgrade-complete');
-            this.hasCompletedUpgrades = true;
+            if (!this.hasCompletedUpgrades) {
+                this.upgradeMessage = 'Version upgrade; this may take a while.';
 
-            // Pointless, this is the same object we just passed into initcore()
-            //Vue.set(core.state, 'generalSettings', this.settings);
+                // It is pointless to make this wait for anything to actually change; app version is already upgraded to latest in electron main, so we'll never "rerun" an upgrade even if it fails.
+                parent.send('rising-upgrade-complete');
+                electron.ipcRenderer.send('rising-upgrade-complete');
+                this.hasCompletedUpgrades = true;
+            }
 
             await this.start.listeners();
 

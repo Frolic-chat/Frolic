@@ -587,7 +587,7 @@ function openBrowserSettings(): Electron.BrowserWindow | undefined {
 let zoomLevel = 0;
 
 function onReady(): void {
-    let hasCompletedUpgrades = false;
+    let hasCompletedUpgrades = true;
 
     const logLevel: LogLevelOption = 'warn';
     Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
@@ -606,6 +606,8 @@ function onReady(): void {
 
     const targetVersion = app.getVersion();
     if (settings.version !== targetVersion) {
+        hasCompletedUpgrades = false;
+
         // Run all routines necessary to upgrade the general settings.
         versionUpgradeRoutines(settings.version, targetVersion);
 

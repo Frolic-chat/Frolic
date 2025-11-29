@@ -1,15 +1,15 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div>
-    <div class="row form-group" v-for="t in tasks" :key="t.name">
-        <div class="col-1 align-right">
+    <div class="row" v-for="t in tasks" :key="t.name">
+        <div class="col-auto align-right">
             <span v-if="t.running" class="fas fa-circle-notch fa-spin"></span>
             <span v-else-if="!t.error" class="text-muted fas fa-check"></span>
             <span v-else-if="t.error.fatal" >🛑</span>
             <span v-else-if="!t.error.fatal">⚠</span>
             <span v-else class="fa-solid fa-question"></span>
         </div>
-        <div class="col-10">
+        <div class="col">
             <div class="">
                 <span :class="{ 'font-weight-bold': t.error, 'text-muted': !t.error && !t.running }">
                     {{ t.name }}
