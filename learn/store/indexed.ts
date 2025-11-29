@@ -27,6 +27,9 @@ export class IndexedStore implements PermanentIndexedStore {
     protected dbName: string;
     protected db: IDBDatabase;
 
+    protected static readonly LEGACY_DB_NAME = 'flist-ascending-profiles';
+    protected static readonly DB_NAME = 'frolic-profiles';
+
     protected static readonly STORE_NAME = 'profiles';
     protected static readonly LAST_FETCHED_INDEX_NAME = 'idxLastFetched';
     protected static readonly AUX_STORE_NAME = 'overrides';
@@ -36,56 +39,84 @@ export class IndexedStore implements PermanentIndexedStore {
         this.db = db;
     }
 
-    static async open(dbName: string = 'flist-ascending-profiles'): Promise<IndexedStore> {
+    /**
+     * Migrating old rising db to already opened new frolic db
+     * @param new_db frolic db; already opened.
+     */
+    static async migrate(new_db: IDBDatabase) {
         // v3 = last Rising version
-        const request = indexedDB.open(dbName, 3);
+        const old_db = await promisifyRequest<IDBDatabase>(
+            indexedDB.open(IndexedStore.LEGACY_DB_NAME, 3) // last Rising version; older = useless
+        );
 
-        request.onupgradeneeded = async event => {
-            const db = request.result;
+        const old_tx = old_db.transaction(IndexedStore.STORE_NAME, 'readonly');
+        const new_tx = new_db.transaction(IndexedStore.STORE_NAME, 'readwrite');
 
-            if (!db.objectStoreNames.contains(IndexedStore.STORE_NAME)) {
-                db.createObjectStore(IndexedStore.STORE_NAME, { keyPath: 'id' });
-            }
+        const old_store = old_tx.objectStore(IndexedStore.STORE_NAME);
+        const new_store = new_tx.objectStore(IndexedStore.STORE_NAME);
 
-            // technically v4 "upgrade"
-            if (!db.objectStoreNames.contains(IndexedStore.AUX_STORE_NAME)) {
-                db.createObjectStore(IndexedStore.AUX_STORE_NAME, { keyPath: 'id' });
-                const store = request.transaction!.objectStore(IndexedStore.AUX_STORE_NAME);
+        // Modern getAll way. But whole db is a memory concern.
+        // const records = await promisifyRequest<any[]>(
+        //     old_store.getAll()
+        // );
+        // records.forEach(r => new_store.put(r));
 
-                store.createIndex(
-                    IndexedStore.LAST_FETCHED_INDEX_NAME,
-                    'lastFetched', {
-                        unique: false,
-                        multiEntry: false
-                   }
-                );
-
-                // Upgrading Gender -> Gender[] in profile storage?
-                // Thankfully we don't need to; gender from the store isn't used anywhere, so we can only use new gender arrays and wait for cache expiry to remove the old ones. TIME solves all problems. :)
-            }
-
-            if (event.oldVersion < 2) {
-                const store = request.transaction!.objectStore(IndexedStore.STORE_NAME);
-
-                store.createIndex(
-                    IndexedStore.LAST_FETCHED_INDEX_NAME,
-                    'lastFetched',
-                  {
-                      unique: false,
-                      multiEntry: false
-                  }
-                );
-            }
-
-            if (event.oldVersion < 3) {
-                const store = request.transaction!.objectStore(IndexedStore.STORE_NAME);
-                const req = store.clear();
-
-                await promisifyRequest(req);
+        // Legacy cursor way. Useful for memory constraint.
+        const cursor_request = old_store.openCursor();
+        cursor_request.onsuccess = () => {
+            const r = cursor_request.result
+            if (r) {
+                new_store.put(r.value);
+                r.continue(); // next request
             }
         };
 
-        return new IndexedStore(await promisifyRequest<IDBDatabase>(request), dbName);
+        await Promise.all([
+            new Promise<void>(r => old_tx.oncomplete = () => r()),
+            new Promise<void>(r => new_tx.oncomplete = () => r()),
+        ]);
+
+        old_db.close();
+    };
+
+    static async open(dbName: string = this.DB_NAME): Promise<IndexedStore> {
+        const request = indexedDB.open(dbName, 1);
+
+        let upgradeNeeded = false;
+
+        request.onupgradeneeded = e => {
+            const db = request.result;
+
+            if (!db.objectStoreNames.contains(IndexedStore.STORE_NAME)) {
+                console.info('Creating base store for threaded worker. First time?');
+
+                const store = db.createObjectStore(IndexedStore.STORE_NAME, { keyPath: 'id' });
+                      store.createIndex(IndexedStore.LAST_FETCHED_INDEX_NAME, 'lastFetched');
+            }
+
+            if (!db.objectStoreNames.contains(IndexedStore.AUX_STORE_NAME)) {
+                console.info('Creating auxiliary store for threaded worker. First time?');
+
+                const aux_store = db.createObjectStore(IndexedStore.AUX_STORE_NAME, { keyPath: 'id' });
+                      aux_store.createIndex(IndexedStore.LAST_FETCHED_INDEX_NAME, 'lastFetched');
+            }
+
+            // I want to call migrate here if we have an old db and our new db is brand new.
+            if (e.oldVersion === 0)
+                upgradeNeeded = true;
+        };
+
+        // "onsuccess" success.
+        const db = await promisifyRequest<IDBDatabase>(request);
+
+        if (upgradeNeeded) {
+            try {
+                await IndexedStore.migrate(db);
+            }
+            catch {} // ¯\_(ツ)_/¯
+        }
+
+        return new IndexedStore(db, dbName);
     }
 
 
@@ -175,12 +206,10 @@ export class IndexedStore implements PermanentIndexedStore {
         const data = await this.prepareProfileData(character);
 
         const tx = this.db.transaction(IndexedStore.STORE_NAME, 'readwrite');
-        const putRequest = tx.objectStore(IndexedStore.STORE_NAME).put(data);
 
-        // tslint:disable-next-line no-any
-        await promisifyRequest(putRequest);
-
-        // console.log('IDX store profile', c.character.name, data);
+        await promisifyRequest(
+            tx.objectStore(IndexedStore.STORE_NAME).put(data)
+        );
     }
 
     async getOverrides(name: string): Promise<OverrideRecord | undefined> {
