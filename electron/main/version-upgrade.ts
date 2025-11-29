@@ -1,4 +1,4 @@
-//import * as semver from 'semver';
+// SPDX-License-Identifier: AGPL-3.0-or-later
 const semver = require('semver');
 
 import Logger from "electron-log";

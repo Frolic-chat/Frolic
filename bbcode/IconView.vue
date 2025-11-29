@@ -16,7 +16,7 @@ import {Component, Hook, Prop} from '@f-list/vue-ts';
 import Vue from 'vue';
 import { EventBus } from '../chat/preview/event-bus';
 import * as Utils from '../site/utils';
-import { characterImage } from '../chat/common';
+import core from '../chat/core';
 
 @Component
 export default class IconView extends Vue {
@@ -47,7 +47,7 @@ export default class IconView extends Vue {
     }
 
     getAvatarUrl(): string {
-      return characterImage(this.character);
+      return core.characters.getImage(this.character);
     }
 
 

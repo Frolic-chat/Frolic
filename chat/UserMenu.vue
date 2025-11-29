@@ -19,10 +19,12 @@
                 <span class="fa fa-fw fa-comment"></span>
                 {{l('user.messageJump')}}
             </a>
+            <!--
             <a tabindex="-1" href="#" @click.prevent="openConversation(false)" class="list-group-item list-group-item-action">
                 <span class="fa fa-fw fa-plus"></span>
                 {{l('user.message')}}
             </a>
+            -->
             <a tabindex="-1" :href="profileLink" target="_blank" v-if="!showProfileFirst" class="list-group-item list-group-item-action">
                 <span class="fa fa-fw fa-user"></span>
                 {{l('user.profile')}}
@@ -35,12 +37,16 @@
                 <span class="far fa-fw fa-bookmark"></span>
                 {{ l(character.isBookmarked ? 'user.unbookmark' : 'user.bookmark') }}
             </a>
+            <a tabindex="-1" href="#" @click.prevent="toggleWatched()" class="list-group-item list-group-item-action" v-show="channel">
+                <span class="fa-solid fa-fw" :class="{'fa-eye-slash': watched, 'fa-eye': !watched }"></span>
+                {{ l(watched ? 'user.unwatch' : 'user.watch') }}
+            </a>
             <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
-                <span class="far fa-fw fa-ad"></span>
+                <span class="fa-solid fa-fw fa-rectangle-ad"></span>
                 {{l('user.adLog')}}
             </a>
             <a tabindex="-1" href="#" @click.prevent="setHidden()" class="list-group-item list-group-item-action" v-show="!isChatOp">
-                <span class="fa fa-fw fa-eye-slash"></span>
+                <span class="fa fa-fw fa-thumbs-down"></span>
                 {{ l(isHidden ? 'user.unhide' : 'user.hide') }}
             </a>
             <a tabindex="-1" href="#" @click.prevent="report()" class="list-group-item list-group-item-action" style="border-top-width:1px">
@@ -75,7 +81,7 @@ import Vue from 'vue';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
 import CharacterAdView from './character/CharacterAdView.vue';
-import { characterImage, errorToString, getByteLength, profileLink } from './common';
+import { errorToString, getByteLength, profileLink } from './common';
 import core from './core';
 import { Channel, Character } from './interfaces';
 import l from './localize';
@@ -83,6 +89,9 @@ import ReportDialog from './ReportDialog.vue';
 import { Matcher, MatchReport } from '../learn/matcher';
 import MatchTags from './preview/MatchTags.vue';
 import { MemoManager } from './character/memo';
+
+import NewLogger from '../helpers/log';
+const log = NewLogger('UserMenu');
 
 @Component({
         components: {'match-tags': MatchTags, bbcode: BBCodeView(core.bbCodeParser), modal: Modal, 'ad-view': CharacterAdView}
@@ -102,6 +111,21 @@ import { MemoManager } from './character/memo';
         memoLoading = false;
         match: MatchReport | null = null;
         memoManager?: MemoManager;
+
+        get conversation() {
+            if (this.channel)
+                return core.conversations.channelConversations.find(c => c.channel.id === this.channel!.id);
+            else if (this.character)
+                return core.conversations.privateConversations.find(c => c.key === this.character!.name.toLowerCase());
+        }
+
+        get watched(): boolean {
+            if (!this.channel || !this.character || !this.conversation?.settings.highlightUsernames)
+                return false;
+
+            return this.conversation.settings.highlightUsernames
+                .includes(this.character.name.toLowerCase());
+        }
 
         get memoLength() {
             return this.memo ? getByteLength(this.memo) : 0;
@@ -140,6 +164,21 @@ import { MemoManager } from './character/memo';
             catch (e) {
                 alert(errorToString(e));
             }
+        }
+
+        toggleWatched(): void {
+            if (!this.channel || !this.character || !this.conversation)
+                return;
+
+            const hilites = this.conversation.settings.highlightUsernames;
+
+            const i = hilites.indexOf(this.character.name.toLowerCase());
+            if (i < 0)
+                hilites.push(this.character.name.toLowerCase());
+            else
+                hilites.splice(i, 1);
+
+            setTimeout(() => log.debug({w: this.watched, hilites }), 10);
         }
 
         setHidden(): void {
@@ -195,7 +234,7 @@ import { MemoManager } from './character/memo';
                 return false;
             }
 
-            const cache = core.cache.adCache.get(this.character.name);
+            const cache = core.cache.adCache.getSync(this.character.name);
 
             if (!cache) {
                 return false;
@@ -282,21 +321,25 @@ import { MemoManager } from './character/memo';
             this.match = null;
 
             if (core.state.settings.risingComparisonInUserMenu) {
-              const myProfile = core.characters.ownProfile;
-              const theirProfile = await core.cache.profileCache.get(this.character.name);
+                const myProfile = core.characters.ownProfile;
 
-              if (myProfile && theirProfile) {
-                const match = Matcher.identifyBestMatchReport(myProfile.character, theirProfile.character.character);
+                const [ theirProfile, myOverrides, theirOverrides ] = await Promise.all([
+                    core.cache.profileCache.get(this.character.name),
+                    core.characters.getAsync(core.characters.ownCharacter.name).then(c => c.overrides),
+                    core.characters.getAsync(this.character.name).then(c => c.overrides),
+                ]);
 
-                if (Object.keys(match.merged).length > 0) {
-                  this.match = match;
+                if (myProfile && theirProfile) {
+                    const match = Matcher.identifyBestMatchReport(myProfile.character, theirProfile.character.character, myOverrides, theirOverrides);
+
+                    if (Object.keys(match.merged).length)
+                        this.match = match;
                 }
-              }
             }
 
             this.$nextTick(() => {
                 const menu = <HTMLElement>this.$refs['menu'];
-                this.characterImage = characterImage(character.name);
+                this.characterImage = core.characters.getImage(character.name);
                 if((parseInt(this.position.left, 10) + menu.offsetWidth) > window.innerWidth)
                     this.position.left = `${window.innerWidth - menu.offsetWidth - 1}px`;
                 if((parseInt(this.position.top, 10) + menu.offsetHeight) > window.innerHeight)

@@ -1,12 +1,15 @@
-
-export type ProfileStoreCommand = 'flush' | 'start' | 'stop' | 'update-meta' | 'store' | 'get' | 'init';
+// SPDX-License-Identifier: AGPL-3.0-or-later
+export type ProfileStoreCommand =
+  | 'init'          | 'start'               | 'stop'
+  | 'update-meta'
+  | 'get-profile'   /*| 'get-profile-batch'*/   | 'store-profile'   | 'flush-profiles'
+  | 'get-overrides' | 'get-overrides-batch' | 'store-overrides' | 'flush-overrides';
 
 export interface IndexedRequest {
   cmd: ProfileStoreCommand;
   id: string;
   params: Record<string, any>;
 }
-
 
 export interface IndexedResponse {
   id: string;

@@ -342,6 +342,8 @@ export default class EIconSelector extends CustomDialog {
 
     .carousel-item {
         display: inline-block;
+        width: initial;
+        margin-right: initial;
         border: solid 1px transparent !important;
         position: relative;
 

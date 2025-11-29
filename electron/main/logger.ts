@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import path from 'path';
 import MainLogger from 'electron-log/main';
 import { PathVariables, LogMessage } from 'electron-log';
@@ -11,5 +12,5 @@ export default function (logDir: string): void {
         return path.join(logDir, file);
     };
 
-    MainLogger.error('debug.electron-log', { fileName: MainLogger.transports.file.fileName, getFile: MainLogger.transports.file.getFile().path });
+    MainLogger.debug('debug.electron-log', { fileName: MainLogger.transports.file.fileName, getFile: MainLogger.transports.file.getFile().path });
 }

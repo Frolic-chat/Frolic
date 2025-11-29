@@ -1,5 +1,6 @@
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
 import { CharacterOverrides } from './characters';
+import { Kink as MatcherKink } from '../learn/matcher-types';
 
 //tslint:disable:no-shadowed-variable
 export namespace Connection {
@@ -177,19 +178,33 @@ export namespace Character {
         char?: Character;
     }
 
+    export interface CustomGender {
+        string:   string,
+        match:    MatcherKink[], // KinkIds
+        mismatch: MatcherKink[], // KinkIds
+        colors?: Array<[ number, number, number ]>, // Store oklch colors(?) for custom coloration.
+        icon?: string,
+        // flag?: string, // Does colors replace this?
+        version:  number,
+    }
+
     export interface State {
         readonly ownCharacter: Character
-        readonly friends: ReadonlyArray<Character>
-        readonly bookmarks: ReadonlyArray<Character>
-        readonly ignoreList: ReadonlyArray<string>
-        readonly opList: ReadonlyArray<string>
-        readonly friendList: ReadonlyArray<string>
-        readonly bookmarkList: ReadonlyArray<string>
+        readonly friends:      Character[]
+        readonly bookmarks:    Character[]
+        readonly ignoreList:   Set<string>
+        readonly opList:       Set<string>
+        readonly friendList:   Set<string>
+        readonly bookmarkList: Set<string>
 
         readonly ownProfile?: CharacterProfile;
 
         validateCharacter(name: string): ValidatedCharacter;
-        get(name: string): Character;
+        get(name: string, useStore?: boolean): Character;
+        getAsync(name: string, useStore?: boolean): Promise<Character>;
+        getImage(this: any | never, character: string | Character): string;
+        getGender(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): CustomGender;
+        getGenderString(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): string;
         setOverride(name: string, type: keyof CharacterOverrides, value: any): void;
     }
 
@@ -198,7 +213,7 @@ export namespace Character {
      */
     export interface Character {
         readonly name: string
-        readonly gender: Gender | undefined
+        readonly gender: Gender
         readonly status: Status
         readonly statusText: string
         readonly isFriend: boolean

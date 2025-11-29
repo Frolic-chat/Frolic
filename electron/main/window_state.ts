@@ -36,7 +36,7 @@ export function setSavedWindowState(window: Electron.BrowserWindow, windowStateP
         x: bounds.x,
         y: bounds.y
     };
-    fs.writeFileSync(windowStatePath, JSON.stringify(windowState));
+    fs.writeFileSync(windowStatePath, JSON.stringify(windowState, null, 4));
 }
 
 export function getSavedWindowState(windowStatePath: string): SavedWindowState {

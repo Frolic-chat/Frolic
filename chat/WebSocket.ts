@@ -1,6 +1,6 @@
 import {WebSocketConnection} from '../fchat';
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('WebSocket');
+import NewLogger from '../helpers/log';
+const log = NewLogger('WebSocket');
 
 export default class Socket implements WebSocketConnection {
     static host = 'wss://chat.f-list.net/chat2';

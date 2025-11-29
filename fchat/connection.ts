@@ -3,9 +3,8 @@ import * as qs from 'qs';
 import {Connection as Interfaces, WebSocketConnection} from './interfaces';
 import ReadyState = WebSocketConnection.ReadyState;
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('fchat/connection');
-//const log = Logger;
+import NewLogger from '../helpers/log';
+const log = NewLogger('fchat/connection');
 
 import core from '../chat/core';
 import throat from 'throat';

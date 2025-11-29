@@ -2,7 +2,7 @@
 /**
  * @license
  * This file is part of Frolic!
- * Copyright (C) 2018 F-List, 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
+ * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
  *
@@ -54,19 +54,31 @@ const app = Electron.app; // Module to control application life.
 import InitLogger from './main/logger';
 InitLogger(app.getPath('logs'));
 
-import Logger from 'electron-log/main';
-const log = Logger.scope('main');
+import NewLogger from './main/custom-logger';
+const l_m = process.argv.includes('--debug-main');
+const l_s = process.argv.includes('--debug-settings');
+const l_b = process.argv.includes('--debug-browser');
+const log = NewLogger('main', () => l_m);
+const logSettings = NewLogger('main/settings', () => l_s);
+const logBrowser = NewLogger('main/browser', () => l_b);
 
+import Logger from 'electron-log';
 import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log';
 
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
+import * as LicenseHandler from './main/license-handler';
+(async () => {
+    if (!(await LicenseHandler.init(app.getAppPath())))
+        log.warn('Failed to load license handler main-side.');
+})();
+
 import { exec } from 'child_process';
 import { FindExeFileFromName } from '../helpers/utils';
 
 import l from '../chat/localize';
-import {GeneralSettings} from './common';
+import { GeneralSettings, GeneralSettingsUpdate } from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
 import * as windowState from './main/window_state';
 import SecureStore from './main/secure-store';
@@ -74,8 +86,18 @@ import { AdCoordinatorHost } from '../chat/ads/ad-coordinator-host';
 import { BlockerIntegration } from './blocker/blocker';
 import * as FROLIC from '../constants/frolic';
 import { IncognitoArgFromBrowserPath } from '../constants/general';
-import checkForGitRelease from './main/updater';
+import * as UpdateCheck from './main/updater';
 import versionUpgradeRoutines from './main/version-upgrade';
+
+//region: 2nd Instance
+const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
+if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
+    app.quit();
+else {
+    app.on('second-instance', () => PrimaryWindow?.show());
+    app.on('ready', onReady);
+}
+
 
 import InitIcon from './main/icon';
 const icon = {
@@ -105,22 +127,23 @@ if (!fs.existsSync(settingsFile)) {
 }
 else {
     try {
-        Object.assign(settings, <GeneralSettings>JSON.parse(fs.readFileSync(settingsFile, 'utf8')));
+        Object.assign(settings, JSON.parse(fs.readFileSync(settingsFile, 'utf8')) as GeneralSettings);
+        settings.argv = process.argv;
     }
     catch (e) {
-        log.error(`Error loading settings: ${e}`);
+        logSettings.error(`Error loading settings: ${e}`);
     }
 }
 
 if (!settings.hwAcceleration) {
-    log.info('Disabling hardware acceleration.');
+    logSettings.info('Disabling hardware acceleration.');
     app.disableHardwareAcceleration();
 }
 
 // async function setDictionary(lang: string | undefined): Promise<void> {
 //     if(lang !== undefined) await ensureDictionary(lang);
 //     settings.spellcheckLang = lang;
-//     setGeneralSettings(settings);
+//     updateGeneralSettings(settings);
 // }
 
 
@@ -146,21 +169,45 @@ async function toggleDictionary(lang: string): Promise<void> {
 
     settings.spellcheckLang = Array.from(new Set(newLangs));
 
-    setGeneralSettings(settings);
+    updateGeneralSettings(settings);
 
     updateSpellCheckerLanguages(newLangs);
 }
 
-function setGeneralSettings(value: GeneralSettings): void {
-    fs.writeFileSync(settingsFile, JSON.stringify(value));
+let generalSettingsTimestamp = 0;
 
-    for (const w of Electron.webContents.getAllWebContents()) w.send('settings', settings);
+/**
+ * Call update instead of save when we need to update the timestamp - IE, the update is generated in electron main side. `saveGeneralSettings` is invoked internally and will broadcast the new timestamp to the renderers with the new settings object. Failure to call this function and update the timestamp will cause renderers to ignore your "out-of-date" update.
+ */
+function updateGeneralSettings(s: GeneralSettings): void {
+    generalSettingsTimestamp = Date.now();
+    logSettings.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", generalSettingsTimestamp);
+    saveGeneralSettings(s);
+}
+
+// Optionally takes a webcontents we're saving from.
+function saveGeneralSettings(s: GeneralSettings, wc?: Electron.WebContents): void {
+    const ts = generalSettingsTimestamp;
+
+    if (wc)
+        logSettings.debug('Received update; saving and broadcasting.', wc.id, ts);
+    else
+        logSettings.debug('Local update; broadcasting general settings...', ts);
+
+    fs.writeFileSync(settingsFile, JSON.stringify(s, null, 4));
+
+    const id = wc?.id;
+    for (const w of Electron.webContents.getAllWebContents())
+        if (id && id === w.id)
+            logSettings.debug('Found webcontents match; Good once per timestamp.', w.id, ts);
+        else
+            w.send('settings', { settings: s, timestamp: ts });
 
     shouldImportSettings = false;
 
     const logLevel: LogLevelOption = 'warn';
-    Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
-    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
+    Logger.transports.file.level    = s.risingSystemLogLevel || logLevel;
+    Logger.transports.console.level = s.risingSystemLogLevel || logLevel;
 }
 
 async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
@@ -226,11 +273,11 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         catch {
             const stdout = FindExeFileFromName(settings.browserPath);
 
-            log.info(`Unexpected custom browser, but found "${stdout}" - Attemping to use it.`);
+            logBrowser.info(`Unexpected custom browser, but found "${stdout}" - Attemping to use it.`);
 
             fs.accessSync(stdout, fs.constants.X_OK);
             settings.browserPath = stdout;
-            setGeneralSettings(settings);
+            updateGeneralSettings(settings);
         }
     }
     catch {
@@ -251,7 +298,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
 
         if (incognitoArg) {
             settings.browserIncognitoArg = incognitoArg;
-            setGeneralSettings(settings);
+            updateGeneralSettings(settings);
         }
         else {
             // TODO: Robust error handler.
@@ -268,11 +315,11 @@ function openURLExternally(url: string, incognito: boolean = false): void {
 
     if (!settings.browserArgs) {
         settings.browserArgs = '%s';
-        setGeneralSettings(settings);
+        updateGeneralSettings(settings);
     }
     else if (!settings.browserArgs.includes('%s')) {
         settings.browserArgs += ' %s';
-        setGeneralSettings(settings);
+        updateGeneralSettings(settings);
     }
 
     // Ensure url is encoded, but not twice.
@@ -283,7 +330,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     // Quote URL to prevent issues with spaces and special characters
     const args = (incognito ? settings.browserIncognitoArg + ' ': '') + settings.browserArgs.replaceAll('%s', `"${url}"`);
 
-    log.silly(`Opening: ${args} with ${settings.browserPath}`);
+    logBrowser.silly(`Opening: ${args} with ${settings.browserPath}`);
 
     // MacOS bug: If app browser is Safari and OS browser is not, both will open.
     // https://developer.apple.com/forums/thread/685385
@@ -540,7 +587,7 @@ function openBrowserSettings(): Electron.BrowserWindow | undefined {
 let zoomLevel = 0;
 
 function onReady(): void {
-    let hasCompletedUpgrades = false;
+    let hasCompletedUpgrades = true;
 
     const logLevel: LogLevelOption = 'warn';
     Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
@@ -553,13 +600,19 @@ function onReady(): void {
     app.setAppUserModelId('com.squirrel.fchat.Frolic');
     app.on('open-file', createWindow);
 
+    app.on('web-contents-created', (_e, wc) => {
+        wc.setWindowOpenHandler(() => ({ action: "deny" }));
+    });
+
     const targetVersion = app.getVersion();
     if (settings.version !== targetVersion) {
+        hasCompletedUpgrades = false;
+
         // Run all routines necessary to upgrade the general settings.
         versionUpgradeRoutines(settings.version, targetVersion);
 
         settings.version = targetVersion;
-        setGeneralSettings(settings);
+        updateGeneralSettings(settings);
     }
 
     function updateAllZoom(c: Electron.WebContents[]   = [],
@@ -620,7 +673,7 @@ function onReady(): void {
 
     const setSystemLogLevel = (logLevel: LogLevelOption) => {
         settings.risingSystemLogLevel = logLevel;
-        setGeneralSettings(settings);
+        updateGeneralSettings(settings);
     };
 
 
@@ -631,14 +684,14 @@ function onReady(): void {
 
     const setTheme = (theme: string) => {
         settings.theme = theme;
-        setGeneralSettings(settings);
+        updateGeneralSettings(settings);
     };
 
 
     //region Updater
     const updateCheckTimer = setInterval(
         async () => {
-            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
 
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
@@ -655,7 +708,7 @@ function onReady(): void {
 
     setTimeout(
         async () => {
-            const hasUpdate = await checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
 
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
@@ -669,6 +722,8 @@ function onReady(): void {
         },
         6000 // 6 seconds
     );
+
+    UpdateCheck.registerReleaseInfoIpc();
 
     const updateReadyMenuItem = {
         label: l('action.updateAvailable'),
@@ -740,7 +795,7 @@ function onReady(): void {
                                 PrimaryWindow?.webContents.send('quit');
 
                                 settings.logDirectory = dir[0];
-                                setGeneralSettings(settings);
+                                updateGeneralSettings(settings);
 
                                 app.quit();
                             }
@@ -753,7 +808,7 @@ function onReady(): void {
                     checked: settings.closeToTray,
                     click: m => {
                         settings.closeToTray = m.checked;
-                        setGeneralSettings(settings);
+                        updateGeneralSettings(settings);
                     }
                 },
                 {
@@ -762,7 +817,7 @@ function onReady(): void {
                     checked: settings.profileViewer,
                     click: m => {
                         settings.profileViewer = m.checked;
-                        setGeneralSettings(settings);
+                        updateGeneralSettings(settings);
                     }
                 },
                 {
@@ -784,14 +839,14 @@ function onReady(): void {
                     checked: settings.hwAcceleration,
                     click: m => {
                         settings.hwAcceleration = m.checked;
-                        setGeneralSettings(settings);
+                        updateGeneralSettings(settings);
                     }
                 },
                 // {
                 //     label: l('settings.beta'), type: 'checkbox', checked: settings.beta,
                 //     click: async(item: electron.MenuItem) => {
                 //         settings.beta = item.checked;
-                //         setGeneralSettings(settings);
+                //         updateGeneralSettings(settings);
                 //         // electron.autoUpdater.setFeedURL({url: updaterUrl+(item.checked ? '?channel=beta' : ''), serverType: 'json'});
                 //         // return electron.autoUpdater.checkForUpdates();
                 //     }
@@ -820,7 +875,7 @@ function onReady(): void {
                     checked: settings.risingDisableWindowsHighContrast,
                     click: m => {
                         settings.risingDisableWindowsHighContrast = m.checked;
-                        setGeneralSettings(settings);
+                        updateGeneralSettings(settings);
                     }
                 },
                 {
@@ -912,6 +967,24 @@ function onReady(): void {
     });
     //#endregion
 
+    Electron.ipcMain.on('settings', (e, d: GeneralSettingsUpdate) => {
+        if (d.timestamp > generalSettingsTimestamp) {
+            generalSettingsTimestamp = d.timestamp;
+            logSettings.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
+            Object.assign(settings, d.settings);
+            logSettings.debug('post assignment: SHOULD BE BEST SETTINGS.', settings);
+            saveGeneralSettings(settings, e.sender);
+        }
+        else {
+            logSettings.warn('Outdated settings reached main.', {
+                from:    d.character,
+                'from-wc': e.sender.id,
+                to:      'electron-main',
+                current: generalSettingsTimestamp,
+                new:     d.timestamp,
+            });
+        }
+    });
 
     Electron.ipcMain.handle('app-getPath', async (_e, appPath: string) => {
         await null;
@@ -956,9 +1029,11 @@ function onReady(): void {
             PrimaryWindow?.webContents.send('open-tab');
     });
     Electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
+        if (account !== settings.account || host !== settings.host)
+            updateGeneralSettings(settings);
+
         settings.account = account;
         settings.host = host;
-        setGeneralSettings(settings);
     });
 
     Electron.ipcMain.on('connect', (e, character: string) => { //hack
@@ -997,12 +1072,12 @@ function onReady(): void {
     Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
-        // setGeneralSettings(settings);
+        // updateGeneralSettings(settings);
         PrimaryWindow?.webContents.session.addWordToSpellCheckerDictionary(word);
     });
     Electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
         // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
-        // setGeneralSettings(settings);
+        // updateGeneralSettings(settings);
     });
 
 
@@ -1046,7 +1121,7 @@ function onReady(): void {
     });
 
     Electron.ipcMain.handle('browser-option-browse', async () => {
-        log.debug('settings.browser.browse');
+        logBrowser.debug('settings.browser.browse');
         console.log('settings.browser.browse', JSON.stringify(settings));
 
         let filters;
@@ -1069,21 +1144,6 @@ function onReady(): void {
         return dir?.[0] ?? '';
     });
 
-    function updateBrowserOption(_e: Electron.IpcMainEvent,
-                                 path: string,
-                                 args: string,
-                                 incognito: string
-                                ): void {
-        log.debug('Browser Path settings update:', path, args, incognito);
-
-        settings.browserPath = path;
-        settings.browserArgs = args;
-        settings.browserIncognitoArg = incognito;
-        setGeneralSettings(settings);
-    }
-
-    Electron.ipcMain.on('browser-option-update', updateBrowserOption);
-
     Electron.ipcMain.on('open-url-externally', (_e, url: string, incognito: boolean = false) => {
         openURLExternally(url, incognito);
     });
@@ -1093,14 +1153,5 @@ function onReady(): void {
 
 // Twitter fix
 app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
-
-
-const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
-if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
-    app.quit();
-else {
-    app.on('second-instance', () => PrimaryWindow?.show());
-    app.on('ready', onReady);
-}
 
 app.on('window-all-closed', () => app.quit());

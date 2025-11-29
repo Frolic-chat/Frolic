@@ -23,13 +23,11 @@ export class AdCacheRecord {
     }
 
     add(ad: AdPosting): void {
-        this.posts.push(
-            {
-                channelName: ad.channelName,
-                datePosted: ad.datePosted,
-                message: ad.message
-            }
-        );
+        this.posts.push({
+            channelName: ad.channelName,
+            datePosted:  ad.datePosted,
+            message:     ad.message
+        });
 
         this.posts = this.posts.slice(-25);
     }
@@ -41,7 +39,7 @@ export class AdCacheRecord {
 
 
     getDateLastPosted(): Date | null {
-        if (this.posts.length === 0)
+        if (!this.posts.length)
             return null;
 
         return this.posts[this.posts.length - 1].datePosted;
@@ -53,13 +51,14 @@ export class AdCache<RecordType extends AdCacheRecord = AdCacheRecord> extends C
     register(ad: AdPosting): void {
         const k = Cache.nameKey(ad.name);
 
-        if (k in this.cache) {
-            const adh = this.cache[k];
+        if (this.cache.has(k)) {
+            const adh = this.cache.get(k)!;
 
             adh.add(ad);
             return;
         }
 
-        this.cache[k] = new AdCacheRecord(ad.name, ad) as RecordType;
+        this.update(k, new AdCacheRecord(ad.name, ad) as RecordType);
+        this.evictOutdated();
     }
 }

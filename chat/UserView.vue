@@ -1,6 +1,7 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Linebreaks inside this template will break BBCode views
      v-bind character and channel are used in UserMenu handleEvent when crawling up the DOM -->
-<template><span v-if="showing" :class="userClass" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
+<template><span v-show="showing" :class="[ userClass, classes ]" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
 
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
@@ -11,7 +12,6 @@ import { Score } from '../learn/matcher';
 import core from './core';
 import { EventBus, CharacterScoreEvent } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
-import { characterImage } from './common';
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
 export function getStatusIcon(status: Character.Status): string {
@@ -23,7 +23,7 @@ export function getStatusIcon(status: Character.Status): string {
     case 'dnd':
         return 'fa fa-minus-circle';
     case 'offline':
-        return 'fa fa-ban';
+        return 'fa fa-user-slash';
     case 'away':
         return 'far fa-circle';
     case 'busy':
@@ -120,6 +120,12 @@ export default class UserView extends Vue {
     @Prop({ default: false })
     readonly avatar = false;
 
+    @Prop({ default: undefined })
+    readonly classes!: string | undefined;
+
+    @Prop({ default: undefined })
+    textClass: string | undefined;
+
     cache?: CharacterCacheRecord | null;
 
     /**
@@ -148,15 +154,23 @@ export default class UserView extends Vue {
     getCharacterUrl(): UserView['characterUrl'] { return `flist-character://${this.character.name}` }
 
     avatarUrl = '';
-    getAvatarUrl(): UserView['avatarUrl'] { return characterImage(this.character.name) }
+    getAvatarUrl(): UserView['avatarUrl'] { return core.characters.getImage(this.character.name) }
 
     /** Utility */
+
+    /**
+     * Control whether the element SHOULD hide -
+     * + Are we in a channel?
+     * + Are we hiding channel members?
+     *
+     * See {@link showing}
+     */
     hiding = false;
     getHiding(): UserView['hiding'] {
         try {
             // Try may be unnecessary because hiding is only enabled from places where you're logged in.
             // Still: every proxy is a bad proxy.
-            if (this.hide && this.channel && core.state.settings.risingFilter.hideChannelMembers)
+            if (this.channel && core.state.settings.risingFilter.hideChannelMembers)
                 return true;
         }
         catch {}
@@ -188,7 +202,7 @@ export default class UserView extends Vue {
 
     showing = false;
     getShowing(): UserView['showing'] {
-        if (this.hiding && this.cache?.match.isFiltered && !isImportantToChannel(this.character, this.channel!))
+        if (this.hiding && this.hide && this.cache?.match.isFiltered && !isImportantToChannel(this.character, this.channel!))
             return false;
         else
             return true;
@@ -215,7 +229,7 @@ export default class UserView extends Vue {
             bookmark = 'user-bookmark';
         }
 
-        const gender = ((this.character.overrides.gender || this.character.gender) ?? 'None').toLowerCase();
+        const gender = this.character.gender.toLowerCase(); // for classes; skip custom
 
         return `user-view gender-${gender} ${bookmark}`;
     }

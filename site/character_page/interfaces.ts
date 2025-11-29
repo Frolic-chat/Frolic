@@ -15,6 +15,15 @@ export interface StoreMethods {
 
     characterBlock?(id: number, block: boolean, reason?: string): Promise<void>
     characterCustomKinkAdd(id: number, name: string, description: string, choice: KinkChoice): Promise<void>
+    /**
+     * This is the, "I need the data returned right now" version of `CacheManager.addProfile`. Where that function adds the profile fetching to a queue (which adds the character profile to the profile cache), this function directly returns the character profile. Unlike the Rising cache manager, this (and other character_page methods) don't automatically register with the profile cache.
+     *
+     * All values are passed to `executeCharacterData`. `id` is unused.
+     * @param name Character name
+     * @param id (Default: -1) Unused
+     * @param skipEvent (Default: false) Do not emit the `character-data` {@link EventBus | `EventBus`} event.
+     * @returns
+     */
     characterData(name: string | undefined, id: number | undefined, skipEvent: boolean | undefined): Promise<Character>
     characterDelete(id: number): Promise<void>
     characterDuplicate(id: number, name: string): Promise<void>
@@ -46,7 +55,7 @@ export interface StoreMethods {
 
     hasPermission?(permission: string): boolean
 
-    imagesGet(id: number): Promise<CharacterImage[]>
+    imagesGet(id: number): Promise<CharacterImage[] | false>
     imageUrl(image: CharacterImage): string
     imageThumbUrl(image: CharacterImage): string
 

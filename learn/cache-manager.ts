@@ -17,10 +17,10 @@ import { WorkerStore } from './store/worker';
 import { PermanentIndexedStore } from './store/types';
 import * as path from 'path';
 import { lastElement } from '../helpers/utils';
-// import * as electron from 'electron';
+import { matchesSmartFilters } from './filter/smart-filter';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('cache-manager');
+import NewLogger from '../helpers/log';
+const log = NewLogger('cache-manager', () => core?.state.generalSettings.argv.includes('--debug-cache-manager'));
 
 import { shouldFilterPrivate } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 
@@ -44,8 +44,8 @@ export class CacheManager {
 
     static readonly PROFILE_QUERY_DELAY = 400; //1 * 1000;
 
-    adCache: AdCache = new AdCache();
-    profileCache: ProfileCache = new ProfileCache();
+    adCache:                  AdCache                  = new AdCache();
+    profileCache:             ProfileCache             = new ProfileCache();
     channelConversationCache: ChannelConversationCache = new ChannelConversationCache();
 
     protected queue: ProfileCacheQueueEntry[] = [];
@@ -59,8 +59,8 @@ export class CacheManager {
 
     protected lastFetch = Date.now();
 
-    protected fetchLog: Record<string, number> = {};
-    protected ongoingLog: Record<string, true> = {};
+    protected fetchLog:   Record<string, number> = {};
+    protected ongoingLog: Record<string, true>   = {};
 
     protected isActiveTab = true;
 
@@ -116,14 +116,35 @@ export class CacheManager {
             key,
             channelId,
             added: new Date(),
-            score: 0,
+            score: this.characterProfiler?.calculateInterestScore(name) ?? 0,
             retryCount: 0
         };
 
-        this.queue.push(entry);
+        if (!this.queue.length)
+            this.queue.push(entry);
+        else {
+            let low = 0, high = this.queue.length;
+            while (low < high) {
+                const mid = (low + high) >> 1; // floor
+
+                if (this.queue[mid].score < entry.score)
+                    high = mid;
+                else
+                    low = mid + 1;
+            }
+
+            this.queue.splice(low, 0, entry);
+        }
     }
 
 
+    /**
+     * Not entirely useless but the default profile_api method already does this; opting to invoke an Eventbus event 'character-data' instead of directly calling register.
+     *
+     * If the intent was to always use this function, why add the event-driven functionality to the profile api?
+     * @param name Character name who's profile you want to fetch
+     * @returns
+     */
     async fetchProfile(name: string): Promise<ComplexCharacter | null> {
         try {
             await methods.fieldsGet();
@@ -180,6 +201,8 @@ export class CacheManager {
      * turning that character into a fully fleshed-out character.
      *
      * But under what scenarios do we actually need to process without fetching?
+     * when called from the "standard" character api method; which emits the
+     * 'character-data' event.
      * @param character Character name to fetch, or a character object to finish
      */
     async addProfile(character: string | ComplexCharacter): Promise<void> {
@@ -212,22 +235,12 @@ export class CacheManager {
             return null;
         }
 
-        // Sorting should be done when we add the new entry,
-        // not every update.
-
-        // re-score
-        this.queue.forEach(e => e.score = this.calculateScore(e))
-        this.queue.sort((a, b) => a.score - b.score);
-
         log.debug('QUEUE', this.queue.map(q => `${q.name}: ${q.score}`));
 
-        const entry = this.queue.pop();
+        const entry = this.queue.shift();
 
         if (!entry)
             return null;
-
-        // just in case - remove duplicates
-        this.queue = this.queue.filter(q => q.name !== entry.name);
 
         log.debug('PopFromQueue', entry.name, this.queue.length);
 
@@ -263,19 +276,21 @@ export class CacheManager {
       // tslint:disable-next-line: no-floating-promises
       this.onLoadMoreConversation(data);
     };
+    private on_smartfilters_update = async () => {
+        this.rebuildFilters();
+    }
 
     async start(settings: GeneralSettings, skipFlush: boolean): Promise<void> {
         await this.stop();
 
         this.profileStore = await WorkerStore.open(
-          path.join(/*electron.remote.app.getAppPath(),*/ 'storeWorkerEndpoint.js')
+            path.join(/*electron.remote.app.getAppPath(),*/ 'storeWorkerEndpoint.js')
         ); // await IndexedStore.open();
 
         this.profileCache.setStore(this.profileStore);
 
-        if (!skipFlush) {
-          await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
-        }
+        if (!skipFlush)
+            await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
 
         EventBus.$on('character-data',          this.on_character_data);
         EventBus.$on('channel-message',         this.on_channel_message);
@@ -435,6 +450,19 @@ export class CacheManager {
         );
     }
 
+    rebuildFilters() {
+        log.debug('Rebuilding filters.');
+
+        this.profileCache.onEachInMemory(c => {
+            const oldFiltered = c.match.isFiltered;
+
+            c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
+
+            if (oldFiltered !== c.match.isFiltered) {
+                this.scoreAllConversations(c.character.character.name, c.match.matchScore, c.match.isFiltered);
+            }
+        });
+    }
 
     /**
      * Match a character, score their message (if provided), and return their scored Character.
@@ -507,12 +535,12 @@ export class CacheManager {
             await this.profileStore.stop();
         }
 
-        // should do some $off here?
         EventBus.$off('character-data',         this.on_character_data);
         EventBus.$off('channel-message',        this.on_channel_message);
         EventBus.$off('channel-ad',             this.on_channel_ad);
         EventBus.$off('select-conversation',    this.on_select_conversation);
         EventBus.$off('conversation-load-more', this.on_conversation_load_more);
+        EventBus.$on('smartfilters-update',     this.on_smartfilters_update);
     }
 
 

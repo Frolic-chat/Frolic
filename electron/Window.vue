@@ -46,7 +46,7 @@
     import * as url from 'url';
     import Vue from 'vue';
     import l from '../chat/localize';
-    import {GeneralSettings} from './common';
+    import { GeneralSettings, GeneralSettingsUpdate } from './common';
     import { getSafeLanguages, updateSupportedLanguages } from './language';
 
     import Logger from 'electron-log/renderer';
@@ -69,38 +69,13 @@
         tab.view.webContents.stopPainting();
 
         try {
-          if ((tab.view.webContents as any).destroy) {
-            (tab.view.webContents as any).destroy();
-          }
-        } catch (err) {
-          console.error('webcontents destroy:', err);
-        }
-
-        try {
-          if ((tab.view.webContents as any).close) {
-            (tab.view.webContents as any).close();
+          if (tab.view.webContents.close) {
+            tab.view.webContents.close();
           }
         } catch (err) {
           console.error('webcontents close:', err);
         }
 
-        try {
-          if ((tab.view as any).destroy) {
-            (tab.view as any).destroy();
-          }
-        } catch (err) {
-          console.error('view destroy:', err);
-        }
-
-        try {
-          if ((tab.view as any).close) {
-            (tab.view as any).close();
-          }
-        } catch (err) {
-          console.error('view close:', err);
-        }
-
-        // tab.view.destroy();
         electron.ipcRenderer.send('tab-closed');
     }
 
@@ -124,13 +99,14 @@
         platform = process.platform;
         lockTab = false;
         hasCompletedUpgrades = false;
+        generalSettingsTimestamp = 0;
 
 
         @Hook('mounted')
         async mounted(): Promise<void> {
             log.debug('init.window.mounting');
 
-            if (remote.process.argv.includes('--devtools')) {
+            if (this.settings.argv.includes('--devtools')) {
               browserWindow.webContents.openDevTools({ mode: 'detach' });
             }
 
@@ -150,12 +126,15 @@
             //     }
             // )
 
-            electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, settings: GeneralSettings) => {
-                log.debug('settings.update.window');
+            electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, d: GeneralSettingsUpdate) => {
+                if (d.timestamp > this.generalSettingsTimestamp) {
+                    log.debug('generalSettings.update.window');
 
-                this.settings = settings;
+                    this.generalSettingsTimestamp = d.timestamp;
+                    this.settings = d.settings;
 
-                Logger.transports.console.level = settings.risingSystemLogLevel;
+                    Logger.transports.console.level = d.settings.risingSystemLogLevel;
+                }
             });
 
             electron.ipcRenderer.on('rising-upgrade-complete', () => {
@@ -390,7 +369,7 @@
 
             log.debug('init.window.tab.add.remote');
 
-            if (remote.process.argv.includes('--devtools')) {
+            if (this.settings.argv.includes('--devtools')) {
               view.webContents.openDevTools({ mode: 'detach' });
             }
 

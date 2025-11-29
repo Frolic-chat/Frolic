@@ -1,19 +1,25 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import Vue, {WatchHandler} from 'vue';
+import * as Electron from 'electron';
+import * as qs from 'querystring';
+import { deepEqual } from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
-import {Settings as SettingsImpl} from './common';
+import { Settings as SettingsClass } from './common';
 import Conversations from './conversations';
-import {Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface} from './interfaces';
+import { Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface, Runtime } from './interfaces';
 import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
 import { AdCenter } from './ads/ad-center';
-import { GeneralSettings } from '../electron/common';
+import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
 import { SiteSession } from '../site/site-session';
 import { SettingsMerge } from '../helpers/utils';
+import type { SmartFilterSettings } from '../learn/filter/types';
 
 import { EventBus } from './preview/event-bus';
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('chat/core');
+import NewLogger from '../helpers/log';
+const log = NewLogger('core', () => process.env.NODE_ENV === 'development');
+const logS = NewLogger('settings', () => core.state.generalSettings.argv.includes('--debug-settings'));
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();
@@ -22,29 +28,32 @@ function createBBCodeParser(): BBCodeParser {
     return parser;
 }
 
+const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 /**
  * The state operates as an event-bus, allowing global-reaching updates.
  */
 class State implements StateInterface {
-    _settings: Settings | undefined = undefined;
+    _settings = new SettingsClass();
+    // This is still bad. The real general settings object (with loading saved) is imported from main.
+    generalSettings: GeneralSettings = JSON.parse(params['settings']!) as GeneralSettings;
     hiddenUsers: string[] = [];
     favoriteEIcons: Record<string, boolean> = {};
 
-    /**
-     * This should absolutely be fixed to grant a basic, safe settings structure instead of throwing an error. It's bad form to state in typescript the settings always exist and then throw an error if they don't, and it has caused issues before witht he log viewer which can be used when not logged in.
-     */
     get settings(): Settings {
-        if (this._settings === undefined)
-            throw new Error('Settings load failed.');
-
         return this._settings;
     }
 
+    /**
+     * This will only trigger when directly setting the settings object; it does not fire if the internal structure changes.
+     *
+     * See {@link Core.watch | Core.watch} for tracking changes to the internl structure.
+     */
     set settings(value: Settings) {
         this._settings = value;
 
-        //tslint:disable-next-line:no-floating-promises
-        if (data.settingsStore !== undefined) data.settingsStore.set('settings', value);
+        if (data.settingsStore !== undefined) {
+            log.warn('set settings will not be saving core, the other saver should have picked it up.');
+        }
 
         data.bbCodeParser = createBBCodeParser();
     }
@@ -82,32 +91,64 @@ const data = {
     adCoordinator: <AdCoordinatorGuest | undefined>undefined,
     adCenter: <AdCenter | undefined>undefined,
     siteSession: <SiteSession | undefined>undefined,
+    runtime: <Runtime>{
+        dialogStack: [],
+        primaryInput: null,
+        registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement) {
+            this.primaryInput = e;
+        },
+        userToggles: {},
+    },
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {
         Vue.set(vue, module, subState);
         (<VueState[K]>data[module]) = subState;
     },
-    watch<T>(getter: (this: VueState) => T, callback: (n: any, o: any) => void): void {
-        vue.$watch(getter, callback);
+    watch<T>(getter: (this: VueState) => T, callback: (n: T, o: T) => void, opts?: Vue.WatchOptions): void {
+        vue.$watch(getter, callback, opts);
     },
     async reloadSettings(): Promise<void> {
-        const s = await core.settingsStore.get('settings');
+        const s = await core.settingsStore.get('settings') as Partial<SettingsClass>;
 
-        state._settings = SettingsMerge(new SettingsImpl, s as Partial<SettingsImpl>);
+        const initial = new SettingsClass();
 
         log.debug('data.reloadSettings', {
-            initial: new SettingsImpl(),
+            initial: initial,
+            current: state._settings,
             saved: s,
-            result: state._settings,
-            //test: test,
         });
+
+        state._settings = SettingsMerge(initial, s);
 
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
         state.hiddenUsers = hiddenUsers ?? [];
 
         const favoriteEIcons = await core.settingsStore.get('favoriteEIcons');
         state.favoriteEIcons = favoriteEIcons ?? {};
-    }
+    },
+
+    updateMain(channel: 'settings'): void {
+        logS.warn('core.data.updateMain.settings', state.generalSettings);
+
+        if (channel === 'settings') {
+            Electron.ipcRenderer.send(channel, {
+                settings: state.generalSettings,
+                timestamp: VueUpdateCache.timestamp,
+                character: data.connection?.character,
+            });
+        }
+    },
+};
+
+// Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
+const VueUpdateCache: {
+    staleFilter: SmartFilterSettings | {};
+    timestamp:   number;
+    skipWatch:   boolean,
+} = {
+    staleFilter: {},
+    timestamp:   0,
+    skipWatch:   false,
 };
 
 export function init(this: any,
@@ -125,15 +166,93 @@ export function init(this: any,
     data.adCenter = new AdCenter();
     data.siteSession = new SiteSession();
 
-    (data.state as any).generalSettings = settings;
+    // Last point of assignment before placing observers on it.
+    data.state.generalSettings = settings;
 
     data.register('characters', Characters(connection));
     data.register('channels', Channels(connection, core.characters));
     data.register('conversations', Conversations());
 
     data.watch(() => state.hiddenUsers, async (newValue) => {
-        if (data.settingsStore !== undefined)
-            await data.settingsStore.set('hiddenUsers', newValue);
+        await data.settingsStore?.set('hiddenUsers', newValue);
+    }, /* { deep: true } */);
+
+    data.watch(() => state._settings, async (newValue, oldValue) => {
+        if (!newValue) { // Should never happen; avoid catastrophy.
+            return;
+        }
+        else if (!oldValue) {
+            VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
+        }
+        else {
+            log.debug('watch _settings will save core.', newValue);
+            await data.settingsStore?.set('settings', newValue);
+
+            EventBus.$emit('configuration-update', newValue);
+
+            if (oldValue.disallowedTags !== newValue.disallowedTags) {
+                data.bbCodeParser = createBBCodeParser();
+
+                log.debug('_settings disallowedTags updated.', oldValue, newValue);
+            }
+
+            if (oldValue.notifications !== newValue.notifications)
+                EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
+
+            // Not working?
+            if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilter)) {
+                logS.debug('risingFilter in _settings changed.', newValue.risingFilter);
+
+                EventBus.$emit('smartfilters-update', newValue.risingFilter);
+
+                VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
+            }
+        }
+
+    }, { deep: true });
+
+    data.watch(() => state.generalSettings, async () => {
+        logS.debug(VueUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', VueUpdateCache.timestamp);
+
+        if (VueUpdateCache.skipWatch) {
+            VueUpdateCache.skipWatch = false;
+        }
+        else {
+            VueUpdateCache.timestamp = Date.now();
+            data.updateMain('settings');
+        }
+    }, { deep: true });
+
+    Electron.ipcRenderer.on('settings', (_e, d: GeneralSettingsUpdate) => {
+        if (d.timestamp <= VueUpdateCache.timestamp) {
+            logS.warn('Settings from main stale; skipping', {
+                from:    d.character,
+                to:      data.connection?.character,
+                current: VueUpdateCache.timestamp,
+                new:     d.timestamp,
+            });
+
+            return;
+        }
+
+        VueUpdateCache.timestamp = d.timestamp;
+
+        // const prev_settings = JSON.stringify(state.generalSettings);
+        // Main dispatching an identical settings object will still cause `Object.assign` to change the internal references, causing an update without changing anything.
+        // if (JSON.stringify(state.generalSettings) !== prev_settings) {
+        if (!deepEqual(state.generalSettings, d.settings)) {
+            Object.assign(state.generalSettings, d.settings);
+            VueUpdateCache.skipWatch = true;
+        }
+
+        logS.debug(
+            VueUpdateCache.skipWatch
+                ? 'Skipping next watcher.'
+                : 'No change from main; not skipping next watcher.',
+            VueUpdateCache.timestamp
+        );
+
+        EventBus.$emit('settings-from-main', d.settings);
     });
 
     connection.onEvent('connecting', async () => {
@@ -158,8 +277,11 @@ export interface Core {
     readonly adCoordinator: AdCoordinatorGuest;
     readonly adCenter: AdCenter;
     readonly siteSession: SiteSession;
+    readonly runtime: Runtime;
 
-    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>): void
+    watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>, opts?: Vue.WatchOptions): void;
+
+    updateMain(channel: 'settings'): void;
 }
 
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack

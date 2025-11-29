@@ -90,7 +90,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
         infotags:     {[key: string]: string},
         memo?:        {id: number, memo: string},
         settings:     CharacterSettings,
-        timezone:     number,
+        timezone:     number | null,
     }>('character-data.php', { name });
 
     const newKinks: {[key: string]: KinkChoiceFull} = {};
@@ -250,12 +250,25 @@ async function friendsGet(id: number): Promise<SimpleCharacter[]> {
     return (await core.connection.queryApi<{friends: SimpleCharacter[]}>('character-friends.php', {id})).friends;
 }
 
-async function imagesGet(id: number): Promise<CharacterImage[]> {
-    return (await core.connection.queryApi<{images: CharacterImage[]}>('character-images.php', {id})).images;
+/**
+ * Update 2025: `{ images: false, error: "" }` is a valid response for no pictures.
+ * @param id
+ * @returns `false` is a new return.
+ */
+async function imagesGet(id: number): Promise<CharacterImage[] | false> {
+    return (await core.connection.queryApi<{ images: (CharacterImage[] | false) }>('character-images.php', {id})).images;
+}
+
+type GuestbookResponse = {
+    canEdit: boolean;
+    error: string;
+    nextPage: boolean;
+    page: number;
+    posts: GuestbookPost[];
 }
 
 async function guestbookGet(id: number, offset: number): Promise<Guestbook> {
-    const data = await core.connection.queryApi<{nextPage: boolean, posts: GuestbookPost[]}>('character-guestbook.php', {id, page: offset / 10});
+    const data = await core.connection.queryApi<GuestbookResponse>('character-guestbook.php', {id, page: Math.floor(offset / 10)});
 
     return {posts: data.posts, total: data.nextPage ? offset + 100 : offset};
 }

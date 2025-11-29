@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // For FindExeFileFromName
 import { platform } from "process";
 import { execSync } from "child_process";
@@ -117,7 +118,7 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
  * @param subj Anything
  * @returns true if the object is a normal object.
  */
-function isPlainObject(subj: any): subj is object {
+function isPlainObject(subj: any): subj is NonNullable<object> {
     return subj !== null && typeof subj === 'object' && !Array.isArray(subj);
 }
 
@@ -151,10 +152,7 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
 
     // User base since user settings can be out-of-date
     for (const k of Object.keys(base) as (keyof T)[]) {
-        const tb = typeof base[k],
-              ts = typeof supplement[k];
-
-        // null <-> string <-> number <-> undefined is fine.
+        // null <-> string <-> number is fine.
         if (isSimpleInterchangeable(supplement[k]) && isSimpleInterchangeable(base[k])) {
             // May not be the same type but we're okay with it, so assert.
             obj[k] = supplement[k] as T[keyof T];
@@ -170,11 +168,12 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
             obj[k] = supplement[k] as T[keyof T];
         }
         // Same type not covered above means safe to take user value.
-        else if (supplement[k] !== null && base[k] !== null && ts === tb) {
+        else if (supplement[k] !== null && base[k] !== null && typeof supplement[k] === typeof base[k]) {
             obj[k] = supplement[k];
         }
         // Differing types or absent value means a structure change, which is
         // handled in another part of the code; ignore the user setting.
+        // Functions are also caught here.
         else {
             obj[k] = base[k];
         }
@@ -221,6 +220,14 @@ export function deepEqual(obj1: any, obj2: any): boolean {
 
 export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
 
+export function getAsNumber(input: string | null | undefined): number | null {
+    if (input === null || input === undefined || input === '')
+        return null;
+
+    const n = parseInt(input, 10);
+
+    return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
+}
 
 /**
  * Some day in the future, this may be useful, however, in TS3.x it's compiler errors.
@@ -334,4 +341,9 @@ export function err<T>(msg: string): NonNullable<T> { throw msg ?? "Object is nu
  */
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Still uncertain how to use this reliably.
+export function has<K, T extends K>(set: ReadonlySet<T> | ReadonlyMap<T, any>, key: K): key is T {
+    return set.has(key as T);
 }

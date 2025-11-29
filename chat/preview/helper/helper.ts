@@ -1,4 +1,4 @@
-import ImagePreview from '../ImagePreview.vue';
+import ImagePreview from '../ContentPreview.vue';
 
 export abstract class ImagePreviewHelper {
     static readonly HTTP_TESTER = /^https?:\/\//;
@@ -40,4 +40,3 @@ export abstract class ImagePreviewHelper {
         this.debug = debug;
     }
 }
-

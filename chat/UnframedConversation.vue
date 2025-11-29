@@ -1,216 +1,160 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-    <div style="height:100%;display:flex;flex-direction:column;flex:1;margin:0 5px;position:relative" id="conversation">
-        <div style="display:flex" v-if="isPrivate(conversation)" class="header">
-            <img :src="characterImage" style="height:60px;width:60px;margin-right:10px" v-if="settings.showAvatars"/>
-            <div style="flex:1;position:relative;display:flex;flex-direction:column;user-select:text">
-                <div>
-                    <user :character="conversation.character" :match="true" :reusable="true"></user>
-                    <a href="#" @click.prevent="showLogs()" class="btn">
-                        <span class="fa fa-file-alt"></span>
-                        <span class="btn-text">{{l('logs.title')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showSettings()" class="btn">
-                        <span class="fa fa-cog"></span>
-                        <span class="btn-text">{{l('conversationSettings.title')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="reportDialog.report()" class="btn">
-                        <span class="fa fa-exclamation-triangle"></span>
-                        <span class="btn-text">{{l('chat.report')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showAds()" class="btn">
-                        <span class="fa fa-ad"></span>
-                        <span class="btn-text">{{l('chat.ads')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showChannels()" class="btn">
-                        <span class="fa fa-tv"></span>
-                        <span class="btn-text">{{l('chat.channels')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showMemo()" class="btn">
-                        <span class="fas fa-edit"></span>
-                        <span class="btn-text">{{l('chat.memo')}}</span>
-                    </a>
-                </div>
-                <div style="overflow:auto;overflow-x:hidden;max-height:50px;user-select:text">
-                    {{l('status.' + conversation.character.status)}}
-                    <span v-show="conversation.character.statusText"> – <bbcode :text="conversation.character.statusText"></bbcode>
-                    </span>
-                    <div v-show="userMemo">
-                        <b>{{l('chat.memoHeader')}}</b> {{ userMemo }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div v-else-if="isChannel(conversation)" class="header">
-            <div style="display: flex; align-items: center;">
-                <div style="flex: 1;">
-                    <span v-show="conversation.channel.id.substring(0, 4) !== 'adh-'" class="fa fa-star" :title="l('channel.official')"
-                        style="margin-right:5px;vertical-align:sub"></span>
-                    <h5 style="margin:0;display:inline;vertical-align:middle">
-                        {{conversation.name}}
-                    </h5>
-                    <a href="#" @click.prevent="descriptionExpanded = !descriptionExpanded" class="btn">
-                        <span class="fa" :class="{'fa-chevron-down': !descriptionExpanded, 'fa-chevron-up': descriptionExpanded}"></span>
-                        <span class="btn-text">{{l('channel.description')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn">
-                        <span class="fa fa-edit"></span>
-                        <span class="btn-text">{{l('manageChannel.open')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showLogs()" class="btn">
-                        <span class="fa fa-file-alt"></span>
-                        <span class="btn-text">{{l('logs.title')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="showSettings()" class="btn">
-                        <span class="fa fa-cog"></span>
-                        <span class="btn-text">{{l('conversationSettings.title')}}</span>
-                    </a>
-                    <a href="#" @click.prevent="reportDialog.report()" class="btn">
-                        <span class="fa fa-exclamation-triangle"></span>
-                        <span class="btn-text">{{l('chat.report')}}</span>
-                    </a>
-                </div>
+<div class="unframed-chat">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center">
+        <span v-if="isPrivate(conversation)"><!-- left side: userview -->
+            <img v-if="settings.showAvatars" style="height:60px" :src="characterImage"/>
+            <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
+        </span>
+        <span v-else-if="isChannel(conversation)"><!-- left side: channel name -->
+            <h5>{{ conversation.name }}</h5>
+        </span>
 
-                <div class="btn-toolbar">
-                    <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                            {{l('channel.mode.' + mode)}}
-                        </button>
-                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                        <button class="dropdown-item" :class="{ selected: showNonMatchingAds }" type="button" @click="toggleNonMatchingAds()">
-                            {{l('channel.ads.incompatible')}}
-                        </button>
-                        <div class="dropdown-divider" v-show="conversation.settings.adSettings.ads.length > 0"></div>
-                        <button class="dropdown-item" v-show="conversation.settings.adSettings.ads.length > 0" type="button" @click="showAdSettings()">
+        <span><!-- right side -->
+            <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
+                <span class="fa fa-edit"></span>
+                <span class="btn-text">{{l('manageChannel.open')}}</span>
+            </a>
+            <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                <span class="fa fa-file-alt"></span>
+                <span class="btn-text">{{ l('logs.title') }}</span>
+            </a>
+            <a href="#" @click.prevent="reportDialog.report()" class="btn btn-outline-secondary">
+                <span class="fa fa-exclamation-triangle"></span>
+                <span class="btn-text">{{ l('chat.report') }}</span>
+            </a>
+            <template v-if="isChannel(conversation)">
+                <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
+                    <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                        {{l('channel.mode.' + mode)}}
+                    </button>
+                    <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                    <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                        {{l('channel.ads.incompatible')}}
+                    </button>
+                    <template v-show="conversation.settings.adSettings.ads.length">
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item" @click="showAdSettings()">
                             {{l('channel.ads.edit')}}
                         </button>
-                    </dropdown>
-                </div>
-            </div>
-            <div style="z-index:5;position:absolute;left:0;right:0;max-height:60%;overflow:auto"
-                :style="{display: descriptionExpanded ? 'block' : 'none'}" class="bg-solid-text border-bottom">
-                <bbcode :text="conversation.channel.description"></bbcode>
-            </div>
-        </div>
-        <div v-else class="header" style="display:flex;align-items:center">
-            <h4>{{l('chat.consoleTab')}}</h4>
-            <a href="#" @click.prevent="showLogs()" class="btn">
-                <span class="fa fa-file-alt"></span> <span class="btn-text">{{l('logs.title')}}</span>
-            </a>
-        </div>
-        <div class="search input-group" v-show="showSearch">
-            <div class="input-group-prepend">
-                <div class="input-group-text">
-                    <span class="fas fa-search"></span>
-                </div>
-            </div>
-            <input v-model="searchInput" @keydown.esc="hideSearch()" @keypress="lastSearchInput = Date.now()"
-                :placeholder="l('chat.search')" ref="searchField" class="form-control"/>
-            <a class="btn btn-sm btn-light" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);line-height:0;z-index:10" @click="hideSearch">
-                <i class="fas fa-times"></i>
-            </a>
-        </div>
-        <div class="auto-ads" v-show="isAutopostingAds()">
-            <h4>{{l('admgr.activeHeader')}}</h4>
-            <div class="update">{{adAutoPostUpdate}}</div>
-
-            <div v-show="adAutoPostNextAd" class="next">
-                <h5>
-                    {{l('admgr.comingNext')}} <a @click="skipAd()">
-                        <i class='adAction fas fa-arrow-right'></i>
-                    </a>
-                </h5>
-                <div>
-                    {{(adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '')}}{{l('general.ellipses')}}
-                </div>
-            </div>
-
-            <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
-                {{l('admgr.renew')}}
-            </a>
-            <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
-                {{l('admgr.setup')}}
-            </a>
-        </div>
-        <div class="border-top messages" :class="getMessageWrapperClasses()" ref="messages"
-             @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="flex:1;overflow:auto;margin-top:2px">
-            <template v-for="message in messages">
-                <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded"
-                    :classes="message == conversation.lastRead ? 'last-read' : ''">
-                </message-view>
-                <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
-                    <a :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid"
-                        v-if="message.sfc.logid" target="_blank">
-                        {{l('events.report.viewLog')}}
-                    </a>
-                    <span v-else>{{l('events.report.noLog')}}</span>
-                    <span v-show="!message.sfc.confirmed">
-                        | <a href="#" @click.prevent="message.sfc.action === 'report' && acceptReport(message.sfc)">
-                            {{l('events.report.confirm')}}
-                        </a>
-                    </span>
-                </span>
+                    </template>
+                </dropdown>
             </template>
-        </div>
-        <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
-            :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
-            :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
-            :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
-            :characterName="ownName"
-            :type="'big'"
-            >
-            <template v-slot:default>
-                <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-                    <user :character="conversation.character" :match="false" :bookmark="false"></user>
-                    &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
-                </span>
-                <div v-show="conversation.infoText" class="chat-info-text">
-                    <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
-                    <span style="flex:1;margin-left:5px">
-                        {{conversation.infoText}}
-                    </span>
-                </div>
-                <div v-show="conversation.errorText" class="chat-info-text">
-                    <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
-                    <span class="redText" style="flex:1;margin-left:5px">
-                        {{conversation.errorText}}
-                    </span>
-                </div>
-            </template>
-            <template v-slot:toolbar-end>
-                <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
-                    {{ messageLength }} / {{ conversation.maxMessageLength }}
-                </div>
-                <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
-                    <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
-                        <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                            class="nav-link" @click.prevent="setSendingAds(false)">
-                            {{l('channel.mode.chat')}}
-                        </a>
-                    </li>
-                    <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'ads'))">
-                        <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                            class="nav-link" @click.prevent="setSendingAds(true)">
-                            {{adsMode}}
-                        </a>
-                    </li>
-                </ul>
-                <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
-                    {{l('chat.send')}}
-                </div>
-            </template>
-        </bbcode-editor>
-        <command-help ref="helpDialog"></command-help>
-        <settings ref="settingsDialog" :conversation="conversation"></settings>
-        <channelAdSettings ref="channelAdSettingsDialog" :conversation="conversation"></channelAdSettings>
-        <logs ref="logsDialog" :conversation="conversation"></logs>
-        <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
-        <ad-view ref="adViewer" v-if="isPrivate(conversation) && conversation.character" :character="conversation.character"></ad-view>
-        <channel-list ref="channelList" v-if="isPrivate(conversation)" :character="conversation.character"></channel-list>
-        <modal :action="l('user.memo.action')" ref="userMemoEditor" @submit="updateMemo" dialogClass="w-100">
-            <div style="float:right;text-align:right;">{{ memoLength }} / 1000</div>
-            <textarea class="form-control" v-model="editorMemo" maxlength="1000"></textarea>
-        </modal>
+        </span>
     </div>
+
+    <!-- Message filter/search bar -->
+    <div class="search input-group" v-show="showSearch">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <span class="fas fa-search"></span>
+            </div>
+        </div>
+        <input v-model="searchInput" @keydown.esc="hideSearch()" @keypress="lastSearchInput = Date.now()"
+            :placeholder="l('chat.search')" ref="searchField" class="form-control"/>
+        <a class="btn btn-sm btn-light" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);line-height:0;z-index:10" @click="hideSearch">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+    <!-- Ad posting display - Legacy? -->
+    <div class="auto-ads" v-show="isAutopostingAds()">
+        <h4>{{l('admgr.activeHeader')}}</h4>
+        <div class="update">{{adAutoPostUpdate}}</div>
+
+        <div v-show="adAutoPostNextAd" class="next">
+            <h5>
+                {{l('admgr.comingNext')}} <a @click="skipAd()">
+                    <i class='adAction fas fa-arrow-right'></i>
+                </a>
+            </h5>
+            <div>
+                {{(adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '')}}{{l('general.ellipses')}}
+            </div>
+        </div>
+
+        <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
+            {{l('admgr.renew')}}
+        </a>
+        <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
+            {{l('admgr.setup')}}
+        </a>
+    </div>
+
+    <!-- Message box -->
+    <div class="border-top messages d-flex flex-column" :class="getMessageWrapperClasses()" ref="messages" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="overflow:auto; margin-top:2px">
+        <template v-for="message in messages">
+            <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded" :classes="message == conversation.lastRead ? 'last-read' : ''">
+            </message-view>
+            <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
+                <a :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid"
+                    v-if="message.sfc.logid" target="_blank">
+                    {{l('events.report.viewLog')}}
+                </a>
+                <span v-else>{{l('events.report.noLog')}}</span>
+                <span v-show="!message.sfc.confirmed">
+                    | <a href="#" @click.prevent="message.sfc.action === 'report' && acceptReport(message.sfc)">
+                        {{l('events.report.confirm')}}
+                    </a>
+                </span>
+            </span>
+        </template>
+    </div>
+
+    <!-- Input box -->
+    <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
+        :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
+        :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
+        :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
+        :characterName="ownName"
+        :type="'big'"
+        >
+        <template v-slot:default>
+            <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
+                <user :character="conversation.character" :match="false" :bookmark="false"></user>
+                &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
+            </span>
+            <div v-show="conversation.infoText" class="chat-info-text">
+                <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
+                <span style="flex:1;margin-left:5px">
+                    {{conversation.infoText}}
+                </span>
+            </div>
+            <div v-show="conversation.errorText" class="chat-info-text">
+                <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
+                <span class="redText" style="flex:1;margin-left:5px">
+                    {{conversation.errorText}}
+                </span>
+            </div>
+        </template>
+        <template v-slot:toolbar-end>
+            <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
+                {{ messageLength }} / {{ conversation.maxMessageLength }}
+            </div>
+            <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
+                <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
+                    <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
+                        class="nav-link" @click.prevent="setSendingAds(false)">
+                        {{l('channel.mode.chat')}}
+                    </a>
+                </li>
+                <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'ads'))">
+                    <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
+                        class="nav-link" @click.prevent="setSendingAds(true)">
+                        {{adsMode}}
+                    </a>
+                </li>
+            </ul>
+            <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
+                {{l('chat.send')}}
+            </div>
+        </template>
+    </bbcode-editor>
+
+    <!-- Modals -->
+    <command-help ref="helpDialog"></command-help>
+    <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
+</div>
 </template>
 
 <script lang="ts">
@@ -221,9 +165,12 @@
     import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
     import {Keys} from '../keys';
     import CharacterAdView from './character/CharacterAdView.vue';
+
     import {Editor} from './bbcode';
+    import Tabs from '../components/tabs';
+
     import CommandHelp from './CommandHelp.vue';
-    import { characterImage, errorToString, getByteLength, getKey } from './common';
+    import { errorToString, getByteLength, getKey } from './common';
     import ConversationSettings from './ConversationSettings.vue';
     import ConversationAdSettings from './ads/ConversationAdSettings.vue';
     import core from './core';
@@ -242,24 +189,36 @@
 
     @Component({
         components: {
+            tabs: Tabs,
+
             user: UserView,
             'bbcode-editor': Editor,
-            'manage-channel': ManageChannel,
-            settings: ConversationSettings,
-            logs: Logs,
             'message-view': MessageView,
             bbcode: BBCodeView(core.bbCodeParser),
-            'command-help': CommandHelp,
-            'ad-view': CharacterAdView,
-            'channel-list': CharacterChannelList,
+
+            settings: ConversationSettings,
+
             dropdown: Dropdown,
             channelAdSettings: ConversationAdSettings,
-            modal: Modal
+            'command-help': CommandHelp,
+
+            modal: Modal,
+
+            'manage-channel': ManageChannel,
+            logs: Logs,
+
+            // TODO: Combine into recon
+            'ad-view': CharacterAdView,
+            'channel-list': CharacterChannelList,
         }
     })
     export default class ConversationView extends Vue {
+        @Prop({ required: true })
+        readonly conversation!: Conversation;
+
         @Prop({required: true})
         readonly reportDialog!: ReportDialog;
+
         modes = channelModes;
         descriptionExpanded = false;
         l = l;
@@ -336,7 +295,7 @@
             this.updateOwnName();
 
             this.messageView = <HTMLElement>this.$refs['messages'];
-            this.textBox = <Editor>this.$refs['mainInput'];
+            this.textBox     = <Editor>this.$refs['mainInput'];
 
             this.extraButtons = [{
                 title: 'Help\n\nClick this button for a quick overview of slash commands.',
@@ -411,10 +370,6 @@
 
         updateOwnName(): void {
             this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter?.name : undefined;
-        }
-
-        get conversation(): Conversation {
-            return core.conversations.selectedConversation;
         }
 
         get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {
@@ -665,10 +620,6 @@
             (<Logs>this.$refs['logsDialog']).show();
         }
 
-        showSettings(): void {
-            (<ConversationSettings>this.$refs['settingsDialog']).show();
-        }
-
         showAdSettings(): void {
             (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show();
         }
@@ -798,7 +749,7 @@
         }
 
         get characterImage(): string {
-            return characterImage(this.conversation.name);
+            return core.characters.getImage(this.conversation.name);
         }
 
         get settings(): Settings {
@@ -810,383 +761,377 @@
         }
 
         get isChannelMod(): boolean {
-            if(core.characters.ownCharacter.isChatOp) return true;
-            const conv = (<Conversation.ChannelConversation>this.conversation);
-            const member = conv.channel.members[core.connection.character];
+            if (core.characters.ownCharacter.isChatOp)
+                return true;
+
+            if (!this.isChannel(this.conversation))
+                return false;
+
+            const member = this.conversation.channel.members[core.connection.character];
             return member !== undefined && member.rank > Channel.Rank.Member;
         }
     }
 </script>
 
 <style lang="scss">
-    @import "~bootstrap/scss/functions";
-    @import "~bootstrap/scss/variables";
-    @import "~bootstrap/scss/mixins/breakpoints";
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins/breakpoints";
 
-    .toolbar-buttons .message-length {
-        margin-left: auto;
-        align-content: center;
+// .toolbar-buttons .message-length {
+//     margin-left: auto;
+//     align-content: center;
+// }
+
+#conversation {
+    .messages:focus {
+        outline: initial;
     }
 
-    #conversation {
-        .header {
-            @media (min-width: breakpoint-min(md)) {
-                margin-right: 32px;
+    .btn-toolbar {
+        .btn-group {
+            margin-left: 3px;
+            margin-right: 3px;
+
+            &:last-child {
+                margin-right: 0;
             }
-            .btn {
-                padding: 2px 5px;
+
+            a.btn {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                // color: #cbcbe5;
+
+                i {
+                    margin-right: 0.4rem;
+                    font-size: 90%;
+                }
             }
-        }
 
-        .messages:focus {
-            outline: initial;
-        }
+            button::before {
+                display: inline-block;
+                width: 1.3rem;
+                height: 1rem;
+                content: '';
+                margin-left: -1.3rem;
+                margin-right: 0.1rem;
+                padding-left: 0.3rem;
+                font-weight: bold;
+            }
 
-        .btn-toolbar {
-            .btn-group {
-                margin-left: 3px;
-                margin-right: 3px;
+            button.selected::before {
+                content: '✓';
+            }
 
-                &:last-child {
-                    margin-right: 0;
-                }
-
-                a.btn {
-                    padding-left: 0.5rem;
-                    padding-right: 0.5rem;
-                    // color: #cbcbe5;
-
-                    i {
-                        margin-right: 0.4rem;
-                        font-size: 90%;
-                    }
-                }
-
-                button::before {
-                    display: inline-block;
-                    width: 1.3rem;
-                    height: 1rem;
-                    content: '';
-                    margin-left: -1.3rem;
-                    margin-right: 0.1rem;
-                    padding-left: 0.3rem;
-                    font-weight: bold;
-                }
-
+            &.views {
                 button.selected::before {
-                    content: '✓';
-                }
-
-                &.views {
-                    button.selected::before {
-                        content: '•';
-                    }
+                    content: '•';
                 }
             }
         }
+    }
 
-        .send-ads-switcher a {
-            padding: 3px 10px;
+    .send-ads-switcher a {
+        padding: 3px 10px;
+    }
+
+
+    .toggle-autopost {
+        margin-left: 1px;
+    }
+
+
+    .auto-ads {
+        background-color: rgb(220, 113, 31);
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        margin: 0;
+        position: relative;
+        margin-top: 5px;
+
+        .adAction {
+            &:hover {
+            color: rgba(255, 255, 255, 0.8);
+            }
+
+            &:active {
+            color: rgba(255, 255, 255, 0.6);
+            }
         }
 
+        .renew-autoposts {
+            display: block;
+            float: right;
+            /* margin-top: auto; */
+            /* margin-bottom: auto; */
+            position: absolute;
+            /* bottom: 1px; */
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.9);
 
-        .toggle-autopost {
-            margin-left: 1px;
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.3);
+            }
+
+            &:active {
+                background-color: rgba(255, 255, 255, 0.6);
+            }
         }
 
-
-        .auto-ads {
-            background-color: rgb(220, 113, 31);
-            padding-left: 10px;
-            padding-right: 10px;
-            padding-top: 5px;
-            padding-bottom: 5px;
+        h4 {
+            font-size: 1.1rem;
             margin: 0;
-            position: relative;
-            margin-top: 5px;
+            line-height: 100%;
+        }
 
-            .adAction {
-              &:hover {
-                color: rgba(255, 255, 255, 0.8);
-              }
+        .update {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            width: 75%;
+        }
 
-              &:active {
-                color: rgba(255, 255, 255, 0.6);
-              }
-            }
+        .next {
+            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
 
-            .renew-autoposts {
-                display: block;
-                float: right;
-                /* margin-top: auto; */
-                /* margin-bottom: auto; */
-                position: absolute;
-                /* bottom: 1px; */
-                right: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                border-color: rgba(255, 255, 255, 0.5);
-                color: rgba(255, 255, 255, 0.9);
-
-                &:hover {
-                    background-color: rgba(255, 255, 255, 0.3);
-                }
-
-                &:active {
-                    background-color: rgba(255, 255, 255, 0.6);
-                }
-            }
-
-            h4 {
-                font-size: 1.1rem;
+            h5 {
+                font-size: 0.8rem;
                 margin: 0;
                 line-height: 100%;
             }
-
-            .update {
-                color: rgba(255, 255, 255, 0.6);
-                font-size: 13px;
-                width: 75%;
-            }
-
-            .next {
-                margin-top: 0.5rem;
-                color: rgba(255, 255, 255, 0.4);
-                font-size: 11px;
-
-                h5 {
-                    font-size: 0.8rem;
-                    margin: 0;
-                    line-height: 100%;
-                }
-            }
-
         }
 
-        @media (max-width: breakpoint-max(sm)) {
-            .mode-switcher a {
-                padding: 5px 8px;
-            }
+    }
+
+    @media (max-width: breakpoint-max(sm)) {
+        .mode-switcher a {
+            padding: 5px 8px;
+        }
+    }
+}
+
+.chat-info-text {
+    display: flex;
+    align-items: center;
+    flex: 1 51%;
+    @media (max-width: breakpoint-max(xs)) {
+        flex-basis: 100%;
+    }
+}
+
+div.message-length.pm {
+    min-width: 11ch;
+    text-align: right;
+}
+
+div.message-length.channel {
+    min-width: 9ch;
+    text-align: right;
+}
+
+.message-time,
+.message .message-time,
+.ad-viewer .message-time {
+    background-color: var(--messageTimeBgColor);
+    color: var(--messageTimeFgColor);
+    border-radius: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-bottom: 2px;
+    padding-top: 1px;
+    margin-right: 3px;
+    font-size: 80%;
+}
+
+.ad-viewer {
+    display: block;
+
+    h3 {
+        font-size: 12pt;
+
+        .message-time {
+            padding-bottom: 1px;
         }
     }
 
-    .chat-info-text {
-        display: flex;
-        align-items: center;
-        flex: 1 51%;
-        @media (max-width: breakpoint-max(xs)) {
-            flex-basis: 100%;
-        }
+    .border-bottom {
+        margin-bottom: 15px;
+        border-width: 1px;
     }
+}
 
-    div.message-length.pm {
-        min-width: 11ch;
-        text-align: right;
-    }
 
-    div.message-length.channel {
-        min-width: 9ch;
-        text-align: right;
-    }
-
-    .message-time,
-    .message .message-time,
-    .ad-viewer .message-time {
-        background-color: var(--messageTimeBgColor);
-        color: var(--messageTimeFgColor);
-        border-radius: 3px;
-        padding-left: 3px;
-        padding-right: 3px;
-        padding-bottom: 2px;
-        padding-top: 1px;
-        margin-right: 3px;
+.user-view {
+    .user-rank {
         font-size: 80%;
+        margin-right: 2px;
     }
 
-    .ad-viewer {
-       display: block;
+    .match-found {
+        margin-left: 3px;
+        padding-left: 2px;
+        padding-right: 2px;
+        border-radius: 3px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 75%;
+        text-align: center;
+        display: inline-block;
+        text-transform: uppercase;
+        line-height: 100%;
+        padding-top: 2px;
+        padding-bottom: 2px;
 
-        h3 {
-            font-size: 12pt;
+        &.unicorn {
+            background-color: var(--scoreUnicornMatchBg);
+            border: 1px solid var(--scoreUnicornMatchFg);
+            box-shadow: 0 0 5px 0 rgba(255, 255, 255, 0.5);
 
-            .message-time {
-                padding-bottom: 1px;
-            }
-        }
-
-        .border-bottom {
-            margin-bottom: 15px;
-            border-width: 1px;
-        }
-    }
-
-
-    .user-view {
-        .user-rank {
-          font-size: 80%;
-          margin-right: 2px;
-        }
-
-        .match-found {
-            margin-left: 3px;
-            padding-left: 2px;
-            padding-right: 2px;
-            border-radius: 3px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 75%;
-            text-align: center;
-            display: inline-block;
-            text-transform: uppercase;
-            line-height: 100%;
-            padding-top: 2px;
-            padding-bottom: 2px;
-
-            &.unicorn {
-              background-color: var(--scoreUnicornMatchBg);
-              border: 1px solid var(--scoreUnicornMatchFg);
-              box-shadow: 0 0 5px 0 rgba(255, 255, 255, 0.5);
-
-              &::before {
+            &::before {
                 content: '🦄';
                 padding-right:3px
-              }
-            }
-
-            &.match {
-                background-color: var(--scoreMatchBg);
-                border: solid 1px var(--scoreMatchFg);
-            }
-
-            &.weak-match {
-                background-color: var(--scoreWeakMatchBg);
-                border: 1px solid var(--scoreWeakMatchFg);
-            }
-
-            &.weak-mismatch {
-                background-color: var(--scoreWeakMismatchBg);
-                border: 1px solid var(--scoreWeakMismatchFg);
-            }
-
-            &.mismatch {
-                background-color: var(--scoreMismatchBg);
-                border: 1px solid var(--scoreMismatchFg);
             }
         }
-    }
 
+        &.match {
+            background-color: var(--scoreMatchBg);
+            border: solid 1px var(--scoreMatchFg);
+        }
 
-    .messages.hide-non-matching .message.message-score
-    {
+        &.weak-match {
+            background-color: var(--scoreWeakMatchBg);
+            border: 1px solid var(--scoreWeakMatchFg);
+        }
+
+        &.weak-mismatch {
+            background-color: var(--scoreWeakMismatchBg);
+            border: 1px solid var(--scoreWeakMismatchFg);
+        }
+
         &.mismatch {
-            display: none;
+            background-color: var(--scoreMismatchBg);
+            border: 1px solid var(--scoreMismatchFg);
         }
     }
+}
 
-    .messages.filter-ads {
-      .message.filter-match.message-ad {
+
+.messages.hide-non-matching .message.message-score {
+    &.mismatch {
         display: none;
-      }
     }
+}
 
-    .messages.filter-channel-messages {
-      .message.filter-match.message-message,
-      .message.filter-match.message-action {
+.messages.filter-ads {
+    .message.filter-match.message-ad {
+    display: none;
+    }
+}
+
+.messages.filter-channel-messages {
+    .message.filter-match.message-message,
+    .message.filter-match.message-action {
         display: none;
-      }
+    }
+}
+
+.message {
+    .message-pre {
+        font-size: 75%;
+        padding-right: 2px;
+        padding-left: 1px;
+        opacity: 0.90;
+        display: inline-block;
     }
 
-    .message {
-        .message-pre {
-          font-size: 75%;
-          padding-right: 2px;
-          padding-left: 1px;
-          opacity: 0.90;
-          display: inline-block;
+    &.message-event {
+        font-size: 85%;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &.message-score {
+        padding-left: 5px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        &.match {
+            border-left: 12px solid var(--scoreStandoutMatchBorderColor);
+            background-color: var(--scoreStandoutMatchBgColor);
+            // border-left: 12px solid #027b02;
+            // background-color: rgba(1, 115, 1, 0.45);
         }
 
-        &.message-event {
-            font-size: 85%;
-            background-color: rgba(255, 255, 255, 0.1);
+        &.weak-match {
+            border-left: 12px solid var(--scoreStandoutWeakMatchBorderColor);
+            background-color: var(--scoreStandoutWeakMatchBgColor);
+
+            .bbcode {
+                filter: grayscale(0.25);
+                opacity: 0.77;
+            }
         }
 
-        &.message-score {
-            padding-left: 5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        &.neutral {
+            border-left: 12px solid var(--scoreStandoutNeutralBorderColor);
 
-            &.match {
-                border-left: 12px solid var(--scoreStandoutMatchBorderColor);
-                background-color: var(--scoreStandoutMatchBgColor);
-                // border-left: 12px solid #027b02;
-                // background-color: rgba(1, 115, 1, 0.45);
+            .bbcode {
+                filter: grayscale(0.5);
             }
 
-            &.weak-match {
-                border-left: 12px solid var(--scoreStandoutWeakMatchBorderColor);
-                background-color: var(--scoreStandoutWeakMatchBgColor);
+            .bbcode,
+            .user-view,
+            .message-time,
+            .message-pre,
+            .message-post {
+                opacity: 0.6;
+            }
+        };
 
-                .bbcode {
-                    filter: grayscale(0.25);
-                    opacity: 0.77;
-                }
+        &.weak-mismatch {
+            border-left: 12px solid var(--scoreStandoutWeakMismatchBorderColor);
+            background-color: var(--scoreStandoutWeakMismatchBgColor);
+
+            .bbcode {
+                filter: grayscale(0.7);
             }
 
-            &.neutral {
-                border-left: 12px solid var(--scoreStandoutNeutralBorderColor);
+            .bbcode,
+            .user-view,
+            .message-time,
+            .message-pre,
+            .message-post {
+                opacity: 0.55;
+            }
+        }
 
-                .bbcode {
-                    filter: grayscale(0.5);
-                }
+        &.mismatch {
+            border-left: 12px solid var(--scoreStandoutMismatchBorderColor);
 
-                .bbcode,
-                .user-view,
-                .message-time,
-                .message-pre,
-                .message-post {
-                    opacity: 0.6;
-                }
-            };
-
-            &.weak-mismatch {
-                border-left: 12px solid var(--scoreStandoutWeakMismatchBorderColor);
-                background-color: var(--scoreStandoutWeakMismatchBgColor);
-
-                .bbcode {
-                    filter: grayscale(0.7);
-                }
-
-                .bbcode,
-                .user-view,
-                .message-time,
-                .message-pre,
-                .message-post {
-                    opacity: 0.55;
-                }
+            .bbcode {
+                filter: grayscale(0.8);
             }
 
-            &.mismatch {
-                border-left: 12px solid var(--scoreStandoutMismatchBorderColor);
-
-                .bbcode {
-                    filter: grayscale(0.8);
-                }
-
-                .bbcode,
-                .user-view,
-                .message-time,
-                .message-pre,
-                .message-post {
-                    opacity: 0.3;
-                }
+            .bbcode,
+            .user-view,
+            .message-time,
+            .message-pre,
+            .message-post {
+                opacity: 0.3;
             }
         }
     }
+}
 
-    .user-avatar {
-      max-height: 1.2em;
-      min-height: 1.2em;
-      margin-right: 2px !important;
-      margin-top: 0;
-      min-width: 1.2em;
-      max-width: 1.2em;
-    }
+.user-avatar {
+    max-height: 1.2em;
+    min-height: 1.2em;
+    margin-right: 2px !important;
+    margin-top: 0;
+    min-width: 1.2em;
+    max-width: 1.2em;
+}
 </style>

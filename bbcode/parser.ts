@@ -1,3 +1,5 @@
+import core from "../chat/core";
+
 abstract class BBCodeTag {
     noClosingTag = false;
     allowedTags: {[tag: string]: boolean | undefined} | undefined;
@@ -65,7 +67,7 @@ export class BBCodeParser {
     private _tags: {[tag: string]: BBCodeTag | undefined} = {};
     private _line = -1;
     private _column = -1;
-    private _storeWarnings = false;
+    private _storeWarnings = core?.state?.generalSettings.argv.includes('--debug-parser') || false;
     private _currentTag!: {tag: string, line: number, column: number};
 
     parseEverything(input: string): HTMLElement {
@@ -79,8 +81,14 @@ export class BBCodeParser {
         this._currentTag = {tag: '<root>', line: 1, column: 1};
         this.parse(input, 0, undefined, parent, () => true, 0);
 
-        //if(process.env.NODE_ENV !== 'production' && this._warnings.length > 0)
-        //    console.log(this._warnings);
+        if(process.env.NODE_ENV !== 'production' && this._warnings.length > 0)
+            console.warn(this._warnings);
+
+        this._warnings = [];
+        this._line   = -1;
+        this._column = -1;
+        this._currentTag = {tag: '<root>', line: 1, column: 1};
+
         return parent;
     }
 
@@ -127,9 +135,9 @@ export class BBCodeParser {
             isAllowed = (name) => self.isAllowed(name) && parentAllowed(name);
             currentTag = this._currentTag = {tag: self.tag, line: this._line, column: this._column};
         }
-        let tagStart = -1, 
-				    paramStart = -1, 
-						mark = start, 
+        let tagStart = -1,
+				    paramStart = -1,
+						mark = start,
 						isInCollapseParam = false;
         for(let i = start; i < input.length; ++i) {
             const c = input[i];
@@ -143,17 +151,17 @@ export class BBCodeParser {
                 paramStart = -1;
             } else if(c === '=' && paramStart === -1)	{
 							paramStart = i;
-			
+
 							const paramIndex = paramStart === -1 ? i : paramStart;
 							let tagKey = input
 								.substring(tagStart + 1, paramIndex)
 								.trim()
 								.toLowerCase();
-			
+
 							if (tagKey == "collapse") isInCollapseParam = true;
-						}				
+						}
             else if(c === ']') {
-							
+
                 const paramIndex = paramStart === -1 ? i : paramStart;
                 let tagKey = input.substring(tagStart + 1, paramIndex).trim().toLowerCase();
                 if(tagKey.length === 0) {

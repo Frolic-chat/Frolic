@@ -109,6 +109,7 @@ const browserWindow = remote.getCurrentWindow();
   components: {}
 })
 export default class BrowserOption extends Vue {
+  // This is passed in as data during Vue init.
   settings!: GeneralSettings;
   isMaximized = false;
   l = l;
@@ -183,7 +184,7 @@ export default class BrowserOption extends Vue {
     try {
       // Hack!
       if (process.platform === 'win32') {
-        if (this.settings?.risingDisableWindowsHighContrast) {
+        if (this.settings.risingDisableWindowsHighContrast) {
           document.querySelector('html')?.classList.add('disableWindowsHighContrast');
         } else {
           document.querySelector('html')?.classList.remove('disableWindowsHighContrast');
@@ -192,7 +193,7 @@ export default class BrowserOption extends Vue {
 
       return {
         ['platform-' + this.platform]: true,
-        disableWindowsHighContrast: this.settings?.risingDisableWindowsHighContrast || false
+        disableWindowsHighContrast: this.settings.risingDisableWindowsHighContrast || false
       };
     } catch (err) {
       return {

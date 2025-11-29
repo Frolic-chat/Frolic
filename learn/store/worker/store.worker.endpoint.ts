@@ -2,7 +2,7 @@
 /**
  * @license
  * This file is part of Frolic!
-  * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
+ * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
  *
@@ -43,26 +43,34 @@ const reply = (req: IndexedRequest, result?: any, err?: string | Error): void =>
 };
 
 
+/**
+ * A list of the commands the thread can run. Must issue one of these to actually get a response.
+ *
+ * Routes commands to their deeper level.
+ */
 const generateMessageProcessor = () => {
   const messageMapper: Record<ProfileStoreCommand, IndexedCallback> = {
-    flush: (params: Record<string, any>) => indexed.flushProfiles(params.daysToExpire),
+    'flush-profiles':  (params: Record<string, any>) => indexed.flushProfiles(params.daysToExpire),
+    'flush-overrides': (params: Record<string, any>) => indexed.flushOverrides(params.daysToExpire),
     start: () => indexed.start(),
-    stop: () => indexed.stop(),
-    get: (params: Record<string, any>) => indexed.getProfile(params.name),
-    store: (params: Record<string, any>) => indexed.storeProfile(params.character),
-
-    'update-meta': (params: Record<string, any>) =>
-      indexed.updateProfileMeta(params.name, params.images, params.guestbook, params.friends, params.groups),
+    stop:  () => indexed.stop(),
+    'get-profile':     (params: Record<string, any>) => indexed.getProfile(params.name),
+    // 'get-profile-batch': (params: Record<string, any>) => indexed.getProfileBatch(params.names),
+    'get-overrides':   (params: Record<string, any>) => indexed.getOverrides(params.name),
+    'get-overrides-batch': (params: Record<string, any>) => indexed.getOverridesBatch(params.names),
+    'store-profile':   (params: Record<string, any>) => indexed.storeProfile(params.character),
+    'store-overrides': (params: Record<string, any>) => indexed.storeOverrides(params.name, params.overrides),
+    'update-meta':     (params: Record<string, any>) => indexed.updateProfileMeta(params.name, params.images, params.guestbook, params.friends, params.groups),
 
     init: async(params: Record<string, any>): Promise<void> => {
       indexed = await IndexedStore.open(params.dbName);
     }
   };
 
-  return async(e: Event) => {
+  return async(e: MessageEvent<IndexedRequest>) => {
     // log.silly('store.worker.endpoint.msg', { e });
 
-    const req = (e as any).data as IndexedRequest;
+    const req = e.data;
 
     if (!req) {
       return;

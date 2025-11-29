@@ -5,6 +5,7 @@ import { Matcher } from './matcher';
 import { AdCache } from './ad-cache';
 import { TagId } from './matcher-types';
 import { Scoring } from './matcher-types';
+import UserListSorter from './user-list-sorter';
 
 
 export class CharacterProfiler {
@@ -65,9 +66,9 @@ export class CharacterProfiler {
         if (!g)
             return Scoring.NEUTRAL;
 
-        const myGender = Matcher.getTagValueList(TagId.Gender, me.character);
+        const myGender = UserListSorter.GetGenderArray(me.character);
         const myOrientation = Matcher.getTagValueList(TagId.Orientation, me.character);
-        const score = Matcher.scoreOrientationByGender(myGender, myOrientation, g);
+        const score = Matcher.scoreOrientationByGender(myGender, myOrientation, [ g ]);
 
         return score.score;
     }
@@ -89,7 +90,7 @@ export class CharacterProfiler {
 
 
     getLastAdvertisementStatus(c: CharacterFChatInf.Character): Scoring {
-        const ads = this.adCache.get(c.name);
+        const ads = this.adCache.getSync(c.name);
 
         if (!ads)
             return Scoring.NEUTRAL;

@@ -1,13 +1,20 @@
 <template>
-    <div :class="tagClasses">
-        <span class="infotag-label">{{infotag.name}}: </span>
-        <span v-if="infotag.infotag_group !== contactGroupId" class="infotag-value">{{value}}</span>
-        <span v-else class="infotag-value"><a :href="contactLink">{{contactValue}}</a></span>
+    <div :class="[ tagClasses, overrides.classes ]">
+        <span class="infotag-label">{{ overrides.name || infotag.name }}: </span>
+        <span v-if="infotag.infotag_group !== contactGroupId" class="infotag-value">{{ overrides.value || value }}</span>
+        <span v-else class="infotag-value">
+            <a :href="contactLink">{{ contactValue }}</a>
+        </span>
     </div>
 </template>
 
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
+    interface InfotagOverrides {
+        classes?: string | string[] | Record<string, boolean>,
+        name?:    string,
+        value?:   string,
+    }
+    import { Component, Prop, Watch } from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../../chat/core';
     import {CharacterInfotag, Infotag, ListItem} from '../../interfaces';
@@ -17,6 +24,9 @@
     import { MatchReport } from '../../learn/matcher';
     import { CssClassMap } from './match-report.vue';
     import { TagId } from '../../learn/matcher-types';
+
+    import NewLogger from '../../helpers/log';
+    const logG = NewLogger('custom-gender');
 
     @Component
     export default class InfotagView extends Vue {
@@ -29,6 +39,13 @@
         @Prop({required: true})
         private readonly characterMatch!: MatchReport;
 
+        @Prop({ default: () => ({}) })
+        readonly overrides!: InfotagOverrides;
+
+        @Watch('overrides')
+        reportOverrides() {
+            logG.debug(`Overrides for infotag ${this.infotag.name} updated.`);
+        }
 
         readonly contactGroupId = CONTACT_GROUP_ID;
 
@@ -61,7 +78,7 @@
         }
 
         theirInterestIsRelevant(id: number): boolean {
-            return ((id === TagId.FurryPreference) || (id === TagId.Orientation) || (id === TagId.SubDomRole) || (id === TagId.Position) || (id === TagId.PostLength));
+            return ((id === TagId.FurryPreference) || (id === TagId.SubDomRole) || (id === TagId.Position) || (id === TagId.PostLength));
         }
 
         yourInterestIsRelevant(id: number): boolean {
@@ -92,3 +109,10 @@
         }
     }
 </script>
+
+<style lang="scss">
+.quick-info-block .infotag.custom-gender {
+    border: 1px solid;
+    border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1;
+}
+</style>

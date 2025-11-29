@@ -1,12 +1,12 @@
 /**
- * The most simple character structure, used primarily for listing your characters on the log-in selector.
+ * The most simple character structure, used primarily for listing your characters on the log-in selector, but also for some API responses, where only `name` and `id` are used.
  *
  * Character name, unique ID, and whether or not the character exists.
  */
 export interface SimpleCharacter {
-    id:      number
-    name:    string
-    deleted: boolean
+    id:       number
+    name:     string
+    deleted?: boolean
 }
 
 export interface InlineImage {
@@ -27,10 +27,13 @@ export interface CharacterImageNew {
     sort_order:  number | null
 }
 
+/**
+ * Most images seem like old images. Is this based on API call or use of old/new API, or who knows?? Maybe it's based on the cycle of the moon, or how good the coffee was this morning.
+ */
 export interface CharacterImageOld {
     id:          number
     extension:   string
-    hash:        string
+    hash?:       string
     height:      number
     width:       number
     description: string
@@ -74,7 +77,7 @@ export interface Character extends SimpleCharacter {
     updated_at:      number
     views:           number
     last_online_at?: number
-    timezone?:       number
+    timezone?:       number | null
     image_count?:    number
     online_chat?:    boolean
 }

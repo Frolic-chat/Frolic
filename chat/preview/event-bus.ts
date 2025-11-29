@@ -1,13 +1,14 @@
-import { Character, CharacterMemo } from '../../site/character_page/interfaces';
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import { Character as CharacterApiResponse, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
 import { Settings } from '../interfaces';
-import { Conversation } from '../interfaces';
+import { SmartFilterSettings } from '../../learn/filter/types';
+import { Conversation, Character as ChatCharacter } from '../interfaces';
+import { Character as CharacterState } from '../../fchat/interfaces';
 import ChannelConversation = Conversation.ChannelConversation;
 import { NoteCheckerCount } from '../../site/note-checker';
 import { CharacterCacheRecord } from '../../learn/profile-cache';
-
-// import Logger from 'electron-log/renderer';
-// const log = Logger.scope('event-bus');
+import { GeneralSettings } from '../../electron/common';
 
 export interface EmptyEvent {}
 
@@ -54,7 +55,19 @@ export interface CharacterScoreEvent extends CharacterDataEvent {
 }
 
 export interface CharacterDataEvent {
-    profile: Character;
+    profile: CharacterApiResponse;
+}
+
+export interface ActivityEvent {
+    character: ChatCharacter;
+    date:      Date;
+}
+
+export interface ActivityStatusEvent extends ActivityEvent {
+    status:       CharacterState.Status;
+    statusmsg:    string;
+    oldStatus:    string;
+    oldStatusMsg: string;
 }
 
 export interface SelectConversationEvent {
@@ -69,9 +82,15 @@ export interface MemoEvent {
 }
 
 export interface ErrorEvent {
-    source:  string,
+    source:  'eicon' | 'index' | 'core',
     type?:   string,
     message: string,
+    fatal?:  boolean,
+}
+
+export interface NotificationChangeEvent {
+    old: boolean,
+    new: boolean,
 }
 
 export type EventCallback = (data: any) => void | Promise<void>;
@@ -87,12 +106,24 @@ class EventBusManager {
      * You probably also want to register 'core-connected' to detect the initial settings set, as well.
      */
     $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'smartfilters-update',    callback: (e: SmartFilterSettings) => void | Promise<void>): void;
+    $on(event: 'notification-setting',   callback: (e: NotificationChangeEvent) => void | Promise<void>): void;
+    $on(event: 'settings-from-main',     callback: (e: GeneralSettings) => void | Promise<void>): void;
+
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
 
     $on(event: 'own-profile-update',     callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'note-counts-update',     callback: () => void | Promise<void>): void;
+    $on(event: 'activity-friend-login'
+             | 'activity-friend-logout'
+             | 'activity-bookmark-login'
+             | 'activity-bookmark-logout',  callback: (e: ActivityEvent) => void | Promise<void>): void;
+    $on(event: 'activity-friend-status'
+             | 'activity-bookmark-status',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
+    $on(event: 'bookmark-list'
+             | 'friend-list',            callback: (e: CharacterState[]) => void | Promise<void>): void;
     $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'character-score',        callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
     $on(event: 'character-memo',         callback: (e: MemoEvent) => void | Promise<void>): void;
@@ -103,7 +134,8 @@ class EventBusManager {
     $on(event: 'select-conversation',    callback: (e: SelectConversationEvent) => void | Promise<void>): void;
     $on(event: 'conversation-load-more', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
 
-    $on(event: 'imagepreview-show' | 'imagepreview-dismiss', callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
+    $on(event: 'imagepreview-show'
+            | 'imagepreview-dismiss',    callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
     $on(event: 'imagepreview-toggle-sticky', callback: (e: ImageToggleEvent) => void | Promise<void>): void;
     //$on(event: string, callback: EventCallback): void;
     $on(event: string, callback: EventCallback): void {
@@ -183,12 +215,24 @@ class EventBusManager {
 
     $emit(event: 'core-connected',         data: Settings): void;
     $emit(event: 'configuration-update',   data: Settings): void;
+    $emit(event: 'smartfilters-update',    data: SmartFilterSettings): void;
+    $emit(event: 'notification-setting',   data: NotificationChangeEvent): void;
+    $emit(event: 'settings-from-main',     data: GeneralSettings): void;
+
     $emit(event: 'error',                  data: ErrorEvent): void;
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;
 
     $emit(event: 'own-profile-update',     data: CharacterDataEvent): void;
     $emit(event: 'note-counts-update',     data: NoteCountsEvent): void;
+    $emit(event: 'activity-friend-login'
+               | 'activity-friend-logout'
+               | 'activity-bookmark-login'
+               | 'activity-bookmark-logout',  data: ActivityEvent): void;
+    $emit(event: 'activity-friend-status'
+               | 'activity-bookmark-status',  data: ActivityStatusEvent): void;
+    $emit(event: 'bookmark-list'
+               | 'friend-list',            data: CharacterState[]): void;
     $emit(event: 'character-data',         data: CharacterDataEvent): void;
     $emit(event: 'character-score',        data: CharacterScoreEvent): void;
     $emit(event: 'character-memo',         data: MemoEvent): void;

@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
- * @license AGPL-3.0-or-later
+ * @license
  * This file is part of Frolic!
  * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
  *
@@ -50,13 +51,13 @@ const webContents = remote.getCurrentWebContents();
 // tslint:disable-next-line:no-require-imports no-submodule-imports
 require('@electron/remote/main').enable(webContents);
 
-import Axios from 'axios';
+//import Axios from 'axios';
 import { exec } from 'child_process';
 import * as path from 'path';
 import * as qs from 'querystring';
 import {getKey} from '../chat/common';
 import { EventBus } from '../chat/preview/event-bus';
-import {init as initCore} from '../chat/core';
+import { default as core, init as initCore} from '../chat/core';
 import l from '../chat/localize';
 import Socket from '../chat/WebSocket';
 import Connection from '../fchat/connection';
@@ -72,8 +73,11 @@ import * as SlimcatImporter from './renderer/importer';
 
 import Index from './Index.vue';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('chat');
+import Logger from 'electron-log';
+import NewLogger from '../helpers/log';
+const log = NewLogger('chat');
+const logC = NewLogger('core');
+
 import { LevelOption as LogLevelOption } from 'electron-log';
 
 import { WordPosSearch } from '../learn/dictionary/word-pos-search';
@@ -85,7 +89,7 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
         remote.getCurrentWebContents().toggleDevTools();
 });
 
-Axios.defaults.params = {__fchat: `desktop/${remote.app.getVersion()}`};
+//Axios.defaults.params = {__fchat: `desktop/3.0.14`};
 
 if(process.env.NODE_ENV === 'production') {
     remote.getCurrentWebContents().on('devtools-opened', () => {
@@ -216,19 +220,17 @@ if(process.platform === 'win32') //get the path in DOS (8-character) format as s
 // '', {spellCheck: (words, callback) => callback(words.filter((x) => spellchecker.isMisspelled(x)))});
 
 function onSettings(s: GeneralSettings): void {
-    settings = s;
-
     const logLevel: LogLevelOption = 'warn'
-    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
+    Logger.transports.console.level = s.risingSystemLogLevel || logLevel;
 
     // spellchecker.setDictionary(s.spellcheckLang, dictDir);
     // for(const word of s.customDictionary) spellchecker.add(word);
 }
 
-electron.ipcRenderer.on('settings', (_e, s: GeneralSettings) => onSettings(s));
+EventBus.$on('settings-from-main', onSettings);
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
-let settings = <GeneralSettings>JSON.parse(params['settings']!);
+let settings = JSON.parse(params['settings']!) as GeneralSettings;
 
 // console.log('SETTINGS', settings);
 
@@ -247,15 +249,66 @@ onSettings(settings);
 
 log.debug('init.chat.core');
 
-const connection = new Connection(`F-Chat 3.0 (${process.platform})`, remote.app.getVersion(), Socket);
+const connection = new Connection(`F-Chat 3.0 (Web)`, '3.0.16', Socket);
 initCore(connection, settings, Logs, SettingsStore, Notifications);
 
-log.debug('init.chat.vue');
+window.addEventListener('keydown', handleEscape, { capture: true }); // run before bubbling listeners
 
-//tslint:disable-next-line:no-unused-expression
+function isInput(e: any): e is HTMLInputElement | HTMLTextAreaElement {
+    return e && (e instanceof HTMLTextAreaElement
+             || (e instanceof HTMLInputElement && ['text', 'search', 'email', 'tel', 'url'].includes(e.type))
+    )
+}
+
+/**
+ * Perform the 3 escaping activities:
+ * 1. Unfocus a focused element (except primary focus)
+ * 2. Close a modal
+ * 3. Give focus to primary input element.
+ * We can ignore 3 if there's still 2 to do.
+ * @param e
+ * @returns
+ */
+function handleEscape(e: KeyboardEvent) {
+    if (e.key !== 'Escape')
+        return;
+
+    const active = document.activeElement as HTMLElement | null;
+
+    // 1
+    if (isInput(active) && active !== core.runtime.primaryInput) {
+        logC.debug(`Blurring: ${active.className}`);
+        active.blur();
+
+        // Allow propogation to normal pick ups (primary input focus)
+        if (core.runtime.dialogStack.length > 0)
+            e.stopPropagation();
+
+        return;
+    }
+
+    // 2
+    if (core.runtime.dialogStack.length > 0) {
+        logC.debug(`Hiding dialog: ${core.runtime.dialogStack[0].action}`);
+        core.runtime.dialogStack[core.runtime.dialogStack.length - 1].hideWithCheck();
+        e.stopPropagation();
+        return;
+    }
+
+    // 3
+    if (core.runtime.primaryInput) {
+        logC.debug(`Primary input found: ${core.runtime.primaryInput.className}`);
+        core.runtime.primaryInput.focus();
+        // Allow fall-through - useful for scrolling the active window.
+        // e.stopPropagation();
+    }
+}
+
+log.debug('init.chat.vue');
 new Index({
     el: '#app',
     data: {
+        // Useless to pass settinsg through, they're initiated into the core right above!
         settings,
         hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
     }

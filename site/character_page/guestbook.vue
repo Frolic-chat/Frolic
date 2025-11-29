@@ -1,16 +1,21 @@
 <template>
     <div class="guestbook">
         <div v-show="loading" class="alert alert-info">Loading guestbook.</div>
-        <div class="guestbook-controls">
-            <label v-show="canEdit" class="control-label">Unapproved only:
-                <input type="checkbox" v-model="unapprovedOnly"/>
-            </label>
-            <simple-pager :next="hasNextPage" :prev="page > 1" @next="++page" @prev="--page"></simple-pager>
-        </div>
+
+        <label v-show="canEdit" class="control-label">Unapproved only:
+            <input type="checkbox" v-model="unapprovedOnly"/>
+        </label>
+
         <template v-if="!loading">
+            <div class="guestbook-controls">
+                <simple-pager :next="hasNextPage" :prev="page > 1" @next="++page" @prev="--page"></simple-pager>
+            </div>
+
             <div class="alert alert-info" v-show="posts.length === 0">No guestbook posts.</div>
+
             <guestbook-post :character="character" :post="post" :can-edit="canEdit" v-for="post in posts" :key="post.id"
                 @reload="getPage"></guestbook-post>
+
             <div v-if="authenticated && !oldApi" class="form-horizontal">
                 <bbcode-editor v-model="newPost.message" :maxlength="5000" classes="form-control"></bbcode-editor>
                 <input type="checkbox" id="guestbookPostPrivate" v-model="newPost.privatePost"/>
@@ -19,10 +24,11 @@
                 <character-select id="guestbook-post-character" v-model="newPost.character"></character-select>
                 <button @click="makePost" class="btn btn-success" :disabled="newPost.posting">Post</button>
             </div>
+
+            <div class="guestbook-controls">
+                <simple-pager :next="hasNextPage" :prev="page > 1" @next="++page" @prev="--page"></simple-pager>
+            </div>
         </template>
-        <div class="guestbook-controls">
-            <simple-pager :next="hasNextPage" :prev="page > 1" @next="++page" @prev="--page"></simple-pager>
-        </div>
     </div>
 </template>
 
@@ -36,6 +42,9 @@
     import GuestbookPostView from './guestbook_post.vue';
     import core from '../../chat/core';
 
+    import NewLogger from '../../helpers/log';
+    const log = NewLogger('character-sheet');
+
     @Component({
         components: {'guestbook-post': GuestbookPostView}
     })
@@ -43,10 +52,17 @@
         @Prop({required: true})
         readonly character!: Character;
 
+        @Prop({ default: false })
+        readonly parentIsReloading: boolean = false;
+
         @Prop
         readonly oldApi?: true;
 
-        loading = true;
+        loading = false;
+        waitingOnParent = false;
+        lastLoad = 0;
+        RELOAD_THROTTLE = 10000;
+
         error = '';
         authenticated = Store.authenticated;
         posts: GuestbookPost[] = [];
@@ -64,12 +80,23 @@
         @Watch('unapprovedOnly')
         @Watch('page')
         async getPage(): Promise<void> {
+            log.debug('guestbook.getPage.start', {
+                loading: this.loading,
+                page:    this.page,
+            });
+
             try {
                 this.loading = true;
                 const guestbookState = await this.resolvePage();
+                this.lastLoad = Date.now();
                 this.posts = guestbookState.posts;
                 this.hasNextPage =  (this.page + 1) * 10 < guestbookState.total;
             } catch(e) {
+                log.debug('guestbook.getPage.error', {
+                    error:   e,
+                    loading: this.loading,
+                });
+
                 this.posts = [];
                 this.hasNextPage = false;
                 this.canEdit = false;
@@ -77,6 +104,8 @@
                     this.error = <string>e.response.data.error;
                 Utils.ajaxError(e, 'Unable to load guestbook posts.');
             } finally {
+                log.debug('guestbook.getPage.finally', { loading: this.loading });
+
                 this.loading = false;
             }
         }
@@ -96,20 +125,42 @@
         }
 
         async resolvePage(): Promise<Guestbook> {
+            log.debug('guestbook.resolvePage.start', this.page, this.loading,);
+
             if (this.page === 1) {
                 const c = await core.cache.profileCache.get(this.character.character.name);
 
-                if ((c) && (c.meta) && (c.meta.guestbook)) {
+                if (c?.meta?.guestbook)
                     return c.meta.guestbook;
-                }
             }
 
+            log.debug('guestbook.resolvePage.fallback', {
+                character: this.character.character.name,
+                page:      this.page,
+                approved:  this.unapprovedOnly,
+                loading:   this.loading,
+            });
             return methods.guestbookPageGet(this.character.character.id, (this.page - 1) * 10, 10, this.unapprovedOnly);
-            // return methods.guestbookPageGet(this.character.character.id, this.page, this.unapprovedOnly);
         }
 
         async show(): Promise<void> {
-            await this.getPage();
+            if (this.parentIsReloading) {
+                log.debug('guestbook.show.parentIsReloading');
+                this.waitingOnParent = true;
+                setTimeout(() => this.show(), 200);
+            }
+            else if (this.waitingOnParent /* inherent: !parentIsReloading */
+                  || !this.loading && (Date.now() - this.lastLoad) > this.RELOAD_THROTTLE) { // don't spam!!!
+                log.debug('guestbook.show.refreshing');
+                await this.getPage();
+            }
+            else {
+                log.debug('guestbook.show.skipping', {
+                    parent:  this.parentIsReloading,
+                    loading: this.loading,
+                    elapsed: (Date.now() - this.lastLoad),
+                });
+            }
         }
     }
 </script>

@@ -1,8 +1,8 @@
 import Axios, { AxiosError } from 'axios';
 import { EventBus } from '../../chat/preview/event-bus';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('eicon/updater');
+import NewLogger from '../../helpers/log';
+const log = NewLogger('eicon/updater');
 
 export interface EIconRecordUpdate {
     eicon: string;
@@ -17,7 +17,7 @@ export class EIconUpdater {
         const controller = new AbortController();
 
         let user_impatience = () => controller.abort("Xariah connection timeout.");
-        let no_response = setTimeout(user_impatience, 20000);
+        let no_response = setTimeout(user_impatience, 8000);
         log.debug('eiconupdater.fetchall.timeout.start');
 
         /** How to handle wrong response type?
@@ -31,7 +31,7 @@ export class EIconUpdater {
                 onDownloadProgress: () => {
                     log.debug('eiconupdater.fetchall.progress.datareceived');
                     clearTimeout(no_response);
-                    no_response = setTimeout(user_impatience, 20000);
+                    no_response = setTimeout(user_impatience, 5000);
                 },
                 timeout: 15000,
                 timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
@@ -41,24 +41,27 @@ export class EIconUpdater {
             function isAxios (err: any): err is AxiosError { return err.isAxiosError; }
 
             if (isAxios(e) && e.response) { // Server responded with failure
-                log.debug('eicon.axios.err.response', e.response.status, e.response.headers);
+                log.info('eicon.axios.err.response', e.response.status, e.response.headers);
                 EventBus.$emit('error', {
-                    source: 'eicon.fetchall', type: 'http response',
-                    message: `HTTP Response ${e.response.status} from eicon server.`,
+                    source:  'eicon',
+                    type:    'fetchAll.httpResponse',
+                    message: `HTTP Response ${e.response.status ?? 'NONE'} from eicon server.`,
                 });
             }
             else if (isAxios(e) && e.request) { // No response
                 const r = (e.request as XMLHttpRequest);
-                log.debug('eicon.axios.err.request', { status: r.status, readyState: r.readyState });
+                log.info('eicon.axios.err.request', { status: r.status, readyState: r.readyState });
                 EventBus.$emit('error', {
-                    source: 'eicon.fetchall', type: 'http request',
+                    source:  'eicon',
+                    type:    'fetchAll.httpRequest',
                     message: 'There was no response from the eicon server.',
                 });
             }
             else {
-                log.debug('eicon.axios.err.generic', { err: e });
+                log.info('eicon.axios.err.generic', { err: e });
                 EventBus.$emit('error', {
-                    source: 'eicon.fetchall', type: 'http generic',
+                    source:  'eicon',
+                    type:    'fetchAll.httpGeneric',
                     message: 'Miscellaneous error contacting the eicon server.',
                 });
             }
@@ -83,8 +86,8 @@ export class EIconUpdater {
         if (!asOfTimestamp) {
             log.error('No "# As Of: " line found.');
             EventBus.$emit('error', {
-                source: 'eicon.fetchall.timestamp',
-                type: typeof undefined,
+                source:  'eicon',
+                type:    'fetchAll.timestamp',
                 message: "Didn't receive timestamp from eicon server.",
             });
         }
@@ -115,8 +118,8 @@ export class EIconUpdater {
         if (!asOfTimestamp) {
             log.error('No "# As Of: " line found.');
             EventBus.$emit('error', {
-                source: 'eicon timestamp failure',
-                type: typeof undefined,
+                source:  'eicon',
+                type:    'fetchUpdates.timestamp',
                 message: "Didn't receive timestamp from eicon server.",
             });
         }

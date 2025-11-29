@@ -622,6 +622,11 @@
     "@types/tough-cookie" "*"
     form-data "^2.5.5"
 
+"@types/resize-observer-browser@^0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@types/resize-observer-browser/-/resize-observer-browser-0.1.11.tgz#d3c98d788489d8376b7beac23863b1eebdd3c13c"
+  integrity sha512-cNw5iH8JkMkb3QkCoe7DaZiawbDQEUX8t7iuQaRTyLOyQCR2h+ibBD4GJt7p5yhUHrlOeL7ZtbxNHeipqNsBzQ==
+
 "@types/responselike@^1.0.0":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@types/responselike/-/responselike-1.0.3.tgz#cc29706f0a397cfe6df89debfe4bf5cea159db50"
@@ -6293,6 +6298,11 @@ socks@^2.8.3:
     ip-address "^10.0.1"
     smart-buffer "^4.2.0"
 
+sortablejs@1.10.2:
+  version "1.10.2"
+  resolved "https://registry.yarnpkg.com/sortablejs/-/sortablejs-1.10.2.tgz#6e40364d913f98b85a14f6678f92b5c1221f5290"
+  integrity sha512-YkPGufevysvfwn5rfdlGyrGjt7/CRHwvRPogD/lC+TnvcN29jDpCifKP+rBqf+LRldfXSTh+0CGLcSg0VIxq3A==
+
 sortablejs@^1.12.0:
   version "1.15.6"
   resolved "https://registry.yarnpkg.com/sortablejs/-/sortablejs-1.15.6.tgz#ff93699493f5b8ab8d828f933227b4988df1d393"
@@ -7085,6 +7095,13 @@ vue@2.6.12, vue@^2.0.0, vue@^2.5.17, vue@^2.5.20:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.12.tgz#f5ebd4fa6bd2869403e29a896aed4904456c9123"
   integrity sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg==
+
+vuedraggable@^2.24.3:
+  version "2.24.3"
+  resolved "https://registry.yarnpkg.com/vuedraggable/-/vuedraggable-2.24.3.tgz#43c93849b746a24ce503e123d5b259c701ba0d19"
+  integrity sha512-6/HDXi92GzB+Hcs9fC6PAAozK1RLt1ewPTLjK0anTYguXLAeySDmcnqE8IC0xa7shvSzRjQXq3/+dsZ7ETGF3g==
+  dependencies:
+    sortablejs "1.10.2"
 
 watchpack@^2.4.1:
   version "2.4.4"

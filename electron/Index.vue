@@ -3,15 +3,8 @@
         <div v-html="styling"></div>
         <div v-if="!characters" style="display:flex; align-items:center; justify-content:center; height: 100%;">
             <div class="card bg-light" style="width: 400px;">
-                <div class="initializer" :class="{visible: !hasCompletedUpgrades, complete: hasCompletedUpgrades, shouldShow: shouldShowSpinner}">
-                    <div class="title">
-                        Getting ready, please wait...
-                        <small>You should only experience this delay once per software update</small>
-                    </div>
-                    <i class="fas fa-circle-notch fa-spin search-spinner"></i>
-                </div>
 
-                <BBCodeTester v-show="false"></BBCodeTester>
+                <BBCodeTester v-show="debugBBCode"></BBCodeTester>
 
                 <h3 class="card-header" style="margin-top:0;display:flex">
                     {{l('title')}}
@@ -25,12 +18,12 @@
                     <div class="alert alert-danger" v-show="error">
                         {{error}}
                     </div>
-                    <div class="form-group">
+                    <div class="form-group"><!-- account -->
                         <label class="control-label" for="account">{{l('login.account')}}</label>
                         <input class="form-control" id="account" v-model="settings.account" @keypress.enter="login()"
                             :disabled="loggingIn"/>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group"><!-- password -->
                         <label class="control-label" for="password">{{l('login.password')}}</label>
                         <input class="form-control" type="password" id="password" v-model="password" @keypress.enter="login()"
                             :disabled="loggingIn"/>
@@ -38,48 +31,39 @@
                     <div class="form-group" v-show="showAdvanced">
                         <label class="control-label" for="host">{{l('login.host')}}</label>
                         <div class="input-group">
-                            <input class="form-control" id="host" v-model="settings.host" @keypress.enter="login()" :disabled="loggingIn"/>
+                            <input class="form-control" id="host" v-model="settings.host" @keypress.enter="login()" :disabled="loggingIn || !allowedToLogin"/>
                             <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" @click="resetHost()"><span class="fas fa-undo-alt"></span>
+                                <button class="btn btn-outline-secondary" @click="resetHost()">
+                                    <span class="fas fa-undo-alt"></span>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="advanced"><input type="checkbox" id="advanced" v-model="showAdvanced"/> {{l('login.advanced')}}</label>
+                    <div class="form-group"><!-- advanced settings -->
+                        <label for="advanced">
+                            <input type="checkbox" id="advanced" v-model="showAdvanced"/> {{l('login.advanced')}}
+                        </label>
                     </div>
-                    <div class="form-group">
-                        <label for="save"><input type="checkbox" id="save" v-model="saveLogin"/> {{l('login.save')}}</label>
+                    <div class="form-group"><!-- save login -->
+                        <label for="save">
+                            <input type="checkbox" id="save" v-model="saveLogin"/> {{l('login.save')}}
+                        </label>
                     </div>
-                    <div class="form-group" style="margin:0;text-align:right">
-                        <button  v-if="!this.createHookFinished" key="login-denied" class="btn btn-primary">
-                            <span v-if="!this.createHookFinished">Loading...</span>
+                    <div class="form-group" style="margin:0;text-align:right"><!-- login button -->
+                        <button v-if="!createHookFinished || tasksStillRunning" class="btn btn-primary" disabled>
+                            <span class="text-center">Loading...</span>
                         </button>
 
-                        <button v-else-if="!this.fatalError" key="login" class="btn btn-primary" @click="this.login" :disabled="this.loggingIn">
-                            {{l(loggingIn ? 'login.working' : 'login.submit')}}
+                        <button v-else-if="!fatalError()" class="btn btn-primary" @click="login" :disabled="loggingIn">
+                            {{ l(loggingIn ? 'login.working' : 'login.submit') }}
                         </button>
                     </div>
-                </div>
 
-                <div v-show="loginScreenErrors.length > 0 || loginScreenWarnings.length > 0"
-                    class="card-body" style="user-select: text;">
-                    <div v-show="this.fatalError" class="form-group error_block_header">
-                        You've encountered a fatal error, so your login has been prevented.
-                    </div>
-
-                    <div v-show="this.loginScreenErrors.length > 0" class="form-group login_error_group">
-                        <div style="text-align: center; font-size: 2.3rem;">🛑</div>
-                        <div v-for="error in this.loginScreenErrors" class="login_error">
-                            {{ error }}
+                    <div class="container form-group loading-block">
+                        <div v-if="!createHookFinished || tasksStillRunning" class="my-2">
+                            {{ upgradeMessage }}
                         </div>
-                    </div>
-
-                    <div v-show="this.loginScreenWarnings.length > 0" class="form-group login_warning_group">
-                        <div style="text-align: center; font-size: 2.3rem;">⚠</div>
-                        <div v-for="warning in this.loginScreenWarnings" class="login_warning">
-                            {{ warning }}
-                        </div>
+                        <login-tasks :tasks="tasks"></login-tasks>
                     </div>
                 </div>
             </div>
@@ -93,7 +77,7 @@
             </div>
         </modal>
         <modal :buttons="false" ref="profileViewer" dialogClass="profile-viewer" >
-            <character-page :authenticated="true" :oldApi="true" :name="profileName" :imagePreview="true" ref="characterPage"></character-page>
+            <character-page :authenticated="true" :oldApi="true" :name="profileName" ref="characterPage"></character-page>
             <template slot="title">
                 {{profileName}}
                 <a class="btn" @click="openProfileInBrowser"><i class="fa fa-external-link-alt"></i></a>
@@ -141,8 +125,9 @@
     import * as electron from 'electron';
     import * as remote from '@electron/remote';
 
-    import electronLog from 'electron-log';
-    const log = electronLog.scope('Index');
+    import NewLogger from '../helpers/log';
+    const log = NewLogger('Index');
+    // const logBB = NewLogger('bbcode');
 
     import * as fs from 'fs';
     import * as path from 'path';
@@ -154,20 +139,24 @@
     import { Settings } from '../chat/common';
     import core /*, { init as initCore }*/ from '../chat/core';
     import l from '../chat/localize';
+
     import Logs from '../chat/Logs.vue';
+
     import Socket from '../chat/WebSocket';
     import Modal from '../components/Modal.vue';
     import {SimpleCharacter} from '../interfaces';
     // import { BetterSqliteStore } from '../learn/store/better-sqlite3';
     // import { Sqlite3Store } from '../learn/store/sqlite3';
-    import CharacterPage from '../site/character_page/character_page.vue';
+    import CharacterPage from '../site/character_page/character_sheet.vue';
     import WordDefinition from '../learn/dictionary/WordDefinition.vue';
     import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
+    import { default as LoginTasks, Task } from './LoginTasks.vue';
     import {GeneralSettings} from './common';
     import * as FLIST from '../constants/flist';
     import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './renderer/filesystem';
     import * as SlimcatImporter from './renderer/importer';
-    import { EventBus, ErrorEvent } from '../chat/preview/event-bus';
+    import { EventBus } from '../chat/preview/event-bus';
+    import * as ErrorHandler from './error-service';
 
     import BBCodeTester from '../bbcode/Tester.vue';
     import { BBCodeView } from '../bbcode/view';
@@ -195,11 +184,14 @@
             chat: Chat,
             modal: Modal,
             characterPage: CharacterPage,
+
             logs: Logs,
+
             'word-definition': WordDefinition,
             BBCodeTester: BBCodeTester,
             bbcode: BBCodeView(core.bbCodeParser),
-            'profile-analysis': ProfileAnalysis
+            'profile-analysis': ProfileAnalysis,
+            'login-tasks': LoginTasks,
         }
     })
     export default class Index extends Vue {
@@ -212,8 +204,13 @@
         error = '';
         defaultCharacter?: number;
         l = l;
+
+        // This data is passed in via new Index() in chat.ts
         settings!: GeneralSettings;
         hasCompletedUpgrades!: boolean;
+
+        upgradeMessage = '';
+        debugBBCode = false;
         importProgress = 0;
         profileName = '';
         profileStatus = '';
@@ -222,75 +219,35 @@
         fixCharacter = '';
         wordDefinitionLookup = '';
 
-        shouldShowSpinner = false;
-
         profileNameHistory: string[] = [];
         profilePointer = 0;
 
-        allowedToLogin(): boolean {
-            log.debug(
-                'index.login.allowedCheck', {
-                    loggingIn: this.loggingIn,
-                    fatalError: this.fatalError,
-                    creatHookRan: this.createHookFinished,
-                }
-            );
+        fatalError(): boolean {
+            return Object.values(this.errors).some(v => v.fatal);
+        }
 
-            return !this.loggingIn
-            &&     !this.fatalError
-            &&      this.createHookFinished;
+        get tasksStillRunning() {
+            return this.tasks.some(t => t.running === true);
+        }
+
+        get allowedToLogin() {
+            log.debug('index.login.allowedCheck', {
+                tasks:         this.tasksStillRunning,
+                loggingIn:     this.loggingIn,
+                fatalError:    this.fatalError(),
+                createHookRan: this.createHookFinished,
+            });
+
+            return !this.tasksStillRunning
+                && !this.loggingIn
+                && !this.fatalError()
+                && this.createHookFinished;
         }
 
         createHookFinished: boolean = false;
-        fatalError: boolean = false;
-        loginScreenWarnings: string[] = [];
-        loginScreenErrors:   string[] = [];
 
-        errSetter = (e: ErrorEvent) => {
-            if (e.source === 'this.created')
-                this.loginScreenWarnings.push(e.message);
-            if (e.source === 'eicon.fetchall') {
-                this.loginScreenWarnings.push(e.message);
-                this.loginScreenWarnings.push('Eicon search will not work until a connection can be established.');
-            }
-            if (e.source === 'eicon.fetchall.timestamp') {
-                this.loginScreenWarnings.push(e.message);
-                this.loginScreenWarnings.push('If you encounter this warning repeatedly, please report it to the Frolic development team.');
-            }
-            if (e.source === 'store.worker.client') {
-                this.fatalError = true;
-                this.loginScreenErrors.push(e.message);
-                this.loginScreenErrors.push('Did you leave another Frolic running in the background by accident?');
-            }
-        }
-
-
-        async startAndUpgradeCache(): Promise<void> {
-            log.debug('init.chat.cache.start');
-
-            const spinner = setTimeout(() => { this.shouldShowSpinner = true }, 250);
-
-            try {
-                await core.cache.start(this.settings, this.hasCompletedUpgrades);
-            }
-            catch (e) {
-                // This error is already handled deeper, but the handler doesn't capture it correctly.
-            };
-
-            log.debug('init.chat.cache.done');
-
-            void EIconStore.getSharedStore(); // intentionally background
-
-            log.debug('init.eicons.update.done');
-
-            clearTimeout(spinner);
-
-            parent.send('rising-upgrade-complete');
-            electron.ipcRenderer.send('rising-upgrade-complete');
-
-            this.hasCompletedUpgrades = true;
-        }
-
+        tasks: Task[] = [];
+        errors = ErrorHandler.store;
 
         @Watch('profileName')
         onProfileNameChange(newName: string): void {
@@ -306,7 +263,6 @@
             }
         }
 
-
         @Hook('mounted')
         onMounted(): void {
             log.debug('init.chat.mounted');
@@ -319,84 +275,42 @@
             });
         }
 
-
         @Hook('created')
         async created(): Promise<void> {
-            // Event bus is only supposed to be for character/cache/preview updates.
-            EventBus.$on('error', this.errSetter);
+            EventBus.$on('error', ErrorHandler.capture);
 
-            await this.startAndUpgradeCache();
+            this.debugBBCode = this.settings.argv.includes('--debug-bbcode');
 
-            if (this.settings.account.length > 0) this.saveLogin = true;
+            await this.start.taskDisplay();
 
-            this.password = await ipcRenderer.invoke('getPassword', 'f-list.net', this.settings.account) || '';
+            void this.awaitStartUpTask('core',  this.start.cache);
+            void this.awaitStartUpTask('eicon', this.start.eicons);
+            if (this.settings.account)
+                void this.awaitStartUpTask('index', this.start.restoreLogin);
 
-            log.debug('init.chat.keystore.get.done');
+            if (!this.hasCompletedUpgrades) {
+                this.upgradeMessage = 'Version upgrade; this may take a while.';
 
-            Vue.set(core.state, 'generalSettings', this.settings);
+                // It is pointless to make this wait for anything to actually change; app version is already upgraded to latest in electron main, so we'll never "rerun" an upgrade even if it fails.
+                parent.send('rising-upgrade-complete');
+                electron.ipcRenderer.send('rising-upgrade-complete');
+                this.hasCompletedUpgrades = true;
+            }
 
-            electron.ipcRenderer.on('settings', (_e, settings: GeneralSettings) => {
-                log.debug('settings.update.index');
-                core.state.generalSettings = this.settings = settings;
-            });
-
-            electron.ipcRenderer.on('open-profile', (_e, name: string) => {
-                const profileViewer = <Modal>this.$refs['profileViewer'];
-
-                this.openProfile(name);
-
-                profileViewer.show();
-            });
-
-            electron.ipcRenderer.on('reopen-profile', _e => {
-                if (this.profileNameHistory.length > 0
-                 && this.profilePointer < this.profileNameHistory.length
-                 && this.profilePointer >= 0) {
-                    const name = this.profileNameHistory[this.profilePointer];
-                    const profileViewer = <Modal>this.$refs['profileViewer'];
-
-                    if (this.profileName === name && profileViewer.isShown) {
-                        profileViewer.hide();
-                        return;
-                    }
-
-                    this.openProfile(name);
-                    profileViewer.show();
-                }
-            });
-
-            electron.ipcRenderer.on('fix-logs', async() => {
-                this.fixCharacters = await core.settingsStore.getAvailableCharacters();
-                this.fixCharacter = this.fixCharacters[0];
-                (<Modal>this.$refs['fixLogsModal']).show();
-            });
-
-            electron.ipcRenderer.on('update-zoom', (_e, zoomLevel) => {
-                webContents.setZoomLevel(zoomLevel);
-                // log.info('INDEXVUE ZOOM UPDATE', zoomLevel);
-            });
-
-            electron.ipcRenderer.on('active-tab', () => {
-                core.cache.setTabActive(true);
-            });
-
-            electron.ipcRenderer.on('inactive-tab', () => {
-                core.cache.setTabActive(false);
-            });
-
-            log.debug('init.chat.listeners.done');
+            await this.start.listeners();
 
             this.createHookFinished = true;
         }
 
         async login(): Promise<void> {
-            if (!this.allowedToLogin())
+            if (!this.allowedToLogin)
                 return;
 
             this.loggingIn = true;
 
             try {
                 if (!this.saveLogin) {
+                    log.debug('login.savelogin.deletePassword');
                     await ipcRenderer.invoke('deletePassword', 'f-list-net', this.settings.account);
                 }
 
@@ -538,9 +452,9 @@
         }
 
 
-        reloadCharacter(): void {
+        reloadCharacter(/* payload: MouseEvent */): void {
             // tslint:disable-next-line: no-any no-unsafe-any
-            (this.$refs.characterPage as any).reload();
+            (this.$refs.characterPage as any).reload(/* payload.shiftKey || payload.button === 2 */);
         }
 
 
@@ -550,7 +464,7 @@
             try {
             // Hack!
                 if (process.platform === 'win32') {
-                    if (core.state.generalSettings?.risingDisableWindowsHighContrast) {
+                    if (core.state.generalSettings.risingDisableWindowsHighContrast) {
                         document.querySelector('html')?.classList.add('disableWindowsHighContrast');
                     }
                     else {
@@ -561,7 +475,7 @@
                 return {
                     [`theme-${core.state.settings.risingCharacterTheme || this.settings.theme}`]: true,
                     colorblindMode: core.state.settings.risingColorblindMode,
-                    disableWindowsHighContrast: core.state.generalSettings?.risingDisableWindowsHighContrast || false
+                    disableWindowsHighContrast: core.state.generalSettings.risingDisableWindowsHighContrast || false
                 };
             }
             catch(err) {
@@ -613,7 +527,9 @@
             }
             catch (e) {
                 if ((<Error & { code: string }>e).code === 'ENOENT' && this.settings.theme !== 'default') {
+                    log.warn("Couldn't read file matching current theme; safely resetting to default.");
                     this.settings.theme = 'default';
+
                     return this.styling;
                 }
 
@@ -668,10 +584,123 @@
             }
         }
 
+        start = {
+            taskDisplay: async () => {
+                if (this.settings.account) {
+                    this.tasks.push(
+                        { id: 'index', name: 'Restore Password', running: true },
+                    );
+                }
+                this.tasks.push(
+                    { id: 'core',  name: 'Core Services', running: true },
+                    { id: 'eicon', name: 'Eicon Service',  running: true },
+                );
+            },
+            cache: async () => {
+                log.debug('init.chat.cache.start');
+
+                try {
+                    await core.cache.start(this.settings, this.hasCompletedUpgrades);
+                }
+                catch (e) {
+                    const msg = typeof e === 'string'
+                        ? e : e && typeof e === 'object' && 'message' in e && typeof e.message === 'string'
+                            ? e.message : '';
+
+                    EventBus.$emit('error', {
+                        source:  'core',
+                        type:    'cache.start',
+                        message: msg,
+                        fatal:   true,
+                    });
+                };
+
+                log.debug('init.chat.cache.done');
+            },
+            eicons: async () => {
+                await EIconStore.getSharedStore(); // intentionally background
+                log.debug('init.eicons.update.done');
+            },
+            listeners: async () => {
+                electron.ipcRenderer.on('open-profile', (_e, name: string) => {
+                    const profileViewer = <Modal>this.$refs['profileViewer'];
+
+                    this.openProfile(name);
+
+                    profileViewer.show();
+                });
+
+                electron.ipcRenderer.on('reopen-profile', _e => {
+                    if (this.profileNameHistory.length > 0
+                    && this.profilePointer < this.profileNameHistory.length
+                    && this.profilePointer >= 0) {
+                        const name = this.profileNameHistory[this.profilePointer];
+                        const profileViewer = <Modal>this.$refs['profileViewer'];
+
+                        if (this.profileName === name && profileViewer.isShown) {
+                            profileViewer.hide();
+                            return;
+                        }
+
+                        this.openProfile(name);
+                        profileViewer.show();
+                    }
+                });
+
+                electron.ipcRenderer.on('fix-logs', async() => {
+                    this.fixCharacters = await core.settingsStore.getAvailableCharacters();
+                    this.fixCharacter = this.fixCharacters[0];
+                    (<Modal>this.$refs['fixLogsModal']).show();
+                });
+
+                electron.ipcRenderer.on('update-zoom', (_e, zoomLevel) => webContents.setZoomLevel(zoomLevel));
+
+                electron.ipcRenderer.on('active-tab',   () => core.cache.setTabActive(true));
+                electron.ipcRenderer.on('inactive-tab', () => core.cache.setTabActive(false));
+
+                log.debug('init.chat.listeners.done');
+            },
+            restoreLogin: async () => {
+                this.saveLogin = true;
+                try {
+                    this.password = await ipcRenderer.invoke('getPassword', 'f-list.net', this.settings.account);
+
+                    log.debug('init.chat.keystore.get.done');
+                }
+                catch (e) {
+                    EventBus.$emit('error', {
+                        source: 'index',
+                        type: 'account.getPassword',
+                        message: e && typeof e === 'object'
+                            && 'message' in e && typeof e.message === 'string'
+                            ? e.message : '',
+                    });
+
+                    log.info('init.chat.keystore.get.error');
+                }
+            }
+        };
+
+        async awaitStartUpTask(n: string, f: () => Promise<void>): Promise<boolean> {
+            await f();
+
+            // Finished
+            const t = this.tasks.find(t => t.id === n);
+
+            if (t) {
+                t.running = false;
+                //if (this.errors[t.name]) Vue.set(t, 'error', this.errors[t.name]);
+                t.error = this.errors[t.id] || undefined;
+            }
+
+            return !!t;
+        }
     }
 </script>
 
 <style lang="scss">
+@import "~bootstrap/scss/bootstrap";
+
     html, body, #page {
         height: 100%;
     }
@@ -705,80 +734,6 @@
                 overflow: auto;
             }
         }
-    }
-
-    .initializer {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        backdrop-filter: blur(3px) grayscale(35%);
-
-        &.shouldShow {
-            transition: all 0.25s;
-
-            &.visible {
-                opacity: 1;
-            }
-        }
-
-        &.complete {
-            pointer-events: none !important;
-        }
-
-        i {
-            font-size: 130pt;
-            top: 50%;
-            right: 50%;
-            transform: translate(-50%, -50%);
-            width: fit-content;
-        }
-
-        .title {
-            position: absolute;
-            top: 0;
-            background: rgba(147, 255, 215, 0.6);
-            width: 100%;
-            text-align: center;
-            padding-top: 20px;
-            padding-bottom: 20px;
-            font-weight: bold;
-
-            small {
-                display: block;
-                opacity: 0.8;
-            }
-        }
-    }
-
-    .error_block_header {
-        text-align: center;
-        font-weight: bold;
-
-        padding: 1rem;
-    }
-
-    .login_error_group {
-        text-align: justify;
-
-        border: 2px solid var(--danger);
-        border-radius: 4px;
-
-        padding: 1rem;
-    }
-
-    .login_warning_group {
-        text-align: justify;
-
-        border: 2px solid var(--warning);
-        border-radius: 4px;
-
-        padding: 1rem;
     }
 
     .btn.wordDefBtn {

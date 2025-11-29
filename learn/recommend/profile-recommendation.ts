@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { CharacterAnalysis, Matcher } from '../matcher';
 import { FurryPreference, Kink, mammalSpecies, Species } from '../matcher-types';
-import { characterImage } from '../../chat/common';
+import core from '../../chat/core';
 import { ProfileCache } from '../profile-cache';
 import l from '../../chat/localize';
 
@@ -55,7 +55,7 @@ export class ProfileRecommendationAnalyzer {
     }
 
     protected async checkPortrait(): Promise<void> {
-        const portraitUrl = characterImage(this.profile.character.name);
+        const portraitUrl = core.characters.getImage(this.profile.character.name);
 
         const result = await Axios.head(portraitUrl);
 
@@ -65,11 +65,13 @@ export class ProfileRecommendationAnalyzer {
     }
 
     protected async checkHqPortrait(): Promise<void> {
-        const profileUrl = ProfileCache.detectRisingPortraitURL(this.profile.character.description);
+        const overrides = ProfileCache.getOverridesFromDescription(this.profile.character.description);
+        const hqp = overrides.find(e => e.type === 'hqp')?.value;
 
-        if (!profileUrl) {
+        if (!hqp) {
             //this.add(`ADD_HQ_AVATAR`, ProfileRecommendationLevel.CRITICAL, 'Add a high-quality portrait', 'Profiles with a high-quality portraits stand out in chats with other F-Chat Rising players.', 'https://github.com/Frolic-chat/frolic/wiki/High%E2%80%90Quality-Portraits');
-        } else if (!ProfileCache.isSafeRisingPortraitURL(profileUrl)) {
+        }
+        else if (!ProfileCache.isSafePortraitURL(ProfileCache.parsePortraitURL(hqp))) {
             this.add(`ADD_HQ_AVATAR_SAFE_DOMAIN`, ProfileRecommendationLevel.CRITICAL, l('phelper.unsupportedHQPotrait1'), l('phelper.unsupportedHQPotrait2'));
         }
     }

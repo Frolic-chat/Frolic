@@ -5,8 +5,8 @@ import { Response } from 'request';
 import { NoteChecker } from './note-checker';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('site-session');
+import NewLogger from '../helpers/log';
+const log = NewLogger('site-session');
 
 export interface SiteSessionInterface {
     start(): Promise<void>;

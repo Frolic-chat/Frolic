@@ -55,6 +55,7 @@
         <div class="messages messages-both" style="overflow:auto;overscroll-behavior:none;" ref="messageviews" tabindex="-1"
              @scroll="onMessagesScroll">
             <message-view v-for="message in displayedMessages" :message="message" :key="message.id" :logs="true"></message-view>
+            <div v-if="displayedMessages.length === 0" class="message mismatch">No messages found.</div>
         </div>
         <div class="input-group" style="flex-shrink:0">
             <div class="input-group-prepend">
@@ -87,6 +88,9 @@
     import MessageView from './message_view';
     import Zip from './zip';
     import { Dialog } from '../helpers/dialog';
+
+    import NewLogger from '../helpers/log';
+    const log = NewLogger('logs');
 
     /**
      * Sanitize invalid symbols from file and folder names. Useful to sanitize names inside of the zip files, as zip files are portable across operating systems.
@@ -143,7 +147,7 @@
         },
     })
     export default class Logs extends CustomDialog {
-        @Prop
+        @Prop({ required: false })
         readonly conversation?: Conversation;
 
         conversations: LogInterface.Conversation[] = [];
@@ -357,12 +361,18 @@
         }
 
         async onOpen(): Promise<void> {
+            log.debug('Opened log modal.', {
+                you: this.selectedCharacter,
+                convo: this.conversation?.key,
+                latest: this.conversation && this.conversations.filter(x => x.key === this.conversation!.key)[0],
+            })
             if (this.selectedCharacter) {
                 await this.loadConversations();
 
-                if (this.conversation) {
+                const conv = this.conversation;
+                if (conv) {
                     this.selectedConversation = this.conversations
-                            .filter(x => x.key === this.conversation!.key)[0];
+                            .filter(x => x.key === conv.key)[0];
                 }
                 else {
                     await this.loadDates();
@@ -399,6 +409,7 @@
         }
 
         onClose(): void {
+            log.debug('Closed log modal.', this.conversation?.key);
             window.removeEventListener('keydown', this.keyDownListener!);
         }
 

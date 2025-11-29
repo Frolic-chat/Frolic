@@ -36,15 +36,17 @@
             <div v-if="character.character.online_chat" @click="showInChat()" class="character-page-online-chat">{{ l('profile.online') }}</div>
 
             <div class="quick-info-block">
-                <!-- <infotag-item v-for="infotag in quickInfoItems" :infotag="infotag" :key="infotag.id" :characterMatch="characterMatch"></infotag-item> -->
-                <template v-for="id in quickInfoIds">
+                <template v-for="id in charInfoIds">
+                    <infotag-item v-if="character.character.infotags[id]" :overrides="id === 3 ? genderOverrides : undefined" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch"></infotag-item>
+                </template>
+
+                <hr>
+
+                <template v-for="id in rpInfoIds">
                     <infotag-item v-if="character.character.infotags[id]" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch"></infotag-item>
                 </template>
 
-<!--            <div class="contact-block">-->
-<!--                <contact-method v-for="method in contactMethods" :infotag="method" :key="method.id"-->
-<!--                    :data="character.character.infotags[method.id]"></contact-method>-->
-<!--            </div>-->
+                <hr>
 
                 <div class="quick-info">
                     <span class="quick-info-label">{{ l('profile.created') }}</span>
@@ -111,6 +113,9 @@
     import core from '../../chat/core';
     import l from '../../chat/localize';
 
+    import NewLogger from '../../helpers/log';
+    const logG = NewLogger('custom-gender');
+
     interface ShowableVueDialog extends Vue {
         show(): void
     }
@@ -155,7 +160,54 @@
         readonly characterMatch!: MatchReport;
 
         readonly shared: SharedStore = Store;
-        readonly quickInfoIds: ReadonlyArray<number> = [1, 3, 2, 49, 9, 29, 15, 41, 25]; // Do not sort these.
+
+        /**
+         * Age
+         * Gender
+         * Orientation
+         * Language
+         * Species
+         * FurryPref
+         * SubDom
+         * Position
+         *
+         * post length
+         * RP length
+         * Language
+         *
+         * List order determines display order.
+         */
+        readonly charInfoIds: ReadonlyArray<number> = [ 1, 3, 2, 9, 29, 15, 41 ];
+        readonly rpInfoIds: ReadonlyArray<number> = [ 24, 25, 49 ];
+
+        // Needs reactivity testing.
+        get genderOverrides() {
+            const c = core.characters.get(this.character.character.name);
+            if (c.overrides.gender) {
+                return {
+                    classes: 'custom-gender',
+                    value:   core.characters.getGenderString(this.character.character.name),
+                }
+            }
+        }
+
+        getGenderOverrides(id: number) {
+            const tag = this.getInfotag(id);
+
+            logG.debug('gender override factored.', id, tag);
+
+            if (tag.name === 'Gender') {
+                const c = core.characters.get(this.character.character.name);
+                return {
+                    classes: 'custom-gender',
+                    value:   c.overrides.gender?.string,
+                }
+            }
+            else {
+                return undefined;
+            }
+        }
+
         readonly avatarUrl = Utils.avatarURL;
 
         getAvatarUrl(): string {

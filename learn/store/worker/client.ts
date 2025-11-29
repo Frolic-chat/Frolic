@@ -1,8 +1,7 @@
-import { EventBus } from '../../../chat/preview/event-bus';
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('worker/client');
+import NewLogger from '../../../helpers/log';
+const log = NewLogger('worker/client');
 
 export interface WaiterDef {
   id: string;
@@ -39,14 +38,12 @@ export class WorkerClient {
     this.waiters.push({ id, resolve, reject, request, initiated: Date.now() });
   }
 
+  // @ts-ignore `TS2315: Type 'MessageEvent' is not generic.` in webpack TS.
+  private generateMessageProcessor(): (e: MessageEvent<IndexedResponse>) => void {
+    return e => {
+      const res = e.data;
 
-  private generateMessageProcessor(): ((e: Event) => void) {
-    return (e: Event) => {
-      const res = (e as any).data as IndexedResponse;
-
-      // log.silly('store.worker.client.msg', { res });
-
-      if (!res) {
+      if (!res) { // A crime happened here.
         log.error('store.worker.client.msg.invalid', { res });
         return;
       }
@@ -66,9 +63,13 @@ export class WorkerClient {
         // }
 
         waiter.resolve(res.result);
-      } else {
-        log.error('store.worker.client.msg.err', { t: (Date.now() - waiter.initiated) / 1000, msg: res.msg, req: waiter.request });
-        EventBus.$emit('error', { source: 'store.worker.client', type: typeof res, message: res.msg ?? '' })
+      }
+      else {
+        log.error('store.worker.client.msg.err', {
+          t: (Date.now() - waiter.initiated) / 1000,
+          msg: res.msg,
+          req: waiter.request,
+        });
 
         const err = new Error(res.msg);
         waiter.reject(err);
@@ -85,26 +86,23 @@ export class WorkerClient {
     // log.silly('store.worker.waiter.clear', this.waiters.length);
   }
 
-
+  /**
+   * Async handlers; the waiters handle caching of the resolve/reject code and the promise remains unresolved until the thread responds. In effect, we handle the thread like other async code.
+   * @param cmd
+   * @param params
+   * @returns
+   */
   async request(cmd: ProfileStoreCommand, params: Record<string, any> = {}): Promise<any> {
     const id = this.generateId();
 
     const request: IndexedRequest = {
-      cmd,
-      id,
-      params,
+      cmd, id, params,
     };
 
     return new Promise(
       (resolve, reject) => {
         try {
-          this.when(
-            id,
-            resolve,
-            reject,
-            request,
-          );
-
+          this.when(id, resolve, reject, request);
           this.worker.postMessage(request);
         }
         catch (err) {
@@ -113,5 +111,9 @@ export class WorkerClient {
         }
       }
     );
+  }
+
+  stop() {
+    this.worker.terminate();
   }
 }

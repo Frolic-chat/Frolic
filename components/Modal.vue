@@ -28,18 +28,13 @@
 <script lang="ts">
     import {Component, Hook, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
-    import {getKey} from '../chat/common';
-    import {Keys} from '../keys';
+    import core from '../chat/core';
 
-    const dialogStack: Modal[] = [];
-    window.addEventListener('keydown', (e) => {
-        if(getKey(e) === Keys.Escape && dialogStack.length > 0) dialogStack[dialogStack.length - 1].hideWithCheck();
-    });
     window.addEventListener('backbutton', (e) => {
-        if(dialogStack.length > 0) {
+        if(core.runtime.dialogStack.length > 0) {
             e.stopPropagation();
             e.preventDefault();
-            dialogStack[dialogStack.length - 1].hide();
+            core.runtime.dialogStack[core.runtime.dialogStack.length - 1].hide();
         }
     }, true);
 
@@ -90,7 +85,7 @@
               return;
             }
             this.isShown = true;
-            dialogStack.push(this);
+            core.runtime.dialogStack.push(this);
             this.$emit('open');
             isShowing = true;
         }
@@ -98,8 +93,9 @@
         hide(): void {
             this.isShown = false;
             this.$emit('close');
-            dialogStack.pop();
-            if(dialogStack.length === 0) isShowing = false;
+            core.runtime.dialogStack.pop();
+            if (core.runtime.dialogStack.length === 0)
+                isShowing = false;
         }
 
         hideWithCheck(): void {

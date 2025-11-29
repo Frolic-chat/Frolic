@@ -5,9 +5,30 @@ import {Channel, Character} from '../fchat/interfaces';
 import { AdManager } from './ads/ad-manager';
 import { SmartFilterSettings } from '../learn/filter/types';
 export {Connection, Channel, Character} from '../fchat/interfaces';
+/**
+ * User statuses are specifically the statuses that users can set for themselves via UIs and alash commands.
+ */
 export const userStatuses: ReadonlyArray<Character.Status> = ['online', 'looking', 'away', 'busy', 'dnd'];
 export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both'];
 import { Ad } from './ads/ad-center';
+import { GeneralSettings } from '../electron/common';
+import { LocalizationKey } from './localize';
+import type Modal from '../components/Modal.vue';
+import type { ActivityEvent, ActivityStatusEvent } from './preview/event-bus';
+
+export namespace Relation {
+    export enum Chooser {
+        NoOne, Bookmarks, Friends, Both, Default
+    }
+
+    export const Label: Record<Chooser, LocalizationKey> = {
+        [Chooser.NoOne]     : 'settings.relation.noOne',
+        [Chooser.Friends]   : 'settings.relation.friendsOnly',
+        [Chooser.Bookmarks] : 'settings.relation.bookmarksOnly',
+        [Chooser.Both]      : 'settings.relation.friendsAndBookmarks',
+        [Chooser.Default]   : 'settings.relation.default'
+    };
+}
 
 export namespace Conversation {
     interface BaseMessage {
@@ -52,10 +73,26 @@ export namespace Conversation {
         }
     }
 
+    export type ActivityContext =
+        | { e?: undefined; data?: undefined; time?: Date }
+        | { e: 'EBL'; } & ActivityEvent
+        | { e: 'EBS'; } & ActivityStatusEvent
+        | {
+            [K in keyof Connection.ServerCommands]: {
+                e: K;
+                data: Connection.ServerCommands[K];
+                time: Date;
+            } & (K extends 'BRO'
+                ? { message: Message }
+                : {})
+        }[keyof Connection.ServerCommands];
+
     export type RecentChannelConversation = {readonly channel: string, readonly name: string};
     export type RecentPrivateConversation = {readonly character: string};
 
     export type TypingStatus = 'typing' | 'paused' | 'clear';
+
+    export type TabType = 'conversation' | 'description' | 'settings';
 
     interface TabConversation extends Conversation {
         isPinned: boolean
@@ -84,6 +121,17 @@ export namespace Conversation {
         sendAd(text: string): Promise<void>
     }
 
+    export interface ConsoleConversation extends Conversation {}
+
+    export interface ActivityConversation extends Conversation {
+        // We're opting to include these to overwrite them with readonlies:
+        readonly errorText: string;
+        readonly infoText:  string;
+        messages: Array<Message>;
+
+        parse(activity: ActivityContext): Promise<void>;
+    }
+
     export function isPrivate(conversation: Conversation): conversation is PrivateConversation {
         return (<Partial<PrivateConversation>>conversation).character !== undefined;
     }
@@ -92,10 +140,19 @@ export namespace Conversation {
         return (<Partial<ChannelConversation>>conversation).channel !== undefined;
     }
 
+    export function isActivity(conversation: Conversation): conversation is ActivityConversation {
+        return (<Partial<ActivityConversation>>conversation).key === '_activity';
+    }
+
+    export function isConsole(conversation: Conversation): conversation is ConsoleConversation {
+        return (<Partial<ConsoleConversation>>conversation).key === '_';
+    }
+
     export interface State {
         readonly privateConversations: ReadonlyArray<PrivateConversation>
         readonly channelConversations: ReadonlyArray<ChannelConversation>
-        readonly consoleTab: Conversation
+        readonly activityTab: ActivityConversation;
+        readonly consoleTab: ConsoleConversation
         readonly recent: ReadonlyArray<RecentPrivateConversation>
         readonly recentChannels: ReadonlyArray<RecentChannelConversation>
         readonly selectedConversation: Conversation
@@ -110,19 +167,15 @@ export namespace Conversation {
         True, False, Default
     }
 
-    export enum RelationChooser {
-        NoOne, Bookmarks, Friends, Both, Default
-    }
-
     export interface Settings {
-        readonly notify: Setting;
-        readonly notifyOnFriendMessage: RelationChooser;
-        readonly highlight: Setting;
-        readonly highlightWords: ReadonlyArray<string>;
-        readonly highlightUsers: boolean;
-        readonly joinMessages: Setting;
-        readonly defaultHighlights: boolean;
-        readonly adSettings: AdSettings;
+        notify: Setting;
+        notifyOnFriendMessage: Relation.Chooser;
+        highlight: Setting;
+        highlightWords: Array<string>;
+        highlightUsernames: Array<string>;
+        joinMessages: Setting;
+        defaultHighlights: boolean;
+        adSettings: AdSettings;
     }
 
     export interface AdSettings {
@@ -137,7 +190,7 @@ export namespace Conversation {
         enteredText: string;
         infoText: string;
         readonly name: string;
-        readonly messages: ReadonlyArray<Message>;
+        messages: Array<Message>;
         readonly reportMessages: ReadonlyArray<Message>;
         readonly lastRead: Message | undefined
         errorText: string
@@ -149,6 +202,7 @@ export namespace Conversation {
         clear(): void
         loadLastSent(): void
         show(): void
+        clearUnread(): void;
         loadMore(): boolean
     }
 }
@@ -211,60 +265,59 @@ export namespace Settings {
     }
 
     export interface Settings {
-        readonly playSound: boolean;
-        readonly notifyVolume: number;
-        readonly clickOpensMessage: boolean;
-        readonly disallowedTags: ReadonlyArray<string>;
-        readonly notifications: boolean;
-        readonly notifyFriendSignIn: Conversation.RelationChooser;
-        readonly notifyOnFriendMessage: Conversation.RelationChooser;
-        readonly highlight: boolean;
-        readonly highlightWords: ReadonlyArray<string>;
-        readonly highlightUsers: boolean;
-        readonly showBroadcastsInPMs: boolean;
-        readonly showAvatars: boolean;
-        readonly animatedEicons: boolean;
-        readonly idleTimer: number;
-        readonly messageSeparators: boolean;
-        readonly eventMessages: boolean;
-        readonly joinMessages: boolean;
-        readonly alwaysNotify: boolean;
-        readonly logMessages: boolean; // All messages
-        readonly logChannels: boolean;
-        readonly logAds: boolean;
-        readonly expensiveMemberList: boolean;
-        readonly fontSize: number;
-        readonly showNeedsReply: boolean;
-        readonly enterSend: boolean;
-        readonly secondEnterSend: boolean;
-        readonly colorBookmarks: boolean;
+        playSound: boolean;
+        notifyVolume: number;
+        clickOpensMessage: boolean;
+        disallowedTags: string[];
+        notifications: boolean;
+        notifyFriendSignIn: Relation.Chooser;
+        notifyOnFriendMessage: Relation.Chooser;
+        highlight: boolean;
+        highlightWords: string[];
+        highlightUsers: boolean;
+        highlightUsernames: string[];
+        showBroadcastsInPMs: boolean;
+        showAvatars: boolean;
+        animatedEicons: boolean;
+        idleTimer: number;
+        messageSeparators: boolean;
+        eventMessages: boolean;
+        joinMessages: boolean;
+        alwaysNotify: boolean;
+        logMessages: boolean; // All messages
+        logChannels: boolean;
+        logAds: boolean;
+        expensiveMemberList: boolean;
+        fontSize: number;
+        showNeedsReply: boolean;
+        enterSend: boolean;
+        secondEnterSend: boolean;
+        colorBookmarks: boolean;
 
-        readonly risingAdScore: boolean;
-        readonly risingLinkPreview: boolean;
-        readonly linkPreviewVolume: number;
-        readonly risingAutoCompareKinks: boolean;
+        risingAdScore: boolean;
+        risingLinkPreview: boolean;
+        linkPreviewVolume: number;
+        risingAutoCompareKinks: boolean;
 
-        readonly risingAutoExpandCustomKinks: boolean;
-        readonly risingCharacterPreview: boolean;
-        readonly risingComparisonInUserMenu: boolean;
-        readonly risingComparisonInSearch: boolean;
-        readonly experimentalOrientationMatching: boolean;
-        readonly relaxPostLengthMatching: boolean;
+        risingAutoExpandCustomKinks: boolean;
+        risingCharacterPreview: boolean;
+        risingComparisonInUserMenu: boolean;
+        risingComparisonInSearch: boolean;
 
-        readonly risingShowUnreadOfflineCount: boolean;
-        readonly risingColorblindMode: boolean;
-        readonly risingShowPortraitNearInput: boolean;
-        readonly risingShowPortraitInMessage: boolean;
-        readonly risingShowHighQualityPortraits: boolean;
+        risingShowUnreadOfflineCount: boolean;
+        risingColorblindMode: boolean;
+        risingShowPortraitNearInput: boolean;
+        risingShowPortraitInMessage: boolean;
+        risingShowHighQualityPortraits: boolean;
 
-        readonly risingFilter: SmartFilterSettings;
+        risingFilter: SmartFilterSettings;
 
-        readonly risingCharacterTheme: string | undefined;
+        risingCharacterTheme: string | undefined;
 
         /**
          * Legacy: deprecate by removing from place of use, but retain it in settings for backporting capability; as long as we want to suporrt that.
          */
-        readonly bbCodeBar: boolean;
+        bbCodeBar: boolean;
     }
 }
 
@@ -281,6 +334,17 @@ export interface Notifications {
 
 export interface State {
     settings: Settings;
+    generalSettings: GeneralSettings;
     hiddenUsers: string[];
     favoriteEIcons: Record<string, boolean>;
+}
+
+/**
+ * Miscellaneous elements needed only by the current run of the application. If you need to save anything, you should use `core.state` and its associated disk-writing features.
+ */
+export interface Runtime {
+    dialogStack: Modal[];
+    primaryInput: HTMLInputElement | HTMLTextAreaElement | null;
+    registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement): void;
+    userToggles: { [key: string]: boolean }
 }

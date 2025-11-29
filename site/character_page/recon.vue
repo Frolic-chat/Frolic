@@ -70,7 +70,7 @@ import { Component, Hook, Prop } from '@f-list/vue-ts';
       }
 
       async loadAds(): Promise<void> {
-        const cache = core.cache.adCache.get(this.character.character.name);
+        const cache = core.cache.adCache.getSync(this.character.character.name);
 
         // Bug: This log has always been able to return fewer than five posts, even if there could be more.
         this.ads = cache

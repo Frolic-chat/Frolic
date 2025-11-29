@@ -1,14 +1,14 @@
-<!-- SPDX-License-Identifier: AGPL-3.0-or-later --->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
     <div class="row character-page" id="pageBody" ref="pageBody">
         <div class="col-12" style="min-height:0">
             <div class="alert alert-info" v-show="loading">Loading character information.</div>
             <div class="alert alert-danger" v-show="error">{{error}}</div>
         </div>
-        <div class="col-md-4 col-lg-3 col-xl-2" v-if="!loading && character && character.character && characterMatch && selfCharacter">
-            <sidebar :character="character" :characterMatch="characterMatch" @memo="memo" @bookmarked="bookmarked" :oldApi="oldApi"></sidebar>
+        <div class="col-md-4 col-lg-3 col-xl-2" v-if="!loading && character && character.character && matchReport && selfCharacter">
+            <sidebar :character="character" :characterMatch="matchReport" @memo="memo" @bookmarked="bookmarked" :oldApi="oldApi"></sidebar>
         </div>
-        <div class="col-md-8 col-lg-9 col-xl-10 profile-body" v-if="!loading && character && character.character && characterMatch && selfCharacter">
+        <div class="col-md-8 col-lg-9 col-xl-10 profile-body" v-if="!loading && character && character.character && matchReport && selfCharacter">
             <div id="characterView">
                 <div>
                     <div v-if="character.ban_reason" id="headerBanReason" class="alert alert-warning">
@@ -39,25 +39,25 @@
                         <div class="card-body">
                             <div class="tab-content">
                                 <div role="tabpanel" v-show="tab === '0'" id="overview">
-                                    <match-report :characterMatch="characterMatch" v-if="shouldShowMatch"></match-report>
+                                    <match-report :characterMatch="matchReport" v-if="shouldShowMatch"></match-report>
 
                                     <div style="margin-bottom:10px" class="character-description">
-                                        <bbcode :text="character.character.description"></bbcode>
+                                        <bbcode v-if="descBody" :text="descBody"></bbcode>
                                     </div>
 
                                     <character-kinks :character="character" :oldApi="oldApi" ref="tab0" :autoExpandCustoms="autoExpandCustoms"></character-kinks>
                                 </div>
                                 <div role="tabpanel" v-show="tab === '1'" id="infotags">
-                                    <character-infotags :character="character" ref="tab1" :characterMatch="characterMatch"></character-infotags>
+                                    <character-infotags :character="character" ref="tab1" :characterMatch="matchReport"></character-infotags>
                                 </div>
                                 <div role="tabpanel" v-show="tab === '2'" v-if="!oldApi">
                                     <character-groups :character="character" ref="tab2"></character-groups>
                                 </div>
                                 <div role="tabpanel" v-show="tab === '3'">
-                                    <character-images :character="character" ref="tab3" :usePreview="imagePreview" :injectedImages="images"></character-images>
+                                    <character-images ref="tab3" :images="images"></character-images>
                                 </div>
                                 <div v-if="character.settings.guestbook" role="tabpanel" v-show="tab === '4'" id="guestbook">
-                                    <character-guestbook :character="character" :oldApi="oldApi" ref="tab4"></character-guestbook>
+                                    <character-guestbook :character="character" :parentIsReloading="guestbookLoading" :oldApi="oldApi" ref="tab4"></character-guestbook>
                                 </div>
                                 <div v-if="character.is_self || character.settings.show_friends" role="tabpanel" v-show="tab === '5'" id="friends">
                                     <character-friends :character="character" ref="tab5"></character-friends>
@@ -78,12 +78,11 @@
     import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
     import Vue from 'vue';
 
-    import Logger from 'electron-log/renderer';
-    const log = Logger.scope('character_page');
+    import NewLogger from '../../helpers/log';
+    const log = NewLogger('character-sheet');
 
     import {StandardBBCodeParser} from '../../bbcode/standard';
     import {BBCodeView} from '../../bbcode/view';
-    import { CharacterCacheRecord } from '../../learn/profile-cache';
     import * as Utils from '../utils';
     import {methods, Store} from './data_store';
     import {Character, CharacterGroup, Guestbook, SharedStore} from './interfaces';
@@ -103,9 +102,20 @@
     import MatchReportView from './match-report.vue';
     import { CharacterImage, SimpleCharacter } from '../../interfaces';
 
-    const CHARACTER_CACHE_EXPIRE = 7 * 24 * 60 * 60 * 1000; // 7 days (milliseconds)
+    const CHARACTER_CACHE_EXPIRE      = 7 * 24 * 60 * 60 * 1000; // 7 days (milliseconds)
     const CHARACTER_META_CACHE_EXPIRE = 7 * 24 * 60 * 60 * 1000; // 7 days (milliseconds)
 
+    type ArmorStand = Pick<CharacterPage, 'character'
+                                        | 'descBody'
+                                        | 'guestbook'
+                                        | 'friends'
+                                        | 'groups'
+                                        | 'images'
+                                        | 'matchReport'>;
+
+    /**
+     * Where does this come from? What is show?
+     */
     interface ShowableVueTab extends Vue {
         show?(): void;
     }
@@ -113,10 +123,7 @@
     const standardParser = new StandardBBCodeParser();
 
     function shouldShowFriendsTabs(char: Character | undefined): char is NonNullable<typeof char> {
-        if (!char || !char.is_self && !char.settings.show_friends)
-                return false;
-            else
-                return true;
+        return (char?.is_self ?? false) || (char?.settings.show_friends ?? false);
     }
 
     @Component({
@@ -146,13 +153,6 @@
         @Prop
         readonly name?: string;
 
-
-        /**
-         * Always undefined.
-         */
-        @Prop({ default: undefined })
-        readonly id: number | undefined;
-
         /**
          * Always passed in as true; presumably as a very bad proxy for you being logged in. If you're not logged in, presumably you can't click on a person's name to open this window.
          */
@@ -165,30 +165,29 @@
          * The Groups tab only shows if using the new api, so we never have group functionality in the app.
          */
         @Prop({ default: false })
-        readonly oldApi: boolean;
-
-        /**
-         * Passed on to character-images, for unknown purpose.
-         */
-        @Prop({ default: false })
-        readonly imagePreview: boolean;
+        readonly oldApi: boolean = false;
 
         shared: SharedStore = Store;
         character: Character | undefined;
-        loading = true;
-        refreshing = false;
+        loading     = true;
+        imagesLoading    = false;
+        guestbookLoading = false;
+        friendsLoading   = false;
+        groupsLoading    = false;
+        refreshing  = false;
         error = '';
         tab = '0';
-        autoExpandCustoms = false;
 
+        // Tab content:
+        descBody:   string            | null = null;
         guestbook:  Guestbook         | null = null;
         friends:    SimpleCharacter[] | null = null;
         groups:     CharacterGroup[]  | null = null;
         images:     CharacterImage[]  | null = null;
 
         // Rising matchmaker display:
-        selfCharacter:  Character   | undefined;
-        characterMatch: MatchReport | undefined;
+        selfCharacter:  Character | undefined;
+        matchReport: MatchReport | undefined;
 
 
         @Hook('beforeMount')
@@ -207,6 +206,8 @@
 
             if (typeof target.show === 'function')
                 target.show();
+
+            this.scrollToTopOnNextTick();
         }
 
         /**
@@ -214,24 +215,17 @@
          */
         @Watch('name')
         async onCharacterSet(): Promise<void> {
+            // Set loading screen here stead of in load()?
+
             this.tab = '0';
-            this.autoExpandCustoms = core.state.settings.risingAutoExpandCustomKinks;
 
             await this.load();
 
-            // Kludge kluge
-            this.$nextTick(
-                () => {
-                    const el = document.querySelector('.modal .profile-viewer .modal-body');
+            this.scrollToTopOnNextTick()
+        }
 
-                    if (!el) {
-                        console.error('Could not find modal body for profile view');
-                        return;
-                    }
-
-                    el.scrollTo(0, 0);
-                }
-            );
+        get autoExpandCustoms() {
+            return core.state.settings.risingAutoExpandCustomKinks;
         }
 
 
@@ -240,7 +234,14 @@
         }
 
 
-        async reload(): Promise<void> {
+        /**
+         * This is invoked from the modal header, described in Index.vue. The payload (commented out) is shift key or right-click.
+         */
+        async reload(/* force: boolean */): Promise<void> {
+            if (!this.name)
+                return;
+
+            // await this.load(force, force);
             await this.load(true, true);
 
             const target = <ShowableVueTab>this.$refs[`tab${this.tab}`];
@@ -252,6 +253,11 @@
 
 
         async load(mustLoad: boolean = true, skipCache: boolean = false): Promise<void> {
+            if (!this.name)
+                return;
+
+            const n = this.name;
+
             this.loading = true;
             this.refreshing = false;
             this.error = '';
@@ -259,23 +265,22 @@
             try {
                 const due: Promise<void>[] = [];
 
-                if (!this.name)
-                    return;
-
+                // Should this be pushed into the due?
                 await methods.fieldsGet();
 
                 // Initial loading of your own character profile into ownCharacter, which is globally accessible.
+                // What kind of proxy is Utils.settings.defaultCharacter...?
                 if (!this.selfCharacter && Utils.settings.defaultCharacter >= 0
                 ||  this.selfCharacter?.character.name !== core.characters.ownCharacter.name) {
                     due.push(this.loadSelfCharacter());
                 }
 
-                if (mustLoad || !this.character)
-                    due.push(this._getCharacter(skipCache));
+                if (mustLoad || n !== this.character?.character.name)
+                    due.push(this._getCharacter(n, skipCache));
 
                 await Promise.all(due);
             }
-            catch(e) {
+            catch (e) {
                 console.error(e);
 
                 this.error = Utils.isJSONError(e)
@@ -288,96 +293,169 @@
             this.loading = false;
         }
 
+        /**
+         * Attach guestbook posts to an in-progress mannequin.
+         *
+         * It would be nice if we could pass ArmorStand as `ArmorStand & { character: Character }`, but async makes typescript's detection of valid ArmorStand unreliable.
+         * @param as ArmorStand; inherited from getCharacter
+         */
+        async updateGuestbook(stand: ArmorStand): Promise<void> {
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+            log.debug("Discarding guestbook; this armor isn't for this character.");
+                return;
+        }
 
-        async updateGuestbook(): Promise<void> {
             try {
-                if (!this.character?.settings.guestbook) {
-                    this.guestbook = null;
-                    return;
-                }
-                else {
-                    this.guestbook = await methods.guestbookPageGet(this.character.character.id, 1);
-                }
+                if (!stand.character.settings.guestbook)
+                    stand.guestbook = null;
+                else
+                    stand.guestbook = await methods.guestbookPageGet(stand.character.character.id, 1);
             }
             catch (err) {
                 console.error(err);
-                this.guestbook = null;
+                stand.guestbook = null;
             }
         }
 
+        /**
+         * Attach groups to an in-progress mannequin.
+         *
+         * Groups still depend on the never-true new api.
+         *
+         * It would be nice if we could pass ArmorStand as `ArmorStand & { character: Character }`, but async makes typescript's detection of valid ArmorStand unreliable.
+         * @param as ArmorStand; inherited from getCharacter
+         */
+        async updateGroups(stand: ArmorStand): Promise<void> {
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding groups; this armor isn't for this character.");
+                return;
+            }
 
-        async updateGroups(): Promise<void> {
             try {
-                if (!this.character || this.oldApi) {
-                    this.groups = null;
-                    return;
-                }
-                else {
-                    this.groups = await methods.groupsGet(this.character.character.id);
-                }
-            } catch (err) {
+                if (this.oldApi)
+                    stand.groups = null;
+                else
+                    stand.groups = await methods.groupsGet(stand.character.character.id);
+            }
+            catch (err) {
                 console.error('Update groups', err);
-                this.groups = null;
+                stand.groups = null;
             }
         }
 
-        async updateFriends(): Promise<void> {
+        /**
+         * Attach friends to an in-progress mannequin.
+         *
+         * Friends still depend on the character having them set to show up.
+         *
+         * It would be nice if we could pass ArmorStand as `ArmorStand & { character: Character }`, but async makes typescript's detection of valid ArmorStand unreliable.
+         * @param as ArmorStand; inherited from getCharacter
+         */
+        async updateFriends(stand: ArmorStand): Promise<void> {
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding friends; this armor isn't for this character.");
+                return;
+            }
+
             try {
-                if (shouldShowFriendsTabs(this.character)) {
-                    this.friends = await methods.friendsGet(this.character.character.id);
-                }
-                else {
-                    this.friends = null;
-                    return;
-                }
+                if (shouldShowFriendsTabs(stand.character))
+                    stand.friends = await methods.friendsGet(stand.character.character.id);
+                else
+                    stand.friends = null;
             }
             catch (err) {
                 console.error('Update friends', err);
-                this.friends = null;
+                stand.friends = null;
             }
         }
 
-        async updateImages(): Promise<void> {
+        /**
+         * Attach images to an in-progress mannequin.
+         *
+         * It would be nice if we could pass ArmorStand as `ArmorStand & { character: Character }`, but async makes typescript's detection of valid ArmorStand unreliable.
+         * @param as ArmorStand; inherited from getCharacter
+         */
+        async updateImages(stand: ArmorStand): Promise<void> {
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding images; this armor isn't for this character.");
+                return;
+            }
+
             try {
-                if (this.character) {
-                    log.debug('updateImages.start', this.character);
-                    this.images = await methods.imagesGet(this.character.character.id);
-                    log.debug('updateImages.finish', this.character);
-                }
-                else {
-                    log.debug('updateImages.noCharacters');
-                    this.images = null;
-                }
+                // log.debug('updateImages.start', stand.character.character.name);
+                stand.images = await methods.imagesGet(stand.character.character.id) || [];
             }
             catch (err) {
                 console.error('updateImages.error', err);
-                this.images = null;
+                stand.images = [];
             }
         }
 
-        async updateMeta(name: string): Promise<void> {
+        /**
+         * Attach all the meta-profile information to an in-progress character.
+         * @param as in-progress character from getCharacter
+         */
+        async updateMeta(stand: ArmorStand): Promise<void> {
+            if (!stand.character) {
+                log.error('Tried updating meta without an armor stand. A very strange error.', { noncanon_name: this.name, stand });
+                return;
+            }
+
+            this.imagesLoading    = true;
+            this.guestbookLoading = true;
+            this.friendsLoading   = true;
+            this.groupsLoading    = true;
+
+            if (!this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Abandoning meta stand; it isn't for this character.", { this_char: stand.character.character.name, on_sheet: this.name, stand });
+                return;
+            }
+
+            const name = stand.character.character.name;
+
             log.debug('updateMeta.start', name);
 
-            await Promise.all([
-                this.updateImages(),
-                this.updateGuestbook(),
-                this.updateFriends(),
-                this.updateGroups(),
+            await Promise.allSettled([
+                this.updateImages(stand).finally(   () => this.imagesLoading    = false),
+                this.updateGuestbook(stand).finally(() => this.guestbookLoading = false),
+                this.updateFriends(stand).finally(  () => this.friendsLoading   = false),
+                this.updateGroups(stand).finally(   () => this.groupsLoading    = false),
             ]);
 
-            log.debug('updateMeta.updatesFinished', name);
+            log.debug('updateMeta.resolved', name);
+
+            // Update current character from meta.
+            if (this.isCurrentCharacter(name))
+                this.printArmorStand(stand);
 
             await core.cache.profileCache.registerMeta(
                 name, {
                     lastMetaFetched: new Date(),
-                    groups: this.groups,
-                    friends: this.friends,
-                    guestbook: this.guestbook,
-                    images: this.images
+                    groups:    stand.groups    ?? null,
+                    friends:   stand.friends   ?? null,
+                    guestbook: stand.guestbook ?? null,
+                    images:    stand.images    ?? null,
                 }
             );
 
-            log.debug('updateMeta.registerMetaFinished', name);
+            log.debug('updateMeta.finished', name);
+        }
+
+        printArmorStand(stand: ArmorStand): void {
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("Discarding armor; it doesn't fit this character.");
+                return;
+            }
+
+            // Refresh inlines BEFORE putting descBody on the character (as that triggers the parser).
+            standardParser.inlines = stand.character.character.inlines;
+
+            Object.assign(
+                this,
+                Object.fromEntries(
+                    Object.entries(stand).filter(([_, v]) => v !== undefined)
+                )
+            );
         }
 
         memo(memo: {id: number, memo: string | null}): void {
@@ -394,117 +472,154 @@
 
         protected async loadSelfCharacter(): Promise<void> {
             this.selfCharacter = core.characters.ownProfile;
-            this.updateMatches();
         }
 
-        private async fetchCharacterCache(): Promise<CharacterCacheRecord | null> {
-            if (!this.name)
-                throw new Error('A man must have a name');
+        /**
+         * Builds the data that will fil in this.* attributes, like `this.character` and `this.images`. We use an {@link ArmorStand|armor stand} to hold the cache/API data until we've built the full character; if we wrote to this.* every step of the way; the async messes up and we change this.name to a new character as this.character is the old one; then this.character to the old one as this.images are set for the old one. Chaos.
+         * @param skipCache
+         */
+        private async _getCharacter(name: string, skipCache: boolean = false): Promise<void> {
+            if (!name) {
+                log.debug('profile.getCharacter.noName');
+                return;
+            }
 
-            return (await core.cache.profileCache.get(this.name)) ?? null;
-        }
-
-        private async _getCharacter(skipCache: boolean = false): Promise<void> {
-            log.debug('profile.getCharacter', { name: this.name } );
+            log.debug('profile.getCharacter', { name });
 
             this.character = undefined;
+            this.descBody  = null;
             this.friends   = null;
             this.groups    = null;
             this.guestbook = null;
             this.images    = null;
 
-            if (!this.name) {
-                log.debug('profile.getCharacter.noName');
+            /**
+             * This armor stand is how we'll prevent collisions with alternative async code that modifies this.name and this.character. It's entirely possible to get part way through loading and have another this.name begin another load of this.character, and result in us putting data from the second character into the first character's profile.
+             */
+            const stand: ArmorStand = {
+                character:   undefined,
+                descBody:    null,
+                friends:     null,
+                groups:      null,
+                guestbook:   null,
+                images:      null,
+                matchReport: undefined,
+            };
+
+            const char_record = !skipCache
+                ? await core.cache.profileCache.get(name)
+                : null;
+
+            stand.character = char_record?.character
+                ?? await methods.characterData(name, undefined, false);
+
+            const now = Date.now();
+
+            if (char_record?.lastFetched && now - char_record.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
+                // void: will have to put the armor on the character on its own.
+                void this.refreshCache(stand); // calls updateMeta internally.
+            }
+            else  {
+                if (!char_record?.meta?.lastMetaFetched || now - char_record.meta.lastMetaFetched.getTime() >= CHARACTER_META_CACHE_EXPIRE) {
+                    log.debug('updateMeta.solo', name);
+
+                    // void: will have to put the armor on the character on its own.
+                    void this.updateMeta(stand)
+                        .catch(err => log.error('_getCharacter.updateMeta', stand.character?.character.name, err));
+                }
+
+                stand.descBody = stand.character.character.description;
+            }
+
+            if (!this.isCurrentCharacter(stand.character.character.name)) {
+                log.debug("_getCharacter: Abandoning printable stand because it doesn't fit current character.");
                 return;
             }
 
-            const cache = await this.fetchCharacterCache();
-
-            this.character = (cache && !skipCache)
-                ? cache.character
-                : await methods.characterData(this.name, this.id, false);
-
-            standardParser.inlines = this.character.character.inlines;
-
-            if (cache?.meta) {
-                this.guestbook = cache.meta.guestbook;
-                this.friends   = cache.meta.friends;
-                this.groups    = cache.meta.groups;
-                this.images    = cache.meta.images;
+            if (char_record?.meta) {
+                stand.guestbook = char_record.meta.guestbook;
+                stand.friends   = char_record.meta.friends;
+                stand.groups    = char_record.meta.groups;
+                stand.images    = char_record.meta.images;
             }
 
-            if (!skipCache && cache?.meta?.lastMetaFetched && (Date.now() - cache.meta.lastMetaFetched.getTime() < CHARACTER_META_CACHE_EXPIRE)) {
-                // Do nothing.
-                // Shouldn't this be where we decide to `refreshCharacter`?
+            if (this.selfCharacter) {
+                const [ yourOverrides, theirOverrides ] = await Promise.all([
+                    core.characters.getAsync(this.selfCharacter.character.name).then(c => c.overrides),
+                    core.characters.getAsync(stand.character.character.name).then(c => c.overrides),
+                ]);
+
+                stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character, yourOverrides, theirOverrides);
             }
-            else {
-                void this.updateMeta(this.character.character.name)
-                    .catch(err => log.error('profile._getCharacter.updateMeta.error', err));
-            }
 
-            // console.log('LoadChar', this.name, this.character);
-            this.updateMatches();
-
-
-            // old profile cache, let's refresh
-            if (char_record?.lastFetched && Date.now() - char_record.lastFetched.getTime() >= CHARACTER_CACHE_EXPIRE) {
-                log.debug('_getCharacter.refreshCharacter.pre', {
-                    character: this.character,
-                    friends:   this.friends,
-                    groups:    this.groups,
-                    guestbook: this.guestbook,
-                    images:    this.images,
-                });
-
-                void this.refreshCharacter();
-
-                log.debug('_getCharacter.refreshCharacter.post', {
-                    character: this.character,
-                    friends:   this.friends,
-                    groups:    this.groups,
-                    guestbook: this.guestbook,
-                    images:    this.images,
-                });
-            }
+            /**
+             * Time to dump the armor stand out into a character.
+             * At this point we only have basic info; the meta and refresh haven't returned.
+             */
+            this.printArmorStand(stand);
         }
 
+        /**
+         * Needs reworking to operate entirely as a background task.
+         *
+         * Only called from getCharacter when the cache is too old.
+         * @param as In-progress character.
+         */
+        private async refreshCache(stand: ArmorStand): Promise<void> {
+            if (!stand.character || !this.isCurrentCharacter(stand.character.character.name))
+                return;
 
-        private async refreshCharacter(): Promise<void> {
             this.refreshing = true;
 
-            log.debug('refreshCharacter.start', {
-                name: this.name,
-                id: this.id,
-            });
+            const name = stand.character?.character.name;
+
+            log.debug('refreshCache.start', name);
 
             try {
-                const character = await methods.characterData(this.name, this.id, false);
+                stand.character = await methods.characterData(name, undefined, false);
 
-                log.debug('refreshCharacter.characterData.fetched', {
-                    character
-                });
+                log.debug('refreshCache.characterData.fetched', { char: stand.character });
 
-                if (!this.refreshing || this.name !== character.character.name)
-                  return;
+                // We've moved on; skip updating the character page.
+                // This used to check this.refreshing.
+                if (!stand.character || !this.isCurrentCharacter(name))
+                    return;
 
-                this.character = character;
+                stand.descBody = stand.character.character.description;
 
-                this.updateMatches();
+                if (this.selfCharacter) {
+                    const [ yourOverrides, theirOverrides ] = await Promise.all([
+                        core.characters.getAsync(this.selfCharacter.character.name).then(c => c.overrides),
+                        core.characters.getAsync(stand.character.character.name).then(c => c.overrides),
+                    ])
 
-                // This one should not have been a problem because of the early return if bad name match.
-                void this.updateMeta(this.character.character.name);
+                    stand.matchReport = Matcher.identifyBestMatchReport(this.selfCharacter.character, stand.character.character, yourOverrides, theirOverrides);
+                }
+
+                void this.updateMeta(stand)
+                    .catch(err => log.error('refreshCache.updateMeta', stand.character?.character.name, err));
             }
             finally {
                 this.refreshing = false;
             }
+
+            if (this.isCurrentCharacter(name))
+                this.printArmorStand(stand);
         }
 
+        isCurrentCharacter(name: string): boolean {
+            return this.name?.toLowerCase() === name.toLowerCase();
+        }
 
-        private updateMatches(): void {
-            if (!this.selfCharacter || !this.character)
-                return;
+        scrollToTopOnNextTick(): void {
+            this.$nextTick(() => {
+                const el = document.querySelector('.modal .profile-viewer .modal-body');
 
-            this.characterMatch = Matcher.identifyBestMatchReport(this.selfCharacter.character, this.character.character);
+                if (!el)
+                    console.error('Could not find modal body for profile view');
+
+                el?.scrollTo(0, 0);
+            });
         }
     }
 </script>

@@ -14,6 +14,12 @@ function getDefaultLanguage(): string {
     }
 }
 
+export type GeneralSettingsUpdate = {
+    settings:  GeneralSettings,
+    timestamp: number,
+    character: string | undefined,
+}
+
 export class GeneralSettings {
     account = '';
     closeToTray: boolean = true;
@@ -32,4 +38,16 @@ export class GeneralSettings {
     browserPath: string = '';
     browserArgs: string = '%s';
     browserIncognitoArg: string = '';
+    defaultToHome: boolean = true;
+    profileCacheEntries: number = 1000;
+    widgets = {
+        inbox:       true,  // Display of notes from site
+        scratchpad:  true,  // Text box for player notes
+        events:      true,  // Important player events such as rare friend sighting
+        news:        true,  // News from the client
+        suggestions: false, // Profile helper suggestions
+        activity:    true,  // Small console with recent friend/bookmark activity
+        match:       true,  // High quality match
+    };
+    argv: string[] = [];
 }

@@ -4,8 +4,8 @@ import { SmartFilterSelection, SmartFilterSettings } from './types';
 import { Character } from '../../interfaces';
 import core from '../../chat/core';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('smart-filter');
+import NewLogger from '../../helpers/log';
+const log = NewLogger('smart-filter');
 
 export interface SmartFilterOpts {
   name: string;

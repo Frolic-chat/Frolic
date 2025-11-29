@@ -60,7 +60,6 @@ import {BBCodeView} from '../bbcode/view';
 import CustomDialog from '../components/custom_dialog';
 import FilterableSelect from '../components/FilterableSelect.vue';
 import Modal from '../components/Modal.vue';
-import {characterImage} from './common';
 import core from './core';
 import { Character, Connection, ExtendedSearchData, SearchData, SearchKink, SearchSpecies } from './interfaces';
 import l from './localize';
@@ -76,8 +75,8 @@ import {
 } from '../learn/matcher-types';
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('CharacterSearch');
+import NewLogger from '../helpers/log';
+const log = NewLogger('CharacterSearch');
 
 type Options = {
     kinks: SearchKink[],
@@ -142,7 +141,7 @@ export default class CharacterSearch extends CustomDialog {
     error = '';
     results: SearchResult[] = [];
     resultsPending = 0;
-    characterImage = characterImage;
+    characterImage = (c: string) => core.characters.getImage(c);
     options!: ExtendedSearchData;
     shouldShowMatch = true;
     state = 'search';

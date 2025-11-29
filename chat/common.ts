@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {isToday} from 'date-fns';
 import {Keys} from '../keys';
-import {Character, Conversation, Settings as ISettings} from './interfaces';
-import core from './core';
+import { Character, Conversation, Settings as ISettings, Relation } from './interfaces';
+
+
+import { SmartFilterSettings } from '../learn/filter/types';
 
 const e = new TextEncoder()
 export function getByteLength(s: string): number {
@@ -30,61 +32,54 @@ export function profileLink(this: any | never, character: string): string {
     return `https://www.f-list.net/c/${character}`;
 }
 
-export function characterImage(this: any | never, character: string): string {
-    const c = core.characters.get(character);
-
-    return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
-}
-
 export class Settings implements ISettings {
-    playSound = true;
-    notifyVolume = 100;
-    clickOpensMessage = false;
+    playSound: boolean = true;
+    notifyVolume: number = 100;
+    clickOpensMessage: boolean = false;
     disallowedTags: string[] = [];
-    notifications = true;
-    notifyFriendSignIn = Conversation.RelationChooser.NoOne;
-    notifyOnFriendMessage = Conversation.RelationChooser.NoOne;
-    highlight = true;
+    notifications: boolean = true;
+    notifyFriendSignIn: Relation.Chooser = Relation.Chooser.NoOne;
+    notifyOnFriendMessage: Relation.Chooser = Relation.Chooser.NoOne;
+    highlight: boolean = true;
     highlightWords: string[] = [];
-    highlightUsers = false;
-    showBroadcastsInPMs = false;
-    showAvatars = true;
-    animatedEicons = true;
-    idleTimer = 0;
-    messageSeparators = false;
-    eventMessages = true;
-    joinMessages = false;
-    alwaysNotify = false;
-    logMessages = true; // All messages
-    logChannels = true;
-    logAds = false;
-    expensiveMemberList = false;
-    fontSize = 14;
-    showNeedsReply = false;
-    enterSend = true;
-    secondEnterSend = false;
-    colorBookmarks = false;
-    bbCodeBar = true;
+    highlightUsers: boolean = false;
+    highlightUsernames: string[] = [];
+    showBroadcastsInPMs: boolean = false;
+    showAvatars: boolean = true;
+    animatedEicons: boolean = true;
+    idleTimer: number = 0;
+    messageSeparators: boolean = false;
+    eventMessages: boolean = true;
+    joinMessages: boolean = false;
+    alwaysNotify: boolean = false;
+    logMessages: boolean = true; // All messages
+    logChannels: boolean = true;
+    logAds: boolean = false;
+    expensiveMemberList: boolean = false;
+    fontSize: number = 14;
+    showNeedsReply: boolean = false;
+    enterSend: boolean = true;
+    secondEnterSend: boolean = false;
+    colorBookmarks: boolean = false;
+    bbCodeBar: boolean = true;
 
-    risingAdScore = true;
-    risingLinkPreview = true;
-    linkPreviewVolume = 0;
-    risingAutoCompareKinks = true;
+    risingAdScore: boolean = true;
+    risingLinkPreview: boolean = true;
+    linkPreviewVolume: number = 0;
+    risingAutoCompareKinks: boolean = true;
 
-    risingAutoExpandCustomKinks = true;
-    risingCharacterPreview = true;
-    risingComparisonInUserMenu = true;
-    risingComparisonInSearch = true;
-    experimentalOrientationMatching = false;
-    relaxPostLengthMatching = false;
+    risingAutoExpandCustomKinks: boolean = true;
+    risingCharacterPreview: boolean = true;
+    risingComparisonInUserMenu: boolean = true;
+    risingComparisonInSearch: boolean = true;
 
-    risingShowUnreadOfflineCount = true;
-    risingColorblindMode = false;
-    risingShowPortraitNearInput = true;
-    risingShowPortraitInMessage = true;
-    risingShowHighQualityPortraits = true;
+    risingShowUnreadOfflineCount: boolean = true;
+    risingColorblindMode: boolean = false;
+    risingShowPortraitNearInput: boolean = true;
+    risingShowPortraitInMessage: boolean = true;
+    risingShowHighQualityPortraits: boolean = true;
 
-    risingFilter = {
+    risingFilter: SmartFilterSettings = {
         hideAds: false,
         hideSearchResults: false,
         hideChannelMembers: false,
@@ -124,7 +119,7 @@ export class Settings implements ISettings {
         exceptionNames: []
     };
 
-    risingCharacterTheme = undefined;
+    risingCharacterTheme: string | undefined = undefined;
 }
 
 
@@ -137,10 +132,10 @@ export class AdSettings implements Conversation.AdSettings {
 
 export class ConversationSettings implements Conversation.Settings {
     notify = Conversation.Setting.Default;
-    notifyOnFriendMessage = Conversation.RelationChooser.Default;
+    notifyOnFriendMessage = Relation.Chooser.Default;
     highlight = Conversation.Setting.Default;
     highlightWords: string[] = [];
-    highlightUsers = false;
+    highlightUsernames: string[] = [];
     joinMessages = Conversation.Setting.Default;
     defaultHighlights = true;
     adSettings: Conversation.AdSettings = { ads: [], randomOrder: false, lastAdTimestamp: 0 };

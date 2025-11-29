@@ -3,8 +3,8 @@ import { Debugger as DebugIface } from './interfaces';
 import { ServerCommandKeys } from './api';
 import { Connection as Interfaces } from '../fchat/interfaces';
 import core from '../chat/core';
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('devtools/connection');
+import NewLogger from '../helpers/log';
+const log = NewLogger('devtools/connection');
 
 /**
  * A debugger intended to attach to a Client connection.

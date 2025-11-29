@@ -27,14 +27,14 @@
             <div class="alert alert-danger" v-show="error">{{error}}</div>
             {{l('chat.disconnected')}}
         </modal>
-        <logs ref="logsDialog"></logs>
+        <logs v-if="!connected" ref="logsDialog"></logs>
         <div v-if="version && !connected" style="position:absolute;bottom:0;right:0">{{version}}</div>
     </div>
 </template>
 
 <script lang="ts">
-    import Logger from 'electron-log/renderer'; //tslint:disable-line:match-default-export-name
-    const log = Logger.scope('Chat');
+import NewLogger from '../helpers/log';
+const log = NewLogger('Chat');
 
     import {Component, Hook, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
@@ -45,7 +45,9 @@
     import {errorToString, getKey} from './common';
     import core from './core';
     import l from './localize';
+
     import Logs from './Logs.vue';
+
     import {init as profileApiInit} from './profile_api';
     import { AdManager } from './ads/ad-manager';
     import { EventBus } from './preview/event-bus';
@@ -197,7 +199,6 @@
 
                 // tslint:disable-next-line:no-floating-promises
                 core.siteSession.onConnectionEstablished();
-                core.cache.start((core.state as any).generalSettings, true);
             });
             core.watch(
                 () => core.conversations.hasNew,

@@ -123,8 +123,6 @@
         }
 
         convertCharacterKinks(c: Character): CharacterKink[] {
-            // @ts-ignore Old webpack TS can't figure out structure without null is CharacterKink
-            // Even new ts can't do `.filter(v -> v) to filter out nulls.
             return Object.entries(c.character.kinks)
                 .map(([kinkId, kinkValue]) => {
                     const resolvedChoice = this.resolveKinkChoice(c, kinkValue);
@@ -137,7 +135,7 @@
                         choice: resolvedChoice,
                     };
                 })
-                .filter(v => v !== null);
+                .filter((v): v is NonNullable<typeof v> => v !== null);
         }
 
         async compareKinks(overridingCharacter?: Character, forced: boolean = false): Promise<void> {

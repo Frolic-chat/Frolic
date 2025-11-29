@@ -28,11 +28,6 @@
                 </a>
             </div>
 
-            <div><a href="#" @click.prevent="showSettings()" class="btn">
-                <span class="fas fa-cog"></span>
-                {{l('settings.open')}}
-            </a></div>
-
             <div><a href="#" @click.prevent="showAdCenter()" class="btn">
                 <span class="fas fa-ad"></span>
                 {{l('chat.adEditor')}}
@@ -48,11 +43,6 @@
                 </span>
             </div>
 
-            <div><a href="#" @click.prevent="showProfileAnalyzer()" class="btn">
-                <span class="fas fa-user-md"></span>
-                {{l('chat.helper')}}
-            </a></div>
-
             <div v-if="env === 'development'">
                 <a href="#" @click.prevent="showDevTools()" class="btn">
                     <span class="fas fa-bug"></span>
@@ -62,9 +52,9 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
+                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
                         class="list-group-item list-group-item-action">
-                        {{conversations.consoleTab.name}}
+                        {{ l('home') }}
                     </a>
                 </div>
             </div>
@@ -76,7 +66,7 @@
                 </a>
 
                 <div class="list-group conversation-nav" ref="privateConversations">
-                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
+                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="showConversation(conversation)"
                         :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
                         class="list-group-item list-group-item-action item-private" :key="conversation.key"
                         @click.middle.prevent.stop="conversation.close()">
@@ -108,7 +98,7 @@
                 </a>
 
                 <div class="list-group conversation-nav" ref="channelConversations">
-                    <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
+                    <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="showConversation(conversation)"
                         :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" :key="conversation.key"
                         @click.middle.prevent.stop="conversation.close()">
                         <span class="name">{{conversation.name}}</span>
@@ -129,24 +119,25 @@
         </sidebar>
         <div style="display:flex;flex-direction:column;flex:1;min-width:0">
             <div id="quick-switcher" class="list-group">
-                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="conversations.consoleTab.show()"
+                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="goHome()"
                     class="list-group-item list-group-item-action">
                     <span class="fas fa-home conversation-icon"></span>
                     {{conversations.consoleTab.name}}
                 </a>
-                <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="conversation.show()"
+                <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="showConversation(conversation)"
                     :class="getClasses(conversation)" class="list-group-item list-group-item-action" :key="conversation.key">
                     <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
                     <span class="far fa-user-circle conversation-icon" v-else></span>
                     <div class="name">{{conversation.character.name}}</div>
                 </a>
-                <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="conversation.show()"
+                <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="showConversation(conversation)"
                     :class="getClasses(conversation)" class="list-group-item list-group-item-action" :key="conversation.key">
                     <span class="fas fa-hashtag conversation-icon"></span>
                     <div class="name">{{conversation.name}}</div>
                 </a>
             </div>
-            <conversation :reportDialog="$refs['reportDialog']"></conversation>
+
+            <home-screen :activeConversationClicked="currentClicked" :reportDialog="$refs['reportDialog']"></home-screen>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
@@ -154,7 +145,6 @@
         <character-search ref="searchDialog"></character-search>
         <adLauncher ref="adLauncher"></adLauncher>
         <adCenter ref="adCenter"></adCenter>
-        <settings ref="settingsDialog"></settings>
         <report-dialog ref="reportDialog"></report-dialog>
         <user-menu ref="userMenu" :reportDialog="$refs['reportDialog']"></user-menu>
         <recent-conversations ref="recentDialog"></recent-conversations>
@@ -162,17 +152,6 @@
         <image-preview ref="imagePreview"></image-preview>
         <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
         <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
-
-        <modal :buttons="false" ref="profileAnalysis" dialogClass="profile-analysis" >
-            <profile-analysis></profile-analysis>
-            <template slot="title">
-                {{ownCharacter.name}}
-                <a class="btn" @click="showProfileAnalyzer">
-                    <i class="fa fa-sync"></i>
-                </a>
-            </template>
-        </modal>
-
     </div>
 </template>
 
@@ -185,28 +164,26 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import {Keys} from '../keys';
     import ChannelList from './ChannelList.vue';
     import CharacterSearch from './CharacterSearch.vue';
-    import {characterImage, getKey, profileLink} from './common';
-    import ConversationView from './ConversationView.vue';
+    import { getKey, profileLink } from './common';
+    import HomeScreen from './UniversalHome.vue';
     import core from './core';
     import {Character, Connection, Conversation} from './interfaces';
     import l from './localize';
     import PmPartnerAdder from './PmPartnerAdder.vue';
     import RecentConversations from './RecentConversations.vue';
     import ReportDialog from './ReportDialog.vue';
-    import SettingsView from './SettingsView.vue';
     import Sidebar from './Sidebar.vue';
     import StatusSwitcher from './StatusSwitcher.vue';
     import {getStatusIcon} from './UserView.vue';
     import UserList from './UserList.vue';
     import UserMenu from './UserMenu.vue';
-    import ImagePreview from './preview/ImagePreview.vue';
+    import ImagePreview from './preview/ContentPreview.vue';
     import PrivateConversation = Conversation.PrivateConversation;
     import NoteStatus from '../site/NoteStatus.vue';
     import { Dialog } from '../helpers/dialog';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
     import Modal from '../components/Modal.vue';
-    import ProfileAnalysis from '../learn/recommend/ProfileAnalysis.vue';
 
     const unreadClasses = {
         [Conversation.UnreadState.None]: '',
@@ -217,7 +194,9 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     @Component({
         components: {
             'user-list': UserList, channels: ChannelList, 'status-switcher': StatusSwitcher, 'character-search': CharacterSearch,
-            settings: SettingsView, conversation: ConversationView, 'report-dialog': ReportDialog, sidebar: Sidebar,
+            'home-screen': HomeScreen,
+            'report-dialog': ReportDialog,
+            sidebar: Sidebar,
             'user-menu': UserMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
@@ -225,7 +204,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
             modal: Modal,
-            'profile-analysis': ProfileAnalysis,
             ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/command_center.vue') } : {})
         }
     })
@@ -233,7 +211,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         l = l;
         env = process.env.NODE_ENV;
         sidebarExpanded = false;
-        characterImage = characterImage;
+        characterImage = (c: string) => core.characters.getImage(c);
         conversations = core.conversations;
         getStatusIcon = getStatusIcon;
         coreState = core.state;
@@ -246,6 +224,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         privateCanGlow = !this.channelConversations?.length;
         channelCanGlow = !this.privateConversations?.length;
+
+        get homeConversation(): Conversation {
+            return core.state.generalSettings.defaultToHome
+                ? core.conversations.activityTab
+                : core.conversations.consoleTab;
+
+        }
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -346,34 +331,36 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             const pms = this.conversations.privateConversations;
             const channels = this.conversations.channelConversations;
             const console = this.conversations.consoleTab;
+            const activity = this.conversations.activityTab;
             if(getKey(e) === Keys.ArrowUp && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console) { //tslint:disable-line:curly
+                if(selected === console || selected === activity) { //tslint:disable-line:curly
                     if(channels.length > 0) channels[channels.length - 1].show();
                     else if(pms.length > 0) pms[pms.length - 1].show();
                 } else if(Conversation.isPrivate(selected)) {
                     const index = pms.indexOf(selected);
-                    if(index === 0) console.show();
+                    if(index === 0) this.goHome();
                     else pms[index - 1].show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index === 0)
                         if(pms.length > 0) pms[pms.length - 1].show();
-                        else console.show();
+                        else this.goHome();
                     else channels[index - 1].show();
                 }
             else if(getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console) { //tslint:disable-line:curly - false positive
+                if(selected === console || selected === activity) { //tslint:disable-line:curly - false positive
                     if(pms.length > 0) pms[0].show();
                     else if(channels.length > 0) channels[0].show();
                 } else if(Conversation.isPrivate(selected)) {
                     const index = pms.indexOf(selected);
                     if(index === pms.length - 1) {
                         if(channels.length > 0) channels[0].show();
+                        else this.goHome();
                     } else pms[index + 1].show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index < channels.length - 1) channels[index + 1].show();
-                    else console.show();
+                    else this.goHome();
                 }
         }
 
@@ -422,10 +409,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             if(Dialog.confirmDialog(l('chat.confirmLeave'))) core.connection.close();
         }
 
-        showSettings(): void {
-            (<SettingsView>this.$refs['settingsDialog']).show();
-        }
-
         showSearch(): void {
             (<CharacterSearch>this.$refs['searchDialog']).show();
         }
@@ -450,15 +433,29 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
           (<AdLauncherDialog>this.$refs['adLauncher']).show();
         }
 
+        currentClicked = true;
+        goHome(): void {
+            if (this.conversations.selectedConversation === this.conversations.activityTab
+            ||  this.conversations.selectedConversation === this.conversations.consoleTab) {
+                this.currentClicked = !this.currentClicked;
+            }
+
+            this.homeConversation.show();
+        }
+
+        showConversation(c: Conversation.Conversation) {
+            if (this.conversations.selectedConversation === c) {
+                this.currentClicked = !this.currentClicked;
+            }
+            else {
+                c.show(); // Set the conversation, Home will update from watcher.
+            }
+        }
+
         showDevTools(): void {
             if (this.env === 'development') {
                 (this.$refs.devTools as any).show();
             }
-        }
-
-        showProfileAnalyzer(): void {
-          (this.$refs.profileAnalysis as any).show();
-          void (this.$refs.profileAnalysis as any).$children[0].analyze();
         }
 
         addPmPartnerSwitch: boolean = false;
@@ -484,7 +481,18 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
 
         getClasses(conversation: Conversation): string {
-            return conversation === core.conversations.selectedConversation ? ' active' : unreadClasses[conversation.unread];
+            return conversation === core.conversations.selectedConversation
+                ? ' active'
+                : unreadClasses[conversation.unread];
+        }
+
+        getHomeClasses(): string {
+            const s = core.conversations.selectedConversation;
+
+            return core.conversations.activityTab === s
+                || core.conversations.consoleTab  === s
+                    ? 'active'
+                    : unreadClasses[this.homeConversation.unread];
         }
 
         isColorblindModeActive(): boolean {

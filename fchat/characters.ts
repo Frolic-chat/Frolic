@@ -1,11 +1,16 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import core from '../chat/core';
 import { methods } from '../site/character_page/data_store';
 import {decodeHTML} from './common';
 import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
+import { ProfileCache } from '../learn/profile-cache';
 import Vue from 'vue';
 import { EventBus } from '../chat/preview/event-bus';
 import l from '../chat/localize';
+
+import NewLogger from '../helpers/log';
+const logCG = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
 
 class Character implements Interfaces.Character {
     gender: Interfaces.Gender = 'None';
@@ -23,7 +28,7 @@ class Character implements Interfaces.Character {
 
 export interface CharacterOverrides {
     avatarUrl?: string;
-    gender?: Interfaces.Gender;
+    gender?: Interfaces.CustomGender;
     status?: Interfaces.Status;
 }
 
@@ -33,12 +38,12 @@ class State implements Interfaces.State {
     ownCharacter: Character = new Character('');
     ownProfile?: CharacterProfile;
 
-    friends: Character[] = [];
-    bookmarks: Character[] = [];
-    ignoreList: string[] = [];
-    opList: string[] = [];
-    friendList: string[] = [];
-    bookmarkList: string[] = [];
+    friends:      Character[] = [];
+    bookmarks:    Character[] = [];
+    ignoreList:   Set<string> = new Set();
+    opList:       Set<string> = new Set();
+    friendList:   Set<string> = new Set();
+    bookmarkList: Set<string> = new Set();
 
     /**
      * Turns a potentially-invalid character name into a validation object.
@@ -75,7 +80,7 @@ class State implements Interfaces.State {
     }
 
     /**
-     * Attempt to format a name by F-List site rules.
+     * Attempt to format a name by F-List site rules, allowing for moderators to have custom names that violate the norm.
      * @param name A potentially invalid character name
      * @returns A modified name put through various sanitizers to try to reach a username that could be created on the site.
      */
@@ -97,7 +102,7 @@ class State implements Interfaces.State {
          */
     }
 
-    get(name: string): Character {
+    get(name: string, useStore = true): Character {
         // Avoid the complexity of converting to `Character | null`
         if (!name.trim()) name = 'Frolic Chat';
         //else       name = this.sanitize(name);
@@ -108,34 +113,211 @@ class State implements Interfaces.State {
         if (!char) {
             char = new Character(name);
 
-            char.isFriend     = this.friendList.includes(name);
-            char.isBookmarked = this.bookmarkList.includes(name);
-            char.isChatOp     = this.opList.includes(name);
-            char.isIgnored    = this.ignoreList.includes(key);
+            char.isFriend     = this.friendList.has(name);
+            char.isBookmarked = this.bookmarkList.has(name);
+            char.isChatOp     = this.opList.has(name);
+            char.isIgnored    = this.ignoreList.has(key);
 
             this.characters[key] = char;
+
+            if (useStore && !Object.keys(char.overrides).length && core.cache.profileCache) {
+                void core.cache.profileCache.getCachedOverrides(name)
+                    .then(o => {
+                        if (o && char && !Object.keys(char.overrides).length)
+                            ProfileCache.applyOverrides(name, o);
+                    });
+            }
         }
 
         return char;
     }
 
-    setStatus(character: Character, status: Interfaces.Status, text: string): void {
-        if(character.status === 'offline' && status !== 'offline') {
-            if(character.isFriend) this.friends.push(character);
-            if(character.isBookmarked) this.bookmarks.push(character);
-        } else if(status === 'offline' && character.status !== 'offline') {
-            if(character.isFriend) this.friends.splice(this.friends.indexOf(character), 1);
-            if(character.isBookmarked) this.bookmarks.splice(this.bookmarks.indexOf(character), 1);
+    /**
+     * An async version of getting a chat character where we wait for the overrides to resolve.
+     * @param name
+     * @param useStore
+     * @returns
+     */
+    async getAsync(name: string, useStore = true): Promise<Character> {
+        const char = this.get(name, false);
+
+        if (useStore && !Object.keys(char.overrides).length && core.cache.profileCache) {
+            await core.cache.profileCache.getCachedOverrides(name)
+                .then(o => { if (o) ProfileCache.applyOverrides(name, o) });
         }
-        character.status = status;
+
+        return char;
+    }
+
+    getImage(character: string | Character): string {
+        if (typeof character === 'string') {
+            // The most official username regex from Maya herself.
+            const uregex = /^[a-zA-Z0-9_\-\s]+$/;
+            if (!uregex.test(character))
+                return '#';
+
+            const c = this.get(character);
+            return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`
+        }
+        else {
+            return character.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.name.toLowerCase()}.png`
+        }
+    }
+
+    /**
+     * Gets a full gender object even if you don't use a custom gender; filling in your default gender info if you don't use custom.
+     *
+     * Needs to be filled in to acquire the match criteria for default genders.
+     *
+     * You should directly access the `overrides.gender` object if you only want the override.
+     * @param character
+     * @returns
+     */
+    getGender(character: string | Interfaces.Character): Interfaces.CustomGender {
+        const r: Interfaces.CustomGender = {
+            string:   '',
+            match:    [],
+            mismatch: [],
+            version:   1,
+        };
+
+        let c: Interfaces.Character;
+
+        if (typeof character === 'string') {
+            // The most official username regex from Maya herself.
+            const uregex = /^[a-zA-Z0-9_\-\s]+$/;
+            if (!uregex.test(character))
+                return r;
+
+            c = this.get(character);
+        }
+        else {
+            c = character;
+        }
+
+        r.string = c.overrides.gender?.string || c.gender;
+
+        if (c.overrides.gender?.match)
+            r.match = c.overrides.gender.match;
+
+        if (c.overrides.gender?.mismatch)
+            r.mismatch = c.overrides.gender.mismatch;
+
+        return r;
+    }
+
+    /**
+     * Get a characters gender string; custom if they use one, or f-list gender if they don't.
+     *
+     * You should directly access the `overrides.gender` object if you only want the override.
+     * @param character
+     * @returns
+     */
+    getGenderString(character: string | Interfaces.Character): string {
+        let c: Interfaces.Character;
+
+        if (typeof character === 'string') {
+            // The most official username regex from Maya herself.
+            const uregex = /^[a-zA-Z0-9_\-\s]+$/;
+            if (!uregex.test(character))
+                return '';
+
+            c = this.get(character);
+        }
+        else {
+            c = character;
+        }
+
+        return c.overrides.gender?.string || c.gender;
+    }
+
+    /**
+     * Reactive-style character status updater. All status changes should go through here.
+     *
+     * The date object is used during broadcast of the friend/bookmark status-change event; so don't provide a date if you don't want to trigger activity listeners.
+     *
+     * Don't forget to call this anytime you set your own status.
+     * @param character Chat character
+     * @param status new status; `character.status` is the old status.
+     * @param text new status message; `character.statusText` is the old status message.
+     * @param date date if received from date-based event (server message, for example)
+     */
+    setStatus(character: Character, newStatus: Interfaces.Status, text: string, options?: { date?: Date, emitEvents?: boolean }): void {
+        const emit = options?.emitEvents ?? true;
+
+        if (character.isFriend) {
+            if (character.status === 'offline' && newStatus !== 'offline') {
+                this.friends.push(character);
+                if (emit) EventBus.$emit('friend-list', state.friends);
+
+                if (emit && options?.date)
+                    EventBus.$emit('activity-friend-login', { character, date: options.date });
+            }
+            else if (character.status !== 'offline' && newStatus === 'offline') {
+                const i = this.friends.indexOf(character);
+                if (i >= 0) this.friends.splice(i, 1);
+                if (emit) EventBus.$emit('friend-list', state.friends);
+
+                if (emit && options?.date)
+                    EventBus.$emit('activity-friend-logout', { character, date: options.date });
+            }
+            else if (options?.date) {
+                // Cache in case our listeners are async.
+                const old_status     = character.status;
+                const old_status_msg = character.statusText;
+
+                EventBus.$emit('activity-friend-status', {
+                    character,
+                    status:       newStatus,
+                    statusmsg:    text,
+                    oldStatus:    old_status,
+                    oldStatusMsg: old_status_msg,
+                    date:         options?.date,
+                });
+            }
+        }
+        else if (character.isBookmarked) {
+            if (character.status === 'offline' && newStatus !== 'offline') {
+                this.bookmarks.push(character);
+                if (emit) EventBus.$emit('bookmark-list', state.bookmarks);
+
+                if (emit && options?.date)
+                    EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
+            }
+            else if (character.status !== 'offline' && newStatus === 'offline') {
+                const i = this.bookmarks.indexOf(character);
+                if (i >= 0) this.bookmarks.splice(i, 1);
+                if (emit) EventBus.$emit('bookmark-list', state.bookmarks);
+
+                if (emit && options?.date)
+                    EventBus.$emit('activity-bookmark-logout', { character, date: options?.date });
+            }
+            else if (options?.date) {
+                // Cache in case our listeners are async.
+                const old_status     = character.status;
+                const old_status_msg = character.statusText;
+
+                EventBus.$emit('activity-bookmark-status', {
+                    character,
+                    status:       newStatus,
+                    statusmsg:    text,
+                    oldStatus:    old_status,
+                    oldStatusMsg: old_status_msg,
+                    date:         options?.date,
+                });
+            }
+        }
+
+        character.status = newStatus;
         character.statusText = decodeHTML(text);
     }
 
     setOverride(name: string, type: 'avatarUrl', value: string | undefined): void;
-    setOverride(name: string, type: 'gender', value: Interfaces.Gender | undefined): void;
+    setOverride(name: string, type: 'gender', value: Interfaces.CustomGender | undefined): void;
     setOverride(name: string, type: 'status', value: Interfaces.Status | undefined): void;
+    setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
-        const char = this.get(name);
+        const char = this.get(name, false);
 
         Vue.set(char.overrides, type, value);
     }
@@ -156,17 +338,22 @@ export default function(this: void, connection: Connection): Interfaces.State {
         state.friends   = [];
         state.bookmarks = [];
 
-        state.bookmarkList = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
-        state.friendList   = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php'))
-                .friends.map(x => x.dest);
+        const bm_list = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
+        const fr_list = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php')).friends.map(x => x.dest);
+
+        state.bookmarkList = new Set(bm_list);
+        state.friendList   = new Set(fr_list);
+
+        EventBus.$emit('bookmark-list', state.bookmarks);
+        EventBus.$emit('friend-list',   state.friends);
 
         if (isReconnect && (<Character | undefined>state.ownCharacter) !== undefined)
             reconnectStatus = {status: state.ownCharacter.status, statusmsg: state.ownCharacter.statusText};
 
         for (const key in state.characters) {
             const character = state.characters[key]!;
-            character.isFriend     = state.friendList.includes(character.name);
-            character.isBookmarked = state.bookmarkList.includes(character.name);
+            character.isFriend     = state.friendList.has(key);
+            character.isBookmarked = state.bookmarkList.has(key);
             character.status = 'offline';
             character.statusText = '';
         }
@@ -177,42 +364,56 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         connection.send('STA', reconnectStatus);
 
-        Object.keys(state.characters)
-            .filter(k => state.characters[k])
-            .forEach(k => {
-                const char = state.characters[k]!;
-                char.isIgnored = state.ignoreList.includes(k);
-                char.isChatOp  = state.opList.includes(char.name);
-            });
+        for (const key in state.characters) {
+            const character = state.characters[key]!;
+            character.isIgnored = state.ignoreList.has(key);
+            character.isChatOp  = state.opList.has(key);
+        }
     });
     connection.onMessage('IGN', (data) => {
         switch(data.action) {
         case 'init':
-            state.ignoreList = data.characters.slice();
+            state.ignoreList = new Set(data.characters);
             break;
         case 'add':
-            state.ignoreList.push(data.character.toLowerCase());
+            state.ignoreList.add(data.character.toLowerCase());
             state.get(data.character).isIgnored = true;
             break;
         case 'delete':
-            state.ignoreList.splice(state.ignoreList.indexOf(data.character.toLowerCase()), 1);
+            state.ignoreList.delete(data.character.toLowerCase());
             state.get(data.character).isIgnored = false;
         }
     });
     connection.onMessage('ADL', (data) => {
-        state.opList = data.ops.slice();
+        state.opList = new Set(data.ops);
     });
-    connection.onMessage('LIS', (data) => {
+    connection.onMessage('LIS', async (data) => {
         for (const char of data.characters) {
-            const character = state.get(char[0]);
+            const character = state.get(char[0], false);
             character.gender = char[1];
             state.setStatus(character, char[2], char[3]);
         }
+
+        const overridesForEveryone = await core.cache.profileCache.getBatchOfOverrides(
+            data.characters.map(([ name ]) => name)
+        );
+
+        logCG.debug(`On LIS, querying for ${data.characters.length} characters, for which only ${overridesForEveryone ? Object.keys(overridesForEveryone).length : 'none'} had entries in the db.`);
+
+        if (overridesForEveryone) {
+            Object.entries(overridesForEveryone).forEach(([ char, indexedOverride ]) => {
+                const c = state.characters[char];
+                if (c && !Object.keys(c.overrides).length) {
+                    for (const indexed of Object.entries(indexedOverride))
+                        state.setOverride(char, indexed[0] as keyof CharacterOverrides, indexed[1]);
+                }
+            });
+        }
     });
-    connection.onMessage('FLN', (data) => {
-        state.setStatus(state.get(data.character), 'offline', '');
+    connection.onMessage('FLN', (data, date) => {
+        state.setStatus(state.get(data.character), 'offline', '', { date });
     });
-    connection.onMessage('NLN', async(data) => {
+    connection.onMessage('NLN', async(data, date) => {
         const character = state.get(data.identity);
 
         if (data.identity === connection.character) {
@@ -230,18 +431,18 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         character.name = data.identity;
         character.gender = data.gender;
-        state.setStatus(character, data.status, '');
+        state.setStatus(character, data.status, '', { date });
     });
-    connection.onMessage('STA', (data) => {
-        state.setStatus(state.get(data.character), data.status, data.statusmsg);
+    connection.onMessage('STA', (data, date) => {
+        state.setStatus(state.get(data.character), data.status, data.statusmsg, { date });
     });
     connection.onMessage('AOP', (data) => {
-        state.opList.push(data.character);
+        state.opList.add(data.character.toLowerCase());
         const char = state.get(data.character);
         char.isChatOp = true;
     });
     connection.onMessage('DOP', (data) => {
-        state.opList.splice(state.opList.indexOf(data.character), 1);
+        state.opList.delete(data.character.toLowerCase());
         const char = state.get(data.character);
         char.isChatOp = false;
     });
@@ -254,27 +455,46 @@ export default function(this: void, connection: Connection): Interfaces.State {
 
         switch(data.type) {
             case 'trackadd':
-                state.bookmarkList.push(data.name);
+                state.bookmarkList.add(data.name.toLowerCase());
                 character.isBookmarked = true;
-                if (character.status !== 'offline') state.bookmarks.push(character);
+
+                if (character.status !== 'offline')
+                    state.bookmarks.push(character);
+
+                EventBus.$emit('bookmark-list', state.bookmarks);
                 break;
             case 'trackrem':
-                state.bookmarkList.splice(state.bookmarkList.indexOf(data.name), 1);
+                state.bookmarkList.delete(data.name.toLowerCase());
                 character.isBookmarked = false;
-                if (character.status !== 'offline') state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
+
+                if (character.status !== 'offline')
+                    state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
+
+                EventBus.$emit('bookmark-list', state.bookmarks);
                 break;
             case 'friendadd':
                 if (character.isFriend)
                     return;
 
-                state.friendList.push(data.name);
+                state.friendList.add(data.name.toLowerCase());
                 character.isFriend = true;
-                if (character.status !== 'offline') state.friends.push(character);
+
+                if (character.status !== 'offline') {
+                    state.friends.push(character);
+                    EventBus.$emit('friend-list',   state.friends);
+                }
+
                 break;
             case 'friendremove':
-                state.friendList.splice(state.friendList.indexOf(data.name), 1);
+                state.friendList.delete(data.name.toLowerCase());
                 character.isFriend = false;
-                if (character.status !== 'offline') state.friends.splice(state.friends.indexOf(character), 1);
+
+                if (character.status !== 'offline') {
+                    state.friends.splice(state.friends.indexOf(character), 1);
+                    EventBus.$emit('friend-list', state.friends);
+                }
+
+                break;
         }
     });
     return state;

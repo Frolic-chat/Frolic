@@ -19,7 +19,7 @@
         readonly target!: string;
 
         get deleted(): boolean {
-            return typeof(this.character) === 'string' ? false : this.character.deleted;
+            return typeof(this.character) === 'string' ? false : this.character.deleted ?? false;
         }
 
         get linkClasses(): string {

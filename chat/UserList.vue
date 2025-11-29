@@ -1,6 +1,6 @@
 <template>
 <sidebar id="user-list" :label="l('users.title')" icon="fa-users" :right="true" :open="expanded">
-    <tabs style="flex-shrink:0" :tabs="channel ? { 0: l('users.friends'), 1: l('users.members') } : !isConsoleTab ? { 0: l('users.friends'), 1: 'Profile'} : { 0: l('users.friends') }" v-model="tab"></tabs>
+    <tabs style="flex-shrink:0" :tabs="channel ? { 0: l('users.friends'), 1: l('users.members') } : !isConsoleOrActivity ? { 0: l('users.friends'), 1: 'Profile'} : { 0: l('users.friends') }" v-model="tab"></tabs>
     <div class="users" style="padding-left:10px" v-show="tab === '0'">
         <h4>{{l('users.friends')}}</h4>
         <div v-for="character in friends" :key="character.name">
@@ -11,16 +11,19 @@
             <user :character="character" :showStatus="true" :bookmark="false"></user>
         </div>
     </div>
-    <div v-if="channel" style="padding-left:5px;flex:1;display:flex;flex-direction:column" v-show="tab === '1'">
-        <div class="users" style="flex:1;padding-left:5px">
-            <h4>
-                {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
-            </h4>
-            <div v-for="member in filteredMembers" :key="member.character.name">
-                <user :character="member.character" :channel="channel" :hide="true" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
-            </div>
-        </div>
-        <div class="input-group" style="margin-top:5px;flex-shrink:0">
+    <div v-if="channel" style="padding-left:10px;display:flex" class="flex-column flex-grow-1 flex-shrink-1" v-show="tab === '1'">
+        <h4 class="flex-shrink-0 flex-grow-0">
+            {{l('users.memberCount', channel.sortedMembers.length)}} <a class="btn sort" @click="switchSort"><span class="fas fa-sort-amount-down"></span></a>
+        </h4>
+
+        <!-- :debug="true" -->
+        <virtual-scroller class="flex-grow-1 flex-shrink-1" :items="filteredMembers" :itemHeight="singleItemSize" :overdraw="10">
+            <template v-slot:default="{ item }">
+                <user style="display:inline-block;width:100%;" class="text-truncate" :character="item.character" :channel="channel" :immediate="true" :hide="false" :showStatus="true" @visibility-change="userViewUpdateThrottle"></user>
+            </template>
+        </virtual-scroller>
+
+        <div class="input-group flex-shrink-0" style="margin-top:5px">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <span class="fas fa-search"></span>
@@ -29,14 +32,14 @@
             <input class="form-control" v-model="filter" :placeholder="l('general.filter')" type="text"/>
         </div>
     </div>
-    <div v-if="!channel && !isConsoleTab" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
+    <div v-if="!channel && !isConsoleOrActivity" style="flex:1;display:flex;flex-direction:column" class="profile" v-show="tab === '1'">
 
         <a :href="profileUrl" target="_blank" class="btn profile-button">
             <span class="fa fa-fw fa-user"></span>
             {{l('userlist.profile')}}
         </a>
 
-        <character-page :authenticated="true" :oldApi="true" :name="profileName" :imagePreview="true" ref="characterPage"></character-page>
+        <character-page :authenticated="true" :oldApi="true" :name="profileName" ref="characterPage"></character-page>
     </div>
 </sidebar>
 </template>
@@ -44,6 +47,7 @@
 <script lang="ts">
 import {Component} from '@f-list/vue-ts';
 import Vue from 'vue';
+import VirtualScroller from '../components/VirtualScroller.vue';
 import Tabs from '../components/tabs';
 import core from './core';
 import { Channel, Character, Conversation } from './interfaces';
@@ -51,16 +55,16 @@ import { isImportantToChannel } from './conversations';
 import l from './localize';
 import Sidebar from './Sidebar.vue';
 import UserView from './UserView.vue';
-import characterPage from '../site/character_page/character_page.vue';
+import characterPage from '../site/character_page/character_sheet.vue';
 import { profileLink } from './common';
 
-import { UserListSorter } from '../learn/matcher';
+import UserListSorter from '../learn/user-list-sorter';
 import { Scoring } from '../learn/matcher-types';
 import { EventBus, CharacterDataEvent } from './preview/event-bus';
 import { debounce } from '../helpers/utils';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('UserList');
+import NewLogger from '../helpers/log';
+const log = NewLogger('UseList');
 
 type StatusSort = { [key in Character.Status]: number };
 type GenderSort = { [key in Character.Gender]: number };
@@ -136,6 +140,7 @@ EventBus.$on('own-profile-update', recalculateSorterGenderPriorities);
         user: UserView,
         sidebar: Sidebar,
         tabs: Tabs,
+        'virtual-scroller': VirtualScroller,
     }
 })
 export default class UserList extends Vue {
@@ -144,8 +149,11 @@ export default class UserList extends Vue {
     filter = '';
     l = l;
 
+    // I'm not sure where we get 1.5em line height, but that's what the legacy userlist+userview does.
+    singleItemSize = core.state.settings.fontSize * 1.5;
+
     userListProxy = false;
-    userViewUpdateThrottle = debounce(this.update, { wait: 1000, maxWait: 3000 });
+    userViewUpdateThrottle = debounce(this.update, { wait: 500, maxWait: 1500 });
 
     /** This was async in testing */
     update(): void {
@@ -170,9 +178,10 @@ export default class UserList extends Vue {
         return (<Conversation.ChannelConversation>core.conversations.selectedConversation).channel;
     }
 
-    get isConsoleTab(): Boolean {
-        return core.conversations.selectedConversation === core.conversations.consoleTab;
-    }
+    get isConsoleOrActivity() {
+            return core.conversations.selectedConversation === core.conversations.consoleTab
+                || core.conversations.selectedConversation === core.conversations.activityTab;
+        }
 
     get profileName(): string | undefined {
         return this.channel ? undefined : core.conversations.selectedConversation.name;
@@ -182,22 +191,28 @@ export default class UserList extends Vue {
         return this.profileName ? profileLink(this.profileName) : undefined;
     }
 
+    // 1.5ms down from 5ms of .map(), increased by duplicating the array - which should have been done anyways so is tough to account time for.
+    addIds(a: Array<Channel.Member & {id?: string }>) {
+        for (const e of a) e.id = e.character.name;
+        return a as Array<Channel.Member & { id: string }>;
+    }
+
     /* If we should ever want to use custom icons for each sort type, combining level-down-alt with:
         * stream (normal)
         * user-clock (status)
         * venus-mars (gender)
         * would be easy and make sense.
         */
-    get filteredMembers(): ReadonlyArray<Channel.Member> {
+    get filteredMembers(): Array<Channel.Member & { id: string }> {
         //Trigger update from UserView
         this.userListProxy;
 
         const members = this.getFilteredMembers();
 
-        if (this.sortType === 'normal')
-            return members;
+        const sorted = this.addIds(members);
 
-        const sorted = [ ...members ];
+        if (this.sortType === 'normal')
+            return sorted;
 
         /** `{ sensitivity: 'base' }` should not be necessary due to the pre-sorting that happens when a new channel member joins, but could technically come in handy after changing through various list sorts. */
         switch (this.sortType) {
@@ -242,8 +257,8 @@ export default class UserList extends Vue {
         });
     }
 
-    prefilterMembers(): ReadonlyArray<Channel.Member> {
-        const sorted = this.channel.sortedMembers;
+    prefilterMembers() {
+        const sorted = [ ...this.channel.sortedMembers ];
 
         if (!this.filter)
             return sorted;
@@ -276,12 +291,12 @@ export default class UserList extends Vue {
     .users {
         overflow: auto;
 
-        > div {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-        }
+        // > div {
+        //     overflow: hidden;
+        //     text-overflow: ellipsis;
+        //     -webkit-line-clamp: 2;
+        //     line-clamp: 2;
+        // }
     }
 
     .nav li:first-child a {

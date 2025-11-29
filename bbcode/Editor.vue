@@ -409,6 +409,10 @@
             this.element.focus();
         }
 
+        isFocused(): boolean {
+            return this.element === document.activeElement;
+        }
+
         previewBBCode(): void {
             this.doPreview();
         }

@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import Vue from 'vue';
 import {queuedJoin} from '../fchat/channels';
 import {decodeHTML} from '../fchat/common';
-// import { CharacterCacheRecord } from '../learn/profile-cache';
 import { AdManager } from './ads/ad-manager';
-import { characterImage, ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
+import { ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
 import { sleep } from '../helpers/utils';
-import { Channel, Character, Conversation as Interfaces } from './interfaces';
+import { Channel, Character, Conversation as Interfaces, Relation } from './interfaces';
 import isChannel = Interfaces.isChannel;
 import l from './localize';
 import {CommandContext, isAction, isCommand, isWarn, parse as parseCommand} from './slash_commands';
@@ -13,8 +14,12 @@ import MessageType = Interfaces.Message.Type;
 import {EventBus} from './preview/event-bus';
 import throat from 'throat';
 
-import Logger from 'electron-log/renderer';
-const log = Logger.scope('chat/conversations');
+import NewLogger from '../helpers/log';
+const log = NewLogger('conversations', () => core?.state.generalSettings.argv.includes('--debug-conversations'));
+const logS = NewLogger('conversation-settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
+const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
+
+const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
 
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {
@@ -38,7 +43,7 @@ abstract class Conversation implements Interfaces.Conversation {
     lastRead: Interfaces.Message | undefined = undefined;
     infoText = '';
     abstract readonly maxMessageLength: number | undefined;
-    _settings: Interfaces.Settings | undefined;
+    _settings: Interfaces.Settings;
     protected abstract context: CommandContext;
     protected maxMessages = 50;
     protected insertCount = 0;
@@ -52,16 +57,27 @@ abstract class Conversation implements Interfaces.Conversation {
 
     constructor(readonly key: string, public _isPinned: boolean) {
         this.adManager = new AdManager(this);
+
+        // In the future, see if we can manage settings by conversation type so we can offer different settings for PMs.
+        if (this instanceof ConsoleConversation || this instanceof ActivityConversation) {
+            this._settings = new ConversationSettings();
+        }
+        else {
+            this._settings = Vue.observable(state.settings[key] || new ConversationSettings());
+
+            core.watch(() => this._settings, async (newValue, _oldValue) => {
+                logS.warn(`watch _settings will save conversation ${this.name}.`);
+                state.setSettings(this.key, newValue);
+            }, { deep: true });
+        }
     }
 
     get settings(): Interfaces.Settings {
-        //tslint:disable-next-line:strict-boolean-expressions
-        return this._settings || (this._settings = state.settings[this.key] || new ConversationSettings());
+        return this._settings;
     }
 
     set settings(value: Interfaces.Settings) {
         this._settings = value;
-        state.setSettings(this.key, value); //tslint:disable-line:no-floating-promises
     }
 
     get isPinned(): boolean {
@@ -81,7 +97,8 @@ abstract class Conversation implements Interfaces.Conversation {
     async send(): Promise<void> {
         // This is a safety check; technically if we reached this point, we should send the message.
         // However, parsing requires there be an actual message, so we can't avoid this.
-        if (!this.enteredText.trim())
+        this.enteredText = this.enteredText.trim();
+        if (!this.enteredText)
             return;
 
         if(isCommand(this.enteredText)) {
@@ -127,6 +144,10 @@ abstract class Conversation implements Interfaces.Conversation {
         this.messages = this.allMessages.slice(-this.maxMessages);
         // this.loadedMore = false;
         this.insertCount = 0;
+    }
+
+    clearUnread() {
+        this.unread = Interfaces.UnreadState.None;
     }
 
     // Keeps the message-list from re-rendering every time when full, cleaning up after itself every 200 messages
@@ -189,7 +210,6 @@ abstract class Conversation implements Interfaces.Conversation {
     }
 }
 
-
 class PrivateConversation extends Conversation implements Interfaces.PrivateConversation {
     readonly name: string;
     readonly context = CommandContext.Private;
@@ -238,7 +258,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
                 await core.logs.logMessage(this, message);
 
             if (this.settings.notify !== Interfaces.Setting.False && message.sender !== core.characters.ownCharacter)
-                await core.notifications.notify(this, message.sender.name, message.text, characterImage(message.sender.name), 'attention');
+                await core.notifications.notify(this, message.sender.name, message.text, core.characters.getImage(message.sender.name), 'attention');
 
             if (this !== state.selectedConversation || !state.windowFocused)
                 this.unread = Interfaces.UnreadState.Mention;
@@ -252,7 +272,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         state.privateConversations.splice(state.privateConversations.indexOf(this), 1);
         delete state.privateMap[this.character.name.toLowerCase()];
         await state.savePinned();
-        if(state.selectedConversation === this) state.show(state.consoleTab);
+        if(state.selectedConversation === this) state.show(core.state.generalSettings.defaultToHome ? state.activityTab : state.consoleTab);
     }
 
     async sort(newIndex: number): Promise<void> {
@@ -575,7 +595,6 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     }
 }
 
-
 class ConsoleConversation extends Conversation {
     readonly context = CommandContext.Console;
     readonly name = l('chat.consoleTab');
@@ -602,11 +621,362 @@ class ConsoleConversation extends Conversation {
     }
 }
 
+class ActivityConversation extends Conversation {
+    constructor() {
+        super('_activity', false);
+
+        // Not sure how many of these are necessary.
+        this._settings.notify = Interfaces.Setting.False;
+        this._settings.highlight = Interfaces.Setting.False;
+        this._settings.defaultHighlights = false;
+
+        EventBus.$on('activity-friend-login',    e => this.handleLogin({ e: 'EBL', ...e }));
+        EventBus.$on('activity-friend-logout',   e => this.handleLogout({ e: 'EBL', ...e }));
+        EventBus.$on('activity-friend-status',   e => this.handleStatus({ e: 'EBS', ...e }));
+        EventBus.$on('activity-bookmark-login',  e => this.handleLogin({ e: 'EBL', ...e }));
+        EventBus.$on('activity-bookmark-logout', e => this.handleLogout({ e: 'EBL', ...e }));
+        EventBus.$on('activity-bookmark-status', e => this.handleStatus({ e: 'EBS', ...e }));
+    }
+
+    //override messages: Array<Interfaces.Message | undefined> = [];
+
+    readonly context = CommandContext.Console;
+    readonly name = l('chat.activityTab');
+    readonly maxMessageLength = 0;
+    readonly enteredText = '';
+    // We're opting to include these to overwrite them with readonlies:
+    readonly errorText = '';
+    readonly infoText  = '';
+
+    _messages: Array<Interfaces.Message | undefined> = [];
+
+    static importance = {
+        login: 0,
+        status: 1,
+        looking: 2,
+    } as const;
+
+    /**
+     * The styles of messages we want to preserve.
+     */
+
+    /**
+     * Recent login notifications. Not that important, since you can see online people in the sidebar.
+     * Amount: 3
+     * Track: logins
+     * hook into state.windowFocused to determine new?
+     */
+    protected readonly login: Map<string, number> = new Map();
+    protected readonly MAX_LOGINS  = 3;
+
+    /**
+     * Custom statuses are important because they're directly from the user.
+     * Amount: All?
+     * Track: has set custom status.
+     */
+    protected readonly status: Map<string, number> = new Map();
+    protected readonly MAX_STATUS = 0; // Infinity
+
+    /**
+     * People with looking status.
+     * Amount: All?
+     * Track: Status changes to looking
+     */
+    protected readonly looking: Map<string, number> = new Map();
+    protected readonly MAX_LOOKING = 5;
+
+    /**
+     * People who recently returned.
+     * Amount: 3
+     * Track: Status changed from away/busy/dnd to online or crown.
+     */
+    protected readonly returned: Map<string, number> = new Map();
+    protected readonly MAX_RETURNED = 3;
+
+    /**
+     * Heuristics
+     * Unused yet. Useful to check custom statuses if showing all custom statuses doesn't work.
+     */
+    protected readonly ignoreKeywords = [ "at work", "working", "busy", "away", "not here", "idle" ];
+    protected readonly preferKeywords = [ "looking for", "want", "new", "you" ];
+
+    protected updateDisplay(addedAny?: boolean, elevateAlertLevel?: boolean): void {
+        this.messages = this._messages.filter((m): m is Interfaces.Message => m !== undefined); // webpack ts
+
+        if (addedAny && this !== state.selectedConversation || !state.windowFocused) {
+            if (!this.messages.length) // needs better detection.
+                this.unread = Interfaces.UnreadState.None;
+            else if (elevateAlertLevel)
+                this.unread = Interfaces.UnreadState.Mention;
+            else
+                this.unread = Interfaces.UnreadState.Unread;
+        }
+
+    }
+
+    /**
+     * Get the oldest slot in a full map or the first empty slot in the message array. Modifies the map to remove the entry we're replacing. The default index for a slot is _messages.length; ie after the last.
+     * @param map The map to check for empty slots.
+     * @param MAX Maximum number of entries in the map allowed. Will remove oldest entry and return the index of the now-empty slot.
+     * @returns index in _messages where a new message can go.
+     */
+    protected freeSlot(map: Map<string, number>, MAX?: number): number {
+        if (MAX && MAX > 0 && map.size >= MAX) {
+            let oldestKey:  string | undefined;
+            let oldestTime: number | undefined;
+
+            for (const [name, i] of map.entries()) {
+                const m = this._messages[i];
+                if (!m) { // mystery orphan, use it
+                    map.delete(name);
+                    logA.debug('ActivityConversation.freeSlot.orphan', name, i);
+                    return i;
+                }
+
+                const this_time = m.time.getTime();
+                if (oldestTime === undefined || this_time < oldestTime) {
+                    logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
+
+                    oldestTime = this_time;
+                    oldestKey = name;
+                }
+            }
+
+            if (oldestKey) {
+                const i = map.get(oldestKey);
+                map.delete(oldestKey);
+
+                logA.debug('ActivityConversation.freeSlot.oldestKey', oldestKey, i);
+
+                // Some day the typescript team will be replaced with AI and we will be able to bully it into not fucking everything up.
+                if (i !== undefined) // bad TS check; it exists
+                    return i;
+            }
+        }
+         else { // not full - find existing undefined slot; use default is there isn't one.
+                // if removeCharacter just ran, this is at least going to find that empty slot.
+            const i = this._messages.findIndex(e => !e);
+            logA.debug('ActivityConversation.freeSlot.unsaturated', i);
+            if (i !== -1)
+                return i;
+        }
+
+        return this._messages.length;
+    }
+
+    /**
+     * Remove a character from the map and return a free slot if one was freed; null otherwise.
+     * @param name Character name to look for in the maps.
+     * @returns index of slot in `_messages` that's now undefined; null if a character wasn't removed.
+     */
+    protected removeCharacter(name: string): number | null {
+        logA.debug('ActivityConversation.removeCharacter.start', name);
+
+        // For an entry in each of the groups, use the entry to remove the message from messages[];
+        const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name) ?? this.returned.get(name);
+
+        [ this.login, this.status, this.looking, this.returned ]
+            .forEach(map => map.delete(name));
+
+        if (i === undefined) {
+            logA.debug('ActivityConversation.removeCharacter.none');
+            return null;
+        }
+        else {
+            logA.debug('ActivityConversation.removeCharacter.found', i, this._messages[i]);
+            this._messages[i] = undefined;
+            return i;
+        }
+    };
+
+    protected isTracked(name: string): boolean {
+        return this.login.has(name) ?? this.status.has(name) ?? this.looking.has(name) ?? this.returned.has(name);
+    }
+
+    protected isHere(status: Character.Status): status is 'online' | 'looking' | 'crown' {
+        return [ 'online', 'looking', 'crown' ].includes(status);
+    }
+
+    // Login is any status change with the character 'offline' but the status 'online'.
+    protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+        const c = activity.character;
+        if (c.isFriend || c.isBookmarked) { // expanded to bookmarks for now.
+            logA.debug('ActivityConversation.handleLogin.start.friend', c.name);
+
+            // Clear a spot.
+            const index = this.removeCharacter(c.name);
+            const index2 = this.freeSlot(this.login, this.MAX_LOGINS); // This does not remove properly.
+
+            // add index to login map.
+            this.login.set(c.name, index ?? index2);
+            const message = new EventMessage(l('events.login', `[user]${c.name}[/user]`), activity.date);
+            this._messages[index ?? index2] = message;
+
+            this.cleanseOutdatedData();
+            this.updateDisplay(true);
+            // c.isFriend && shouldNotifyOnFriendLogin() || c.isBookmarked && shouldNotifyOnBookmarkLogin()
+
+            logA.debug('ActivityConversation.handleLogin.postAdd', {
+                name: c.name,
+                index: index ?? index2,
+                loginEntries: [ ...this.login.entries() ].map(e => `${e[0]}->${e[1]}`),
+            });
+        }
+        else { // bookmark; don't log logins.
+            logA.debug('ActivityConversation.handleLogin.start.unused');
+            return;
+        }
+    }
+
+    // Logout is any status change with the character 'online' but the status 'offline'.
+    protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+        logA.debug('ActivityConversation.handleLogout.tracked', {
+            name: activity.character.name,
+            x:    activity.date
+        });
+
+        this.removeCharacter(activity.character.name);
+
+        this.cleanseOutdatedData();
+        this.updateDisplay();
+    }
+
+    /**
+     * Status change is any non-login, non-logout status change event. Specifically:
+     * 1. Going away/busy/dnd. Add to `this.away`.
+     * 2. Coming out of away/busy/dnd. Remove from `this.away`, add to `this.returned`.
+     * 3. Set looking status. add to `this.looking`.
+     * 4. Set custom message. add to `this.status`.
+     */
+    protected async handleStatus(activity: Interfaces.ActivityContext & { e: 'EBS' }): Promise<void> {
+        let target_map: Map<string, number> | undefined;
+        let target_max: number | undefined;
+        let message: Interfaces.Message | undefined;
+
+        // bucket
+        if (activity.statusmsg && [ 'online', 'crown', 'looking' ].includes(activity.status)) {
+            logA.debug('ActivityConversation.handleStatus.status');
+
+            target_map = this.status;
+
+            message = new EventMessage(
+                l(activity.statusmsg ? 'events.status.message' : 'events.status',
+                    `[user]${activity.character.name}[/user]`,
+                    l(`status.${activity.status}`),
+                    decodeHTML(activity.statusmsg)
+                ),
+                activity.date
+            );
+        }
+        else if (activity.status === 'looking') {
+            logA.debug('ActivityConversation.handleStatus.looking');
+
+            target_map = this.looking;
+            target_max = this.MAX_LOOKING;
+
+            message = new EventMessage(
+                l(activity.statusmsg ? 'events.status.message' : 'events.status',
+                    `[user]${activity.character.name}[/user]`,
+                    l(`status.${activity.status}`),
+                    decodeHTML(activity.statusmsg)
+                ),
+                activity.date
+            );
+        }
+        else if ([ 'away', 'busy', 'dnd' ].includes(activity.oldStatus)
+              && [ 'online', 'crown' ].includes(activity.status)) {
+            logA.debug('ActivityConversation.handleStatus.returned');
+
+            target_map = this.returned;
+            target_max = this.MAX_RETURNED;
+
+            message = new EventMessage(
+                l(activity.statusmsg ? 'events.status.message' : 'events.status',
+                    `[user]${activity.character.name}[/user]`,
+                    l(`status.${activity.status}`),
+                    decodeHTML(activity.statusmsg)
+                ),
+                activity.date
+            );
+        }
+        else if (activity.oldStatus === activity.status) {
+            // online -> online frequently seen for some logins.
+            // above we already capture "status === looking" and "here w/statusmsg"
+            return;
+        }
+        else {
+            logA.debug('ActivityConversation.handleStatus.shouldntBeHitbyLogin', {
+                name:      activity.character.name,
+                status:    activity.status,
+                oldStatus: activity.oldStatus,
+            });
+            this.removeCharacter(activity.character.name);
+            this.updateDisplay(); // removed
+            return; // Other status changes shouldn't be received here.
+        }
+
+        const index =  this.removeCharacter(activity.character.name);
+        const index2 = this.freeSlot(target_map, target_max);
+
+        logA.debug('handleStatus.indexDecided', { i1: index, i2: index2 });
+
+        target_map.set(activity.character.name, index ?? index2);
+        this._messages[index ?? index2] = message;
+
+        this.cleanseOutdatedData();
+        this.updateDisplay(true);
+    }
+
+    protected cleanseOutdatedData(): void {
+        const current_time = Date.now();
+
+        [ this.login, this.status, this.looking, this.returned ]
+            .forEach(map => map.forEach((i, name) => {
+                // @ts-ignore Webpack TS :)
+                if (!this._messages[i] || current_time - this._messages[i].time.getTime() > TWENTY_MINUTES_IN_MS) {
+                    map.delete(name);
+                    this._messages[i] = undefined;
+                }
+            }));
+    }
+
+    async parse(_activity: Exclude<Interfaces.ActivityContext, { e: 'EBE' }>): Promise<void> {
+    }; // placeholder; not yet needed
+
+    // Noop placeholder
+    async addMessage(_message: Interfaces.Message): Promise<void> {}
+    //     // Judge for relevance.
+    //     if (message.type === MessageType.Action) {
+    //         log.debug('activity.addMessage.action', message);
+    //     }
+    //     if (message.type === MessageType.Bcast) {
+    //         log.debug('activity.addMessage.bcast', message);
+    //     }
+    //     if (message.type === MessageType.Event) {
+    //         log.debug('activity.addMessage.event', message);
+    //     }
+    //     if (message.type === MessageType.Message) {
+    //         log.debug('activity.addMessage.message', message);
+    //     }
+    //     if (message.type === MessageType.Warn) {
+    //         log.debug('activity.addMessage.warn', message);
+    //     }
+
+    //     this.safeAddMessage(message);
+    //     if (this !== state.selectedConversation || !state.windowFocused)
+    //         this.unread = Interfaces.UnreadState.Unread;
+    // }
+    close(): void {}                     // noop
+    onHide(): void {}                    // noop
+    protected doSend(): void {}          // noop
+}
+
 class State implements Interfaces.State {
     privateConversations: PrivateConversation[] = [];
     channelConversations: ChannelConversation[] = [];
     privateMap: {[key: string]: PrivateConversation | undefined} = {};
     channelMap: {[key: string]: ChannelConversation | undefined} = {};
+    activityTab!: ActivityConversation;
     consoleTab!: ConsoleConversation;
     selectedConversation: Conversation = this.consoleTab;
     recent: Interfaces.RecentPrivateConversation[] = [];
@@ -679,8 +1049,10 @@ class State implements Interfaces.State {
 
     show(conversation: Conversation): void {
         if(conversation === this.selectedConversation) return;
+
         this.selectedConversation.onHide();
-        conversation.unread = Interfaces.UnreadState.None;
+        // "Unread messages" are messages you haven't read yet. (So clearing them should be UI based.)
+        // conversation.unread = Interfaces.UnreadState.None;
         this.selectedConversation = conversation;
         EventBus.$emit('select-conversation', { conversation });
     }
@@ -740,6 +1112,16 @@ async function withNeutralVisibilityPrivateConversation(character: Character.Cha
     if (!isVisibleConversation) {
         await conv.close();
     }
+}
+
+function shouldNotifyOnFriendLogin(): boolean {
+    return core.state.settings.notifyFriendSignIn === Relation.Chooser.Friends
+        || core.state.settings.notifyFriendSignIn === Relation.Chooser.Both;
+}
+
+function shouldNotifyOnBookmarkLogin(): boolean {
+    return core.state.settings.notifyFriendSignIn === Relation.Chooser.Bookmarks
+        || core.state.settings.notifyFriendSignIn === Relation.Chooser.Both;
 }
 
 /**
@@ -884,11 +1266,14 @@ export default function(this: any): Interfaces.State {
         state.channelConversations = [];
         state.channelMap = {};
         if(!isReconnect) {
+            state.activityTab = new ActivityConversation();
             state.consoleTab = new ConsoleConversation();
             state.privateConversations = [];
             state.privateMap = {};
         } else state.consoleTab.unread = Interfaces.UnreadState.None;
-        state.selectedConversation = state.consoleTab;
+        state.selectedConversation = core.state.generalSettings.defaultToHome
+            ? state.activityTab
+            : state.consoleTab;
         EventBus.$emit('select-conversation', { conversation: state.selectedConversation });
         await state.reloadSettings();
     });
@@ -935,6 +1320,8 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('PRI', async(data, time) => {
+        //state.activityTab.parse({ e: 'PRI', data, time });
+
         const char = core.characters.get(data.character);
         if(char.isIgnored) return connection.send('IGN', {action: 'notify', character: data.character});
         const message = createMessage(MessageType.Message, char, decodeHTML(data.message), time);
@@ -951,6 +1338,9 @@ export default function(this: any): Interfaces.State {
         await conv.addMessage(message);
     });
     connection.onMessage('MSG', async(data, time) => {
+        // channel message... this DEFINITELY needs to be moved further down.
+        //state.activityTab.parse({ e: 'MSG', data, time });
+
         const char = core.characters.get(data.character);
         if (char.isIgnored)
             return;
@@ -970,59 +1360,75 @@ export default function(this: any): Interfaces.State {
             if (!conversation)
                 return false;
 
-            return (conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Friends   ||
-                    conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both      )
-                || (conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
-                    core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Friends   ||
-                    core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both      )
+            return (conversation.settings.notifyOnFriendMessage === Relation.Chooser.Friends   ||
+                    conversation.settings.notifyOnFriendMessage === Relation.Chooser.Both      )
+                || (conversation.settings.notifyOnFriendMessage === Relation.Chooser.Default   &&
+                    core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Friends   ||
+                    core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both      )
         }
 
         const shouldNotifyOnBookmarkMessage = () => {
             if (!conversation)
                 return false;
 
-            return ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Bookmarks ||
-                     conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Both    )
-                || ( conversation.settings.notifyOnFriendMessage === Interfaces.RelationChooser.Default   &&
-                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Bookmarks ||
-                     core.state.settings.notifyOnFriendMessage   === Interfaces.RelationChooser.Both    )
+            return ( conversation.settings.notifyOnFriendMessage === Relation.Chooser.Bookmarks ||
+                     conversation.settings.notifyOnFriendMessage === Relation.Chooser.Both    )
+                || ( conversation.settings.notifyOnFriendMessage === Relation.Chooser.Default   &&
+                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Bookmarks ||
+                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both    )
         }
 
-        const words = conversation.settings.highlightWords.slice();
+        const hilite_words = conversation.settings.highlightWords.slice();
         if (conversation.settings.defaultHighlights)
-            words.push(...core.state.settings.highlightWords);
+            hilite_words.push(...core.state.settings.highlightWords);
 
         if ((conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight)
         ||  conversation.settings.highlight === Interfaces.Setting.True) {
-            words.push(core.connection.character);
+            hilite_words.push(core.connection.character);
         }
 
-        for (let i = 0; i < words.length; ++i)
-            words[i] = words[i].replace(/[^\w]/gi, '\\$&');
+        const words = hilite_words
+            .map(e => e.replace(/[^\w]/gi, '\\$&'));
+        const names = conversation.settings.highlightUsernames
+            .map(e => e.replace(/[^\w]/gi, '\\$&'));
 
-        const msgResults  = words.length > 0
+        const msg_results  = words.length > 0
                 ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
                 : null;
-        const nameResults = conversation.settings.highlightUsers && words.length > 0
-                ? data.character.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
+        const name_results = names.length > 0
+                ? data.character.match(new RegExp(`^(${names.join('|')})$`, 'i'))
                 : null;
 
-        if (msgResults || nameResults) {
-            const results = msgResults ?? nameResults;
-            await core.notifications.notify(conversation, data.character, l('chat.highlight', results![0], conversation.name, message.text), characterImage(data.character), 'attention');
+        let msg = null;
+
+        if (name_results) {
+            msg = {
+                notify: l('chat.highlight.user', conversation.name),
+                event: l('events.highlight.user', `[user]${data.character}[/user]`, `[session=${conversation.name}]${data.channel}[/session]`, message.text),
+            }
+        }
+        else if (msg_results) {
+            msg = {
+                notify: l('chat.highlight', msg_results[0], conversation.name, message.text.length > 25 ? message.text.slice(0, 25).trim() + '...' : message.text),
+                event: l('events.highlight', `[user]${data.character}[/user]`, msg_results[0], `[session=${conversation.name}]${data.channel}[/session]`),
+            }
+        };
+
+        if (msg) {
+            await core.notifications.notify(conversation, data.character, msg.notify, core.characters.getImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
                 conversation.unread = Interfaces.UnreadState.Mention;
 
             message.isHighlight = true;
 
-            await state.consoleTab.addMessage(new EventMessage(l('events.highlight', `[user]${data.character}[/user]`, results![0], `[session=${conversation.name}]${data.channel}[/session]`), time));
+            await state.consoleTab.addMessage(new EventMessage(msg.event, time));
         }
         else if (conversation.settings.notify === Interfaces.Setting.True
-        || (shouldNotifyOnFriendMessage()   && core.characters.friendList.includes(data.character))
-        || (shouldNotifyOnBookmarkMessage() && core.characters.bookmarkList.includes(data.character))) {
+        || (shouldNotifyOnFriendMessage()   && core.characters.friendList.has(data.character))
+        || (shouldNotifyOnBookmarkMessage() && core.characters.bookmarkList.has(data.character))) {
             await core.notifications.notify(conversation, conversation.name, messageToString(message),
-                characterImage(data.character), 'attention');
+                core.characters.getImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
                 conversation.unread = Interfaces.UnreadState.Mention;
@@ -1039,12 +1445,8 @@ export default function(this: any): Interfaces.State {
 
         const msg = new Message(MessageType.Ad, char, decodeHTML(data.message), time);
 
-        const p = await core.cache.resolvePScore(
-            (core.conversations.selectedConversation !== conv),
-            char,
-            conv,
-            msg
-        );
+        const selected = core.conversations.selectedConversation === conv;
+        const p = await core.cache.resolvePScore(!selected, char, conv, msg);
 
         EventBus.$emit('channel-ad', { message: msg, channel: conv, profile: p });
 
@@ -1067,7 +1469,7 @@ export default function(this: any): Interfaces.State {
             if(sender.isIgnored) return;
             if(data.type === 'bottle' && data.target === core.connection.character) {
                 await core.notifications.notify(conversation, conversation.name, messageToString(message),
-                    characterImage(data.character), 'attention');
+                    core.characters.getImage(data.character), 'attention');
                 if(conversation !== state.selectedConversation || !state.windowFocused)
                     conversation.unread = Interfaces.UnreadState.Mention;
                 message.isHighlight = true;
@@ -1083,41 +1485,42 @@ export default function(this: any): Interfaces.State {
         }
     });
     connection.onMessage('NLN', async(data, time) => {
-        const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
-        if(isOfInterest(core.characters.get(data.identity))) {
+        const c = core.characters.get(data.identity);
+        const interesting = isOfInterest(c);
+        if (interesting) {
+            const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
             await addEventMessage(message);
 
-            function shouldNotifyOnFriendLogin(): boolean {
-                const settings = core.state.settings;
-                const chooser = Interfaces.RelationChooser;
-                return settings.notifyFriendSignIn === chooser.Friends
-                    || settings.notifyFriendSignIn === chooser.Both;
+            const should_notify = shouldNotifyOnFriendLogin()   && c.isFriend
+                               || shouldNotifyOnBookmarkLogin() && c.isBookmarked;
+            if (should_notify) {
+                await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), core.characters.getImage(data.identity), 'silence');
             }
-
-            function shouldNotifyOnBookmarkLogin(): boolean {
-                const settings = core.state.settings;
-                const chooser = Interfaces.RelationChooser;
-                return settings.notifyFriendSignIn === chooser.Bookmarks
-                    || settings.notifyFriendSignIn === chooser.Both;
-            }
-
-            if (
-                   (shouldNotifyOnFriendLogin()   && core.characters.friendList.includes(data.identity))
-                || (shouldNotifyOnBookmarkLogin() && core.characters.bookmarkList.includes(data.identity))
-            )
-                await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), characterImage(data.identity), 'silence');
         }
+
         const conv = state.privateMap[data.identity.toLowerCase()];
-        if(conv !== undefined && (!core.state.settings.eventMessages || conv !== state.selectedConversation))
+        const relevant = (!core.state.settings.eventMessages || conv !== state.selectedConversation);
+        if (conv && relevant) {
+            const message = new EventMessage(l('events.login', `[user]${data.identity}[/user]`), time);
             await conv.addMessage(message);
+        }
     });
     connection.onMessage('FLN', async(data, time) => {
-        const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
-        if(isOfInterest(core.characters.get(data.character))) await addEventMessage(message);
+        const interesting = isOfInterest(core.characters.get(data.character));
+        if (interesting) {
+            const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
+            await addEventMessage(message);
+        }
+
         const conv = state.privateMap[data.character.toLowerCase()];
-        if(conv === undefined) return;
-        conv.typingStatus = 'clear';
-        if(!core.state.settings.eventMessages || conv !== state.selectedConversation) await conv.addMessage(message);
+        if (conv) {
+            conv.typingStatus = 'clear';
+
+            if (!core.state.settings.eventMessages || conv !== state.selectedConversation) {
+                const message = new EventMessage(l('events.logout', `[user]${data.character}[/user]`), time);
+                await conv.addMessage(message);
+            }
+        }
     });
     connection.onMessage('TPN', (data) => {
         const conv = state.privateMap[data.character.toLowerCase()];
@@ -1130,43 +1533,47 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('CBU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
+        if (!conv)
+            return core.channels.leave(data.channel);
+
         const text = l('events.ban', conv.name, data.character, data.operator);
         conv.infoText = text;
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('CKU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
+        if (!conv)
+            return core.channels.leave(data.channel);
+
         const text = l('events.kick', conv.name, data.character, data.operator);
         conv.infoText = text;
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('CTU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
-        if(conv === undefined) return core.channels.leave(data.channel);
+        if (!conv)
+            return core.channels.leave(data.channel);
+
         const text = l('events.timeout', conv.name, data.character, data.operator, data.length.toString());
         conv.infoText = text;
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('BRO', async(data, time) => {
         if(data.character !== undefined) {
-
-            log.error(
-                'devtools.debug.BRO', {
-                    sender: data.character,
-                    msg: data.message,
-                    time: time
-                }
-            )
+            log.error('devtools.debug.BRO', {
+                sender: data.character,
+                msg:    data.message,
+                time,
+            });
 
             const content = decodeHTML(data.message.substring(data.character.length + 24));
             const char = core.characters.get(data.character);
             const message = new BroadcastMessage(l('events.broadcast', `[user]${data.character}[/user]`, content), char, time);
 
+            //state.activityTab.parse({ e: 'BRO', data, time, message });
             await state.consoleTab.addMessage(message);
 
-            await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, characterImage(data.character), 'attention');
+            await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, core.characters.getImage(data.character), 'attention');
 
             for (const conv of state.channelConversations)
                 await conv.addMessage(message);
@@ -1176,10 +1583,15 @@ export default function(this: any): Interfaces.State {
                     await conv.addMessage(message);
             }
         }
-        else
-            return addEventMessage(new EventMessage(decodeHTML(data.message), time));
+        else {
+            const message = new EventMessage(decodeHTML(data.message), time)
+            //state.activityTab.parse({ e: 'BRO', data, time, message });
+            return addEventMessage(message);
+        }
     });
     connection.onMessage('CIU', async(data, time) => {
+        //state.activityTab.parse({ e: 'CIU', data, time });
+
         const text = l('events.invite', `[user]${data.sender}[/user]`, `[session=${data.title}]${data.name}[/session]`);
         return addEventMessage(new EventMessage(text, time));
     });
@@ -1189,14 +1601,21 @@ export default function(this: any): Interfaces.State {
     });
 
     connection.onMessage('IGN', async(data, time) => {
-        if(data.action !== 'add' && data.action !== 'delete') return;
+        if (data.action !== 'add' && data.action !== 'delete')
+            return;
+
         const text = l(`events.ignore_${data.action}`, data.character);
         state.selectedConversation.infoText = text;
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('RTB', async(data, time) => {
+        //state.activityTab.parse({ e: 'RTB', data, time });
+
+        log.warn(`${time} conversations.RTB`, data);
+
         let url = 'https://www.f-list.net/';
         let text: string, character: string;
+
         if (data.type === 'comment') {
             switch(data.target_type) {
                 case 'newspost':
@@ -1256,7 +1675,7 @@ export default function(this: any): Interfaces.State {
         }
         await addEventMessage(new EventMessage(text, time));
         if(data.type === 'note')
-            await core.notifications.notify(state.consoleTab, character, text, characterImage(character), 'newnote');
+            await core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
     });
     const sfcList: Interfaces.SFCMessage[] = [];
     connection.onMessage('SFC', async(data, time) => {
@@ -1264,36 +1683,57 @@ export default function(this: any): Interfaces.State {
         if(data.action === 'report') {
             text = l('events.report', `[user]${data.character}[/user]`, decodeHTML(data.tab), decodeHTML(data.report));
             if(!data.old)
-                await core.notifications.notify(state.consoleTab, data.character, text, characterImage(data.character), 'modalert');
+                await core.notifications.notify(state.consoleTab, data.character, text, core.characters.getImage(data.character), 'modalert');
             message = new EventMessage(text, time);
             safeAddMessage(sfcList, message, 500);
             (<Interfaces.SFCMessage>message).sfc = data;
         } else {
             text = l('events.report.confirmed', `[user]${data.moderator}[/user]`, `[user]${data.character}[/user]`);
-            for(const item of sfcList)
+            for (const item of sfcList) {
                 if(item.sfc.logid === data.logid) {
                     item.sfc.confirmed = true;
                     break;
                 }
+            }
             message = new EventMessage(text, time);
         }
         return addEventMessage(message);
     });
     connection.onMessage('STA', async(data, time) => {
-        if(data.character === core.connection.character) {
-            await addEventMessage(new EventMessage(l(data.statusmsg.length > 0 ? 'events.status.ownMessage' : 'events.status.own',
-                l(`status.${data.status}`), decodeHTML(data.statusmsg)), time));
-            return;
-        }
         const char = core.characters.get(data.character);
-        if(!isOfInterest(char)) return;
-        const status = l(`status.${data.status}`);
-        const key = data.statusmsg.length > 0 ? 'events.status.message' : 'events.status';
-        const message = new EventMessage(l(key, `[user]${data.character}[/user]`, status, decodeHTML(data.statusmsg)), time);
+        const isSelf = data.character === core.connection.character;
+
+        if (!isOfInterest(char))
+            return;
+
+        const l_msg: string[] = [];
+        let key: string;
+
+        if (isSelf) {
+            key = data.statusmsg ? 'events.status.ownMessage' : 'events.status.own';
+            l_msg.push(
+                l(`status.${data.status}`),
+                decodeHTML(data.statusmsg)
+            );
+        }
+        else {
+            key = data.statusmsg ? 'events.status.message' : 'events.status',
+            l_msg.push(
+                `[user]${data.character}[/user]`,
+                l(`status.${data.status}`),
+                decodeHTML(data.statusmsg)
+            );
+        }
+
+        const text = l(key, ...l_msg);
+        const message = new EventMessage(text, time);
         await addEventMessage(message);
-        const conv = state.privateMap[data.character.toLowerCase()];
-        if(conv !== undefined && (!core.state.settings.eventMessages || conv !== state.selectedConversation))
-            await conv.addMessage(message);
+
+        if (!isSelf) {
+            const conv = state.privateMap[data.character.toLowerCase()];
+            if (conv && (!core.state.settings.eventMessages || conv !== state.selectedConversation))
+                await conv.addMessage(message);
+        }
     });
     connection.onMessage('SYS', async(data, time) => {
         state.selectedConversation.infoText = data.message;

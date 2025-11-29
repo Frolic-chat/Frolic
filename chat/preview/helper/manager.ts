@@ -1,5 +1,5 @@
 import { ImagePreviewHelper } from './helper';
-import ImagePreview from '../ImagePreview.vue';
+import ImagePreview from '../ContentPreview.vue';
 
 export type RenderStyle = Record<string, any>;
 
