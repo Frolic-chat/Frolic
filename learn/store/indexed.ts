@@ -44,16 +44,14 @@ export class IndexedStore implements PermanentIndexedStore {
      * @param new_db frolic db; already opened.
      */
     static async migrate(new_db: IDBDatabase) {
-        // v3 = last Rising version
+        // v3 = last Rising version, older = useless
         const old_db = await promisifyRequest<IDBDatabase>(
-            indexedDB.open(IndexedStore.LEGACY_DB_NAME, 3) // last Rising version; older = useless
+            indexedDB.open(IndexedStore.LEGACY_DB_NAME, 3)
         );
 
         const old_tx = old_db.transaction(IndexedStore.STORE_NAME, 'readonly');
-        const new_tx = new_db.transaction(IndexedStore.STORE_NAME, 'readwrite');
 
         const old_store = old_tx.objectStore(IndexedStore.STORE_NAME);
-        const new_store = new_tx.objectStore(IndexedStore.STORE_NAME);
 
         // Modern getAll way. But whole db is a memory concern.
         // const records = await promisifyRequest<any[]>(
@@ -66,15 +64,15 @@ export class IndexedStore implements PermanentIndexedStore {
         cursor_request.onsuccess = () => {
             const r = cursor_request.result
             if (r) {
-                new_store.put(r.value);
-                r.continue(); // next request
+                const tx = new_db.transaction(IndexedStore.STORE_NAME, 'readwrite');
+                tx.objectStore(IndexedStore.STORE_NAME).put(r.value);
+
+                // await new Promise<void>(r => tx.oncomplete = () => r());
+                r.continue();
             }
         };
 
-        await Promise.all([
-            new Promise<void>(r => old_tx.oncomplete = () => r()),
-            new Promise<void>(r => new_tx.oncomplete = () => r()),
-        ]);
+        new Promise<void>(r => old_tx.oncomplete = () => r()),
 
         old_db.close();
     };
@@ -306,38 +304,6 @@ export class IndexedStore implements PermanentIndexedStore {
 
         await promisifyRequest<void>(auxRequest);
     }
-
-    // async updateProfileCounts(
-    //     name: string,
-    //     guestbookCount: number | null,
-    //     friendCount: number | null,
-    //     groupCount: number | null
-    // ): Promise<void> {
-    //     const existing = await this.getProfile(name);
-    //
-    //     if (!existing) {
-    //         return;
-    //     }
-    //
-    //     const data = _.merge(
-    //         existing,
-    //         {
-    //             lastCounted: Math.round(Date.now() / 1000),
-    //             guestbookCount,
-    //             friendCount,
-    //             groupCount
-    //         }
-    //     );
-    //
-    //     const tx = this.db.transaction(IndexedStore.STORE_NAME, 'readwrite');
-    //     const store = tx.objectStore(IndexedStore.STORE_NAME);
-    //     const putRequest = store.put(data);
-    //
-    //     // tslint:disable-next-line no-any
-    //     await promisifyRequest<any>(putRequest);
-    //
-    //     // console.log('IDX update counts', name, data);
-    // }
 
     async updateProfileMeta(
         name: string,
