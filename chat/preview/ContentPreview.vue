@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
     <!-- hiding elements instead of using 'v-if' is used here as an optimization -->
-    <div class="image-preview-wrapper w-xl-50 w-lg-60 w-md-70 w-sm-80 w-100" :class="{interactive: sticky, visible: visible}">
+    <div class="image-preview-wrapper w-xl-50 w-lg-60 w-md-70 w-sm-80 w-xs-100" :class="{interactive: sticky, visible: visible}">
         <div class="image-preview-toolbar" v-show="sticky || debug">
             <a @click="toggleDevMode()" :class="{toggled: debug}" :title="l('preview.debug')"><i class="fa fa-terminal"></i></a>
             <a @click="toggleJsMode()" :class="{toggled: runJs}" :title="l('preview.expand')"><i class="fa fa-magic"></i></a>
