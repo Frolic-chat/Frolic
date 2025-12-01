@@ -12,19 +12,15 @@
     </template>
 
     <template v-slot:default>
-        <template v-if="hasUpdate">
-            {{ update.latest ? update.latest.changelog : '' }}
-        </template>
-        <template v-else-if="unknownVersion">
-            <div class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
-                <p>You are using Frolic version {{ update.current.version }}. An update could not be found.</p>
-                <p>This is not a problem if you are using a beta or testing release.</p>
-                <p>Additionally, this may occur if you couldn't connect to the update server. (Is github down?)</p>
-            </div>
-        </template>
+        <div v-if="hasUpdate" v-html="sanitizedChangelog" style="user-select:text"></div>
+        <div v-else-if="unknownVersion" class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
+            <p>You are using Frolic version {{ update.current.version }}. An update could not be found.</p>
+            <p>This is not a problem if you are using a beta or testing release.</p>
+            <p>Additionally, this may occur if you couldn't connect to the update server. (Is github down?)</p>
+        </div>
         <template v-else>
-            <p>You're up-to-date.</p>
-            {{ update.current.changelog }}
+            <p>You're using the latest version.</p>
+            <div v-html="sanitizedChangelog" style="user-select:text"></div>
         </template>
     </template>
 </collapse>
