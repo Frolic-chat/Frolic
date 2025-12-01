@@ -6,7 +6,7 @@
             itemClasses="nav-item"
             linkClasses="nav-link" -->
     <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" linkClasses="btn btn-secondary-outline">
-        <span class="channel-title"><!-- Chat -->
+        <span><!-- Chat -->
             <span :class="{
                 'fa-fw fa-solid fa-house-user':   isHome,
                 'fa-fw fa       fa-star':         isOfficialChannel,
@@ -671,21 +671,7 @@ export default class HomeScreen extends Vue {
     }
 
     .nav-item:has(.hidden-tab) {
-        display: none;
-    }
-
-    .channel-title {
-        font-size: 1.25rem;
-        font-weight: 500;
-    }
-
-    img {
-        /* It really doesn't look that good, though. */
-        height: 0.778em;
-    }
-
-    .tab-text {
-        margin-left: 5px;
+        display: none !important;
     }
 }
 
