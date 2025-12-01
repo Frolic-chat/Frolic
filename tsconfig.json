@@ -15,5 +15,5 @@
     "experimentalDecorators": true,
     "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
   },
-  "include": [ "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts", "./electron/browser_option.ts", "./learn/store/worker/store.worker.endpoint.ts", "./**/*.d.ts" ]
+  "include": [ "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts", "./learn/store/worker/store.worker.endpoint.ts", "./**/*.d.ts" ]
 }

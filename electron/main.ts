@@ -544,48 +544,6 @@ function showPatchNotes(): void {
     openURLExternally(FROLIC.ChangelogUrl);
 }
 
-function openBrowserSettings(): Electron.BrowserWindow | undefined {
-    let desiredHeight = 733
-    if (platform === 'darwin') {
-        desiredHeight = 733;
-    }
-
-    const windowProperties: Electron.BrowserWindowConstructorOptions = {
-        center: true,
-        show: false,
-        icon: icon.main,
-        frame: false,
-        width: 650,
-        height: desiredHeight,
-        minWidth: 650,
-        minHeight: desiredHeight,
-        maximizable: true,
-        webPreferences: {
-            webviewTag: true,
-            nodeIntegration: true,
-            nodeIntegrationInWorker: true,
-            spellcheck: true,
-            contextIsolation: false,
-            partition: 'persist:fchat',
-        }
-    };
-
-    const browserWindow = new Electron.BrowserWindow(windowProperties);
-    remoteMain.enable(browserWindow.webContents);
-    browserWindow.loadFile(
-        path.join(__dirname, 'browser_option.html'),
-        { query: {
-            settings: JSON.stringify(settings)
-        }},
-    );
-
-    browserWindow.once('ready-to-show', () => {
-        browserWindow.show();
-    });
-
-    return browserWindow;
-}
-
 
 let zoomLevel = 0;
 let upgradeRoutineShouldRun = false;
@@ -879,10 +837,6 @@ function onReady(): void {
                         settings.risingDisableWindowsHighContrast = m.checked;
                         updateGeneralSettings(settings);
                     }
-                },
-                {
-                    label: l('settings.browser'),
-                    click: () => openBrowserSettings(),
                 },
                 {
                     label: l('action.profile'),
