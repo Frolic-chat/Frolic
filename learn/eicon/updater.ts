@@ -102,7 +102,7 @@ export class EIconUpdater {
                 .catch(() => undefined);
 
         if (!result)
-            return { asOfTimestamp: 0, recordUpdates: [] };
+            return { asOfTimestamp: fromTimestampInSecs, recordUpdates: [] };
 
         const lines = (result.data as string).split('\n');
 
