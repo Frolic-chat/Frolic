@@ -98,8 +98,28 @@ export class EIconUpdater {
     }
 
     async fetchUpdates(fromTimestampInSecs: number): Promise<{ recordUpdates: EIconRecordUpdate[], asOfTimestamp: number }> {
-        const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`)
-                .catch(() => undefined);
+        const controller = new AbortController();
+
+        let user_impatience = () => controller.abort("Xariah connection timeout.");
+        let no_response = setTimeout(user_impatience, 8000);
+        log.debug('eiconupdater.fetchall.timeout.start');
+
+
+        const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`, {
+            signal: controller.signal,
+            onDownloadProgress: () => {
+                log.debug('eiconupdater.fetchall.progress.datareceived');
+                clearTimeout(no_response);
+                no_response = setTimeout(user_impatience, 3500);
+            },
+            timeout: 10000,
+            timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
+        })
+        .catch(() => EventBus.$emit('error', {
+            source:  'eicon',
+            type:    'fetchUpdates.connection',
+            message: "Didn't receive timestamp from eicon server.",
+        }));
 
         if (!result)
             return { asOfTimestamp: fromTimestampInSecs, recordUpdates: [] };
