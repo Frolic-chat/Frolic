@@ -129,9 +129,10 @@
 </script>
 
 <style lang="scss">
-.header-button-container-container:has(.header-button-container:empty) {
-    display: none;
+.header-button-container .btn:empty {
+    display: none !important;
 }
+
 .modal-content > .collapse-wrapper > .modal-body {
     overflow: auto;
 }
