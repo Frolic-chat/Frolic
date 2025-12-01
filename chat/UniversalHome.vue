@@ -652,6 +652,24 @@ export default class HomeScreen extends Vue {
         margin-right: 32px !important;
     }
 
+    .nav-item {
+        > .active {
+            color: var(--gray-dark);
+        }
+
+        > :not(.active) {
+            color: var(--gray);
+        }
+
+        &:has(.active) {
+            border-bottom: 1px solid var(--gray-dark);
+        }
+
+        &:not(:has(.active)) {
+            border-bottom: 1px solid var(--gray);
+        }
+    }
+
     .nav-item:has(.hidden-tab) {
         display: none;
     }
