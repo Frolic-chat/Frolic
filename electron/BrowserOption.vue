@@ -114,7 +114,7 @@ export default class BrowserOption extends Vue {
   isMaximized = false;
   l = l;
   platform = process.platform;
-  hasCompletedUpgrades = false;
+  upgradeRoutineShouldRun = false;
   browserPath = '';
   browserArgs = '';
   example = '';

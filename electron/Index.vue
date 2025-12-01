@@ -207,7 +207,7 @@
 
         // This data is passed in via new Index() in chat.ts
         settings!: GeneralSettings;
-        hasCompletedUpgrades!: boolean;
+        upgradeRoutineShouldRun!: boolean;
 
         upgradeMessage = '';
         debugBBCode = false;
@@ -288,13 +288,13 @@
             if (this.settings.account)
                 void this.awaitStartUpTask('index', this.start.restoreLogin);
 
-            if (!this.hasCompletedUpgrades) {
+            if (this.upgradeRoutineShouldRun) {
                 this.upgradeMessage = 'Version upgrade; this may take a while.';
 
                 // It is pointless to make this wait for anything to actually change; app version is already upgraded to latest in electron main, so we'll never "rerun" an upgrade even if it fails.
                 parent.send('rising-upgrade-complete');
                 electron.ipcRenderer.send('rising-upgrade-complete');
-                this.hasCompletedUpgrades = true;
+                this.upgradeRoutineShouldRun = false;
             }
 
             await this.start.listeners();
@@ -600,7 +600,7 @@
                 log.debug('init.chat.cache.start');
 
                 try {
-                    await core.cache.start(this.settings, this.hasCompletedUpgrades);
+                    await core.cache.start(this.settings, this.upgradeRoutineShouldRun);
                 }
                 catch (e) {
                     const msg = typeof e === 'string'

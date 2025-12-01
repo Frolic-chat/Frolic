@@ -310,7 +310,7 @@ new Index({
     data: {
         // Useless to pass settings through, they're initiated into the core right above!
         settings,
-        hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
+        upgradeRoutineShouldRun: JSON.parse(params['upgradeRoutineShouldRun']!)
     }
 });
 

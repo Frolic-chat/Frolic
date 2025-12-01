@@ -488,7 +488,11 @@ function createWindow(): Electron.BrowserWindow | undefined {
     window.loadFile(
         path.join(__dirname, 'window.html'),
         {
-            query: { settings: JSON.stringify(settings), import: shouldImportSettings ? 'true' : '' }
+            query: {
+                settings: JSON.stringify(settings),
+                import: shouldImportSettings ? 'true' : '',
+                upgradeRoutineShouldRun: JSON.stringify(upgradeRoutineShouldRun),
+            }
         }
     );
 
@@ -584,10 +588,8 @@ function openBrowserSettings(): Electron.BrowserWindow | undefined {
 
 
 let zoomLevel = 0;
-
+let upgradeRoutineShouldRun = false;
 function onReady(): void {
-    let hasCompletedUpgrades = true;
-
     const logLevel: LogLevelOption = 'warn';
     Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
     Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
@@ -605,7 +607,8 @@ function onReady(): void {
 
     const targetVersion = app.getVersion();
     if (settings.version !== targetVersion) {
-        hasCompletedUpgrades = false;
+        upgradeRoutineShouldRun = true;
+        log.debug('Upgrade version', settings.version, targetVersion, upgradeRoutineShouldRun);
 
         // Run all routines necessary to upgrade the general settings.
         versionUpgradeRoutines(settings.version, targetVersion);
@@ -744,7 +747,7 @@ function onReady(): void {
         {
             label: l('action.newTab'),
             click: (_m, w) => {
-                if (hasCompletedUpgrades && tabCount < 3 && w instanceof Electron.BrowserWindow)
+                if (!upgradeRoutineShouldRun && tabCount < 3 && w instanceof Electron.BrowserWindow)
                     w.webContents.send('open-tab');
             },
             accelerator: 'CmdOrCtrl+t'
@@ -1109,7 +1112,7 @@ function onReady(): void {
     Electron.ipcMain.on('has-new', badgeWindow);
 
     Electron.ipcMain.on('rising-upgrade-complete', () => {
-        hasCompletedUpgrades = true;
+        upgradeRoutineShouldRun = false;
         for (const w of Electron.webContents.getAllWebContents())
             w.send('rising-upgrade-complete');
     });
