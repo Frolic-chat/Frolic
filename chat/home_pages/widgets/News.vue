@@ -34,6 +34,8 @@ import Collapse from '../../../components/collapse.vue';
 
 import * as Electron from 'electron';
 import core from '../../core';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 import NewLogger from '../../../helpers/log';
 const logU = NewLogger('updater');
@@ -109,6 +111,12 @@ export default class NewsWidget extends Vue {
      * Visuals
      */
     get yohhlrf() { return this.toggle.news ?? !!this.update.latest }
+
+    get sanitizedChangelog() {
+        const raw = this.update.latest?.changelog ?? this.update.current.changelog;
+        const html = marked(raw, { async: false });
+        return DOMPurify.sanitize(html);
+    }
 
     toggle = core.runtime.userToggles;
 }
