@@ -85,12 +85,9 @@ export default class NewsWidget extends Vue {
 
     @Hook('beforeMount')
     beforeMount() {
-        Electron.ipcRenderer.on('update-available', (_e, u) => {
+        Electron.ipcRenderer.on('update-available', (_e, u: boolean) => {
             logU.debug('checkForUpdates', u);
-
-            if (u && u.current && u.updateCount) { // probably approximately good enough maybe
-                this.update = u;
-            }
+            this.getUpdate();
         });
 
         setImmediate(() => this.getUpdate());
