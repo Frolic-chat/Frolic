@@ -1,4 +1,5 @@
 <template>
+<!-- :action="getUpdate" -->
 <collapse bodyClass="d-flex flex-column"
     :initial="yohhlrf" @open="toggle.news = false" @close="toggle.news = true"
 >

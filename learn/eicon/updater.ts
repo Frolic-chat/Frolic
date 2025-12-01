@@ -1,8 +1,10 @@
 import Axios, { AxiosError } from 'axios';
 import { EventBus } from '../../chat/preview/event-bus';
 
+import core from '../../chat/core';
+
 import NewLogger from '../../helpers/log';
-const log = NewLogger('eicon/updater');
+const log = NewLogger('eicons', () => core.state?.generalSettings.argv.includes('--debug-eicons'));
 
 export interface EIconRecordUpdate {
     eicon: string;

@@ -39,7 +39,7 @@
  * @file The entry point for the Electron main thread of Frolic.
  * @copyright 2018 F-List, 2019 F-Chat Rising Contributors, 2025 Frolic Contributors
  * @author Maya Wolf <maya@f-list.net>, F-Chat Rising Contributors, Frolic Contributors
- * @version 0.7.10
+ * @version 0.8.2
  * @see {@link https://github.com/frolic-chat/frolic|GitHub repo}
  */
 import * as fs from 'fs';
@@ -537,7 +537,6 @@ function createWindow(): Electron.BrowserWindow | undefined {
 }
 
 function showPatchNotes(): void {
-    //tslint:disable-next-line: no-floating-promises
     openURLExternally(FROLIC.ChangelogUrl);
 }
 

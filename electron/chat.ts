@@ -2,7 +2,7 @@
 /**
  * @license
  * This file is part of Frolic!
- * Copyright (C) 2019 F-Chat Rising Contributors, 2025 Frolic Contributors listed in `COPYING.md`
+ * Copyright (C) 2025 Frolic Contributors listed in `COPYING.md`
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
  *
@@ -15,7 +15,7 @@
  *
  * MIT License
  *
- * Copyright (c) 2018 F-List
+ * Copyright (c) 2018 F-List, 2019 F-Chat Rising Contributors listed in `COPYING.md`
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
  * @file The entry point for the Electron renderer of Frolic.
  * @copyright 2018 F-List, 2019 F-Chat Rising Contributors, 2025 Frolic Contributors
  * @author Maya Wolf <maya@f-list.net>, F-Chat Rising Contributors, Frolic Contributors
- * @version 0.7.10
+ * @version 0.8.2
  * @see {@link https://github.com/frolic-chat/frolic|GitHub repo}
  */
 
@@ -308,7 +308,7 @@ log.debug('init.chat.vue');
 new Index({
     el: '#app',
     data: {
-        // Useless to pass settinsg through, they're initiated into the core right above!
+        // Useless to pass settings through, they're initiated into the core right above!
         settings,
         hasCompletedUpgrades: JSON.parse(params['hasCompletedUpgrades']!)
     }

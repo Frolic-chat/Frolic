@@ -16,10 +16,8 @@ import core from '../chat/core';
  */
 export default function NewLogger(scope: string, condition?: (...a: any) => any) {
     // Skips logging if default generalSettings. (argv empty by default)
-    const s = core?.state.generalSettings.argv.includes('--debug-' + scope.toLocaleLowerCase()) ?? true;
-    const default_check = () => s;
-
-    const c = condition ?? default_check;
+    const s = core?.state.generalSettings.argv.includes('--debug-' + scope.toLowerCase()) ?? true;
+    const c = condition ?? (() => s);
 
     const l = Logger.scope(scope);
     return {
