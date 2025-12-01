@@ -652,10 +652,8 @@ export default class HomeScreen extends Vue {
         margin-right: 32px !important;
     }
 
-    .nav-item {
-        &:has(.hidden-tab) {
-            display: none;
-        }
+    .nav-item:has(.hidden-tab) {
+        display: none;
     }
 
     .channel-title {
