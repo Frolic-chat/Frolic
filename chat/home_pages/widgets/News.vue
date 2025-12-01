@@ -102,7 +102,7 @@ export default class NewsWidget extends Vue {
         const u = await Electron.ipcRenderer.invoke('get-release-info');
         logU.debug('getUpdate', u);
 
-        if (u && u.current && u.updateCount) { // probably approximately good enough maybe
+        if (u && 'current' in u && 'updateCount' in u) {
             this.update = u;
         }
     }
