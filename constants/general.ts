@@ -15,6 +15,9 @@ export const IncognitoMap = {
     opera:      '-private',
 };
 
+/**
+ * Potential undefined: we cast predictable result from string -> result; "unpredictable" means not in map - undefined.
+ */
 export function IncognitoArgFromBrowserPath(path: string): typeof IncognitoMap[keyof typeof IncognitoMap] | undefined {
     return IncognitoMap[Object.keys(IncognitoMap)
             .find(k => path.includes(k)) as keyof typeof IncognitoMap];

@@ -242,7 +242,7 @@ async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
  * Normally, we can fall back to {@link electron.shell.openExternal} when there's no custom browser. However, when incognito mode is requested, abort if we aren't able to honor the player's privacy so we don't add anything spicy to the player's browser history.
  *
  * @param url Url of the page to open; no internal validation is performed.
- * @param incognito True to use incognito mode (and error if we can't).
+ * @param incognito `true` to use incognito mode (and error if we can't).
  */
 function openURLExternally(url: string, incognito: boolean = false): void {
     if (!settings.browserPath) {
