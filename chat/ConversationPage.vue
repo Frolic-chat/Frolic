@@ -179,33 +179,37 @@
 
             <!-- footer -->
             <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
-                <span class="channel-key d-none d-md-inline mr-auto text-left">
+                <span class="channel-key text-left"><!-- typing indicator here -->
                     {{ isChannel(conversation) ? conversation.key : '' }}
                 </span>
-                <div class="send-ads-switcher mx-auto btn-group btn-group-sm" v-if="isChannel(conversation)">
-                    <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'"
-                        class="btn" :class="{
-                            'btn-secondary': !conversation.isSendingAds,
-                            'btn-outline-secondary': conversation.isSendingAds,
-                            disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
-                        }"
-                        @click.prevent="setSendingAds(false)" href="#"
-                    >
-                        {{ l('channel.mode.chat') }}
-                    </a>
-                    <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'"
-                        class="btn" :class="{
-                            'btn-secondary': conversation.isSendingAds,
-                            'btn-outline-secondary': !conversation.isSendingAds,
-                            disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
-                        }"
-                        @click.prevent="setSendingAds(true)" href="#"
-                    >
-                        {{ adsMode }}
-                    </a>
+                <div class="send-ads-switcher btn-group btn-group-sm">
+                    <template v-if="isChannel(conversation)">
+                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'"
+                            class="btn" :class="{
+                                'btn-secondary': !conversation.isSendingAds,
+                                'btn-outline-secondary': conversation.isSendingAds,
+                                disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
+                            }"
+                            @click.prevent="setSendingAds(false)" href="#"
+                        >
+                            {{ l('channel.mode.chat') }}
+                        </a>
+                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'"
+                            class="btn" :class="{
+                                'btn-secondary': conversation.isSendingAds,
+                                'btn-outline-secondary': !conversation.isSendingAds,
+                                disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
+                            }"
+                            @click.prevent="setSendingAds(true)" href="#"
+                        >
+                            {{ adsMode }}
+                        </a>
+                    </template>
                 </div>
-                <span class="message-length ml-auto text-right" v-if="isChannel(conversation) || isPrivate(conversation)">
-                    {{ messageLength }}<span class="d-none d-sm-inline"> / {{ conversation.maxMessageLength }}</span>
+                <span class="message-length text-right">
+                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                        {{ messageLength }}<span class="d-none d-sm-inline"> / {{ conversation.maxMessageLength }}</span>
+                    </template>
                 </span>
             </div>
         </div>
@@ -1017,6 +1021,11 @@
         }
 
     }
+}
+
+.footer > :first-child, .footer > :last-child {
+    flex-grow: 1;
+    flex-basis: 0;
 }
 
 .chat-info-text {
