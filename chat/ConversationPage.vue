@@ -910,6 +910,10 @@
         text-overflow: ellipsis;
         white-space:   nowrap;
     }
+
+    .dropdown-item.selected::before {
+        content: '✓';
+    }
 }
 
 .conversation .messages {
