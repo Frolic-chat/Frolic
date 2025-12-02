@@ -69,8 +69,8 @@
                             </button>
                             <template v-show="conversation.settings.adSettings.ads.length">
                                 <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item" @click="showAdSettings()">
-                                    {{l('channel.ads.edit')}}
+                                <button type="button" class="dropdown-item" @click="showChannelAds()">
+                                    {{ l('channel.ads.edit') }}
                                 </button>
                             </template>
                         </dropdown>
@@ -114,7 +114,7 @@
                 <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
                     {{l('admgr.renew')}}
                 </a>
-                <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
+                <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showChannelAds()" v-if="adsRequireSetup">
                     {{l('admgr.setup')}}
                 </a>
             </div>
@@ -211,6 +211,8 @@
         </div>
 
         <!-- Modals -->
+
+        <channelAdSettings ref="channelAdSettingsDialog" :conversation="conversation"></channelAdSettings>
         <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
     </template>
 </page>
@@ -235,13 +237,13 @@
 
     import type Logs         from './Logs.vue';
     import type ReportDialog from './ReportDialog.vue';
-    import type CommandHelp from './CommandHelp.vue';
+    import type CommandHelp  from './CommandHelp.vue';
 
     import ManageChannel from './ManageChannel.vue';
     import ConversationAdSettings from './ads/ConversationAdSettings.vue';
 
     // Recon buttons, can go away.
-    import CharacterAdView from './character/CharacterAdView.vue';
+    // import CharacterAdView from './character/CharacterAdView.vue';
     //import CharacterChannelList from './character/CharacterChannelList.vue';
     import { MemoManager } from './character/memo';
 
@@ -262,19 +264,18 @@
             page: HomePageLayout,
 
             user: UserView,
-            'bbcode-editor': Editor,
-            'message-view': MessageView,
-            bbcode: BBCodeView(core.bbCodeParser),
-
             dropdown: Dropdown,
-
             channelAdSettings: ConversationAdSettings,
             'manage-channel': ManageChannel,
+
+            'message-view': MessageView,
+            bbcode: BBCodeView(core.bbCodeParser),
+            'bbcode-editor': Editor,
 
             modal: Modal,
 
             // TODO: Combine into recon
-            'ad-view': CharacterAdView,
+            // 'ad-view': CharacterAdView,
             //'channel-list': CharacterChannelList,
         }
     })
@@ -735,9 +736,9 @@
 
         showLogs(): void       { this.logs.show() }
         report(): void         { this.reportDialog.report() }
-        showAdSettings(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
+        showChannelAds(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
         showManage(): void     { (<ManageChannel>this.$refs['manageDialog']).show() }
-        showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
+        // showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
         //showChannels(): void   { (<CharacterChannelList>this.$refs['channelList']).show() }
 
         isAutopostingAds(): boolean {
