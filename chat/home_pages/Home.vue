@@ -10,13 +10,13 @@
                 <span v-if="logs">
                     <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>
-                        <span class="btn-text">{{ logsTitle }}</span>
+                        <!-- <span class="btn-text">{{ logsTitle }}</span> -->
                     </a>
                 </span>
                 <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
-                    <button type="button" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
+                    <a href="#" @click.prevent="openWidgetOptions()" class="btn btn-outline-secondary" >
                         <span class="fa-solid fa-screwdriver-wrench"></span>
-                    </button>
+                    </a>
                 </span>
 
                 <slot name="title-end"></slot>
