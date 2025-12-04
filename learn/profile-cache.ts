@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import * as Electron from 'electron';
 import core from '../chat/core';
-import * as remote from '@electron/remote';
 import { EventBus } from '../chat/preview/event-bus';
 import { AsyncCache } from './cache';
 
@@ -359,10 +359,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
                 if (ProfileCache.isSafePortraitURL(url)) { // domain check
                     overrides.avatarUrl = url;
 
-                    if (c.name === core.characters.ownCharacter.name) {
-                        const parent = remote.getCurrentWindow().webContents;
-                        parent.send('update-avatar-url', c.name, url);
-                    }
+                    if (c.name === core.characters.ownCharacter.name)
+                        Electron.ipcRenderer.send('update-avatar-url', c.name, url);
 
                     log.debug('portrait.hq.url', { name: c.name, url: url });
                 }

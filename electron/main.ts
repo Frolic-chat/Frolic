@@ -1025,6 +1025,10 @@ function onReady(): void {
         tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
     });
 
+    Electron.ipcMain.on('update-avatar-url', (_e, n: string, u: string) =>
+        PrimaryWindow?.webContents.send('update-avatar-url', n, u)
+    );
+
     Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
         // if(settings.customDictionary.indexOf(word) !== -1) return;
         // settings.customDictionary.push(word);
