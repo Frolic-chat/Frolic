@@ -156,25 +156,34 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
         const ww = window.innerWidth;
         const wh = window.innerHeight;
 
-        const maxWidth = Math.round(ww * 0.5);
-        const maxHeight = Math.round(wh * 0.7);
+        // Using the .w-XX-## settings we pre-programmed to match bootstrap for the character preview
+        const scale =
+            ww >= 1200 ? 0.5  // w-xl-50
+                : ww >= 992 ? 0.6 // w-lg-60
+                    : ww >= 768 ? 0.7 // w-md-70
+                        : ww >= 576 ? 0.8 // w-sm-80
+                            : 1.0;            // w-xs-100
 
         if (ratio >= 1) {
-            const presumedWidth = maxWidth;
-            const presumedHeight = presumedWidth / ratio;
+            const maxWidth = Math.round(ww * scale);
+            const presumedHeight = maxWidth / ratio;
 
             return {
-                width: `${presumedWidth}px`,
-                height: `${presumedHeight}px`
+                width:  `${maxWidth}px`,
+                height: `${presumedHeight}px`,
             };
-        // tslint:disable-next-line:unnecessary-else
-        } else {
-            const presumedHeight = maxHeight;
-            const presumedWidth = presumedHeight * ratio;
+        }
+        else {
+            // Preserve the 70% height vs 50% width from legacy
+            const breakpoint_h = (scale * 1.4 > 1)
+                ? 1 : scale * 1.4;
+
+            const maxHeight = Math.round(wh * breakpoint_h);
+            const presumedWidth = maxHeight * ratio;
 
             return {
-                width: `${presumedWidth}px`,
-                height: `${presumedHeight}px`
+                width:  `${presumedWidth}px`,
+                height: `${maxHeight}px`,
             };
         }
     }
