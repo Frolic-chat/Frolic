@@ -15,11 +15,6 @@
                         <!-- <span class="btn-text">{{ logsTitle }}</span> -->
                     </a>
                 </span>
-                <span><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
-                    <a href="#" @click.prevent="openWidgetOptions()" class="btn btn-outline-secondary" >
-                        <span class="fa-solid fa-screwdriver-wrench"></span>
-                    </a>
-                </span>
 
                 <slot name="title-end"></slot>
             </span>
@@ -56,10 +51,20 @@
 
     <template v-slot:postscroll>
         <div class="d-flex flex-wrap-reverse justify-content-between small border-top">
-            <a href="#" @click.prevent="openLicense()" class="ml-auto d-flex flex-column align-items-end text-muted text-right text-decoration-none p-1"><!-- Version & License -->
-                <span>Frolic is free software!</span>
-                <span><span class="text-primary">Click here</span> to learn what that means.</span>
-            </a>
+            <span class="mr-auto d-flex align-items-center"><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
+                <button @click.prevent="openWidgetOptions()" class="btn btn-outline-secondary">
+                    <span class="fa-solid fa-screwdriver-wrench"></span>
+                </button>
+            </span>
+
+            <span class="ml-auto d-flex align-items-center">
+                <a href="#" @click.prevent="openLicense()" class="d-flex flex-column align-items-end text-muted text-right text-decoration-none p-1"><!-- Version & License -->
+                    <span>Frolic is free software!</span>
+                    <span>
+                        <span class="text-primary">Click here</span> to learn what that means.
+                    </span>
+                </a>
+            </span>
         </div>
     </template>
 </page>
