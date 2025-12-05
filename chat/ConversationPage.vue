@@ -17,14 +17,17 @@
                             classes="text-truncate" style="height: 1.5em;"
                             :match="false" :reusable="true" :showStatus="true" :immediate="true"
                         ></user>
-                        <span v-if="conversation.character.status !== 'online'" style="height: 1.5em;" class="text-truncate">
-                            {{ userStatusWord }}
-                        </span>
-                        <span v-else-if="userMemo" class="text-truncate" style="height: 1.5em;">
-                            <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}</b>
-                            <b class="d-lg-none fa-solid fa-square-pen"></b>
-                             {{ userMemo.split('\n')[0] }}
-                        </span>
+                        <div class="text-truncate" style="height: 1.5em;"></div>
+                            <template v-if="conversation.character.status !== 'online'">
+                                {{ userStatusWord }}
+                            </template>
+                            <template v-else-if="userMemo">
+                                <b class="fa-solid fa-square-pen"></b>
+                                {{ userMemo.split('\n')[0] }}
+                            </template>
+                            <template v-else>
+                                {{ userStatusWord }}
+                            </template>
                     </span>
                 </span>
                 <span v-else class="mr-auto"><!-- left side: channel name -->
