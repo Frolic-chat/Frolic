@@ -676,11 +676,8 @@ export default class HomeScreen extends Vue {
 }
 
 .page-header {
-    > .mr-auto {
-        gap: 0.5rem;
-    }
-
-    > .ml-auto {
+    > .ml-auto, > .mr-auto {
+        height: 3em;
         gap: 0.5rem;
     }
 }

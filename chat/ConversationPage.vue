@@ -11,7 +11,7 @@
         <template v-if="isPrivate(conversation) || isChannel(conversation) || isConsole">
             <div class="info d-flex align-items-center">
                 <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
-                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 3em"/>
+                    <img v-if="settings.showAvatars" class="d-none d-sm-block flex-shrink-0 h-100" :src="characterImage" />
                     <span class="d-flex flex-column align-self-start">
                         <user :character="conversation.character"
                             classes="text-truncate" style="height: 1.5em;"
@@ -895,13 +895,8 @@
 }
 
 .conversation .header .info {
-    height: 3em;
-
-    > .mr-auto {
-        gap: 0.5rem;
-    }
-
-    > .ml-auto {
+    > .ml-auto, > .mr-auto {
+        height: 3em;
         gap: 0.5rem;
     }
 

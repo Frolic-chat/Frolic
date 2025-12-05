@@ -133,13 +133,8 @@ export default class Home extends Vue {
 
 <style lang="scss">
 .page-header {
-    height: 3em;
-
-    > .mr-auto {
-        gap: 0.5rem;
-    }
-
-    > .ml-auto {
+    > .ml-auto, > .mr-auto {
+        height: 3em;
         gap: 0.5rem;
     }
 }
