@@ -8,16 +8,16 @@
 >
     <template v-slot:prescroll>
         <!-- Header -->
-        <template v-if="isPrivate(conversation) || isChannel(conversation) || isConsole">
+        <template v-if="!isActivity">
             <div class="info d-flex align-items-center">
-                <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
+                <span v-if="isPrivate(conversation)" class="mr-auto"><!-- left side: userview -->
                     <img v-if="settings.showAvatars" class="d-none d-sm-block flex-shrink-0 h-100" :src="characterImage" />
                     <span class="d-flex flex-column align-self-start">
                         <user :character="conversation.character"
                             classes="text-truncate" style="height: 1.5em;"
                             :match="false" :reusable="true" :showStatus="true" :immediate="true"
                         ></user>
-                        <div class="text-truncate" style="height: 1.5em;"></div>
+                        <div class="text-truncate" style="height: 1.5em;">
                             <template v-if="conversation.character.status !== 'online'">
                                 {{ userStatusWord }}
                             </template>
@@ -28,56 +28,60 @@
                             <template v-else>
                                 {{ userStatusWord }}
                             </template>
+                        </div>
                     </span>
                 </span>
                 <span v-else class="mr-auto"><!-- left side: channel name -->
-                    <h5 class="text-truncate">{{ conversation.name }}</h5>
+                    <h5 class="text-truncate mb-0">
+                        {{ conversation.name }}
+                    </h5>
                 </span>
 
-                <span class="ml-auto d-flex flex-shrink-0"><!-- right side -->
-                    <span style="display:contents;">
-                        <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
+                <span class="ml-auto flex-shrink-0"><!-- right side -->
+                    <span v-if="isChannelMod">
+                        <a href="#" @click.prevent="showManage()" class="btn btn-outline-secondary">
                             <span class="fa fa-edit"></span>
-                            <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span> -->
                         </a>
-                        <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                            <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                                <span class="fa fa-file-alt"></span>
-                                <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
-                            </a>
-                            <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
-                                <span class="fa fa-exclamation-triangle"></span>
-                                <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
-                            </a>
-                        </template>
-                        <dropdown v-if="isChannel(conversation)" title=""
-                            v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
-                            :keep-open="false"
-                            text-class="d-none d-lg-inline"
-                            :icon-class="{
-                                fas: true,
-                                'fa-comments': conversation.mode === 'chat',
-                                'fa-ad':       conversation.mode === 'ads',
-                                'fa-asterisk': conversation.mode === 'both',
-                            }"
-                            wrap-class="btn-group views"
-                            link-class="btn btn-outline-secondary dropdown-toggle"
-                        >
-                            <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                                {{l('channel.mode.' + mode)}}
-                            </button>
-                            <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                            <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                                {{l('channel.ads.incompatible')}}
-                            </button>
-                            <template v-if="conversation.settings.adSettings.ads.length">
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item" @click="showChannelAds()">
-                                    {{ l('channel.ads.edit') }}
-                                </button>
-                            </template>
-                        </dropdown>
                     </span>
+                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                            <span class="fa fa-file-alt"></span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
+                        </a>
+                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
+                            <span class="fa fa-exclamation-triangle"></span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
+                        </a>
+                    </template>
+                    <dropdown v-if="isChannel(conversation)" title=""
+                        v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
+                        :keep-open="false"
+                        text-class="d-none d-lg-inline"
+                        :icon-class="{
+                            fas: true,
+                            'fa-comments': conversation.mode === 'chat',
+                            'fa-ad':       conversation.mode === 'ads',
+                            'fa-asterisk': conversation.mode === 'both',
+                        }"
+                        wrap-class="btn-group views"
+                        link-class="btn btn-outline-secondary dropdown-toggle"
+                    >
+                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                            {{l('channel.mode.' + mode)}}
+                        </button>
+                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                        <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                            {{l('channel.ads.incompatible')}}
+                        </button>
+                        <template v-if="conversation.settings.adSettings.ads.length">
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item" @click="showChannelAds()">
+                                {{ l('channel.ads.edit') }}
+                            </button>
+                        </template>
+                    </dropdown>
+
                     <slot name="title-end"></slot>
                 </span>
             </div>
@@ -899,6 +903,8 @@
 
 .conversation .header .info {
     > .ml-auto, > .mr-auto {
+        display: flex;
+        align-items: center;
         height: 3em;
         gap: 0.5rem;
     }

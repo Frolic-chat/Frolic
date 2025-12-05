@@ -4,9 +4,11 @@
     <template v-slot:prescroll>
         <div class="page-header d-flex align-items-center">
             <span class="mr-auto">
-                <h5>Welcome Home!</h5>
+                <h5 class="text-truncate mb-0">
+                    Welcome Home!
+                </h5>
             </span>
-            <span class="ml-auto d-flex flex-shrink-0">
+            <span class="ml-auto flex-shrink-0">
                 <span v-if="logs">
                     <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>
@@ -134,6 +136,8 @@ export default class Home extends Vue {
 <style lang="scss">
 .page-header {
     > .ml-auto, > .mr-auto {
+        display: flex;
+        align-items: center;
         height: 3em;
         gap: 0.5rem;
     }
