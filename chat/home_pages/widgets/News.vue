@@ -81,21 +81,18 @@ export default class NewsWidget extends Vue {
         else                          return 'text-success fa-regular fa-sun';
     }
 
-    @Hook('beforeMount')
-    beforeMount() {
+    /**
+     * This will need to be moved into the main app (to run before login) in order to be useful on first run.
+     */
+    @Hook('created')
+    created() {
         Electron.ipcRenderer.on('update-available', (_e, u: boolean) => {
             logU.debug('checkForUpdates', u);
             this.getUpdate();
         });
 
         setImmediate(() => this.getUpdate());
-
-        logC.debug('NewsWidget.beforeCreate', { runtimeToggle: this.toggle.news })
-        if (this.toggle.news === undefined) {
-            //Vue.set(core.runtime.userToggles, 'news', false);
-            this.toggle.news = false;
-            logC.debug('NewsWidget.beforeCreate.createToggle', { runtimeToggle: this.toggle.news });
-        }
+        logC.debug('NewsWidget.created', { runtimeToggle: this.toggle.news });
     }
 
     async getUpdate(): Promise<void> {
@@ -104,6 +101,11 @@ export default class NewsWidget extends Vue {
 
         if (u && 'current' in u && 'updateCount' in u) {
             this.update = u;
+
+            if (this.toggle.news === undefined) {
+                logU.debug('getUpdate.goodUpdate', { latest: u.latest?.version, known: u.current.known });
+                this.toggle.news = !u.current.known || !u.latest;
+            }
         }
     }
 

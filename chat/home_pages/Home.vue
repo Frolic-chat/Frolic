@@ -67,7 +67,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Hook } from '@f-list/vue-ts';
+import { Component, Prop } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import WidgetOptions from './WidgetOptions.vue';
@@ -79,8 +79,8 @@ import Collapse from '../../components/collapse.vue';
 import core from '../core';
 import l from '../localize';
 
-import NewLogger from '../../helpers/log';
-const logC = NewLogger('collapse');
+// import NewLogger from '../../helpers/log';
+// const logC = NewLogger('collapse');
 //const logW = NewLogger('widgets');
 
 @Component({
@@ -110,18 +110,6 @@ export default class Home extends Vue {
     get shouldShowActivity() { return !!core.conversations.activityTab.messages.length }
     get yohhlrf() { return this.toggle.activity ?? false }
     toggle = core.runtime.userToggles;
-
-    @Hook('beforeMount')
-    beforeMount() {
-        logC.debug('NewsWidget.beforeCreate', { runtimeToggle: this.toggle.news })
-
-        if (this.toggle.news === undefined) {
-            //Vue.set(core.runtime.userToggles, 'news', false);
-            this.toggle.news = false;
-            logC.debug('NewsWidget.beforeCreate.createToggle', { runtimeToggle: this.toggle.news });
-        }
-    }
-
 
     openLicense() {
         this.$emit("navigate", {
