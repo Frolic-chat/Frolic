@@ -13,7 +13,7 @@ const logSettings = NewLogger('settings', () => l_s);
 const settings = new GeneralSettings();
 let settingsFile: string = '';
 let shouldImportSettings = false;
-let generalSettingsTimestamp = 0;
+let timestamp = 0;
 let setLogLevel: ((level: GeneralSettings['risingSystemLogLevel']) => void) | undefined;
 
 type GeneralSettingsExport = {
@@ -72,8 +72,8 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
     }
 
     Electron.ipcMain.on('settings', (e, d: GeneralSettingsUpdate) => {
-        if (d.timestamp > generalSettingsTimestamp) {
-            generalSettingsTimestamp = d.timestamp;
+        if (d.timestamp > timestamp) {
+            timestamp = d.timestamp;
             logSettings.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
 
             merge(d.settings, e.sender.id);
@@ -83,7 +83,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
                 from:    d.character,
                 'from-wc': e.sender.id,
                 to:      'electron-main',
-                current: generalSettingsTimestamp,
+                current: timestamp,
                 new:     d.timestamp,
             });
         }
@@ -105,8 +105,8 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
  * Call update instead of save when we need to update the timestamp - IE, the update is generated in electron main side. `saveGeneralSettings` is invoked internally and will broadcast the new timestamp to the renderers with the new settings object. Failure to call this function and update the timestamp will cause renderers to ignore your "out-of-date" update.
  */
 function updateGeneralSettings(s: GeneralSettings): void {
-    generalSettingsTimestamp = Date.now();
-    logSettings.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", generalSettingsTimestamp);
+    timestamp = Date.now();
+    logSettings.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", timestamp);
     saveGeneralSettings(s);
 }
 
@@ -116,7 +116,7 @@ function updateGeneralSettings(s: GeneralSettings): void {
  * @param wc Optional: a webcontents we received an updated settings from.
  */
 function saveGeneralSettings(s: GeneralSettings, wcid?: number): void {
-    const ts = generalSettingsTimestamp;
+    const ts = timestamp;
 
     if (wcid !== undefined)
         logSettings.debug('Received update; saving and broadcasting.', wcid, ts);
@@ -133,11 +133,12 @@ function saveGeneralSettings(s: GeneralSettings, wcid?: number): void {
         }
     }
 
-    for (const w of Electron.webContents.getAllWebContents())
+    for (const w of Electron.webContents.getAllWebContents()) {
         if (wcid === w.id)
             logSettings.debug('Found webcontents match; Good once per timestamp.', w.id, ts);
         else
             w.send('settings', { settings: s, timestamp: ts });
+    }
 
     shouldImportSettings = false;
 

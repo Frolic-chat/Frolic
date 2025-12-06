@@ -120,14 +120,6 @@
 
             log.debug('init.window.languages');
 
-            // electron.ipcRenderer.on(
-            //     'before-quit', (e: Event) => {
-            //         this.tabs.forEach((tab: Tab) => {
-            //             tab.tray.destroy();
-            //         })
-            //     }
-            // )
-
             electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, d: GeneralSettingsUpdate) => {
                 if (d.timestamp > this.generalSettingsTimestamp) {
                     log.debug('generalSettings.update.window');
@@ -139,9 +131,7 @@
                 }
             });
 
-            electron.ipcRenderer.on('rising-upgrade-complete', () => {
-                this.upgradeRoutineShouldRun = false;
-            });
+            electron.ipcRenderer.on('rising-upgrade-complete', () => this.upgradeRoutineShouldRun = false);
             electron.ipcRenderer.on('allow-new-tabs', (_e: IpcRendererEvent, allow: boolean) => this.canOpenTab = allow);
             electron.ipcRenderer.on('open-tab', () => this.addTab());
             electron.ipcRenderer.on('update-available', (_e: IpcRendererEvent, available: boolean) => this.hasUpdate = available);

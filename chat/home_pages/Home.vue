@@ -33,7 +33,7 @@
                 <news></news>
             </div>
 
-            <div v-show="widgets.activity" class="home-row flex-row"><!-- Second row -->
+            <div v-show="widgets.activity" class="home-row flex-row">
                 <collapse v-show="shouldShowActivity" class="chat-container" bodyClass="p-0"
                     :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true"
                 >
@@ -77,7 +77,7 @@ import { Component, Prop } from '@f-list/vue-ts';
 import HomePageLayout from './HomePageLayout.vue';
 import WidgetOptions from './WidgetOptions.vue';
 
-import NewsWidget from './widgets/News.vue'
+import NewsWidget from './widgets/News.vue';
 import Logs from '../Logs.vue';
 import Collapse from '../../components/collapse.vue';
 
