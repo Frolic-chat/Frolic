@@ -127,12 +127,12 @@ if (!settings.raw.hwAcceleration) {
     app.disableHardwareAcceleration();
 }
 
+// region Dictionary
 // async function setDictionary(lang: string | undefined): Promise<void> {
 //     if(lang !== undefined) await ensureDictionary(lang);
 //     settings.spellcheckLang = lang;
 //     updateGeneralSettings(settings);
 // }
-
 
 export function updateSpellCheckerLanguages(langs: string[]): void {
     Electron.session.defaultSession.setSpellCheckerLanguages(langs);
@@ -140,7 +140,6 @@ export function updateSpellCheckerLanguages(langs: string[]): void {
     PrimaryWindow?.webContents.session.setSpellCheckerLanguages(langs);
     PrimaryWindow?.webContents.send('update-dictionaries', langs);
 }
-
 
 async function toggleDictionary(lang: string): Promise<void> {
     const activeLangs = getSafeLanguages(settings.raw.spellcheckLang);
@@ -184,6 +183,7 @@ async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
     }
 }
 
+// region URL
 /**
  * Opens a link; optionally in incognito mode. Incognito is only available if a browser is set in the "Custom browser" settings.
  *
