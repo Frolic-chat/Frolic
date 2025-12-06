@@ -123,7 +123,7 @@ function saveGeneralSettings(s: GeneralSettings, wcid?: number): void {
     else
         logSettings.debug('Local update; broadcasting general settings...', ts);
 
-    if (settingsFile && fs.existsSync(settingsFile)) {
+    if (settingsFile) {
         const json = JSON.stringify(s, null, 4);
         try {
             fs.writeFileSync(settingsFile, json);
