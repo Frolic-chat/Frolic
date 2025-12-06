@@ -86,13 +86,20 @@ export default class NewsWidget extends Vue {
      */
     @Hook('created')
     created() {
-        Electron.ipcRenderer.on('update-available', (_e, u: boolean) => {
-            logU.debug('checkForUpdates', u);
-            this.getUpdate();
-        });
+        Electron.ipcRenderer.on('update-available', this.handleUpdate);
 
         setImmediate(() => this.getUpdate());
         logC.debug('NewsWidget.created', { runtimeToggle: this.toggle.news });
+    }
+
+    @Hook('beforeDestroy')
+    beforeDestroy() {
+        Electron.ipcRenderer.off('update-available', this.handleUpdate);
+    }
+
+    handleUpdate = (_e: Electron.IpcRendererEvent, u: boolean): void => {
+        logU.debug('checkForUpdates', u);
+        this.getUpdate();
     }
 
     async getUpdate(): Promise<void> {
