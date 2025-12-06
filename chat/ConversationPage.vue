@@ -44,18 +44,8 @@
                             <!-- <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span> -->
                         </a>
                     </span>
-                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                            <span class="fa fa-file-alt"></span>
-                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
-                        </a>
-                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
-                            <span class="fa fa-exclamation-triangle"></span>
-                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
-                        </a>
-                    </template>
-                    <dropdown v-if="isChannel(conversation)" title=""
-                        v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
+                    <dropdown v-if="isChannel(conversation)" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
+                        title=""
                         :keep-open="false"
                         text-class="d-none d-lg-inline"
                         :icon-class="{
@@ -81,6 +71,16 @@
                             </button>
                         </template>
                     </dropdown>
+                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                            <span class="fa fa-file-alt"></span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
+                        </a>
+                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
+                            <span class="fa fa-exclamation-triangle"></span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
+                        </a>
+                    </template>
 
                     <slot name="title-end"></slot>
                 </span>
