@@ -78,7 +78,6 @@ import { exec } from 'child_process';
 import { FindExeFileFromName } from '../helpers/utils';
 
 import l from '../chat/localize';
-import { GeneralSettings, GeneralSettingsUpdate } from './common';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
 import * as windowState from './main/window_state';
 import SecureStore from './main/secure-store';
@@ -115,27 +114,15 @@ let tabCount = 0;
 
 const baseDir = app.getPath('userData');
 fs.mkdirSync(baseDir, {recursive: true});
-let shouldImportSettings = false;
 
 const settingsDir = path.join(baseDir, 'data');
 fs.mkdirSync(settingsDir, {recursive: true});
-const settingsFile = path.join(settingsDir, 'settings');
-const settings = new GeneralSettings();
 
-if (!fs.existsSync(settingsFile)) {
-    shouldImportSettings = true;
-}
-else {
-    try {
-        Object.assign(settings, JSON.parse(fs.readFileSync(settingsFile, 'utf8')) as GeneralSettings);
-        settings.argv = process.argv;
-    }
-    catch (e) {
-        logSettings.error(`Error loading settings: ${e}`);
-    }
-}
+import * as GeneralSettingsManager from './main/general-settings';
+const settings_path = path.join(settingsDir, 'settings');
+const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 
-if (!settings.hwAcceleration) {
+if (!settings.raw.hwAcceleration) {
     logSettings.info('Disabling hardware acceleration.');
     app.disableHardwareAcceleration();
 }
@@ -156,7 +143,7 @@ export function updateSpellCheckerLanguages(langs: string[]): void {
 
 
 async function toggleDictionary(lang: string): Promise<void> {
-    const activeLangs = getSafeLanguages(settings.spellcheckLang);
+    const activeLangs = getSafeLanguages(settings.raw.spellcheckLang);
 
     let newLangs: string[] = [];
     if (activeLangs.includes(lang)) {
@@ -167,51 +154,14 @@ async function toggleDictionary(lang: string): Promise<void> {
         newLangs = activeLangs;
     }
 
-    settings.spellcheckLang = Array.from(new Set(newLangs));
-
-    updateGeneralSettings(settings);
+    const langs = Array.from(new Set(newLangs));
+    settings.set('spellcheckLang', langs);
 
     updateSpellCheckerLanguages(newLangs);
 }
 
-let generalSettingsTimestamp = 0;
-
-/**
- * Call update instead of save when we need to update the timestamp - IE, the update is generated in electron main side. `saveGeneralSettings` is invoked internally and will broadcast the new timestamp to the renderers with the new settings object. Failure to call this function and update the timestamp will cause renderers to ignore your "out-of-date" update.
- */
-function updateGeneralSettings(s: GeneralSettings): void {
-    generalSettingsTimestamp = Date.now();
-    logSettings.debug("Internal update to general settings. You'll see 'saving and broadcasting' next", generalSettingsTimestamp);
-    saveGeneralSettings(s);
-}
-
-// Optionally takes a webcontents we're saving from.
-function saveGeneralSettings(s: GeneralSettings, wc?: Electron.WebContents): void {
-    const ts = generalSettingsTimestamp;
-
-    if (wc)
-        logSettings.debug('Received update; saving and broadcasting.', wc.id, ts);
-    else
-        logSettings.debug('Local update; broadcasting general settings...', ts);
-
-    fs.writeFileSync(settingsFile, JSON.stringify(s, null, 4));
-
-    const id = wc?.id;
-    for (const w of Electron.webContents.getAllWebContents())
-        if (id && id === w.id)
-            logSettings.debug('Found webcontents match; Good once per timestamp.', w.id, ts);
-        else
-            w.send('settings', { settings: s, timestamp: ts });
-
-    shouldImportSettings = false;
-
-    const logLevel: LogLevelOption = 'warn';
-    Logger.transports.file.level    = s.risingSystemLogLevel || logLevel;
-    Logger.transports.console.level = s.risingSystemLogLevel || logLevel;
-}
-
 async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
-    const selected = getSafeLanguages(settings.spellcheckLang);
+    const selected = getSafeLanguages(settings.raw.spellcheckLang);
     const langs = Electron.session.defaultSession.availableSpellCheckerLanguages;
 
     const sortedLangs = langs
@@ -245,7 +195,7 @@ async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
  * @param incognito `true` to use incognito mode (and error if we can't).
  */
 function openURLExternally(url: string, incognito: boolean = false): void {
-    if (!settings.browserPath) {
+    if (!settings.raw.browserPath) {
         if (!incognito) {
             // Zero config: Open in system default browser
             Electron.shell.openExternal(url);
@@ -268,16 +218,17 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     // If it resolves, save it so we don't do this again.
     try {
         try {
-            fs.accessSync(settings.browserPath, fs.constants.X_OK);
+            fs.accessSync(settings.raw.browserPath, fs.constants.X_OK);
         }
         catch {
-            const stdout = FindExeFileFromName(settings.browserPath);
+            const stdout = FindExeFileFromName(settings.raw.browserPath);
+            if (!stdout)
+                throw new Error('Premature catch of empty stdout return. It would error on accessSync anyways.');
 
             logBrowser.info(`Unexpected custom browser, but found "${stdout}" - Attemping to use it.`);
 
             fs.accessSync(stdout, fs.constants.X_OK);
-            settings.browserPath = stdout;
-            updateGeneralSettings(settings);
+            settings.set('browserPath', stdout);
         }
     }
     catch {
@@ -292,13 +243,12 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         return;
     }
 
-    if (incognito && !settings.browserIncognitoArg) {
+    if (incognito && !settings.raw.browserIncognitoArg) {
         // Check against fixed list of known incognito flags
-        const incognitoArg = IncognitoArgFromBrowserPath(settings.browserPath);
+        const incognitoArg = IncognitoArgFromBrowserPath(settings.raw.browserPath);
 
         if (incognitoArg) {
-            settings.browserIncognitoArg = incognitoArg;
-            updateGeneralSettings(settings);
+            settings.set('browserIncognitoArg', incognitoArg);
         }
         else {
             // TODO: Robust error handler.
@@ -313,14 +263,10 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         }
     }
 
-    if (!settings.browserArgs) {
-        settings.browserArgs = '%s';
-        updateGeneralSettings(settings);
-    }
-    else if (!settings.browserArgs.includes('%s')) {
-        settings.browserArgs += ' %s';
-        updateGeneralSettings(settings);
-    }
+    if (!settings.raw.browserArgs)
+        settings.set('browserArgs', '%s');
+    else if (!settings.raw.browserArgs.includes('%s'))
+        settings.set('browserArgs', settings.raw.browserArgs + ' %s')
 
     // Ensure url is encoded, but not twice.
     // `%25` is the encoded `%` symbol.
@@ -328,16 +274,16 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     url = url.replace(/%25([0-9a-f]{2})/ig, '%$1');
 
     // Quote URL to prevent issues with spaces and special characters
-    const args = (incognito ? settings.browserIncognitoArg + ' ': '') + settings.browserArgs.replaceAll('%s', `"${url}"`);
+    const args = (incognito ? settings.raw.browserIncognitoArg + ' ': '') + settings.raw.browserArgs.replaceAll('%s', `"${url}"`);
 
-    logBrowser.silly(`Opening: ${args} with ${settings.browserPath}`);
+    logBrowser.silly(`Opening: ${args} with ${settings.raw.browserPath}`);
 
     // MacOS bug: If app browser is Safari and OS browser is not, both will open.
     // https://developer.apple.com/forums/thread/685385
     if (platform === "darwin")
-        exec(`open -a "${settings.browserPath}" ${args}`);
+        exec(`open -a "${settings.raw.browserPath}" ${args}`);
     else
-        exec(`"${settings.browserPath}" ${args}`);
+        exec(`"${settings.raw.browserPath}" ${args}`);
 }
 
 function setUpWebContents(webContents: Electron.WebContents): void {
@@ -346,7 +292,7 @@ function setUpWebContents(webContents: Electron.WebContents): void {
     const openLinkExternally = (url: string) => {
         const profileMatch = url.match(/^https?:\/\/(www\.)?f-list\.net\/c\/([^/#]+)\/?#?/);
 
-        if (profileMatch !== null && settings.profileViewer) {
+        if (profileMatch !== null && settings.raw.profileViewer) {
             webContents.send('open-profile', decodeURIComponent(profileMatch[2]));
             return;
         }
@@ -397,7 +343,7 @@ function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
             click: () => {
                 if ((process.platform === 'win32' && PrimaryWindow?.isVisible())
                 ||  (process.platform === 'linux' && PrimaryWindow?.isFocused())) {
-                    if (settings.closeToTray)
+                    if (settings.raw.closeToTray)
                         PrimaryWindow.hide();
                     else
                         PrimaryWindow.minimize();
@@ -468,7 +414,7 @@ function createWindow(): Electron.BrowserWindow | undefined {
 
     updateSupportedLanguages(Electron.session.defaultSession.availableSpellCheckerLanguages);
 
-    const safeLanguages = getSafeLanguages(settings.spellcheckLang);
+    const safeLanguages = getSafeLanguages(settings.raw.spellcheckLang);
     Electron.session.defaultSession.setSpellCheckerLanguages(safeLanguages);
     window.webContents.session.setSpellCheckerLanguages(safeLanguages);
 
@@ -489,8 +435,8 @@ function createWindow(): Electron.BrowserWindow | undefined {
         path.join(__dirname, 'window.html'),
         {
             query: {
-                settings: JSON.stringify(settings),
-                import: shouldImportSettings ? 'true' : '',
+                settings: JSON.stringify(settings.raw),
+                import: settings.shouldImportSettings ? 'true' : '',
                 upgradeRoutineShouldRun: JSON.stringify(upgradeRoutineShouldRun),
             }
         }
@@ -516,7 +462,7 @@ function createWindow(): Electron.BrowserWindow | undefined {
         tray.on('right-click', _e => {
             // isFocused only works on linux - windows unfocuses when you click the tray.
             if (window.isFocused()) {
-                if (settings.closeToTray)
+                if (settings.raw.closeToTray)
                     window.hide();
                 else
                     window.minimize();
@@ -544,14 +490,16 @@ function showPatchNotes(): void {
     openURLExternally(FROLIC.ChangelogUrl);
 }
 
+function setLogLevel(level: Logger.LevelOption) {
+    Logger.transports.file.level    = level || 'warn';
+    Logger.transports.console.level = level || 'warn';
+}
+
 
 let zoomLevel = 0;
 let upgradeRoutineShouldRun = false;
 function onReady(): void {
-    const logLevel: LogLevelOption = 'warn';
-    Logger.transports.file.level    = settings.risingSystemLogLevel || logLevel;
-    Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
-
+    setLogLevel(settings.raw.risingSystemLogLevel);
     Logger.transports.file.maxSize = 5 * 1024 * 1024;
 
     log.info('Starting application.');
@@ -563,16 +511,15 @@ function onReady(): void {
         wc.setWindowOpenHandler(() => ({ action: "deny" }));
     });
 
+    const currVersion = settings.raw.version;
     const targetVersion = app.getVersion();
-    if (settings.version !== targetVersion) {
+    if (settings.upgradeAppVersion(targetVersion)) {
         upgradeRoutineShouldRun = true;
-        log.debug('Upgrade version', settings.version, targetVersion, upgradeRoutineShouldRun);
+        log.debug(`Upgrade version ${currVersion} -> ${targetVersion}`);
 
         // Run all routines necessary to upgrade the general settings.
-        versionUpgradeRoutines(settings.version, targetVersion);
-
-        settings.version = targetVersion;
-        updateGeneralSettings(settings);
+        // Realistically these should be unified with the generalsettings or updater.
+        versionUpgradeRoutines(currVersion, targetVersion);
     }
 
     function updateAllZoom(c: Electron.WebContents[]   = [],
@@ -631,27 +578,15 @@ function onReady(): void {
 
     addSpellcheckerItems(spellcheckerMenu);
 
-    const setSystemLogLevel = (logLevel: LogLevelOption) => {
-        settings.risingSystemLogLevel = logLevel;
-        updateGeneralSettings(settings);
-    };
-
-
     //region Themes
     const themes = fs.readdirSync(path.join(__dirname, 'themes'))
             .filter(x => x.slice(-4) === '.css')
             .map(x => x.slice(0, -4));
 
-    const setTheme = (theme: string) => {
-        settings.theme = theme;
-        updateGeneralSettings(settings);
-    };
-
-
     //region Updater
     const updateCheckTimer = setInterval(
         async () => {
-            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.raw.beta);
 
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
@@ -668,7 +603,7 @@ function onReady(): void {
 
     setTimeout(
         async () => {
-            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.beta);
+            const hasUpdate = await UpdateCheck.checkForGitRelease(app.getVersion(), FROLIC.GithubReleaseApiUrl, settings.raw.beta);
 
             if (hasUpdate) {
                 clearInterval(updateCheckTimer);
@@ -738,24 +673,24 @@ function onReady(): void {
                         if (!window)
                             return;
 
-                        const dir = Electron.dialog.showOpenDialogSync(
-                            {defaultPath: settings.logDirectory, properties: ['openDirectory']}
-                        );
+                        const dir = Electron.dialog.showOpenDialogSync({
+                            defaultPath: settings.raw.logDirectory,
+                            properties: [ 'openDirectory' ],
+                        });
 
                         if (dir) {
                             if (dir[0].startsWith(path.dirname(app.getPath('exe'))))
                                 return Electron.dialog.showErrorBox(l('settings.logDir'), l('settings.logDir.inAppDir'));
 
                             const button = Electron.dialog.showMessageBoxSync(window, {
-                                message: l('settings.logDir.confirm', dir[0], settings.logDirectory),
+                                message: l('settings.logDir.confirm', dir[0], settings.raw.logDirectory),
                                 buttons: [l('confirmYes'), l('confirmNo')],
                                 cancelId: 1
                             });
                             if (button === 0) {
                                 PrimaryWindow?.webContents.send('quit');
 
-                                settings.logDirectory = dir[0];
-                                updateGeneralSettings(settings);
+                                settings.set('logDirectory', dir[0]);
 
                                 app.quit();
                             }
@@ -765,20 +700,14 @@ function onReady(): void {
                 {
                     label: l('settings.closeToTray'),
                     type: 'checkbox',
-                    checked: settings.closeToTray,
-                    click: m => {
-                        settings.closeToTray = m.checked;
-                        updateGeneralSettings(settings);
-                    }
+                    checked: settings.raw.closeToTray,
+                    click: m => settings.set('closeToTray', m.checked),
                 },
                 {
                     label: l('settings.profileViewer'),
                     type: 'checkbox',
-                    checked: settings.profileViewer,
-                    click: m => {
-                        settings.profileViewer = m.checked;
-                        updateGeneralSettings(settings);
-                    }
+                    checked: settings.raw.profileViewer,
+                    click: m => settings.set('profileViewer', m.checked),
                 },
                 {
                     label: l('settings.spellcheck'),
@@ -786,21 +715,18 @@ function onReady(): void {
                 },
                 {
                     label: l('settings.theme'),
-                    submenu: themes.map(x => ({
-                        checked: settings.theme === x,
-                        click: () => setTheme(x),
-                        label: x,
+                    submenu: themes.map(theme => ({
+                        checked: settings.raw.theme === theme,
+                        click: () => settings.set('theme', theme),
+                        label: theme,
                         type: <'radio'>'radio'
                     }))
                 },
                 {
                     label: l('settings.hwAcceleration'),
                     type: 'checkbox',
-                    checked: settings.hwAcceleration,
-                    click: m => {
-                        settings.hwAcceleration = m.checked;
-                        updateGeneralSettings(settings);
-                    }
+                    checked: settings.raw.hwAcceleration,
+                    click: m => settings.set('hwAcceleration', m.checked),
                 },
                 // {
                 //     label: l('settings.beta'), type: 'checkbox', checked: settings.beta,
@@ -822,9 +748,9 @@ function onReady(): void {
                 {
                     label: l('action.logLevel'),
                     submenu: logLevels.map(level => ({
-                        checked: settings.risingSystemLogLevel === level,
+                        checked: settings.raw.risingSystemLogLevel === level,
                         label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
-                        click: () => setSystemLogLevel(level as LogLevelOption),
+                        click: () => settings.set('risingSystemLogLevel', level as LogLevelOption),
                         type: 'radio',
                     })),
                 },
@@ -832,11 +758,8 @@ function onReady(): void {
                     visible: platform === 'win32',
                     label: l('action.toggleHighContrast'),
                     type: 'checkbox',
-                    checked: settings.risingDisableWindowsHighContrast,
-                    click: m => {
-                        settings.risingDisableWindowsHighContrast = m.checked;
-                        updateGeneralSettings(settings);
-                    }
+                    checked: settings.raw.risingDisableWindowsHighContrast,
+                    click: m => settings.set('risingDisableWindowsHighContrast', m.checked),
                 },
                 {
                     label: l('action.profile'),
@@ -923,25 +846,6 @@ function onReady(): void {
     });
     //#endregion
 
-    Electron.ipcMain.on('settings', (e, d: GeneralSettingsUpdate) => {
-        if (d.timestamp > generalSettingsTimestamp) {
-            generalSettingsTimestamp = d.timestamp;
-            logSettings.debug('Received and storing general settings.', e.sender.id, { stale: settings, incoming: d.settings });
-            Object.assign(settings, d.settings);
-            logSettings.debug('post assignment: SHOULD BE BEST SETTINGS.', settings);
-            saveGeneralSettings(settings, e.sender);
-        }
-        else {
-            logSettings.warn('Outdated settings reached main.', {
-                from:    d.character,
-                'from-wc': e.sender.id,
-                to:      'electron-main',
-                current: generalSettingsTimestamp,
-                new:     d.timestamp,
-            });
-        }
-    });
-
     Electron.ipcMain.handle('app-getPath', async (_e, appPath: string) => {
         await null;
         // Ideally argument is `Parameters<typeof app.getPath>[0]`
@@ -984,13 +888,6 @@ function onReady(): void {
         if (!tabCount)
             PrimaryWindow?.webContents.send('open-tab');
     });
-    Electron.ipcMain.on('save-login', (_e, account: string, host: string) => {
-        if (account !== settings.account || host !== settings.host)
-            updateGeneralSettings(settings);
-
-        settings.account = account;
-        settings.host = host;
-    });
 
     Electron.ipcMain.on('connect', (e, character: string) => { //hack
         if (characters.includes(character)) { // Logged in already!
@@ -1030,14 +927,18 @@ function onReady(): void {
     );
 
     Electron.ipcMain.on('dictionary-add', (_e, word: string) => {
-        // if(settings.customDictionary.indexOf(word) !== -1) return;
-        // settings.customDictionary.push(word);
-        // updateGeneralSettings(settings);
+        if (settings.raw.customDictionary.includes(word))
+            return;
+
+        // settings.set('customDictionary', [ ...settings.raw.customDictionary, word ]);
         PrimaryWindow?.webContents.session.addWordToSpellCheckerDictionary(word);
     });
-    Electron.ipcMain.on('dictionary-remove', (_e/*, word: string*/) => {
-        // settings.customDictionary.splice(settings.customDictionary.indexOf(word), 1);
-        // updateGeneralSettings(settings);
+    Electron.ipcMain.on('dictionary-remove', (_e, _word: string) => {
+        // const i = settings.raw.customDictionary.indexOf(word);
+        // if (i === -1)
+        //     return;
+
+        // settings.set('customDictionary', settings.raw.customDictionary.splice(i, 1));
     });
 
 
@@ -1096,7 +997,7 @@ function onReady(): void {
         }
 
         const dir = Electron.dialog.showOpenDialogSync({
-            defaultPath: settings.browserPath,
+            defaultPath: settings.raw.browserPath,
             properties: ['openFile'],
             filters: filters,
         });
