@@ -35,6 +35,8 @@ export async function FisherYatesShuffle(arr: any[]): Promise<void> {
     }
 }
 
+type DebouncedFn<T> = ((this: T, ...args: any) => void) & { cancel: () => void };
+
 /**
  * A lodash-replacement debounce useful on any input without a submit. Invoke
  * the bounce-blocker on every input, and the callback will only fire once
@@ -52,29 +54,35 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
                                 wait?:    number,
                                 maxWait?: number,
                             } = {}
-                           ): () => void {
-    let ret: () => void;
+                           ): DebouncedFn<T> {
+    let ret: DebouncedFn<T>;
 
     if (!maxWait) { // Simple
         let timer: ReturnType<typeof setTimeout> | undefined;
+        const clear = () => { clearTimeout(timer) };
 
-        ret = function (this: T, ...args: any) {
-            clearTimeout(timer);
+        const f = function (this: T, ...args: any) {
+            clear();
             timer = setTimeout(() => callback.apply(this, args), wait);
         };
+        // @ts-ignore webpack ts 3.9
+        f.cancel = clear;
+
+        // @ts-ignore webpack ts 3.9
+        ret = f;
     }
     else { // maxWait
         let timer:    ReturnType<typeof setTimeout> | undefined;
         let maxTimer: ReturnType<typeof setTimeout> | undefined;
 
-        const clear_timers = () => {
+        const clear_timers = function () {
             clearTimeout(maxTimer);
             clearTimeout(timer);
             maxTimer = undefined;
-            timer = undefined;
+            timer    = undefined;
         };
 
-        ret = function (this: T, ...args: any) {
+        const f = function (this: T, ...args: any) {
             if (!maxTimer) {
                 console.log('debounce.maxwait.fresh');
 
@@ -107,6 +115,11 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
                 );
             }
         }
+        // @ts-ignore webpack ts 3.9
+        f.cancel = clear_timers;
+
+        // @ts-ignore webpack ts 3.9
+        ret = f;
     }
 
     return ret;
