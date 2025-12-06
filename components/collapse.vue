@@ -7,7 +7,7 @@
                     {{ title }}
                 </slot>
             </div>
-            <div :style="headerEndStyle" class="input-group-append flex-shrink-0 border-0 header-button-container-container">
+            <div v-if="$slots.button && $slots.button.length" :style="headerEndStyle" class="input-group-append flex-shrink-0 border-0 header-button-container-container">
                 <div :style="headerEndStyle" class="input-group-text btn p-0 border-0 header-button-container"> <!-- keep border-left -->
                     <a href="#" @click.prevent="btnClick" :class="btnClass" class="btn justify-content-around h-100 d-flex flex-column border-0" :style="buttonEndStyle">
                         <slot name="button"></slot>
