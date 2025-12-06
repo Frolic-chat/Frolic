@@ -122,6 +122,10 @@ import * as GeneralSettingsManager from './main/general-settings';
 const settings_path = path.join(settingsDir, 'settings');
 const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 
+import InitScratchpad from './main/scratchpad';
+const scratchpad_path = path.join(settingsDir, 'scratchpad');
+InitScratchpad(scratchpad_path);
+
 if (!settings.raw.hwAcceleration) {
     logSettings.info('Disabling hardware acceleration.');
     app.disableHardwareAcceleration();
