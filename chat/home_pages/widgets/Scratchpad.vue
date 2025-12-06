@@ -71,7 +71,7 @@ export default class Scratchpad extends Vue {
         this.sendtoMain();
     }
 
-    debounceInput = debounce(this.sendtoMain, { wait: 327, maxWait: 5000 });
+    debounceInput = debounce(this.sendtoMain, { wait: 340, maxWait: 7000 });
 
     @Watch('scratchpad')
     scratchpadChanged() {
