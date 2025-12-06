@@ -122,5 +122,11 @@ export default class Scratchpad extends Vue {
 #scratchpad {
     width: 100%;
     max-height: calc(1.5em * 10);
+
+    field-sizing: content;
+    resize: none;
+
+    border-top-left-radius:  0;
+    border-top-right-radius: 0;
 }
 </style>
