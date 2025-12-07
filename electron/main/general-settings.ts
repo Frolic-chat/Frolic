@@ -5,6 +5,7 @@
 import * as Electron from 'electron';
 import * as fs from 'fs';
 import { GeneralSettings, GeneralSettingsUpdate } from "../common";
+import { debounce } from '../../helpers/utils';
 
 import NewLogger from './custom-logger';
 const l_s = process.argv.includes('--debug-settings');
@@ -14,6 +15,7 @@ const settings = new GeneralSettings();
 let settingsFile: string = '';
 let shouldImportSettings = false;
 let timestamp = 0;
+const debounceFileWrite = debounce(writeSettingsToFile, { wait: 1000, maxWait: 10000 });
 let setLogLevel: ((level: GeneralSettings['risingSystemLogLevel']) => void) | undefined;
 
 type GeneralSettingsExport = {
@@ -123,16 +125,6 @@ function saveGeneralSettings(s: GeneralSettings, wcid?: number): void {
     else
         logSettings.debug('Local update; broadcasting general settings...', ts);
 
-    if (settingsFile) {
-        const json = JSON.stringify(s, null, 4);
-        try {
-            fs.writeFileSync(settingsFile, json);
-        }
-        catch (e) {
-            console.error(e);
-        }
-    }
-
     for (const w of Electron.webContents.getAllWebContents()) {
         if (wcid === w.id)
             logSettings.debug('Found webcontents match; Good once per timestamp.', w.id, ts);
@@ -143,6 +135,20 @@ function saveGeneralSettings(s: GeneralSettings, wcid?: number): void {
     shouldImportSettings = false;
 
     setLogLevel?.(s.risingSystemLogLevel || 'warn');
+
+    debounceFileWrite();
+}
+
+function writeSettingsToFile() {
+    if (settingsFile) {
+        const json = JSON.stringify(settings, null, 4);
+        try {
+            fs.writeFileSync(settingsFile, json);
+        }
+        catch (e) {
+            console.error(e);
+        }
+    }
 }
 
 /**
