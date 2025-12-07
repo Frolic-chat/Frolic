@@ -1,6 +1,4 @@
-<!--
-    Scratchpad is a player space to take notes. It's a single pad for your entire pc.
--->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
     <collapse :initial="yohhlrf" @open="toggle.scratchpad = false" @close="toggle.scratchpad = true" bodyClass="p-0">
         <template v-slot:header>

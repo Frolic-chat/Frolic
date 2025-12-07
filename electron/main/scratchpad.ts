@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Exclusively exports an init() factory function that gives you a ScratchpadExport.
+ * We don't actually use or care about the object in main; this is entirely a renderer<->file controller :)
  */
 import * as Electron from 'electron';
 import * as fs from 'fs';

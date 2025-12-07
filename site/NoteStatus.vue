@@ -45,29 +45,23 @@ reports: ReportState[] = [
     }
 ];
 
-callback?: () => void;
-
+callback = () => this.updateCounts();
 
 @Hook('mounted')
 mounted(): void {
     this.updateCounts();
 
-    this.callback = () => this.updateCounts();
-
     EventBus.$on('note-counts-update', this.callback);
 }
 
-
 @Hook('beforeDestroy')
 destroying(): void {
-    if (this.callback) EventBus.$off('note-counts-update', this.callback);
+    EventBus.$off('note-counts-update', this.callback);
 }
-
 
 dismissReport(report: ReportState): void {
     report.dismissedCount = report.count;
 }
-
 
 hasReports(): boolean {
     return !!this.reports.find(r => r.count > 0 && r.dismissedCount !== r.count);
@@ -78,7 +72,7 @@ updateCounts(): void {
 
     const mapper: Record<'message' | 'note', Partial<keyof typeof latest>> = {
         message: 'unreadMessages',
-        note: 'unreadNotes'
+        note: 'unreadNotes',
     };
 
     Object.entries(mapper).forEach(([k, v]) => {
