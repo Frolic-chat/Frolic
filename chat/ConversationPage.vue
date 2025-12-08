@@ -445,15 +445,12 @@
             this.$watch(() => this.conversation.adManager.isActive(), () => (this.refreshAutoPostingTimer()));
             this.refreshAutoPostingTimer();
 
-            this.configUpdateHook = () => this.updateOwnName();
             EventBus.$on('configuration-update', this.configUpdateHook);
-
-            this.memoUpdateHook = e => this.refreshMemo(e);
             EventBus.$on('character-memo', this.memoUpdateHook);
         }
 
-        protected configUpdateHook?: () => void;
-        protected memoUpdateHook?: (e: MemoEvent) => void;
+        protected configUpdateHook = () => this.updateOwnName();
+        protected memoUpdateHook = (e: MemoEvent) => this.refreshMemo(e);
 
         @Hook('destroyed')
         destroyed(): void {
@@ -464,10 +461,8 @@
             clearInterval(this.autoPostingUpdater);
             clearInterval(this.adCountdown);
 
-            if (this.configUpdateHook)
-                EventBus.$off('configuration-update', this.configUpdateHook);
-            if (this.memoUpdateHook)
-                EventBus.$off('character-memo', this.memoUpdateHook);
+            EventBus.$off('configuration-update', this.configUpdateHook);
+            EventBus.$off('character-memo', this.memoUpdateHook);
         }
 
         hideSearch(): void {
