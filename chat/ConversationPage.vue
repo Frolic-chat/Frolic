@@ -189,11 +189,10 @@
                 <span class="channel-key text-left"><!-- typing indicator here -->
                     {{ isChannel(conversation) ? conversation.key : '' }}
                 </span>
-                <div class="send-ads-switcher btn-group btn-group-sm">
-                    <template v-if="isChannel(conversation)">
-                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'"
-                            class="btn" :class="{
-                                'btn-secondary': !conversation.isSendingAds,
+                <div class="send-ads-switcher text-center btn-group btn-group-sm">
+                    <template v-if="isChannel(conversation) && (conversation.channel.mode === 'both' || conversation.channel.mode === 'chat')">
+                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'" class="btn" :class="{
+                                'btn-secondary':        !conversation.isSendingAds,
                                 'btn-outline-secondary': conversation.isSendingAds,
                                 disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
                             }"
@@ -201,9 +200,10 @@
                         >
                             {{ l('channel.mode.chat') }}
                         </a>
-                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'"
-                            class="btn" :class="{
-                                'btn-secondary': conversation.isSendingAds,
+                    </template>
+                    <template v-if="isChannel(conversation) && (conversation.channel.mode === 'both' || conversation.channel.mode === 'ads')">
+                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'" class="btn" :class="{
+                                'btn-secondary':          conversation.isSendingAds,
                                 'btn-outline-secondary': !conversation.isSendingAds,
                                 disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
                             }"
