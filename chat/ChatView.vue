@@ -54,6 +54,10 @@
                 <div class="list-group conversation-nav">
                     <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
                         class="list-group-item list-group-item-action">
+                        <template v-if="siteCheckerCount">
+                            {{ siteCheckerCount }}
+                            <span :class="siteCheckerIconClass" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
+                        </template>
                         {{ l('home') }}
                     </a>
                 </div>
@@ -151,7 +155,6 @@
         <dev-tools ref="devTools"></dev-tools>
         <image-preview ref="imagePreview"></image-preview>
         <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
-        <note-status v-if="coreState.settings.risingShowUnreadOfflineCount"></note-status>
     </div>
 </template>
 
@@ -179,11 +182,11 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import UserMenu from './UserMenu.vue';
     import ImagePreview from './preview/ContentPreview.vue';
     import PrivateConversation = Conversation.PrivateConversation;
-    import NoteStatus from '../site/NoteStatus.vue';
     import { Dialog } from '../helpers/dialog';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
     import Modal from '../components/Modal.vue';
+    import { EventBus } from './preview/event-bus';
 
     const unreadClasses = {
         [Conversation.UnreadState.None]: '',
@@ -200,7 +203,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             'user-menu': UserMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
-            'note-status': NoteStatus,
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
             modal: Modal,
@@ -246,11 +248,22 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
           }
         }
 
+        @Hook('created')
+        created() {
+            EventBus.$on('note-counts-update', this.notecheckerUpdateReceived);
+        }
+
+        @Hook('beforeDestroy')
+        beforeDestroy() {
+            EventBus.$off('note-counts-update', this.notecheckerUpdateReceived);
+        }
+
         @Hook('mounted')
         mounted(): void {
             this.keydownListener = (e: KeyboardEvent) => this.onKeyDown(e);
             window.addEventListener('keydown', this.keydownListener);
             this.setFontSize(core.state.settings.fontSize);
+
             Sortable.create(<HTMLElement>this.$refs['privateConversations'], {
                 animation: 50,
                 fallbackTolerance: 5,
@@ -259,6 +272,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     return core.conversations.privateConversations[e.oldIndex!].sort(e.newIndex!);
                 }
             });
+
             Sortable.create(<HTMLElement>this.$refs['channelConversations'], {
                 animation: 50,
                 fallbackTolerance: 5,
@@ -267,6 +281,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                     return core.conversations.channelConversations[e.oldIndex!].sort(e.newIndex!);
                 }
             });
+
             const ownCharacter = core.characters.ownCharacter;
             let idleTimer: number | undefined, idleStatus: Connection.ClientCommands['STA'] | undefined, lastUpdate = 0;
             window.addEventListener('focus', this.focusListener = () => {
@@ -509,6 +524,36 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         stopAllAds(): void {
           core.adCenter.stopAllAds();
+        }
+
+        /**
+         * NOTE CHECKER
+         */
+        siteCheckerNoteCounts = 0;
+        siteCheckerMsgCounts  = 0;
+        get siteCheckerCount() {
+            return this.coreState.settings.risingShowUnreadOfflineCount
+                && this.coreState.generalSettings.widgets.inbox
+                    ? this.siteCheckerNoteCounts + this.siteCheckerMsgCounts
+                    : 0;
+        }
+
+        siteCheckerIconClass = '';
+
+        notecheckerUpdateReceived = () => this.updateNotecheckerCount();
+
+        updateNotecheckerCount(): void {
+            const { unreadNotes, unreadMessages } = core.siteSession.interfaces.notes.getCounts();
+            this.siteCheckerNoteCounts = unreadNotes;
+            this.siteCheckerMsgCounts  = unreadMessages;
+
+            if ( this.siteCheckerCount > 10)
+                this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelopes-bulk';
+            else if (this.siteCheckerNoteCounts)
+                this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelope';
+            else if (this.siteCheckerMsgCounts)
+                this.siteCheckerIconClass = 'fa-regular fa-fw fa-envelope';
+            // Site updates: fa-square-rss fa-newspaper ?
         }
     }
 </script>
