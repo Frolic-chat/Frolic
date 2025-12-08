@@ -350,5 +350,6 @@ export interface Runtime {
         news?:       boolean,
         activity?:   boolean,
         scratchpad?: boolean,
+        notes?:      boolean,
     }
 }

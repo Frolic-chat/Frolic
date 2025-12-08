@@ -37,6 +37,10 @@
                 <scratchpad></scratchpad>
             </div>
 
+            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount">
+                <note-status></note-status>
+            </div>
+
             <div v-show="widgets.activity" class="home-row flex-row">
                 <collapse v-show="shouldShowActivity" class="chat-container" bodyClass="p-0"
                     :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true"
@@ -83,6 +87,7 @@ import WidgetOptions from './WidgetOptions.vue';
 
 import NewsWidget from './widgets/News.vue';
 import Scratchpad from './widgets/Scratchpad.vue';
+import NoteStatus from '../../site/NoteStatus.vue';
 import Logs from '../Logs.vue';
 import Collapse from '../../components/collapse.vue';
 
@@ -100,11 +105,17 @@ import l from '../localize';
 
         'news':     NewsWidget,
         'scratchpad': Scratchpad,
+        'note-status': NoteStatus,
         'collapse': Collapse,
     },
 })
 export default class Home extends Vue {
     widgets = core.state.generalSettings.widgets;
+    /**
+     * Temporarily needed for the rising setting control. At some point, that can be moved into the widget settings in general settings.
+     */
+    settings = core.state.settings;
+
 
     openWidgetOptions() {
          (<WidgetOptions>this.$refs['widgetOptionsModal']).show();
