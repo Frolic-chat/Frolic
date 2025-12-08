@@ -403,14 +403,14 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             }
 
             const styling = {
-                crown:   { color: 'online',  icon: ['fas', 'fa-crown'] },
-                online:  { color: 'online',  icon: ['fas', 'fa-circle'] },
-                looking: { color: 'online',  icon: ['fa',  'fa-eye'] },
-                offline: { color: 'offline', icon: ['fa',  'fa-ban'] },
-                busy:    { color: 'away',    icon: ['fa',  'fa-cog'] },
-                idle:    { color: 'away',    icon: ['far', 'fa-clock'] },
-                dnd:     { color: 'dnd',     icon: ['fa',  'fa-minus-circle'] },
-                away:    { color: 'away',    icon: ['far', 'fa-circle'] }
+                crown:   { color: 'online',  icon: ['fas', 'fa-fw', 'fa-crown'] },
+                online:  { color: 'online',  icon: ['fas', 'fa-fw', 'fa-user'] },
+                looking: { color: 'online',  icon: ['fa',  'fa-fw', 'fa-eye'] },
+                offline: { color: 'offline', icon: ['fa',  'fa-fw', 'fa-user-slash'] },
+                busy:    { color: 'away',    icon: ['fa',  'fa-fw', 'fa-cog'] },
+                idle:    { color: 'away',    icon: ['far', 'fa-fw', 'fa-clock'] },
+                dnd:     { color: 'dnd',     icon: ['fa',  'fa-fw', 'fa-minus-circle'] },
+                away:    { color: 'away',    icon: ['far', 'fa-fw', 'fa-circle'] }
             };
 
             const cls = { [styling[status].color]: true };
