@@ -60,25 +60,27 @@ export class NoteChecker implements SiteSessionInterface {
         if (!core.state.settings.risingShowUnreadOfflineCount)
             return this.latestCount;
 
-        const res = await this.session.get('', true);
-        const messagesMatch: RegExpMatchArray | null = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);
-        const notesMatch: RegExpMatchArray | null    = res.body.match(/NavigationNotecount.*?([0-9]+?) Notes/);
-        const statsMatch: RegExpMatchArray | null    = res.body.match(/Frontpage_Stats.*?([0-9]+?) characters/);
+        try {
+            const res = await this.session.get('', true);
 
-        log.debug('notechecker.match.values', messagesMatch?.[1], notesMatch?.[1], statsMatch?.[1]);
+            const messagesMatch: RegExpMatchArray | null = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);
+            const notesMatch: RegExpMatchArray | null    = res.body.match(/NavigationNotecount.*?([0-9]+?) Notes/);
+            const statsMatch: RegExpMatchArray | null    = res.body.match(/Frontpage_Stats.*?([0-9]+?) characters/);
 
-        const summary = {
-            unreadNotes:    parseInt((notesMatch?.[1]    ?? '0'), 10),
-            unreadMessages: parseInt((messagesMatch?.[1] ?? '0'), 10),
-            onlineUsers:    parseInt((statsMatch?.[1]    ?? '0'), 10),
-        };
+            log.debug('notechecker.match.values', messagesMatch?.[1], notesMatch?.[1], statsMatch?.[1]);
 
-        this.latestCount = summary;
+            this.latestCount.unreadNotes    = parseInt((notesMatch?.[1]    ?? '0'), 10),
+            this.latestCount.unreadMessages = parseInt((messagesMatch?.[1] ?? '0'), 10),
+            this.latestCount.onlineUsers    = parseInt((statsMatch?.[1]    ?? '0'), 10),
 
-        log.debug('notechecker.check.success', summary);
-        EventBus.$emit('note-counts-update', summary);
+            log.debug('notechecker.check.success', this.latestCount);
+            EventBus.$emit('note-counts-update', this.latestCount);
+        }
+        catch (e) {
+            console.warn(`notechecker.check.failure at ${new Date()}.`, e);
+        }
 
-        return summary;
+        return this.latestCount;
     }
 
     incrementMessages(): void {
