@@ -37,7 +37,7 @@
 
             <div class="quick-info-block">
                 <template v-for="id in charInfoIds">
-                    <infotag-item v-if="character.character.infotags[id]" :overrides="id === 3 ? genderOverrides : undefined" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch"></infotag-item>
+                    <infotag-item v-if="character.character.infotags[id]" :overrides="id === 3 ? genderOverrides : undefined" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch" :matchInfotag="customIdForMatching(id)"></infotag-item>
                 </template>
 
                 <hr>
@@ -113,7 +113,11 @@
     import core from '../../chat/core';
     import l from '../../chat/localize';
 
+    import { Matcher } from '../../learn/matcher';
+    import { TagId } from '../../learn/matcher-types';
+
     import NewLogger from '../../helpers/log';
+    const logM = NewLogger('matcher');
     const logG = NewLogger('custom-gender');
 
     interface ShowableVueDialog extends Vue {
@@ -179,6 +183,21 @@
          */
         readonly charInfoIds: ReadonlyArray<number> = [ 1, 3, 2, 9, 29, 15, 41 ];
         readonly rpInfoIds: ReadonlyArray<number> = [ 24, 25, 49 ];
+
+        customIdForMatching(id: number): Infotag | undefined {
+            if (id === 29) {
+                // Directly depending on Matcher is bad, but a matchmaker-revealed species is rarely null even when empty (casts to Human with secondary indicators).
+                // Having a species is technically a proxy for
+                const yourSpecies = Matcher.getTagValue(TagId.Species, this.characterMatch.them.you);
+
+                logM.debug(`Sidebar.customIdForMatching.id ${id}`, yourSpecies);
+
+                if (!yourSpecies?.string)
+                    return this.getInfotag(TagId.Species); // use species infotag for matching
+            }
+
+            return undefined;
+        }
 
         // Needs reactivity testing.
         get genderOverrides() {

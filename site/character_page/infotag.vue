@@ -26,6 +26,7 @@
     import { TagId } from '../../learn/matcher-types';
 
     import NewLogger from '../../helpers/log';
+    const logM = NewLogger('matcher');
     const logG = NewLogger('custom-gender');
 
     @Component
@@ -37,7 +38,13 @@
         readonly data!: CharacterInfotag;
 
         @Prop({required: true})
-        private readonly characterMatch!: MatchReport;
+        readonly characterMatch!: MatchReport;
+
+        /**
+         * Instead of using `infotag` for matchmaking display, we can use this one instead.
+         */
+        @Prop({ default: undefined })
+        readonly matchInfotag!: Infotag | undefined;
 
         @Prop({ default: () => ({}) })
         readonly overrides!: InfotagOverrides;
@@ -54,22 +61,24 @@
                 infotag: true
             };
 
-            // console.log(`Infotag ${this.infotag.id}: ${this.infotag.name}`, core.state.settings.risingAdScore, this.characterMatch);
-            const id = parseInt(this.infotag.id as any, 10);
+            const matchId = this.matchInfotag?.id ?? this.infotag.id;
+
+            if (matchId === 29)
+                logM.debug(`Infotag ${this.infotag.id}: ${this.infotag.name}`, this.characterMatch);
+
+            if (this.matchInfotag)
+                logM.debug('InfotagView.tagClasses.customMatchScore', this.matchInfotag);
 
             if ((core.state.settings.risingAdScore) && (this.characterMatch)) {
-                // console.log('MATCH');
-
-                const scores = this.theirInterestIsRelevant(id)
+                const scores = this.theirInterestIsRelevant(this.infotag.id) // original even if matchInfotag
                     ? this.characterMatch.them.scores
-                    : (this.yourInterestIsRelevant(id) ? this.characterMatch.you.scores : null);
+                    : (this.yourInterestIsRelevant(this.infotag.id) ? this.characterMatch.you.scores : null);
 
                 // console.log('SCORES', scores);
 
-                if (scores) {
-                    const score = scores[id];
-
-                    styles[score.getRecommendedClass()] = true;
+                // Bad to assume you have a score for every infotag.
+                if (scores?.[matchId]) {
+                    styles[scores[matchId].getRecommendedClass()] = true;
                     styles['match-score'] = true;
                 }
             }
