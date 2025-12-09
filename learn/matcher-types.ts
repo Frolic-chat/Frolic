@@ -21,6 +21,7 @@ export enum TagId {
     Species = 9,
     LanguagePreference = 49,
     PostLength = 24,
+    RPLength = 25,
 
     Kinks = 99999
 }
@@ -36,6 +37,12 @@ export enum PostLengthPreference {
     MultiParagraph_14_25 = 62
 }
 
+export enum RPLengthPreference {
+    NoPreference = 52,
+    OneShot      = 23,
+    ShortTerm    = 24,
+    LongTerm     = 25,
+}
 
 export enum Gender {
     Male = 1,
