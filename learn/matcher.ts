@@ -82,7 +82,6 @@ export interface MatchResultScores {
     [key: number]: Score;
     [TagId.Gender]: Score;
     [TagId.Age]: Score;
-    [TagId.FurryPreference]: Score;
     [TagId.Species]: Score;
     [TagId.Kinks]: Score;
 }
@@ -457,7 +456,6 @@ export class Matcher {
             scores: {
                 [TagId.Gender]:          this.resolveGenderorOrientationScore(),
                 [TagId.Age]:             this.resolveAgeScore(),
-                [TagId.FurryPreference]: this.resolveFurryPairingsScore(),
                 [TagId.Species]:         this.resolveSpeciesOrFurryPreferenceScore(),
                 [TagId.SubDomRole]:      this.resolveSubDomScore(),
                 [TagId.Kinks]:           this.resolveKinkScore(pronoun),
