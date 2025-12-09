@@ -166,23 +166,12 @@
         readonly shared: SharedStore = Store;
 
         /**
-         * Age
-         * Gender
-         * Orientation
-         * Language
-         * Species
-         * FurryPref
-         * SubDom
-         * Position
-         *
-         * post length
-         * RP length
-         * Language
-         *
+         * Sidebar Entries
          * List order determines display order.
+         * FurryPref is now baked into gender matching
          */
-        readonly charInfoIds: ReadonlyArray<number> = [ 1, 3, 2, 9, 29, 15, 41 ];
-        readonly rpInfoIds: ReadonlyArray<number> = [ 24, 25, 49 ];
+        readonly charInfoIds: ReadonlyArray<number> = [ TagId.Age, TagId.Gender, TagId.Orientation, TagId.Species, TagId.FurryPreference, TagId.SubDomRole, TagId.Position ];
+        readonly rpInfoIds: ReadonlyArray<number> = [ TagId.PostLength, TagId.RPLength, TagId.LanguagePreference ];
 
         customIdForMatching(id: number): Infotag | undefined {
             if (id === 29) {
