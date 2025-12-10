@@ -667,7 +667,7 @@ class ActivityConversation extends Conversation {
      * hook into state.windowFocused to determine new?
      */
     protected readonly login: Map<string, number> = new Map();
-    protected readonly MAX_LOGINS  = 3;
+    protected readonly MAX_LOGINS = 0;
 
     /**
      * Custom statuses are important because they're directly from the user.
@@ -675,7 +675,7 @@ class ActivityConversation extends Conversation {
      * Track: has set custom status.
      */
     protected readonly status: Map<string, number> = new Map();
-    protected readonly MAX_STATUS = 0; // Infinity
+    protected readonly MAX_STATUS = 0;
 
     /**
      * People with looking status.
@@ -683,7 +683,7 @@ class ActivityConversation extends Conversation {
      * Track: Status changes to looking
      */
     protected readonly looking: Map<string, number> = new Map();
-    protected readonly MAX_LOOKING = 5;
+    protected readonly MAX_LOOKING = 0;
 
     /**
      * People who recently returned.
