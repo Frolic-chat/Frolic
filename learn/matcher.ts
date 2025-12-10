@@ -110,27 +110,27 @@ export interface ScoreClassMap {
 }
 
 const scoreClasses: ScoreClassMap = {
-    [Scoring.MATCH]: 'match',
-    [Scoring.WEAK_MATCH]: 'weak-match',
-    [Scoring.NEUTRAL]: 'neutral',
+    [Scoring.MATCH]:         'match',
+    [Scoring.WEAK_MATCH]:    'weak-match',
+    [Scoring.NEUTRAL]:       'neutral',
     [Scoring.WEAK_MISMATCH]: 'weak-mismatch',
-    [Scoring.MISMATCH]: 'mismatch',
+    [Scoring.MISMATCH]:      'mismatch',
 };
 
 const scoreIcons: ScoreClassMap = {
-    [Scoring.MATCH]: 'fas fa-heart',
-    [Scoring.WEAK_MATCH]: 'fas fa-thumbs-up',
-    [Scoring.NEUTRAL]: 'fas fa-meh',
+    [Scoring.MATCH]:         'fas fa-heart',
+    [Scoring.WEAK_MATCH]:    'fas fa-thumbs-up',
+    [Scoring.NEUTRAL]:       'fas fa-meh',
     [Scoring.WEAK_MISMATCH]: 'fas fa-question-circle',
-    [Scoring.MISMATCH]: 'fas fa-heart-broken',
+    [Scoring.MISMATCH]:      'fas fa-heart-broken',
 };
 
 const scoreIconsLite: ScoreClassMap = {
-    [Scoring.MATCH]: 'fa-regular fa-heart',
-    [Scoring.WEAK_MATCH]: 'fa-regular fa-thumbs-up',
-    [Scoring.NEUTRAL]: 'fa-regular fa-meh',
+    [Scoring.MATCH]:         'fa-regular fa-heart',
+    [Scoring.WEAK_MATCH]:    'fa-regular fa-thumbs-up',
+    [Scoring.NEUTRAL]:       'fa-regular fa-meh',
     [Scoring.WEAK_MISMATCH]: 'fa-regular fa-question-circle',
-    [Scoring.MISMATCH]: 'fa-regular fa-heart-broken',
+    [Scoring.MISMATCH]:      'fa-regular fa-heart-broken',
 };
 
 export class Score {
