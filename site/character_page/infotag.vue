@@ -63,8 +63,8 @@
 
             const matchId = this.matchInfotag?.id ?? this.infotag.id;
 
-            if (matchId === 29)
-                logM.debug(`Infotag ${this.infotag.id}: ${this.infotag.name}`, this.characterMatch);
+            if (matchId !== this.infotag.id)
+                logM.debug(`Infotag ${this.infotag.id}: ${this.infotag.name}, custom match: ${TagId[matchId]}`, this.characterMatch);
 
             if (this.matchInfotag)
                 logM.debug('InfotagView.tagClasses.customMatchScore', this.matchInfotag);
@@ -87,7 +87,7 @@
         }
 
         theirInterestIsRelevant(id: number): boolean {
-            return ((id === TagId.FurryPreference) || (id === TagId.SubDomRole) || (id === TagId.Position) || (id === TagId.PostLength));
+            return ((id === TagId.FurryPreference) || (id === TagId.SubDomRole) || (id === TagId.Position) || (id === TagId.PostLength) || id === TagId.Orientation);
         }
 
         yourInterestIsRelevant(id: number): boolean {

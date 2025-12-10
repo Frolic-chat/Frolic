@@ -113,11 +113,9 @@
     import core from '../../chat/core';
     import l from '../../chat/localize';
 
-    import { Matcher } from '../../learn/matcher';
     import { TagId } from '../../learn/matcher-types';
 
     import NewLogger from '../../helpers/log';
-    const logM = NewLogger('matcher');
     const logG = NewLogger('custom-gender');
 
     interface ShowableVueDialog extends Vue {
@@ -174,15 +172,10 @@
         readonly rpInfoIds: ReadonlyArray<number> = [ TagId.PostLength, TagId.RPLength, TagId.LanguagePreference ];
 
         customIdForMatching(id: number): Infotag | undefined {
-            if (id === 29) {
-                // Directly depending on Matcher is bad, but a matchmaker-revealed species is rarely null even when empty (casts to Human with secondary indicators).
-                // Having a species is technically a proxy for
-                const yourSpecies = Matcher.getTagValue(TagId.Species, this.characterMatch.them.you);
-
-                logM.debug(`Sidebar.customIdForMatching.id ${id}`, yourSpecies);
-
-                return this.getInfotag(TagId.Species); // use species infotag for matching
-            }
+            if (id === TagId.FurryPreference)
+                return this.getInfotag(TagId.Species);
+            else if (id === TagId.Orientation)
+                return this.getInfotag(TagId.Gender);
 
             return undefined;
         }
