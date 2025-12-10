@@ -133,7 +133,7 @@ const data = {
         if (channel === 'settings') {
             Electron.ipcRenderer.send(channel, {
                 settings: state.generalSettings,
-                timestamp: VueUpdateCache.timestamp,
+                timestamp: MainUpdateCache.timestamp,
                 character: data.connection?.character,
             });
         }
@@ -141,14 +141,17 @@ const data = {
 };
 
 // Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
-const VueUpdateCache: {
-    staleFilter: SmartFilterSettings | {};
+const MainUpdateCache: {
     timestamp:   number;
-    skipWatch:   boolean,
+    skipWatch:   boolean;
 } = {
-    staleFilter: {},
     timestamp:   0,
     skipWatch:   false,
+};
+const VueUpdateCache: Partial<SettingsClass> & {
+    skipWatch: boolean;
+} = {
+    skipWatch: false,
 };
 
 export function init(this: any,
@@ -208,48 +211,47 @@ export function init(this: any,
                 VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
             }
         }
-
     }, { deep: true });
 
     data.watch(() => state.generalSettings, async () => {
-        logS.debug(VueUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', VueUpdateCache.timestamp);
+        logS.debug(MainUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', MainUpdateCache.timestamp);
 
-        if (VueUpdateCache.skipWatch) {
-            VueUpdateCache.skipWatch = false;
+        if (MainUpdateCache.skipWatch) {
+            MainUpdateCache.skipWatch = false;
         }
         else {
-            VueUpdateCache.timestamp = Date.now();
+            MainUpdateCache.timestamp = Date.now();
             data.updateMain('settings');
         }
     }, { deep: true });
 
     Electron.ipcRenderer.on('settings', (_e, d: GeneralSettingsUpdate) => {
-        if (d.timestamp <= VueUpdateCache.timestamp) {
+        if (d.timestamp <= MainUpdateCache.timestamp) {
             logS.warn('Settings from main stale; skipping', {
                 from:    d.character,
                 to:      data.connection?.character,
-                current: VueUpdateCache.timestamp,
+                current: MainUpdateCache.timestamp,
                 new:     d.timestamp,
             });
 
             return;
         }
 
-        VueUpdateCache.timestamp = d.timestamp;
+        MainUpdateCache.timestamp = d.timestamp;
 
         // const prev_settings = JSON.stringify(state.generalSettings);
         // Main dispatching an identical settings object will still cause `Object.assign` to change the internal references, causing an update without changing anything.
         // if (JSON.stringify(state.generalSettings) !== prev_settings) {
         if (!deepEqual(state.generalSettings, d.settings)) {
             Object.assign(state.generalSettings, d.settings);
-            VueUpdateCache.skipWatch = true;
+            MainUpdateCache.skipWatch = true;
         }
 
         logS.debug(
-            VueUpdateCache.skipWatch
+            MainUpdateCache.skipWatch
                 ? 'Skipping next watcher.'
                 : 'No change from main; not skipping next watcher.',
-            VueUpdateCache.timestamp
+            MainUpdateCache.timestamp
         );
 
         EventBus.$emit('settings-from-main', d.settings);
