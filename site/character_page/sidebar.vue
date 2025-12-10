@@ -181,8 +181,7 @@
 
                 logM.debug(`Sidebar.customIdForMatching.id ${id}`, yourSpecies);
 
-                if (!yourSpecies?.string)
-                    return this.getInfotag(TagId.Species); // use species infotag for matching
+                return this.getInfotag(TagId.Species); // use species infotag for matching
             }
 
             return undefined;
