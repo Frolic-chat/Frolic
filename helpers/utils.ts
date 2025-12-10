@@ -231,6 +231,64 @@ export function deepEqual(obj1: any, obj2: any): boolean {
     return true;
 }
 
+// export type ObjectKeys<T> = {
+//     [K in keyof T]: NonNullable<T[K]> extends object ? K : never
+// }[keyof T];
+// This one seems to provide entries to vscode more reliably
+type ObjectKeys<T> = keyof {
+    [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]
+}
+
+
+/**
+ * Overengineered version of `Object.keys(obj).filter(
+ *     k => (obj as any)[k] !== null && typeof (obj as any)[k] === 'object'
+ * );`
+ * @param obj Target object to examine for inner objects
+ * @param param1 Options: `deep` - recurse and return period-separated deep keys of objects as well
+ * @returns List of string keys; deep keys (if requested) period-separated.
+ */
+export function GetReferenceKeys(obj: unknown, { prefix, deep }: { prefix?: string, deep?: boolean } = {}): string[] {
+    if (obj === null || typeof obj !== 'object')
+        return [];
+
+    const keys: string[] = [];
+
+    Object.entries(obj).forEach(([k, v]) => {
+        if (v !== null && typeof v === 'object') {
+            const path = prefix ? `${prefix}.${k}` : k;
+            keys.push(path);
+
+            if (deep) {
+                const deep_keys = GetReferenceKeys(v, { prefix: path, deep: deep });
+                keys.push( ...deep_keys);
+            }
+        }
+    })
+
+    return keys;
+}
+
+/**
+ * Shallow with strong typing.
+ * @param obj
+ * @param param1
+ * @returns
+ */
+export function GetReferenceKeysShallow<T extends Record<string, any>>(obj: T): ObjectKeys<T>[] {
+    if (obj === null || typeof obj !== 'object')
+        return [];
+
+    const keys: ObjectKeys<T>[] = [];
+
+    Object.entries(obj).forEach(([k, v]) => {
+        if (v !== null && typeof v === 'object')
+            keys.push(k);
+    });
+
+    return keys;
+}
+
 export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
 
 export function getAsNumber(input: string | null | undefined): number | null {
