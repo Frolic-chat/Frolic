@@ -270,24 +270,30 @@ export function GetReferenceKeys(obj: unknown, { prefix, deep }: { prefix?: stri
 }
 
 /**
- * Shallow with strong typing.
- * @param obj
- * @param param1
- * @returns
+ * Shallow with strong typing. I honestly cannot believe I got this format to work.
+ * @param obj object to strip non-references from
+ * @returns A reduced object with only those keys that are references (to objects)
  */
-export function GetReferenceKeysShallow<T extends Record<string, any>>(obj: T): ObjectKeys<T>[] {
-    if (obj === null || typeof obj !== 'object')
-        return [];
-
-    const keys: ObjectKeys<T>[] = [];
-
-    Object.entries(obj).forEach(([k, v]) => {
-        if (v !== null && typeof v === 'object')
-            keys.push(k);
-    });
-
-    return keys;
+export function ExtractReferences<T extends Record<string, any>>(obj: T) {
+    return Object.keys(obj)
+        .filter(k => obj[k] && typeof obj[k] === "object")
+        .map(k => [k as keyof T, obj[k]] as const);
 }
+
+// Previous attempt, limited usefulness.
+// export function GetReferenceKeysShallow<T extends Record<string, any>>(obj: T): ObjectKeys<T>[] {
+//     if (obj === null || typeof obj !== 'object')
+//         return [];
+
+    // const keys: ObjectKeys<T>[] = [];
+
+//     Object.entries(obj).forEach(([k, v]) => {
+//         if (v !== null && typeof v === 'object')
+//             keys.push(k);
+//     });
+
+//     return keys;
+// }
 
 export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
 
