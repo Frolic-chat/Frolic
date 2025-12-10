@@ -2,7 +2,7 @@
 import Vue, {WatchHandler} from 'vue';
 import * as Electron from 'electron';
 import * as qs from 'querystring';
-import { deepEqual } from '../helpers/utils';
+import { deepEqual, ExtractReferences, ComparePrimitives } from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
@@ -14,7 +14,6 @@ import { AdCenter } from './ads/ad-center';
 import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
 import { SiteSession } from '../site/site-session';
 import { SettingsMerge } from '../helpers/utils';
-import type { SmartFilterSettings } from '../learn/filter/types';
 
 import { EventBus } from './preview/event-bus';
 import NewLogger from '../helpers/log';
@@ -191,31 +190,45 @@ export function init(this: any,
         if (!newValue) { // Should never happen; avoid catastrophy.
             return;
         }
-        else if (!oldValue) {
-            VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
+        else if (!oldValue) { // never triggers
+            ExtractReferences(newValue)
+                .forEach(k => VueUpdateCache[k[0]] = structuredClone(k[1]));
         }
         else {
-            log.debug('watch _settings will save core.', newValue);
-            await data.settingsStore?.set('settings', newValue);
-
-            EventBus.$emit('configuration-update', newValue);
-
-            if (oldValue.disallowedTags !== newValue.disallowedTags) {
-                data.bbCodeParser = createBBCodeParser();
-
-                log.debug('_settings disallowedTags updated.', oldValue, newValue);
-            }
-
             if (oldValue.notifications !== newValue.notifications)
                 EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
 
-            // Not working?
-            if (!deepEqual(newValue.risingFilter, VueUpdateCache.staleFilter)) {
-                logS.debug('risingFilter in _settings changed.', newValue.risingFilter);
+            EventBus.$emit('configuration-update', newValue);
 
-                EventBus.$emit('smartfilters-update', newValue.risingFilter);
+            let skipSave = false; // Proxy undefined structures as first load
 
-                VueUpdateCache.staleFilter = structuredClone(newValue.risingFilter);
+            ExtractReferences(newValue).forEach(([k, v]) => {
+                if (!deepEqual(VueUpdateCache[k], v)) {
+                    if (k === 'disallowedTags') {
+                        data.bbCodeParser = createBBCodeParser();
+                    }
+                    else if (k === 'risingFilter') {
+                        EventBus.$emit('smartfilters-update', newValue.risingFilter);
+                    }
+                    logS.debug(`core.data.watch.state._settings.${k} changed.`, v, VueUpdateCache[k]);
+                    skipSave = true;
+                    VueUpdateCache[k] = structuredClone(v);
+                }
+            });
+
+            const changed = ComparePrimitives(oldValue, newValue);
+
+            if (!Object.keys(changed).length) {
+                logS.debug('Skipping save of character settings.');
+                skipSave = true;
+            }
+
+            logS.debug('Changed values:', changed);
+
+            if (!skipSave){
+                logS.debug('core.data.watch.state._settings will save core.', newValue);
+
+                await data.settingsStore?.set('settings', newValue);
             }
         }
     }, { deep: true });
