@@ -231,13 +231,13 @@ export function deepEqual(obj1: any, obj2: any): boolean {
     return true;
 }
 
-// export type ObjectKeys<T> = {
-//     [K in keyof T]: NonNullable<T[K]> extends object ? K : never
-// }[keyof T];
-// This one seems to provide entries to vscode more reliably
-type ObjectKeys<T> = keyof {
-    [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]
-}
+export type ObjectKeys<T> = {
+    [K in keyof T]: NonNullable<T[K]> extends object ? K : never
+}[keyof T];
+// This one seems to provide entries to vscode more reliably - enable for TS4
+// type ObjectKeys<T> = keyof {
+//     [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]
+// }
 
 
 /**
@@ -248,8 +248,8 @@ type ObjectKeys<T> = keyof {
  * @param param1 Options: `deep` - recurse and return period-separated deep keys of objects as well
  * @returns List of string keys; deep keys (if requested) period-separated.
  */
-export function GetReferenceKeys(obj: unknown, { prefix, deep }: { prefix?: string, deep?: boolean } = {}): string[] {
-    if (obj === null || typeof obj !== 'object')
+export function GetReferenceKeys(obj: Record<string, unknown>, { prefix, deep }: { prefix?: string, deep?: boolean } = {}): string[] {
+    if (obj === null)
         return [];
 
     const keys: string[] = [];
@@ -259,8 +259,8 @@ export function GetReferenceKeys(obj: unknown, { prefix, deep }: { prefix?: stri
             const path = prefix ? `${prefix}.${k}` : k;
             keys.push(path);
 
-            if (deep) {
-                const deep_keys = GetReferenceKeys(v, { prefix: path, deep: deep });
+            if (deep) { // =\
+                const deep_keys = GetReferenceKeys(v as Record<string, unknown>, { prefix: path, deep: deep });
                 keys.push( ...deep_keys);
             }
         }
@@ -274,10 +274,11 @@ export function GetReferenceKeys(obj: unknown, { prefix, deep }: { prefix?: stri
  * @param obj object to strip non-references from
  * @returns A reduced object with only those keys that are references (to objects)
  */
+// (readonly [keyof { [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]; }, any])[]
 export function ExtractReferences<T extends Record<string, any>>(obj: T) {
     return Object.keys(obj)
         .filter(k => obj[k] && typeof obj[k] === "object")
-        .map(k => [k as keyof T, obj[k]] as const);
+        .map(k => [k as ObjectKeys<T>, obj[k]] as const);
 }
 
 // Previous attempt, limited usefulness.
