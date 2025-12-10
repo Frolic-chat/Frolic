@@ -120,6 +120,8 @@ const data = {
 
         state._settings = SettingsMerge(initial, s);
 
+        VueUpdateCache.skipWatch = true;
+
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
         state.hiddenUsers = hiddenUsers ?? [];
 
@@ -181,6 +183,11 @@ export function init(this: any,
     }, /* { deep: true } */);
 
     data.watch(() => state._settings, async (newValue, oldValue) => {
+        if (VueUpdateCache.skipWatch) {
+            VueUpdateCache.skipWatch = false;
+            return;
+        }
+
         if (!newValue) { // Should never happen; avoid catastrophy.
             return;
         }
