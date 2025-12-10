@@ -691,7 +691,7 @@ class ActivityConversation extends Conversation {
      * Track: Status changed from away/busy/dnd to online or crown.
      */
     protected readonly returned: Map<string, number> = new Map();
-    protected readonly MAX_RETURNED = 3;
+    protected readonly MAX_RETURNED = 0;
 
     /**
      * Heuristics
