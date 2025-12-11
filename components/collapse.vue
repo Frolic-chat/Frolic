@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
     <div class="modal-content">
         <div class="modal-header input-group flex-nowrap align-items-stretch border-0 p-0" @click="toggle()" style="cursor:pointer" :class="headerClass">
@@ -91,14 +92,23 @@
         get headerEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
         get buttonEndStyle()   { return this.collapsed ? '' : 'border-bottom-right-radius:0;' }
 
-        open()  { this.toggle(false, true) }
-        close() { this.toggle(true,  true) }
+        /**
+         * Open the collapse, optionally making the open instant. If you are controlling the internal state, make sure to observe @open to document the change triggered by open()
+         * @param instant Apply the action instantaneously; test thoroughly for your usage.
+         */
+        open(instant?: boolean) { this.toggle(false, true, instant) }
+
+        /**
+         * Close the collapse, optionally making the close instant. If you are controlling the internal state, make sure to observe @close to document the change triggered by close()
+         * @param instant Apply the action instantaneously; test thoroughly for your usage.
+         */
+        close(instant?: boolean) { this.toggle(true, true, instant) }
 
         setInitialState() {
             this.style.height = this.collapsed ? '0' : undefined;
         }
 
-        toggle(state?: boolean, emitSignal: boolean = true) {
+        toggle(state?: boolean, emitSignal: boolean = true, instant: boolean = false) {
             window.clearTimeout(this.timeout);
 
             this.collapsed = state !== undefined ? state : !this.collapsed;
@@ -106,7 +116,18 @@
             if (emitSignal)
                 this.$emit(this.collapsed ? 'close' : 'open');
 
-            if (this.collapsed) {
+            if (instant) {
+                this.style.transition = 'initial';
+
+                if (this.collapsed) {
+                    this.style.height = '0';
+                }
+                else {
+                    this.style.height = `${(<HTMLElement>this.$refs['content']).clientHeight}px`;
+                    window.requestAnimationFrame(() => this.style.height = undefined);
+                }
+            }
+            else if (this.collapsed) {
                 this.style.transition = 'initial';
                 this.style.height = `${(<HTMLElement>this.$refs['content']).clientHeight}px`;
 
@@ -118,7 +139,7 @@
                     0
                 );
             }
-            else {
+            else { // not collapsed
                 this.style.height = `${(<HTMLElement>this.$refs['content']).clientHeight}px`;
 
                 this.timeout = window.setTimeout(
