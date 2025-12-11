@@ -160,10 +160,6 @@
                 :type="'big'"
             >
                 <template v-slot:default>
-                    <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-                        <user :character="conversation.character" :match="false" :bookmark="false"></user>
-                        &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
-                    </span>
                     <div v-show="conversation.infoText" class="chat-info-text">
                         <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
                         <span style="flex:1;margin-left:5px">
@@ -186,8 +182,15 @@
 
             <!-- footer -->
             <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
-                <span class="channel-key text-left"><!-- typing indicator here -->
-                    {{ isChannel(conversation) ? conversation.key : '' }}
+                <span class="channel-key text-left">
+                    <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
+                        <user :character="conversation.character" :match="false" :bookmark="false"></user>
+                        &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
+                    </span>
+
+                    <span v-else-if="isChannel(conversation)">
+                        {{ conversation.key }}
+                    </span>
                 </span>
                 <div class="send-ads-switcher text-center btn-group btn-group-sm">
                     <template v-if="isChannel(conversation) && (conversation.channel.mode === 'both' || conversation.channel.mode === 'chat')">
@@ -584,12 +587,6 @@
         @Watch('conversation.infoText')
         textChanged(newValue: string, oldValue: string): void {
             if (oldValue.length === 0 && newValue.length > 0)
-                this.keepScroll();
-        }
-
-        @Watch('conversation.typingStatus')
-        typingStatusChanged(_str: string, oldValue: string): void {
-            if (oldValue === 'clear')
                 this.keepScroll();
         }
 
