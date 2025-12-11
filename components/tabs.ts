@@ -7,11 +7,17 @@ interface ClassProps {
     linkClasses: string;
 }
 
+interface TooltipData {
+    tooltips?: string[];
+    tooltipPosition?: string;
+}
+
 const Tabs = Vue.extend({
     props: {
         'value': [ String, Number ],
         'tabs': { required: false },
         'tooltips': { type: [ Array ], required: false },
+        'tooltipPosition': { type: String, required: false },
 
         // Optional bootstrap customization
         navClasses:  { type: String, default: 'nav-tabs-scroll' }, // div
@@ -24,8 +30,7 @@ const Tabs = Vue.extend({
                 _v?: string,
                 selected?: string,
                 tabs?: { readonly [key: string]: string; };
-                tooltips?: string[];
-            } & ClassProps,
+            } & ClassProps & TooltipData,
             createElement: CreateElement
         ): VNode {
             let children: { [key: string]: string | VNode | undefined; } = {};
@@ -61,7 +66,10 @@ const Tabs = Vue.extend({
                         'li',
                         {
                             staticClass: this.itemClasses,
-                            attrs: { 'data-tooltippy': this.tooltips?.[i] },
+                            attrs: {
+                                'aria-label': this.tooltips?.[i],
+                                'data-balloon-pos': this.tooltipPosition ?? 'down',
+                            },
                          },
                         [ createElement(
                             'a',

@@ -12,11 +12,17 @@ hr {
 }
 
 .nav-tabs-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
+    &:not(.conversation-tabs) {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
 
   .nav-tabs {
     flex-wrap: nowrap;
+
+    > li:has(.hidden-tab) {
+        display: none;
+    }
 
     .nav-item {
       flex-shrink: 0;
