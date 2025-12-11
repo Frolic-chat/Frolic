@@ -30,10 +30,13 @@ export class EIconUpdater {
         const result = await Axios.get(
             EIconUpdater.FULL_DATA_URL, {
                 signal: controller.signal,
-                onDownloadProgress: () => {
+                onDownloadProgress: e => {
                     log.debug('eiconupdater.fetchAll.progress.datareceived');
                     clearTimeout(no_response);
                     no_response = setTimeout(user_impatience, 5000);
+
+                    if (e.lengthComputable)
+                        EventBus.$emit('eicon-progress', { ...e });
                 },
                 timeout: 15000,
                 timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
@@ -107,10 +110,13 @@ export class EIconUpdater {
 
         const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`, {
             signal: controller.signal,
-            onDownloadProgress: () => {
+            onDownloadProgress: e => {
                 log.debug('eiconupdater.fetchUpdates.progress.datareceived');
                 clearTimeout(no_response);
                 no_response = setTimeout(user_impatience, 3500);
+
+                if (e.lengthComputable)
+                    EventBus.$emit('eicon-progress', { ...e });
             },
             timeout: 10000,
             timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
