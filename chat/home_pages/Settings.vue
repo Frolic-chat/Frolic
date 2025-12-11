@@ -252,14 +252,17 @@ export default class Settings extends Vue {
         const element = document.getElementById(id);
 
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-
             this.tabNames.forEach(n => {
                 if (n === id)
-                    (this.$refs[n] as Collapse).open();
+                    (this.$refs[n] as Collapse).open(true);
                 else
-                    (this.$refs[n] as Collapse).close();
+                    (this.$refs[n] as Collapse).close(true);
             });
+
+            window.requestAnimationFrame(() =>
+                element.scrollIntoView({ behavior: 'smooth' })
+            );
+
 
             this.activeCollapse = id;
         }
