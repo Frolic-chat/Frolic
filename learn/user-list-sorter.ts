@@ -56,7 +56,7 @@ const UserListSorter = {
         const thatGender = Matcher.strToGender(fchatGender);
         const theirGenders = thatGender ? [ thatGender ] : null;
 
-        const score = Matcher.scoreOrientationByGender(myGenders, orientation, theirGenders).score;
+        const score = Matcher.scoreOrientationByGender({ gender: myGenders, orientation: orientation }, { gender: theirGenders, nonbinary: false }).score;
 
         ulslog.silly('userlist.sorter.genderfromorientation', {
             you: you.name,

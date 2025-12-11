@@ -68,7 +68,7 @@ export class CharacterProfiler {
 
         const myGender = UserListSorter.GetGenderArray(me.character);
         const myOrientation = Matcher.getTagValueList(TagId.Orientation, me.character);
-        const score = Matcher.scoreOrientationByGender(myGender, myOrientation, [ g ]);
+        const score = Matcher.scoreOrientationByGender({ gender: myGender, orientation: myOrientation}, { gender: [ g ], nonbinary: false });
 
         return score.score;
     }
