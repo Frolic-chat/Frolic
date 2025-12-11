@@ -33,11 +33,7 @@
                 <news></news>
             </div>
 
-            <div v-show="widgets.scratchpad" class="home-row flex-row">
-                <scratchpad></scratchpad>
-            </div>
-
-            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount">
+            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
                 <note-status></note-status>
             </div>
 
@@ -54,6 +50,11 @@
                     </template>
                 </collapse>
             </div>
+
+            <div v-show="widgets.scratchpad" class="home-row flex-row">
+                <scratchpad></scratchpad>
+            </div>
+
         </div>
     </template>
 
