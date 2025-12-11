@@ -37,7 +37,7 @@
                 <note-status></note-status>
             </div>
 
-            <div v-show="widgets.activity" class="home-row flex-row">
+            <div v-show="widgets.activity && shouldShowActivity" class="home-row flex-row">
                 <collapse v-show="shouldShowActivity" class="chat-container" bodyClass="p-0"
                     :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true"
                 >
