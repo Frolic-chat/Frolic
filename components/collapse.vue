@@ -3,8 +3,10 @@
         <div class="modal-header input-group flex-nowrap align-items-stretch border-0 p-0" @click="toggle()" style="cursor:pointer" :class="headerClass">
             <div :style="headerStartStyle" class="form-control d-flex flex-column justify-content-around flex-grow-1 border-0" style="height:auto;">
                 <slot name="header">
-                    <span class="fas" :class="'fa-chevron-' + (collapsed ? 'down' : 'up')"></span>
-                    {{ title }}
+                    <span><!-- flex-column fix -->
+                        <span class="fas" :class="'fa-chevron-' + (collapsed ? 'down' : 'up')"></span>
+                        {{ title }}
+                    </span>
                 </slot>
             </div>
             <div v-if="$slots.button && $slots.button.length" :style="headerEndStyle" class="input-group-append flex-shrink-0 border-0 header-button-container-container">
