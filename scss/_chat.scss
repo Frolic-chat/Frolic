@@ -160,31 +160,31 @@
 
 @keyframes sendingAllowedVisibilityEffect {
   0% {
-    box-shadow: 0 0 0px color-mix(in oklab, var(--textGreenColor) 0%, transparent);
+    box-shadow: 0 0 0px 1px color-mix(in oklab, var(--success) 0%, transparent) inset;
   }
   7% {
-    box-shadow: 0 0 5px color-mix(in oklab, var(--textGreenColor) 100%, transparent);
+    box-shadow: 0 0 3px 2px color-mix(in oklab, var(--success) 100%, transparent) inset;
   }
 
   26% {
-    box-shadow: 0 0 8px color-mix(in oklab, var(--textGreenColor) 100%, transparent);
+    box-shadow: 0 0 7px 3px color-mix(in oklab, var(--success) 100%, transparent) inset;
   }
   33% {
-    box-shadow: 0 0 8px color-mix(in oklab, var(--textRedColor) 100%, var(--textGreenColor) 100%);
+    box-shadow: 0 0 7px 3px color-mix(in oklab, var(--danger) 100%, var(--success) 100%) inset;
   }
 
   59% {
-    box-shadow: 0 0 11px color-mix(in oklab, var(--textRedColor) 100%, var(--textGreenColor) 100%);
+    box-shadow: 0 0 10px 3px color-mix(in oklab, var(--danger) 100%, var(--success) 100%) inset;
   }
   66% {
-    box-shadow: 0 0 11px color-mix(in oklab, var(--textRedColor) 100%, transparent);
+    box-shadow: 0 0 10px 3px color-mix(in oklab, var(--danger) 100%, transparent) inset;
   }
 
   93% {
-    box-shadow: 0 0 8px color-mix(in oklab, var(--textRedColor) 100%, transparent);
+    box-shadow: 0 0 7px 3px color-mix(in oklab, var(--danger) 100%, transparent) inset;
   }
   100% {
-    box-shadow: 0 0 0px color-mix(in oklab, var(--textRedColor) 0%, transparent);
+    box-shadow: 0 0 0px 1px color-mix(in oklab, var(--danger) 0%, transparent) inset;
   }
 }
 
