@@ -5,7 +5,10 @@
             listClasses="nav nav-tabs"
             itemClasses="nav-item"
             linkClasses="nav-link" -->
-    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" linkClasses="btn btn-secondary-outline">
+    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0"
+        itemClasses="tooltippy tooltippy--bottom" :tooltips="tabTooltips"
+        linkClasses="btn btn-secondary-outline"
+    >
         <span><!-- Chat -->
             <span :class="{
                 'fa-fw fa-solid fa-house-user':   isHome,
@@ -346,6 +349,10 @@ export default class HomeScreen extends Vue {
     get tab3Name() { return l('home.tab.settings') }
 
     get tab4Name() { return l('home.tab.data') }
+
+    get tabTooltips() {
+        return [ this.tab0Name, this.tab1Name, this.tab2Name, this.tab3Name, this.tab4Name ];
+    };
 
     primaryView!:  ConversationView;
     secondaryView: ConversationView | undefined;
