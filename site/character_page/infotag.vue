@@ -87,11 +87,11 @@
         }
 
         theirInterestIsRelevant(id: number): boolean {
-            return ((id === TagId.FurryPreference) || (id === TagId.SubDomRole) || (id === TagId.Position) || (id === TagId.PostLength) || id === TagId.Orientation);
+            return id === TagId.FurryPreference || id === TagId.SubDomRole || id === TagId.Position || id === TagId.PostLength || id === TagId.Orientation;
         }
 
         yourInterestIsRelevant(id: number): boolean {
-            return ((id === TagId.Gender) || (id === TagId.Age) || (id === TagId.Species) || (id === TagId.BodyType));
+            return id === TagId.Gender || id === TagId.Age || id === TagId.Species || id === TagId.BodyType;
         }
 
         get contactLink(): string | undefined {
