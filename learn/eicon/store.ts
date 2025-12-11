@@ -192,7 +192,7 @@ export class EIconStore {
         log.verbose('eicons.load', { store: filename });
 
         try {
-            const data = JSON.parse(fs.readFileSync(filename, 'utf-8'));
+            const data = JSON.parse(await fs.promises.readFile(filename, 'utf-8'));
 
             /** Handling old formats is a must.
              *
