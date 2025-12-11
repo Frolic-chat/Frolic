@@ -20,7 +20,7 @@ export class EIconUpdater {
 
         let user_impatience = () => controller.abort("Xariah connection timeout.");
         let no_response = setTimeout(user_impatience, 8000);
-        log.debug('eiconupdater.fetchall.timeout.start');
+        log.debug('eiconupdater.fetchAll.timeout.start');
 
         /** How to handle wrong response type?
          * In theory Axios response is `any` type, in reality
@@ -31,7 +31,7 @@ export class EIconUpdater {
             EIconUpdater.FULL_DATA_URL, {
                 signal: controller.signal,
                 onDownloadProgress: () => {
-                    log.debug('eiconupdater.fetchall.progress.datareceived');
+                    log.debug('eiconupdater.fetchAll.progress.datareceived');
                     clearTimeout(no_response);
                     no_response = setTimeout(user_impatience, 5000);
                 },
@@ -102,13 +102,13 @@ export class EIconUpdater {
 
         let user_impatience = () => controller.abort("Xariah connection timeout.");
         let no_response = setTimeout(user_impatience, 8000);
-        log.debug('eiconupdater.fetchall.timeout.start');
+        log.debug('eiconupdater.fetchUpdates.timeout.start');
 
 
         const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`, {
             signal: controller.signal,
             onDownloadProgress: () => {
-                log.debug('eiconupdater.fetchall.progress.datareceived');
+                log.debug('eiconupdater.fetchUpdates.progress.datareceived');
                 clearTimeout(no_response);
                 no_response = setTimeout(user_impatience, 3500);
             },
