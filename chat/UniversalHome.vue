@@ -13,14 +13,12 @@
                 'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
                 'fa-fw fa-solid fa-user':         isPrivate,
             }"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab0Name }}</span> -->
         </span>
         <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
             <span v-if="isHome" :class="{
                 'fa-fw fa-solid fa-terminal':  isHome,
                 'fa-fw fa-solid fa-link':     !isHome,
             }"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab1Name }}</span> -->
         </span>
         <span><!-- Personalize/Description/Recon -->
             <span :class="{
@@ -28,15 +26,12 @@
                 'fa-fw fa-solid fa-align-left':     isChannel,
                 'fa-fw fa-solid fa-satellite-dish': isPrivate,
             }"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab2Name }}</span> -->
         </span>
         <span><!-- Settings -->
             <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab3Name }}</span> -->
         </span>
         <span><!-- Data -->
             <span class="fa-fw fa-solid fa-file-contract"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab4Name }}</span> -->
         </span>
     </tabs>
 
