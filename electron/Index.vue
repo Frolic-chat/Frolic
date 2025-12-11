@@ -127,6 +127,7 @@
 
     import NewLogger from '../helpers/log';
     const log = NewLogger('Index');
+    const logE = NewLogger('eicons');
     // const logBB = NewLogger('bbcode');
 
     import * as fs from 'fs';
@@ -277,6 +278,11 @@
 
         @Hook('created')
         async created(): Promise<void> {
+            EventBus.$on('eicon-progress', async e => {
+                logE.debug(e);
+                const t = this.tasks.find(t => t.id === 'eicon');
+                t && (t.progress = e.progress ?? 0);
+            });
             EventBus.$on('error', ErrorHandler.capture);
 
             this.debugBBCode = this.settings.argv.includes('--debug-bbcode');
