@@ -242,18 +242,18 @@ class State implements Interfaces.State {
      * @param text new status message; `character.statusText` is the old status message.
      * @param date date if received from date-based event (server message, for example)
      */
-    setStatus(character: Character, newStatus: Interfaces.Status, text: string, options?: { date?: Date, emitEvents?: boolean }): void {
+    setStatus(character: Character, newStatus: Interfaces.Status, text: string, options?: { isReconnect?: boolean, date?: Date, emitEvents?: boolean }): void {
         const emit = options?.emitEvents ?? true;
 
         if (character.isFriend) {
-            if (character.status === 'offline' && newStatus !== 'offline') {
+            if ((character.status === 'offline' || options?.isReconnect) && newStatus !== 'offline') {
                 this.friends.push(character);
                 if (emit) EventBus.$emit('friend-list', state.friends);
 
                 if (emit && options?.date)
                     EventBus.$emit('activity-friend-login', { character, date: options.date });
             }
-            else if (character.status !== 'offline' && newStatus === 'offline') {
+            else if ((character.status !== 'offline' || options?.isReconnect) && newStatus === 'offline') {
                 const i = this.friends.indexOf(character);
                 if (i >= 0) this.friends.splice(i, 1);
                 if (emit) EventBus.$emit('friend-list', state.friends);
