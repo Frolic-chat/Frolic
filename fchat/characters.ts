@@ -11,6 +11,7 @@ import l from '../chat/localize';
 
 import NewLogger from '../helpers/log';
 const logCG = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
+const logConnecting = NewLogger('connecting', () => core.state.generalSettings.argv.includes('--debug-connecting'));
 
 class Character implements Interfaces.Character {
     gender: Interfaces.Gender = 'None';
@@ -327,22 +328,28 @@ export default function(this: void, connection: Connection): Interfaces.State {
     state = new State();
     let reconnectStatus: Connection.ClientCommands['STA'];
     connection.onEvent('connecting', async (isReconnect) => {
+        logConnecting.debug('characters.default.onEvent.connecting', { isReconnect });
+
         const bm_list = await connection.queryApi('bookmark-list.php');
         const fr_list = await connection.queryApi('friend-list.php');
 
+        // Currently always runs.
         if (bm_list) {
+            logConnecting.debug('characters.default.onEvent.connecting.bm_list');
             state.bookmarks = [];
             state.bookmarkList = new Set(bm_list.characters);
+
+            EventBus.$emit('bookmark-list', state.bookmarks);
         }
 
+        // Currently always runs.
         if (fr_list) {
+            logConnecting.debug('characters.default.onEvent.connecting.fr_list');
             state.friends = [];
             state.friendList = new Set(fr_list.friends.map(x => x.dest));
+
+            EventBus.$emit('friend-list', state.friends);
         }
-
-
-        EventBus.$emit('bookmark-list', state.bookmarks);
-        EventBus.$emit('friend-list',   state.friends);
 
         if (isReconnect && state.ownCharacter.name !== '') {
             reconnectStatus = {
