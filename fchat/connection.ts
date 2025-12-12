@@ -146,7 +146,11 @@ export default class Connection implements Interfaces.Connection {
         return this.socket !== undefined && this.socket.readyState === ReadyState.OPEN;
     }
 
-
+    queryApi(endpoint: 'character-data.php', data: { id: number, account?: string, ticket?: string }): Promise<{ kinks: {[key: string]: string} }>;
+    //queryApi(endpoint: 'report-submit.php', data: { character: string; reportText: string; log: string; channel: string; text: boolean; reportUser?: string, account?: string, ticket?: string }): Promise<{ log_id?: number }>;
+    queryApi<T>(endpoint: 'character-data.php', data: { name: string, account?: string, ticket?: string }): Promise<T>;
+    queryApi(endpoint: 'bookmark-list.php', data?: { account?: string, ticket?: string }): Promise<{ characters: string[] }>;
+    queryApi(endpoint: 'friend-list.php', data?: { account?: string, ticket?: string }): Promise<{ friends: { source: string, dest: string, last_online: number }[] }>;
     async queryApi<T = object>(endpoint: string, data?: {account?: string, ticket?: string}): Promise<T> {
         return queryApiThroat(async() => this.queryApiExec<T>(endpoint, data));
     }
