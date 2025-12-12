@@ -1145,7 +1145,7 @@ export const speciesMapping: SpeciesMap = {
         'dwarf', 'dwarves', 'gnome', 'halfling', 'havlin', 'hobb?it', 'homun[cg]?ulus', 'lalafell', 'yordle', 'elin',
         'draph', 'dryad', 'gith(yanki)?', 'satyr', 't[h]?(ie|ei)fling',
                     // ???
-        'dullahan',
+        'dullahan', 'goblin',
                     // Media/pop culture species:
         'zwerg', 'aasimar', 'maiar?',  'dr[ae][ae]n[ae]i', 'gem', 'crystal gem',
     ],
@@ -1156,7 +1156,7 @@ export const speciesMapping: SpeciesMap = {
 
     [Species.Monster]: [
                     // Humanoid:
-        'gnoll', 'goblin', '(gn|k)obold', 'troll', 'gargoyle', 'harpy', 'ogre', 'bokoblin', 'gremlin',
+        'gnoll', '(gn|k)obold', 'troll', 'gargoyle', 'harpy', 'ogre', 'bokoblin', 'gremlin',
                     // Animalistic:
         'behemoth', 'owlbear', 'bunyip',
                     // Monstrous:
