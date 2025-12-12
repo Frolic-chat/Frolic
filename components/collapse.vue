@@ -140,6 +140,7 @@
                 );
             }
             else { // not collapsed
+                this.style.transition = 'height .225s';
                 this.style.height = `${(<HTMLElement>this.$refs['content']).clientHeight}px`;
 
                 this.timeout = window.setTimeout(
