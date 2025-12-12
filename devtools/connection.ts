@@ -4,7 +4,7 @@ import { ServerCommandKeys } from './api';
 import { Connection as Interfaces } from '../fchat/interfaces';
 import core from '../chat/core';
 import NewLogger from '../helpers/log';
-const log = NewLogger('devtools/connection');
+const log = NewLogger('devtools/connection', () => core.state.generalSettings.argv.includes('--debug-devtools'));
 
 /**
  * A debugger intended to attach to a Client connection.

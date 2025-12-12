@@ -4,7 +4,7 @@ import {Connection as Interfaces, WebSocketConnection} from './interfaces';
 import ReadyState = WebSocketConnection.ReadyState;
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('fchat/connection');
+const log = NewLogger('connection', () => core.state.generalSettings.argv.includes('--debug-connection'));
 
 import core from '../chat/core';
 import throat from 'throat';

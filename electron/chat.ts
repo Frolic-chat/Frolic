@@ -75,8 +75,8 @@ import Index from './Index.vue';
 
 import Logger from 'electron-log';
 import NewLogger from '../helpers/log';
-const log = NewLogger('chat');
-const logC = NewLogger('core');
+const log = NewLogger('chat', () => core.state.generalSettings.argv.includes('--debug-chat'));
+const logC = NewLogger('core', () => core.state.generalSettings.argv.includes('--debug-core'));
 
 import { LevelOption as LogLevelOption } from 'electron-log';
 

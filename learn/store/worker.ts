@@ -9,8 +9,8 @@ import { WorkerClient } from './worker/client';
 import core from '../../chat/core';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('worker');
-const logC = NewLogger('worker', () => core?.state.generalSettings.argv.includes('--debug-custom-gender'));
+const log = NewLogger('worker', () => core.state.generalSettings.argv.includes('--debug-worker'));
+const logC = NewLogger('worker', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
 
 
 /**

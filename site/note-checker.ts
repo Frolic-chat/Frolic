@@ -3,7 +3,7 @@ import { EventBus } from '../chat/preview/event-bus';
 import core from '../chat/core';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('note-checker');
+const log = NewLogger('note-checker', () => core.state.generalSettings.argv.includes('--debug-notes'));
 
 export interface NoteCheckerCount {
   unreadNotes: number;

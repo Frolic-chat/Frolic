@@ -1,7 +1,7 @@
 import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
 
 import NewLogger from '../../../helpers/log';
-const log = NewLogger('worker/client');
+const log = NewLogger('worker');
 
 export interface WaiterDef {
   id: string;
