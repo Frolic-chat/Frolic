@@ -248,18 +248,16 @@ class State implements Interfaces.State {
         if (character.isFriend) {
             if ((character.status === 'offline' || options?.isReconnect) && newStatus !== 'offline') {
                 this.friends.push(character);
-                if (emit) EventBus.$emit('friend-list', state.friends);
 
-                if (emit && options?.date)
-                    EventBus.$emit('activity-friend-login', { character, date: options.date });
+                if (emit)                   EventBus.$emit('friend-list', state.friends);
+                if (emit && options?.date)  EventBus.$emit('activity-friend-login', { character, date: options.date });
             }
             else if ((character.status !== 'offline' || options?.isReconnect) && newStatus === 'offline') {
                 const i = this.friends.indexOf(character);
                 if (i >= 0) this.friends.splice(i, 1);
-                if (emit) EventBus.$emit('friend-list', state.friends);
 
-                if (emit && options?.date)
-                    EventBus.$emit('activity-friend-logout', { character, date: options.date });
+                if (emit)                   EventBus.$emit('friend-list', state.friends);
+                if (emit && options?.date)  EventBus.$emit('activity-friend-logout', { character, date: options.date });
             }
             else if (options?.date) {
                 // Cache in case our listeners are async.
@@ -279,30 +277,24 @@ class State implements Interfaces.State {
         else if (character.isBookmarked) {
             if (character.status === 'offline' && newStatus !== 'offline') {
                 this.bookmarks.push(character);
-                if (emit) EventBus.$emit('bookmark-list', state.bookmarks);
 
-                if (emit && options?.date)
-                    EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
+                if (emit)                   EventBus.$emit('bookmark-list', state.bookmarks);
+                if (emit && options?.date)  EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
             }
             else if (character.status !== 'offline' && newStatus === 'offline') {
                 const i = this.bookmarks.indexOf(character);
                 if (i >= 0) this.bookmarks.splice(i, 1);
-                if (emit) EventBus.$emit('bookmark-list', state.bookmarks);
 
-                if (emit && options?.date)
-                    EventBus.$emit('activity-bookmark-logout', { character, date: options?.date });
+                if (emit)                   EventBus.$emit('bookmark-list', state.bookmarks);
+                if (emit && options?.date)  EventBus.$emit('activity-bookmark-logout', { character, date: options?.date });
             }
             else if (options?.date) {
-                // Cache in case our listeners are async.
-                const old_status     = character.status;
-                const old_status_msg = character.statusText;
-
                 EventBus.$emit('activity-bookmark-status', {
                     character,
                     status:       newStatus,
                     statusmsg:    text,
-                    oldStatus:    old_status,
-                    oldStatusMsg: old_status_msg,
+                    oldStatus:    character.status,
+                    oldStatusMsg: character.statusText,
                     date:         options?.date,
                 });
             }
@@ -334,21 +326,30 @@ let state: State;
 export default function(this: void, connection: Connection): Interfaces.State {
     state = new State();
     let reconnectStatus: Connection.ClientCommands['STA'];
-    connection.onEvent('connecting', async(isReconnect) => {
-        state.friends   = [];
-        state.bookmarks = [];
+    connection.onEvent('connecting', async (isReconnect) => {
+        const bm_list = await connection.queryApi('bookmark-list.php');
+        const fr_list = await connection.queryApi('friend-list.php');
 
-        const bm_list = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
-        const fr_list = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php')).friends.map(x => x.dest);
+        if (bm_list) {
+            state.bookmarks = [];
+            state.bookmarkList = new Set(bm_list.characters);
+        }
 
-        state.bookmarkList = new Set(bm_list);
-        state.friendList   = new Set(fr_list);
+        if (fr_list) {
+            state.friends = [];
+            state.friendList = new Set(fr_list.friends.map(x => x.dest));
+        }
+
 
         EventBus.$emit('bookmark-list', state.bookmarks);
         EventBus.$emit('friend-list',   state.friends);
 
-        if (isReconnect && (<Character | undefined>state.ownCharacter) !== undefined)
-            reconnectStatus = {status: state.ownCharacter.status, statusmsg: state.ownCharacter.statusText};
+        if (isReconnect && state.ownCharacter.name !== '') {
+            reconnectStatus = {
+                status: state.ownCharacter.status,
+                statusmsg: state.ownCharacter.statusText,
+            };
+        }
 
         for (const key in state.characters) {
             const character = state.characters[key]!;
@@ -358,7 +359,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
             character.statusText = '';
         }
     });
-    connection.onEvent('connected', async(isReconnect) => {
+    connection.onEvent('connected', async (isReconnect) => {
         if (!isReconnect)
             return;
 
