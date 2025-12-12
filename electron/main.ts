@@ -44,6 +44,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import * as ShellQuote from 'shell-quote';
 import process from 'node:process';
 const platform = process.platform;
 
@@ -59,8 +60,8 @@ const l_m = process.argv.includes('--debug-main');
 const l_s = process.argv.includes('--debug-settings');
 const l_b = process.argv.includes('--debug-browser');
 const log = NewLogger('main', () => l_m);
-const logSettings = NewLogger('main/settings', () => l_s);
-const logBrowser = NewLogger('main/browser', () => l_b);
+const logSettings = NewLogger('settings', () => l_s);
+const logBrowser = NewLogger('browser', () => l_b);
 
 import Logger from 'electron-log';
 import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log';
@@ -74,7 +75,7 @@ import * as LicenseHandler from './main/license-handler';
         log.warn('Failed to load license handler main-side.');
 })();
 
-import { exec } from 'child_process';
+import * as ChildProcess from 'child_process';
 import { FindExeFileFromName } from '../helpers/utils';
 
 import l from '../chat/localize';
@@ -270,24 +271,50 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     if (!settings.raw.browserArgs)
         settings.set('browserArgs', '%s');
     else if (!settings.raw.browserArgs.includes('%s'))
-        settings.set('browserArgs', settings.raw.browserArgs + ' %s')
+        settings.set('browserArgs', settings.raw.browserArgs + ' %s');
 
     // Ensure url is encoded, but not twice.
     // `%25` is the encoded `%` symbol.
     url = encodeURI(url);
     url = url.replace(/%25([0-9a-f]{2})/ig, '%$1');
 
-    // Quote URL to prevent issues with spaces and special characters
-    const args = (incognito ? settings.raw.browserIncognitoArg + ' ': '') + settings.raw.browserArgs.replaceAll('%s', `"${url}"`);
+    // The path is passed in by itself, likely chosen from file selector (or user manually typing it in), so don't. Just don't.
+    //const safe_browser = ShellQuote.parse(`"${settings.raw.browserPath}"`); // Ok, we won't.
+    const safe_incog   = ShellQuote.parse(settings.raw.browserIncognitoArg);
+    const safe_args    = ShellQuote.parse(settings.raw.browserArgs);
+    const safe_url     = ShellQuote.parse(`"${url}"`);
 
-    logBrowser.silly(`Opening: ${args} with ${settings.raw.browserPath}`);
+    logBrowser.debug(`safe args:\n\t${settings.raw.browserPath}\n\t${safe_incog}\n\t${safe_args}\n\t${safe_url}`);
+
+    const args = structuredClone(safe_args);
+
+    if (incognito && settings.raw.browserIncognitoArg)
+        args.unshift(...safe_incog);
+
+    // All arg containers could be multiple args, so can't check in this manner.
+    if (safe_url.length > 1 || safe_url.some(e => typeof e !== 'string')) {
+        Electron.dialog.showMessageBox({
+            title: 'Frolic! - Browser Failure',
+            message: l('chat.badBrowserArguments'),
+            type: 'error',
+            buttons: [],
+        });
+
+        return;
+    }
+
+    // Potentially, we could stop filtering at the first object. But this is all user input, not internet. You are allowed to screw yourself; others are not allowed to screw you.
+    const filtered_args = args
+        .filter(s => typeof s === 'string')
+        .map(s => s === '%s' ? safe_url[0] as string : s); // Above error handler sanitizes nonstring
+
+    logBrowser.debug(`Opening: ${filtered_args} with ${settings.raw.browserPath}`);
 
     // MacOS bug: If app browser is Safari and OS browser is not, both will open.
     // https://developer.apple.com/forums/thread/685385
-    if (platform === "darwin")
-        exec(`open -a "${settings.raw.browserPath}" ${args}`);
-    else
-        exec(`"${settings.raw.browserPath}" ${args}`);
+
+    // Below as string[] cast is for ts 3.9 in webpack. remove. Tags: @ts-ignore, not utter bs for once, what's chogoma?
+    ChildProcess.spawn(settings.raw.browserPath, filtered_args as string[], { detached: true, stdio: 'ignore' }).unref();
 }
 
 function setUpWebContents(webContents: Electron.WebContents): void {

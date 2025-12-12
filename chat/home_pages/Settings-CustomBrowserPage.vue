@@ -94,7 +94,7 @@ import l from '../localize';
 import { IncognitoArgFromBrowserPath } from '../../constants/general';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('CustomBrowserPage');
+const log = NewLogger('browser');
 
 @Component({
     components: {
