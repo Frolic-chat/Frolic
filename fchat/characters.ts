@@ -275,13 +275,13 @@ class State implements Interfaces.State {
             }
         }
         else if (character.isBookmarked) {
-            if (character.status === 'offline' && newStatus !== 'offline') {
+            if ((character.status === 'offline' || options?.isReconnect) && newStatus !== 'offline') {
                 this.bookmarks.push(character);
 
                 if (emit)                   EventBus.$emit('bookmark-list', state.bookmarks);
                 if (emit && options?.date)  EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
             }
-            else if (character.status !== 'offline' && newStatus === 'offline') {
+            else if ((character.status !== 'offline' || options?.isReconnect) && newStatus === 'offline') {
                 const i = this.bookmarks.indexOf(character);
                 if (i >= 0) this.bookmarks.splice(i, 1);
 
