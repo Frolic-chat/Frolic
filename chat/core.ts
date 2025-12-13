@@ -109,17 +109,12 @@ const data = {
     async reloadSettings(): Promise<void> {
         const s = await core.settingsStore.get('settings') as Partial<SettingsClass>;
 
-        const initial = new SettingsClass();
+        logS.debug('data.reloadSettings', { current: state._settings, saved: s });
 
-        log.debug('data.reloadSettings', {
-            initial: initial,
-            current: state._settings,
-            saved: s,
-        });
+        state._settings = SettingsMerge(new SettingsClass(), s);
 
-        state._settings = SettingsMerge(initial, s);
-
-        VueUpdateCache.skipWatch = true;
+        // Technically should be in settingsStore as we always want it for get();
+        VueUpdate.Cache = {};
 
         const hiddenUsers = await core.settingsStore.get('hiddenUsers');
         state.hiddenUsers = hiddenUsers ?? [];
@@ -149,11 +144,13 @@ const MainUpdateCache: {
     timestamp:   0,
     skipWatch:   false,
 };
-const VueUpdateCache: Partial<SettingsClass> & {
+const VueUpdate: {
+    Cache: Partial<SettingsClass>;
     skipWatch: boolean;
 } = {
+    Cache: {},
     skipWatch: false,
-};
+}
 
 export function init(this: any,
                      connection: Connection,
@@ -181,54 +178,83 @@ export function init(this: any,
         await data.settingsStore?.set('hiddenUsers', newValue);
     }, /* { deep: true } */);
 
-    data.watch(() => state._settings, async (newValue, oldValue) => {
-        if (VueUpdateCache.skipWatch) {
-            VueUpdateCache.skipWatch = false;
+    data.watch(() => state._settings, async (newValue) => {
+        if (VueUpdate.skipWatch) {
+            logS.debug('core.data.watch.state._settings.skipWatch');
+
+            VueUpdate.skipWatch = false;
             return;
         }
 
         if (!newValue) { // Should never happen; avoid catastrophy.
+            logS.warn('core.data.watch.state._settings No new value!?');
             return;
         }
-        else if (!oldValue) { // never triggers
-            ExtractReferences(newValue)
-                .forEach(k => VueUpdateCache[k[0]] = structuredClone(k[1]));
-        }
+        // else if !oldValue never happens; the object is instantiated prior to vue watching it
         else {
-            if (oldValue.notifications !== newValue.notifications)
-                EventBus.$emit('notification-setting', { old: oldValue.notifications, new: newValue.notifications });
+            let primitives_changed = false;
+            let references_changed = false;
+            let first_time = false; // Proxy undefined cache as first load
 
-            EventBus.$emit('configuration-update', newValue);
-
-            let skipSave = false; // Proxy undefined structures as first load
+            if (VueUpdate.Cache.notifications !== newValue.notifications)
+                EventBus.$emit('notification-setting', { old: VueUpdate.Cache.notifications ?? false, new: newValue.notifications });
 
             ExtractReferences(newValue).forEach(([k, v]) => {
-                if (!deepEqual(VueUpdateCache[k], v)) {
+                if (!deepEqual(VueUpdate.Cache[k], v)) {
                     if (k === 'disallowedTags') {
                         data.bbCodeParser = createBBCodeParser();
                     }
                     else if (k === 'risingFilter') {
                         EventBus.$emit('smartfilters-update', newValue.risingFilter);
                     }
-                    logS.debug(`core.data.watch.state._settings.${k} changed.`, v, VueUpdateCache[k]);
-                    skipSave = true;
-                    VueUpdateCache[k] = structuredClone(v);
+
+                    if (!VueUpdate.Cache[k]) { // We haven't observed assignment
+                        logS.debug(`core.data.watch.state._settings.${k}.firsttime`);
+
+                        first_time = true;
+                        references_changed = true;
+                    }
+                    else {
+                        logS.debug(`core.data.watch.state._settings.${k}.changed`, { new: v, old: VueUpdate.Cache[k] });
+
+                        VueUpdate.Cache[k] = v;
+                        references_changed = true;
+                    }
                 }
             });
 
-            const changed = ComparePrimitives(oldValue, newValue);
+            const changed = ComparePrimitives(VueUpdate.Cache, newValue);
+            const changed_keys = Object.keys(changed);
 
-            if (!Object.keys(changed).length) {
-                logS.debug('Skipping save of character settings.');
-                skipSave = true;
+            if (changed_keys.length) {
+                logS.debug('core.data.watch.state._settings.primitives.changed', changed);
+
+                if (!first_time) {
+                    changed_keys.forEach(ck =>
+                        VueUpdate.Cache[ck as keyof SettingsClass] = changed[ck as keyof SettingsClass][1]
+                    );
+                }
+
+                primitives_changed = true;
+            }
+            else {
+                logS.debug('core.data.watch.state._settings.primitives.unchanged');
             }
 
-            logS.debug('Changed values:', changed);
+            if (primitives_changed || references_changed) {
+                if (first_time) { // settings reloaded
+                    VueUpdate.Cache = structuredClone(newValue);
+                }
+                else {
+                    logS.debug('core.data.watch.state._settings.save', newValue);
 
-            if (!skipSave){
-                logS.debug('core.data.watch.state._settings will save core.', newValue);
+                    await data.settingsStore?.set('settings', newValue);
+                }
 
-                await data.settingsStore?.set('settings', newValue);
+                EventBus.$emit('configuration-update', newValue);
+            }
+            else {
+                logS.debug('core.data.watch.state._settings.unchanged');
             }
         }
     }, { deep: true });
