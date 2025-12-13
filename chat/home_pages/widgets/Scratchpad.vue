@@ -45,7 +45,7 @@ export default class Scratchpad extends Vue {
     scratchpad = '';
     timestamp = 0;
     skipWatch = false;
-    placeholder = 'The scratchpad is a new feature in this pre-release version. Please report any bugs you find so I can make it perfect for everyone!';
+    placeholder = "The scratchpad is a new feature in this pre-release version. Please report any bugs you find so I can make it perfect for everyone! Don't save anything important here until a release version!";
 
     @Hook('created')
     async created() {
@@ -73,12 +73,10 @@ export default class Scratchpad extends Vue {
 
     @Watch('scratchpad')
     scratchpadChanged() {
-        if (this.skipWatch) {
+        if (this.skipWatch)
             this.skipWatch = false;
-        }
-        else {
+        else
             this.debounceInput();
-        }
     }
 
     sendtoMain() {

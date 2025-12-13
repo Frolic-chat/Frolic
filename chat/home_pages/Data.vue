@@ -76,12 +76,12 @@
 
                 <!-- file view -->
                 <modal ref="licenseView" :action="loadedLicense.name" dialogClass="w-100" :buttons="false">
-                    <div v-if="loading_a_license">Loading license text...</div>
+                    <div v-if="loading_a_license" class="text-center text-info">Loading license text...</div>
                     <div v-if="!loading_a_license && loadedLicense.body" class="d-flex">
                         <pre class="m-auto preformatted-shrink-wrap">{{ loadedLicense.body }}</pre>
                     </div>
                     <div v-if="!loading_a_license && !loadedLicense.body">
-                        The license text wasn't retrievable. Try again or visit your installation directory directly.
+                        The license text wasn't retrievable. Try again or visit your installation directory to view applicable licenses.
                     </div>
                 </modal>
             </div>
