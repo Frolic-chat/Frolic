@@ -70,7 +70,7 @@
                 </a>
 
                 <div class="list-group conversation-nav" ref="privateConversations">
-                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="showConversation(conversation)"
+                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent.stop="showConversation(conversation)"
                         :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
                         class="list-group-item list-group-item-action item-private" :key="conversation.key"
                         @click.middle.prevent.stop="conversation.close()">
@@ -82,7 +82,7 @@
                                 <span class="fa-fw fas fa-reply" v-show="needsReply(conversation)"></span>
                                 <span style="flex:1"></span>
                                 <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
-                                    @click="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
+                                    @click.stop="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
                                 <span v-if="!conversation.isPinned" class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
                             </div>
                         </div>
