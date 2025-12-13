@@ -176,6 +176,8 @@ export default class Data extends Vue {
         this.loading_a_license = true;
         this.loadedLicense = { name: '', body: '' };
 
+        (this.$refs['licenseView'] as Modal).show();
+
         try {
             this.loadedLicense.body = await ipcRenderer.invoke('get-text-for-license', f);
             this.loadedLicense.name = f;
