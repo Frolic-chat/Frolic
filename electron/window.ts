@@ -10,7 +10,8 @@ import Window from './Window.vue';
 log.verbose('init.window');
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
-const settings = JSON.parse(params['settings']!) as GeneralSettings;
+const settings                = JSON.parse(params['settings']!) as GeneralSettings;
+const upgradeRoutineShouldRun = JSON.parse(params['upgradeRoutineShouldRun']!) as boolean;
 
 const logLevel: LogLevelOption = 'warn';
  Logger.transports.console.level = settings.risingSystemLogLevel || logLevel;
@@ -20,7 +21,10 @@ log.verbose('init.window.vue');
 //tslint:disable-next-line:no-unused-expression
 export default new Window({
     el: '#app',
-    data: {settings}
+    data: {
+        settings,
+        upgradeRoutineShouldRun,
+    }
 });
 
 log.debug('init.window.vue.done');

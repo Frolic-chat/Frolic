@@ -2,14 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { ipcRenderer } from 'electron';
-
-import NewLogger from '../../helpers/log';
-const log = NewLogger('eicon/store');
+import core from '../../chat/core';
 
 import { FisherYatesShuffle } from '../../helpers/utils';
 import { EventBus } from '../../chat/preview/event-bus';
 import { EIconUpdater } from './updater';
 
+import NewLogger from '../../helpers/log';
+const log = NewLogger('eicons', () => core.state?.generalSettings.argv.includes('--debug-eicons'));
 
 /**
  * The eicon UI has a maximum display size of 7x7 eicons at a time,
@@ -192,7 +192,7 @@ export class EIconStore {
         log.verbose('eicons.load', { store: filename });
 
         try {
-            const data = JSON.parse(fs.readFileSync(filename, 'utf-8'));
+            const data = JSON.parse(await fs.promises.readFile(filename, 'utf-8'));
 
             /** Handling old formats is a must.
              *

@@ -127,6 +127,7 @@
 
     import NewLogger from '../helpers/log';
     const log = NewLogger('Index');
+    const logE = NewLogger('eicons');
     // const logBB = NewLogger('bbcode');
 
     import * as fs from 'fs';
@@ -207,7 +208,7 @@
 
         // This data is passed in via new Index() in chat.ts
         settings!: GeneralSettings;
-        hasCompletedUpgrades!: boolean;
+        upgradeRoutineShouldRun!: boolean;
 
         upgradeMessage = '';
         debugBBCode = false;
@@ -277,6 +278,11 @@
 
         @Hook('created')
         async created(): Promise<void> {
+            EventBus.$on('eicon-progress', async e => {
+                logE.debug(e);
+                const t = this.tasks.find(t => t.id === 'eicon');
+                t && (t.progress = e.progress ?? 0);
+            });
             EventBus.$on('error', ErrorHandler.capture);
 
             this.debugBBCode = this.settings.argv.includes('--debug-bbcode');
@@ -288,13 +294,13 @@
             if (this.settings.account)
                 void this.awaitStartUpTask('index', this.start.restoreLogin);
 
-            if (!this.hasCompletedUpgrades) {
+            if (this.upgradeRoutineShouldRun) {
                 this.upgradeMessage = 'Version upgrade; this may take a while.';
 
                 // It is pointless to make this wait for anything to actually change; app version is already upgraded to latest in electron main, so we'll never "rerun" an upgrade even if it fails.
                 parent.send('rising-upgrade-complete');
                 electron.ipcRenderer.send('rising-upgrade-complete');
-                this.hasCompletedUpgrades = true;
+                this.upgradeRoutineShouldRun = false;
             }
 
             await this.start.listeners();
@@ -523,7 +529,7 @@
 
         get styling(): string {
             try {
-                return `<style id="themeStyle">${fs.readFileSync(path.join(__dirname, `themes/${((this.character != undefined && core.state.settings.risingCharacterTheme) || this.settings.theme)}.css`), 'utf8').toString()}</style>`;
+                return `<style id="themeStyle">${fs.readFileSync(path.join(__dirname, `themes/${((this.character && core.state.settings.risingCharacterTheme) || this.settings.theme)}.css`), 'utf8').toString()}</style>`;
             }
             catch (e) {
                 if ((<Error & { code: string }>e).code === 'ENOENT' && this.settings.theme !== 'default') {
@@ -600,7 +606,7 @@
                 log.debug('init.chat.cache.start');
 
                 try {
-                    await core.cache.start(this.settings, this.hasCompletedUpgrades);
+                    await core.cache.start(this.settings, this.upgradeRoutineShouldRun);
                 }
                 catch (e) {
                     const msg = typeof e === 'string'

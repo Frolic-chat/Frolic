@@ -9,7 +9,7 @@
                         </h4>
                         <button type="button" class="close" @click="hide" aria-label="Close" v-show="!keepOpen">&times;</button>
                     </div>
-                    <div class="modal-body" style="overflow:auto;-webkit-overflow-scrolling:auto" tabindex="-1">
+                    <div ref="scrollCage" class="modal-body" style="overflow:auto;-webkit-overflow-scrolling:auto" tabindex="-1">
                         <slot></slot>
                     </div>
                     <div class="modal-footer" v-if="buttons">
@@ -101,6 +101,13 @@
         hideWithCheck(): void {
             if(this.keepOpen) return;
             this.hide();
+        }
+
+        /**
+         * Direct rip off from home-page's scroll cage setup.
+         */
+        scrollToTop(): void {
+            this.$nextTick(() => (this.$refs['scrollCage'] as HTMLDivElement).scrollTo(0,0));
         }
 
         @Hook('beforeDestroy')

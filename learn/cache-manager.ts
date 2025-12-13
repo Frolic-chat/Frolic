@@ -280,7 +280,7 @@ export class CacheManager {
         this.rebuildFilters();
     }
 
-    async start(settings: GeneralSettings, skipFlush: boolean): Promise<void> {
+    async start(settings: GeneralSettings, flushCache: boolean = false): Promise<void> {
         await this.stop();
 
         this.profileStore = await WorkerStore.open(
@@ -289,7 +289,7 @@ export class CacheManager {
 
         this.profileCache.setStore(this.profileStore);
 
-        if (!skipFlush)
+        if (flushCache)
             await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
 
         EventBus.$on('character-data',          this.on_character_data);

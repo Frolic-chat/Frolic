@@ -15,7 +15,7 @@ import {
     CharacterImage, CharacterImageOld,
     CharacterInfotag, Infotag, InfotagGroup,
     Kink, KinkChoice, KinkGroup,
-    ListItem,
+    ListItem, InfotagType,
 } from '../interfaces';
 import {registerMethod, Store} from '../site/character_page/data_store';
 import {
@@ -29,12 +29,46 @@ import core from './core';
 import { EventBus } from './preview/event-bus';
 import * as FLIST from '../constants/flist';
 
+/**
+ * Adaptations of export to fix broken types.
+ */
+interface FieldMapListItem {
+    id:    string; // to num
+    name:  string;
+    value: string;
+}
+
+interface FieldMapKink {
+    id:          string; // to num
+    name:        string;
+    description: string;
+    group_id:    string; // to num
+}
+
+interface FieldMapKinkGroup {
+    id:   string; // to num
+    name: string;
+}
+
+interface FieldMapInfotag {
+    id:       string; // to num
+    name:     string;
+    list:     string;
+    type:     InfotagType;
+    group_id: string; // to num
+}
+
+interface FieldMapInfotagGroup {
+    id:          string // to num
+    name:        string
+}
+
 type ApiFields = {
-    listItems:     { [key: string]: ListItem     }
-    kinks:         { [key: string]: Kink         }
-    kinkGroups:    { [key: string]: KinkGroup    }
-    infotags:      { [key: string]: Infotag      }
-    infotagGroups: { [key: string]: InfotagGroup }
+    listItems:     Record<string, ListItem>;
+    kinks:         Record<string, Kink>;
+    kinkGroups:    Record<string, KinkGroup>;
+    infotags:      Record<string, Infotag>;
+    infotagGroups: Record<string, InfotagGroup>;
 }
 
 const parserSettings = {
@@ -165,78 +199,73 @@ async function fieldsGet(): Promise<void> {
 
     try {
         const response = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
-            listitems:      {[key: string]: ListItem}
-            kinks:          {[key: string]: Kink & {group_id: number}}
-            kink_groups:    {[key: string]: KinkGroup}
-            infotags:       {[key: string]: Infotag & {list: string, group_id: string}}
-            infotag_groups: {[key: string]: InfotagGroup & {id: string}}
+            // listitems:      {[key: string]: FieldMapListItem}
+            // kinks:          {[key: string]: FieldMapKink}
+            // kink_groups:    {[key: string]: KinkGroup}
+            // infotags:       {[key: string]: FieldMapInfotag}
+            // infotag_groups: {[key: string]: FieldMapInfotagGroup}
+            listitems:      FieldMapListItem[];
+            kinks:          FieldMapKink[];
+            kink_groups:    FieldMapKinkGroup[];
+            infotags:       FieldMapInfotag[];
+            infotag_groups: FieldMapInfotagGroup[];
         };
 
         const new_api: ApiFields = {
-            kinks: {},
-            kinkGroups: {},
-            infotags: {},
+            kinks:         {},
+            kinkGroups:    {},
+            infotags:      {},
             infotagGroups: {},
-            listItems: {},
+            listItems:     {},
         };
 
-        for (const id in response.kinks) {
-            const oldKink = response.kinks[id];
+        response.kinks.forEach(k => {
+            new_api.kinks[k.id] = {
+                id:          Number(k.id),
+                name:        k.name,
+                description: k.description,
+                kink_group:  Number(k.group_id),
+            }
+        });
 
-            new_api.kinks[oldKink.id] = {
-                id:          oldKink.id,
-                name:        oldKink.name,
-                description: oldKink.description,
-                kink_group:  oldKink.group_id,
-            };
-        }
-
-        for (const id in response.kink_groups) {
-            const oldGroup = response.kink_groups[id];
-
-            new_api.kinkGroups[oldGroup.id] = {
-                id:          oldGroup.id,
-                name:        oldGroup.name,
+        response.kink_groups.forEach(kg => {
+            new_api.kinkGroups[kg.id] = {
+                id:          Number(kg.id),
+                name:        kg.name,
                 description: '',
-                sort_order:  oldGroup.id,
+                sort_order:  Number(kg.id),
             };
-        }
+        });
 
-        for (const id in response.infotags) {
-            const oldInfotag = response.infotags[id];
-
-            new_api.infotags[oldInfotag.id] = {
-                id:            oldInfotag.id,
-                name:          oldInfotag.name,
-                type:          oldInfotag.type,
-                validator:     oldInfotag.list,
+        response.infotags.forEach(it => {
+            new_api.infotags[it.id] = {
+                id:            Number(it.id),
+                name:          it.name,
+                type:          it.type,
+                validator:     it.list,
                 search_field:  '',
                 allow_legacy:  true,
-                infotag_group: parseInt(oldInfotag.group_id, 10),
+                infotag_group: Number(it.group_id),
+            }
+        });
+
+        response.listitems.forEach(li => {
+            new_api.listItems[li.id] = {
+                id:         Number(li.id),
+                name:       li.name,
+                value:      li.value,
+                sort_order: Number(li.id),
             };
-        }
+        });
 
-        for (const id in response.listitems) {
-            const oldListItem = response.listitems[id];
-
-            new_api.listItems[oldListItem.id] = {
-                id:         oldListItem.id,
-                name:       oldListItem.name,
-                value:      oldListItem.value,
-                sort_order: oldListItem.id,
+        response.infotag_groups.forEach(itg => {
+            new_api.infotagGroups[itg.id] = {
+                id:          Number(itg.id),
+                name:        itg.name,
+                description: '',
+                sort_order:  Number(itg.id),
             };
-        }
-
-        for (const id in response.infotag_groups) {
-            const oldGroup = response.infotag_groups[id];
-
-            new_api.infotagGroups[oldGroup.id] = {
-                id:          parseInt(oldGroup.id, 10),
-                name:        oldGroup.name,
-                description: oldGroup.description,
-                sort_order:  oldGroup.id,
-            };
-        }
+        });
 
         Store.shared = new_api;
     }
@@ -260,21 +289,21 @@ async function imagesGet(id: number): Promise<CharacterImage[] | false> {
 }
 
 type GuestbookResponse = {
-    canEdit: boolean;
-    error: string;
+    canEdit:  boolean;
+    error:    string;
     nextPage: boolean;
-    page: number;
-    posts: GuestbookPost[];
+    page:     number;
+    posts:    GuestbookPost[];
 }
 
 async function guestbookGet(id: number, offset: number): Promise<Guestbook> {
-    const data = await core.connection.queryApi<GuestbookResponse>('character-guestbook.php', {id, page: Math.floor(offset / 10)});
+    const data = await core.connection.queryApi<GuestbookResponse>('character-guestbook.php', { id, page: Math.floor(offset / 10) });
 
     return {posts: data.posts, total: data.nextPage ? offset + 100 : offset};
 }
 
 async function kinksGet(id: number): Promise<CharacterKink[]> {
-    const data = await core.connection.queryApi<{kinks: {[key: string]: string}}>('character-data.php', {id});
+    const data = await core.connection.queryApi('character-data.php', { id });
 
     return Object.keys(data.kinks)
             .map(key => {

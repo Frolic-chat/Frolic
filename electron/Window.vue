@@ -17,7 +17,7 @@
                         </a>
                     </a>
                 </li>
-                <li v-show="(canOpenTab && hasCompletedUpgrades)" class="addTab nav-item" id="addTab">
+                <li v-show="(canOpenTab && !upgradeRoutineShouldRun)" class="addTab nav-item" id="addTab">
                     <a href="#" @click.prevent="addTab()" class="nav-link"><i class="fa fa-plus"></i></a>
                 </li>
             </ul>
@@ -88,7 +88,10 @@
 
     @Component
     export default class Window extends Vue {
+        // Data from `new Window()`
         settings!: GeneralSettings;
+        upgradeRoutineShouldRun!: boolean;
+
         tabs: Tab[] = [];
         activeTab: Tab | undefined;
         tabMap: {[key: number]: Tab} = {};
@@ -98,7 +101,6 @@
         hasUpdate = false;
         platform = process.platform;
         lockTab = false;
-        hasCompletedUpgrades = false;
         generalSettingsTimestamp = 0;
 
 
@@ -118,14 +120,6 @@
 
             log.debug('init.window.languages');
 
-            // electron.ipcRenderer.on(
-            //     'before-quit', (e: Event) => {
-            //         this.tabs.forEach((tab: Tab) => {
-            //             tab.tray.destroy();
-            //         })
-            //     }
-            // )
-
             electron.ipcRenderer.on('settings', (_e: IpcRendererEvent, d: GeneralSettingsUpdate) => {
                 if (d.timestamp > this.generalSettingsTimestamp) {
                     log.debug('generalSettings.update.window');
@@ -137,9 +131,7 @@
                 }
             });
 
-            electron.ipcRenderer.on('rising-upgrade-complete', () => {
-                this.hasCompletedUpgrades = true;
-            });
+            electron.ipcRenderer.on('rising-upgrade-complete', () => this.upgradeRoutineShouldRun = false);
             electron.ipcRenderer.on('allow-new-tabs', (_e: IpcRendererEvent, allow: boolean) => this.canOpenTab = allow);
             electron.ipcRenderer.on('open-tab', () => this.addTab());
             electron.ipcRenderer.on('update-available', (_e: IpcRendererEvent, available: boolean) => this.hasUpdate = available);
@@ -400,7 +392,10 @@
                 pathname: path.join(__dirname, 'index.html'),
                 protocol: 'file:',
                 slashes: true,
-                query: {settings: JSON.stringify(this.settings), hasCompletedUpgrades: JSON.stringify(this.hasCompletedUpgrades)}
+                query: {
+                    settings: JSON.stringify(this.settings),
+                    upgradeRoutineShouldRun: JSON.stringify(this.upgradeRoutineShouldRun),
+                }
             });
 
             log.debug('init.window.tab.add.load-index.start', indexUrl);

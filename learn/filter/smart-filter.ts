@@ -5,7 +5,7 @@ import { Character } from '../../interfaces';
 import core from '../../chat/core';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('smart-filter');
+const log = NewLogger('filters', () => core.state.generalSettings.argv.includes('--debug-filters'));
 
 export interface SmartFilterOpts {
   name: string;

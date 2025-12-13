@@ -1,20 +1,40 @@
 <template>
-<div id="note-status" :class="{active: hasReports()}">
-    <div v-for="(report, index) in reports"
-            :key="`report-${index}`"
-            :class="`status-report ${report.type} ${(report.count > 0) && (report.count !== report.dismissedCount) ? 'active': ''}`">
-        <a :href="report.url" @click="dismissReport(report)">
-            <span class="count">{{report.count}}</span>
+<collapse bodyClass="d-flex flex-wrap"
+    :initial="yohhlrf" @open="toggle.notes = false" @close="toggle.notes = true"
+>
+    <template v-slot:header>
+        <span>
+            {{ headerTitle }}
+
+            <span v-for="report in reports" :key="`report-head-${report.title}`">
+                <template v-if="report.count">
+                    {{ report.count }}
+                    <span :class="{
+                            'fa-solid fa-fw fa-envelope':   report.type === 'note',
+                            'fa-regular fa-fw fa-envelope': report.type === 'message',
+                        }" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"
+                    ></span>
+                </template>
+            </span>
+        </span>
+    </template>
+
+    <div v-for="report in reports" :key="`report-body-${report.title}`" class="note-status-report flex-grow-1">
+        <a :href="report.url">
+            <span class="count">
+                {{ report.count }}
+            </span>
             {{ `${report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1)}` }}
         </a>
-        <a @click="dismissReport(report)" class="dismiss"><i class="fas fa-times-circle"></i></a>
     </div>
-</div>
+</collapse>
 </template>
 
 <script lang="ts">
-import { Component, Hook } from '@f-list/vue-ts';
 import Vue from 'vue';
+import { Component, Hook } from '@f-list/vue-ts';
+import Collapse from '../components/collapse.vue';
+
 import core from '../chat/core';
 import { EventBus } from '../chat/preview/event-bus';
 
@@ -26,8 +46,14 @@ interface ReportState {
     url: string;
 }
 
-@Component
+@Component({
+    components: {
+        collapse: Collapse,
+    }
+})
 export default class NoteStatus extends Vue {
+headerTitle = 'Notes & Site Messages';
+
 reports: ReportState[] = [
     {
         type: 'message',
@@ -45,118 +71,71 @@ reports: ReportState[] = [
     }
 ];
 
-callback?: () => void;
-
+callback = () => this.updateCounts();
 
 @Hook('mounted')
 mounted(): void {
     this.updateCounts();
 
-    this.callback = () => this.updateCounts();
-
     EventBus.$on('note-counts-update', this.callback);
 }
 
-
 @Hook('beforeDestroy')
 destroying(): void {
-    if (this.callback) EventBus.$off('note-counts-update', this.callback);
+    EventBus.$off('note-counts-update', this.callback);
 }
-
-
-dismissReport(report: ReportState): void {
-    report.dismissedCount = report.count;
-}
-
 
 hasReports(): boolean {
-    return !!this.reports.find(r => r.count > 0 && r.dismissedCount !== r.count);
+    return !!this.reports.find(r => r.count > 0);
 }
 
+/**
+ * Is this jank because of typing? Or are these runtime checks necesssary?
+ */
 updateCounts(): void {
     const latest = core.siteSession.interfaces.notes.getCounts();
 
     const mapper: Record<'message' | 'note', Partial<keyof typeof latest>> = {
         message: 'unreadMessages',
-        note: 'unreadNotes'
+        note: 'unreadNotes',
     };
 
     Object.entries(mapper).forEach(([k, v]) => {
         const report = this.reports.find(r => r.type === k);
-
         if (!report)
-            throw new Error(`Did not find report ${k}`);
+            return;
 
-        const count = latest[v];
-
-        if (count !== report.dismissedCount) report.dismissedCount = 0;
-
-        report.count = count;
+        report.count = latest[v];
     });
   }
+
+    get yohhlrf() { return this.toggle.activity ?? false }
+    toggle = core.runtime.userToggles;
 }
 </script>
 
 <style lang="scss">
-#note-status {
-    position: absolute;
-    right: 3em;
-    bottom: 0;
-    z-index: 1000;
-    opacity: 0;
-    transition: all 0.25s;
+.note-status-report {
+    text-align: center;
+    text-transform: uppercase;
 
-    border: 1px solid var(--input-color);
-    background-color: var(--input-bg);
-    padding: 0;
-    border-radius: 3px;
-
-    &.active {
-        opacity: 1;
-        right: 0;
+    a {
+        padding: 5px;
+        padding-bottom: 3px;
+        display: block;
     }
 
+    a:hover {
+        text-decoration: none;
+        background-color: var(--secondary);
+    }
 
-    .status-report {
-        display: none;
-        text-align: center;
-        text-transform: uppercase;
-        font-size: 10pt;
+    .count {
+        font-size: 30pt;
+        display: block;
+        line-height: 80%;
         padding: 0;
-
-        &.active {
-            display: block;
-        }
-
-        a {
-            padding: 5px;
-            padding-bottom: 3px;
-            display: block;
-        }
-
-        a:hover {
-            text-decoration: none;
-            background-color: var(--secondary);
-        }
-
-        .count {
-            font-size: 30pt;
-            display: block;
-            line-height: 80%;
-            padding: 0;
-            margin:  0;
-        }
-
-        .dismiss {
-            position: absolute;
-            top:   -0.4rem;
-            right: -0.4rem;
-            background-color: var(--input-bg);
-            border-radius: 8px;
-            margin:  0;
-            padding: 0;
-            line-height: 0;
-        }
+        margin:  0;
     }
 }
 </style>

@@ -138,13 +138,17 @@ let state: State;
 export default function(this: void, connection: Connection, characters: Character.State): Interfaces.State {
     state = new State(connection);
     let rejoin: string[] | undefined;
+
     connection.onEvent('connecting', (isReconnect) => {
-        if (isReconnect && rejoin === undefined) rejoin = Object.keys(state.joinedMap);
+        if (isReconnect && !rejoin)
+            rejoin = Object.keys(state.joinedMap);
+
         state.joinedChannels = [];
         state.joinedMap = {};
     });
+
     connection.onEvent('connected', () => {
-        if (rejoin !== undefined) {
+        if (rejoin) {
             queuedJoin(rejoin);
             rejoin = undefined;
         }

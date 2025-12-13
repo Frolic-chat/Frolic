@@ -83,6 +83,9 @@ import modal from '../components/Modal.vue';
 import CustomDialog from '../components/custom_dialog';
 import { debounce } from '../helpers/utils';
 
+// import NewLogger from '../helpers/log';
+// const log = NewLogger('eicons');
+
 let store: EIconStore | undefined;
 
 @Component({ components: { modal } })

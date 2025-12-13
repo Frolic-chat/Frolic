@@ -82,7 +82,6 @@ export interface MatchResultScores {
     [key: number]: Score;
     [TagId.Gender]: Score;
     [TagId.Age]: Score;
-    [TagId.FurryPreference]: Score;
     [TagId.Species]: Score;
     [TagId.Kinks]: Score;
 }
@@ -111,27 +110,27 @@ export interface ScoreClassMap {
 }
 
 const scoreClasses: ScoreClassMap = {
-    [Scoring.MATCH]: 'match',
-    [Scoring.WEAK_MATCH]: 'weak-match',
-    [Scoring.NEUTRAL]: 'neutral',
+    [Scoring.MATCH]:         'match',
+    [Scoring.WEAK_MATCH]:    'weak-match',
+    [Scoring.NEUTRAL]:       'neutral',
     [Scoring.WEAK_MISMATCH]: 'weak-mismatch',
-    [Scoring.MISMATCH]: 'mismatch',
+    [Scoring.MISMATCH]:      'mismatch',
 };
 
 const scoreIcons: ScoreClassMap = {
-    [Scoring.MATCH]: 'fas fa-heart',
-    [Scoring.WEAK_MATCH]: 'fas fa-thumbs-up',
-    [Scoring.NEUTRAL]: 'fas fa-meh',
+    [Scoring.MATCH]:         'fas fa-heart',
+    [Scoring.WEAK_MATCH]:    'fas fa-thumbs-up',
+    [Scoring.NEUTRAL]:       'fas fa-meh',
     [Scoring.WEAK_MISMATCH]: 'fas fa-question-circle',
-    [Scoring.MISMATCH]: 'fas fa-heart-broken',
+    [Scoring.MISMATCH]:      'fas fa-heart-broken',
 };
 
 const scoreIconsLite: ScoreClassMap = {
-    [Scoring.MATCH]: 'fa-regular fa-heart',
-    [Scoring.WEAK_MATCH]: 'fa-regular fa-thumbs-up',
-    [Scoring.NEUTRAL]: 'fa-regular fa-meh',
+    [Scoring.MATCH]:         'fa-regular fa-heart',
+    [Scoring.WEAK_MATCH]:    'fa-regular fa-thumbs-up',
+    [Scoring.NEUTRAL]:       'fa-regular fa-meh',
     [Scoring.WEAK_MISMATCH]: 'fa-regular fa-question-circle',
-    [Scoring.MISMATCH]: 'fa-regular fa-heart-broken',
+    [Scoring.MISMATCH]:      'fa-regular fa-heart-broken',
 };
 
 export class Score {
@@ -457,7 +456,6 @@ export class Matcher {
             scores: {
                 [TagId.Gender]:          this.resolveGenderorOrientationScore(),
                 [TagId.Age]:             this.resolveAgeScore(),
-                [TagId.FurryPreference]: this.resolveFurryPairingsScore(),
                 [TagId.Species]:         this.resolveSpeciesOrFurryPreferenceScore(),
                 [TagId.SubDomRole]:      this.resolveSubDomScore(),
                 [TagId.Kinks]:           this.resolveKinkScore(pronoun),
@@ -481,13 +479,29 @@ export class Matcher {
     }
 
     private resolveOrientationScore(): Score {
-        return Matcher.scoreOrientationByGender(
-            this.yourAnalysis.gender, this.yourAnalysis.orientation, this.theirAnalysis.gender
-        );
+        const nb_rating = Matcher.getKinkPreference(this.theirAnalysis.character, Kink.Nonbinary);
+        const tg_rating = Matcher.getKinkPreference(this.theirAnalysis.character, Kink.Transgenders);
+
+        let rating = nb_rating;
+
+        if (!tg_rating)
+            rating = nb_rating;
+        else if (!nb_rating)
+            rating = tg_rating;
+        else if (tg_rating > nb_rating)
+            rating = tg_rating;
+
+        return Matcher.scoreOrientationByGender({
+            gender:      this.yourAnalysis.gender,
+            orientation: this.yourAnalysis.orientation,
+        }, {
+            gender: this.theirAnalysis.gender,
+            nonbinary: rating ? rating > 0 : false,
+        });
     }
 
 
-    static scoreOrientationByGender(yourGenders: Gender[] | null, yourOrientation: Orientation | null, theirGenders: Gender[] | null): Score {
+    static scoreOrientationByGender(you: { gender: Gender[] | null, orientation: Orientation | null }, them: { gender: Gender[] | null, nonbinary: boolean }): Score {
         function doesntHaveGender(g: Gender[] | null): g is null {
             return !g
                 || g.length === 1 && g[0] === Gender.None;
@@ -500,57 +514,60 @@ export class Matcher {
                 || o === Orientation.Unsure;
         }
 
-        if (doesntHaveGender(yourGenders) || doesntHaveGender(theirGenders) || lovesEveryone(yourOrientation))
+        if (doesntHaveGender(you.gender) || doesntHaveGender(them.gender) || lovesEveryone(you.orientation))
             return new Score(Scoring.NEUTRAL);
 
-        const yourConcrete  = Matcher.excludeNebulousGenders(...yourGenders);
-        const theirConcrete = Matcher.excludeNebulousGenders(...theirGenders);
+        const yourConcrete  = Matcher.excludeNebulousGenders(...you.gender);
+        const theirConcrete = Matcher.excludeNebulousGenders(...them.gender);
         if (!yourConcrete.length || !theirConcrete.length)
             return new Score(Scoring.NEUTRAL);
 
-        if (yourOrientation === Orientation.Gay && yourConcrete.some(g => theirConcrete.includes(g)))
+        if (you.orientation === Orientation.Gay && yourConcrete.some(g => theirConcrete.includes(g)))
             return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
 
-        if (yourOrientation === Orientation.BiFemalePreference && theirConcrete.includes(Gender.Female))
+        if (you.orientation === Orientation.BiFemalePreference && theirConcrete.includes(Gender.Female))
             return new Score(Scoring.MATCH, 'Loves <span>female</span> partners');
-        if (yourOrientation === Orientation.BiMalePreference   && theirConcrete.includes(Gender.Male))
+        if (you.orientation === Orientation.BiMalePreference   && theirConcrete.includes(Gender.Male))
             return new Score(Scoring.MATCH, 'Loves <span>male</span> partners');
 
         // CIS
-        const theirCisgender = Matcher.isCisGender(...theirGenders);
-        const yourCisgender  = Matcher.isCisGender(...yourGenders);
-        if (theirCisgender && yourCisgender) {
-            if (yourCisgender === theirCisgender) { // Gay cis
+        const theirCisGender = Matcher.isCisGender(...you.gender);
+        const yourCisGender  =  them.nonbinary
+            ? Matcher.translateNbToCis(...you.gender)
+            : Matcher.isCisGender(...them.gender);
+
+        if (theirCisGender && yourCisGender) {
+            if (yourCisGender === theirCisGender) { // Gay cis
                 // same sex CIS
-                if (yourOrientation === Orientation.Straight)
+                if (you.orientation === Orientation.Straight)
                     return new Score(Scoring.MISMATCH, 'No <span>same sex</span> partners');
 
-                if (yourOrientation === Orientation.Gay
-                ||  yourOrientation === Orientation.Bisexual
-                ||  yourOrientation === Orientation.Pansexual
-                ||  yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Female
-                ||  yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Male)
+                if (you.orientation === Orientation.Gay
+                ||  you.orientation === Orientation.Bisexual
+                ||  you.orientation === Orientation.Pansexual
+                ||  you.orientation === Orientation.BiFemalePreference && theirCisGender === Gender.Female
+                ||  you.orientation === Orientation.BiMalePreference   && theirCisGender === Gender.Male)
                     return new Score(Scoring.MATCH, 'Loves <span>same sex</span> partners');
 
-                if (yourOrientation === Orientation.BiCurious
-                || yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Male
-                || yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Female)
+                if (you.orientation === Orientation.BiCurious
+                || you.orientation === Orientation.BiFemalePreference && theirCisGender === Gender.Male
+                || you.orientation === Orientation.BiMalePreference   && theirCisGender === Gender.Female)
                     return new Score(Scoring.WEAK_MATCH, 'Likes <span>same sex</span> partners');
             }
             else { // Straight cis
-                if (yourOrientation === Orientation.Gay)
+                if (you.orientation === Orientation.Gay)
                     return new Score(Scoring.MISMATCH, 'No <span>opposite sex</span> partners');
 
-                if (yourOrientation === Orientation.Straight
-                ||  yourOrientation === Orientation.Bisexual
-                ||  yourOrientation === Orientation.BiCurious
-                ||  yourOrientation === Orientation.Pansexual
-                ||  yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Female
-                ||  yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Male)
+                if (you.orientation === Orientation.Straight
+                ||  you.orientation === Orientation.Bisexual
+                ||  you.orientation === Orientation.BiCurious
+                ||  you.orientation === Orientation.Pansexual
+                ||  you.orientation === Orientation.BiFemalePreference && theirCisGender === Gender.Female
+                ||  you.orientation === Orientation.BiMalePreference   && theirCisGender === Gender.Male)
                     return new Score(Scoring.MATCH, 'Loves <span>opposite sex</span> partners');
 
-                if (yourOrientation === Orientation.BiFemalePreference && theirCisgender === Gender.Male
-                ||  yourOrientation === Orientation.BiMalePreference   && theirCisgender === Gender.Female)
+                if (you.orientation === Orientation.BiFemalePreference && theirCisGender === Gender.Male
+                ||  you.orientation === Orientation.BiMalePreference   && theirCisGender === Gender.Female)
                     return new Score(Scoring.WEAK_MATCH, 'Likes <span>opposite sex</span> partners');
             }
         }
@@ -1277,6 +1294,20 @@ export class Matcher {
             return Gender.Male;
 
         if (genders.some(g => f.has(g)) && genders.every(g => !m.has(g)))
+            return Gender.Female;
+
+        return false;
+    }
+
+    static translateNbToCis(...genders: Gender[]): Gender.Male | Gender.Female | false {
+        const m_map = new Set([ Gender.MaleHerm, Gender.Cuntboy, Gender.Transman,   Gender.Femboy, Gender.Male   ]);
+        const f_map = new Set([ Gender.Herm,     Gender.Shemale, Gender.Transwoman, Gender.Tomboy, Gender.Female ]);
+        // const b_map = new Set([ Gender.Transgender, Gender.Nonbinary, Gender.None ]);
+
+        if (genders.some(g => m_map.has(g)) && genders.every(g => !f_map.has(g)))
+            return Gender.Male;
+
+        if (genders.some(g => f_map.has(g)) && genders.every(g => !m_map.has(g)))
             return Gender.Female;
 
         return false;

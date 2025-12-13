@@ -18,7 +18,10 @@
                     {{ ' - ' + (t.error.type || 'unknown source') }}
                 </span>
             </div>
-            <span v-if="t.running" class="text-muted">Loading...</span>
+            <span v-if="t.running" class="text-muted">
+                Loading...
+                <span v-if="t.progress">{{ t.progress }}</span>
+            </span>
             <template v-if="t.error">
                 <div class="text-primary">{{ t.error.message }}</div>
                 <div>{{ t.error.tooltip }}</div>
@@ -39,6 +42,7 @@ export interface Task {
     id:       CapturedError['source'];
     running?: boolean;
     error?:   CapturedError;
+    progress?: number;
 }
 
 @Component({})

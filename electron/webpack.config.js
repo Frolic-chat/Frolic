@@ -83,10 +83,6 @@ const rendererConfig = {
             path.join(__dirname, 'window.ts'),
             path.join(__dirname, 'window.html'),
         ],
-        browser_option: [
-            path.join(__dirname, 'browser_option.ts'),
-            path.join(__dirname, 'browser_option.html'),
-        ],
     },
     output: {
         path: __dirname + '/app',

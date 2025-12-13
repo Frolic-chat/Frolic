@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import * as Electron from 'electron';
 import core from '../chat/core';
-import * as remote from '@electron/remote';
 import { EventBus } from '../chat/preview/event-bus';
 import { AsyncCache } from './cache';
 
@@ -19,9 +19,9 @@ import { getAsNumber } from '../helpers/utils';
 
 
 import NewLogger from '../helpers/log';
-const log  = NewLogger('profile-cache');
 const logC = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
 const logCache = NewLogger('cache', () => core.state.generalSettings.argv.includes('--debug-cache'));
+const logPhelper = NewLogger('profile-helper', () => core.state.generalSettings.argv.includes('--debug-cache'));
 
 
 export interface MetaRecord {
@@ -359,15 +359,13 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
                 if (ProfileCache.isSafePortraitURL(url)) { // domain check
                     overrides.avatarUrl = url;
 
-                    if (c.name === core.characters.ownCharacter.name) {
-                        const parent = remote.getCurrentWindow().webContents;
-                        parent.send('update-avatar-url', c.name, url);
-                    }
+                    if (c.name === core.characters.ownCharacter.name)
+                        Electron.ipcRenderer.send('update-avatar-url', c.name, url);
 
-                    log.debug('portrait.hq.url', { name: c.name, url: url });
+                    logCache.debug('portrait.hq.url', { name: c.name, url: url });
                 }
                 else {
-                    log.info('portrait.hq.invalid.domain', {
+                    logCache.info('portrait.hq.invalid.domain', {
                         name: c.name,
                         url: url,
                     });
@@ -450,7 +448,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         const valid_colors = ['red', 'blue', 'white', 'yellow', 'pink', 'gray', 'green', 'orange', 'purple', 'black', 'brown', 'cyan'];
         const invalid: string[] = [];
 
-        log.debug('dev.phelper.color.matches', matches);
+        logPhelper.debug('dev.phelper.color.matches', matches);
 
         for (const match of matches) {
             if (!valid_colors.includes(match[1]) && !invalid.includes(match[1]))
@@ -479,9 +477,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         const match = ProfileCache.match(c, myOverrides, theirOverrides);
         let score = (!match || match.score === null) ? Scoring.NEUTRAL : match.score;
 
-        if (score === 0) {
-            log.verbose('cache.profile.store.zero.score', { name: c.character.name });
-        }
+        if (score === 0)
+            logCache.verbose('cache.profile.store.zero.score', { name: c.character.name });
 
         // const totalScoreDimensions = match ? Matcher.countScoresTotal(match) : 0;
         // const dimensionsAtScoreLevel = match ? (Matcher.countScoresAtLevel(match, score) || 0) : 0;

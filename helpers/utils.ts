@@ -35,6 +35,8 @@ export async function FisherYatesShuffle(arr: any[]): Promise<void> {
     }
 }
 
+type DebouncedFn<T> = ((this: T, ...args: any) => void) & { cancel: () => void };
+
 /**
  * A lodash-replacement debounce useful on any input without a submit. Invoke
  * the bounce-blocker on every input, and the callback will only fire once
@@ -52,29 +54,35 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
                                 wait?:    number,
                                 maxWait?: number,
                             } = {}
-                           ): () => void {
-    let ret: () => void;
+                           ): DebouncedFn<T> {
+    let ret: DebouncedFn<T>;
 
     if (!maxWait) { // Simple
         let timer: ReturnType<typeof setTimeout> | undefined;
+        const clear = () => { clearTimeout(timer) };
 
-        ret = function (this: T, ...args: any) {
-            clearTimeout(timer);
+        const f = function (this: T, ...args: any) {
+            clear();
             timer = setTimeout(() => callback.apply(this, args), wait);
         };
+        // @ts-ignore webpack ts 3.9
+        f.cancel = clear;
+
+        // @ts-ignore webpack ts 3.9
+        ret = f;
     }
     else { // maxWait
         let timer:    ReturnType<typeof setTimeout> | undefined;
         let maxTimer: ReturnType<typeof setTimeout> | undefined;
 
-        const clear_timers = () => {
+        const clear_timers = function () {
             clearTimeout(maxTimer);
             clearTimeout(timer);
             maxTimer = undefined;
-            timer = undefined;
+            timer    = undefined;
         };
 
-        ret = function (this: T, ...args: any) {
+        const f = function (this: T, ...args: any) {
             if (!maxTimer) {
                 console.log('debounce.maxwait.fresh');
 
@@ -107,6 +115,11 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
                 );
             }
         }
+        // @ts-ignore webpack ts 3.9
+        f.cancel = clear_timers;
+
+        // @ts-ignore webpack ts 3.9
+        ret = f;
     }
 
     return ret;
@@ -217,6 +230,92 @@ export function deepEqual(obj1: any, obj2: any): boolean {
 
     return true;
 }
+
+export type ObjectKeys<T> = {
+    [K in keyof T]: NonNullable<T[K]> extends object ? K : never
+}[keyof T];
+// This one seems to provide entries to vscode more reliably - enable for TS4
+// type ObjectKeys<T> = keyof {
+//     [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]
+// }
+
+
+/**
+ * Overengineered version of `Object.keys(obj).filter(
+ *     k => (obj as any)[k] !== null && typeof (obj as any)[k] === 'object'
+ * );`
+ * @param obj Target object to examine for inner objects
+ * @param param1 Options: `deep` - recurse and return period-separated deep keys of objects as well
+ * @returns List of string keys; deep keys (if requested) period-separated.
+ */
+export function GetReferenceKeys(obj: Record<string, unknown>, { prefix, deep }: { prefix?: string, deep?: boolean } = {}): string[] {
+    if (obj === null)
+        return [];
+
+    const keys: string[] = [];
+
+    Object.entries(obj).forEach(([k, v]) => {
+        if (v !== null && typeof v === 'object') {
+            const path = prefix ? `${prefix}.${k}` : k;
+            keys.push(path);
+
+            if (deep) { // =\
+                const deep_keys = GetReferenceKeys(v as Record<string, unknown>, { prefix: path, deep: deep });
+                keys.push( ...deep_keys);
+            }
+        }
+    })
+
+    return keys;
+}
+
+/**
+ * Shallow with strong typing. I honestly cannot believe I got this format to work.
+ * @param obj object to strip non-references from
+ * @returns A reduced object with only those keys that are references (to objects)
+ */
+// (readonly [keyof { [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]; }, any])[]
+export function ExtractReferences<T extends Record<string, any>>(obj: T) {
+    return Object.keys(obj)
+        .filter(k => obj[k] && typeof obj[k] === "object")
+        .map(k => [k as ObjectKeys<T>, obj[k]] as const);
+}
+
+// Previous attempt, limited usefulness.
+// export function GetReferenceKeysShallow<T extends Record<string, any>>(obj: T): ObjectKeys<T>[] {
+//     if (obj === null || typeof obj !== 'object')
+//         return [];
+
+    // const keys: ObjectKeys<T>[] = [];
+
+//     Object.entries(obj).forEach(([k, v]) => {
+//         if (v !== null && typeof v === 'object')
+//             keys.push(k);
+//     });
+
+//     return keys;
+// }
+
+// Every pair is a `[oldValue, newValue]` tuple. Only CHANGED keys are compared.
+// TS is the worst :) Please become haskell
+export function ComparePrimitives<T extends Record<string, any>>(oldObj: T, newObj: T): Record<keyof T, [any, any]> {
+    const result = {} as Record<keyof T, [any, any]>;
+
+    for (const key of Object.keys(oldObj) as (keyof T)[]) {
+        const beforeVal = oldObj[key];
+        const afterVal  = newObj[key];
+
+        if (beforeVal === afterVal) // most obvious short circuit
+            continue;
+
+        if (typeof beforeVal !== 'object' && typeof afterVal !== 'object') {
+            result[key] = [beforeVal, afterVal];
+        }
+    }
+
+    return result;
+}
+
 
 export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
 

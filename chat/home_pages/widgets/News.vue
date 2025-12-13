@@ -1,4 +1,5 @@
 <template>
+<!-- :action="getUpdate" -->
 <collapse bodyClass="d-flex flex-column"
     :initial="yohhlrf" @open="toggle.news = false" @close="toggle.news = true"
 >
@@ -11,19 +12,15 @@
     </template>
 
     <template v-slot:default>
-        <template v-if="hasUpdate">
-            {{ update.latest ? update.latest.changelog : '' }}
-        </template>
-        <template v-else-if="unknownVersion">
-            <div class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
-                <p>You are using Frolic version {{ update.current.version }}. An update could not be found.</p>
-                <p>This is not a problem if you are using a beta or testing release.</p>
-                <p>Additionally, this may occur if you couldn't connect to the update server. (Is github down?)</p>
-            </div>
-        </template>
+        <div v-if="hasUpdate" v-html="sanitizedChangelog" style="user-select:text"></div>
+        <div v-else-if="unknownVersion" class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
+            <p>You are using Frolic version {{ update.current.version }}. An update could not be found.</p>
+            <p>This is not a problem if you are using a beta or testing release.</p>
+            <p>Additionally, this may occur if you couldn't connect to the update server. (Is github down?)</p>
+        </div>
         <template v-else>
-            <p>You're up-to-date.</p>
-            {{ update.current.changelog }}
+            <p>You're using the latest version.</p>
+            <div v-html="sanitizedChangelog" style="user-select:text"></div>
         </template>
     </template>
 </collapse>
@@ -37,6 +34,8 @@ import Collapse from '../../../components/collapse.vue';
 
 import * as Electron from 'electron';
 import core from '../../core';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 import NewLogger from '../../../helpers/log';
 const logU = NewLogger('updater');
@@ -82,32 +81,38 @@ export default class NewsWidget extends Vue {
         else                          return 'text-success fa-regular fa-sun';
     }
 
-    @Hook('beforeMount')
-    beforeMount() {
-        Electron.ipcRenderer.on('update-available', (_e, u) => {
-            logU.debug('checkForUpdates', u);
-
-            if (u && u.current && u.updateCount) { // probably approximately good enough maybe
-                this.update = u;
-            }
-        });
+    /**
+     * This will need to be moved into the main app (to run before login) in order to be useful on first run.
+     */
+    @Hook('created')
+    created() {
+        Electron.ipcRenderer.on('update-available', this.handleUpdate);
 
         setImmediate(() => this.getUpdate());
+        logC.debug('NewsWidget.created', { runtimeToggle: this.toggle.news });
+    }
 
-        logC.debug('NewsWidget.beforeCreate', { runtimeToggle: this.toggle.news })
-        if (this.toggle.news === undefined) {
-            //Vue.set(core.runtime.userToggles, 'news', false);
-            this.toggle.news = false;
-            logC.debug('NewsWidget.beforeCreate.createToggle', { runtimeToggle: this.toggle.news });
-        }
+    @Hook('beforeDestroy')
+    beforeDestroy() {
+        Electron.ipcRenderer.off('update-available', this.handleUpdate);
+    }
+
+    handleUpdate = (_e: Electron.IpcRendererEvent, u: boolean): void => {
+        logU.debug('checkForUpdates', u);
+        this.getUpdate();
     }
 
     async getUpdate(): Promise<void> {
         const u = await Electron.ipcRenderer.invoke('get-release-info');
         logU.debug('getUpdate', u);
 
-        if (u && u.current && u.updateCount) { // probably approximately good enough maybe
+        if (u && 'current' in u && 'updateCount' in u) {
             this.update = u;
+
+            if (this.toggle.news === undefined) {
+                logU.debug('getUpdate.goodUpdate', { latest: u.latest?.version, known: u.current.known });
+                this.toggle.news = !u.current.known || !u.latest;
+            }
         }
     }
 
@@ -115,6 +120,12 @@ export default class NewsWidget extends Vue {
      * Visuals
      */
     get yohhlrf() { return this.toggle.news ?? !!this.update.latest }
+
+    get sanitizedChangelog() {
+        const raw = this.update.latest?.changelog ?? this.update.current.changelog;
+        const html = marked(raw, { async: false });
+        return DOMPurify.sanitize(html);
+    }
 
     toggle = core.runtime.userToggles;
 }

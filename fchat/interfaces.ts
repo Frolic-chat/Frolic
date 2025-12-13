@@ -152,6 +152,12 @@ export namespace Connection {
         onError(handler: (error: Error) => void): void
         send(type: 'CHA' | 'FRL' | 'ORS' | 'PCR' | 'PIN' | 'UPT'): void
         send<K extends keyof ClientCommands>(type: K, data: ClientCommands[K]): void
+
+        queryApi(endpoint: 'character-data.php', data: { id: number, account?: string, ticket?: string }): Promise<{ kinks: {[key: string]: string} }>;
+        //queryApi(endpoint: 'report-submit.php', data: { character: string; reportText: string; log: string; channel: string; text: boolean; reportUser: string | undefined, account?: string, ticket?: string }): Promise<{ log_id?: number }>;
+        queryApi<T>(endpoint: 'character-data.php', data: { name: string, account?: string, ticket?: string }): Promise<T>;
+        queryApi(endpoint: 'bookmark-list.php', data?: { account?: string, ticket?: string }): Promise<{ characters: string[] }>;
+        queryApi(endpoint: 'friend-list.php', data?: { account?: string, ticket?: string }): Promise<{ friends: { source: string, dest: string, last_online: number }[] }>;
         queryApi<T = object>(endpoint: string, data?: object): Promise<T>
     }
 }

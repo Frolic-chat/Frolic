@@ -37,7 +37,7 @@
 
             <div class="quick-info-block">
                 <template v-for="id in charInfoIds">
-                    <infotag-item v-if="character.character.infotags[id]" :overrides="id === 3 ? genderOverrides : undefined" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch"></infotag-item>
+                    <infotag-item v-if="character.character.infotags[id]" :overrides="id === 3 ? genderOverrides : undefined" :infotag="getInfotag(id)" :data="character.character.infotags[id]" :key="id" :characterMatch="characterMatch" :matchInfotag="customIdForMatching(id)"></infotag-item>
                 </template>
 
                 <hr>
@@ -113,6 +113,8 @@
     import core from '../../chat/core';
     import l from '../../chat/localize';
 
+    import { TagId } from '../../learn/matcher-types';
+
     import NewLogger from '../../helpers/log';
     const logG = NewLogger('custom-gender');
 
@@ -162,23 +164,21 @@
         readonly shared: SharedStore = Store;
 
         /**
-         * Age
-         * Gender
-         * Orientation
-         * Language
-         * Species
-         * FurryPref
-         * SubDom
-         * Position
-         *
-         * post length
-         * RP length
-         * Language
-         *
+         * Sidebar Entries
          * List order determines display order.
+         * FurryPref is now baked into gender matching
          */
-        readonly charInfoIds: ReadonlyArray<number> = [ 1, 3, 2, 9, 29, 15, 41 ];
-        readonly rpInfoIds: ReadonlyArray<number> = [ 24, 25, 49 ];
+        readonly charInfoIds: ReadonlyArray<number> = [ TagId.Age, TagId.Gender, TagId.Orientation, TagId.Species, TagId.FurryPreference, TagId.SubDomRole, TagId.Position ];
+        readonly rpInfoIds: ReadonlyArray<number> = [ TagId.PostLength, TagId.RPLength, TagId.LanguagePreference ];
+
+        customIdForMatching(id: number): Infotag | undefined {
+            if (id === TagId.FurryPreference)
+                return this.getInfotag(TagId.Species);
+            else if (id === TagId.Orientation)
+                return this.getInfotag(TagId.Gender);
+
+            return undefined;
+        }
 
         // Needs reactivity testing.
         get genderOverrides() {

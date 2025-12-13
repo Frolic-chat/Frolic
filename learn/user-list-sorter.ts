@@ -7,7 +7,7 @@ import { genderToKinkMap, kinkToGenderMap, Gender, Scoring, KinkPreference, TagI
 import core from '../chat/core';
 
 import NewLogger from '../helpers/log';
-const ulslog = NewLogger('UserListSorter');
+const ulslog = NewLogger('UserListSorter', () => core.state.generalSettings.argv.includes('--debug-chat'));
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 const UserListSorter = {
@@ -56,7 +56,7 @@ const UserListSorter = {
         const thatGender = Matcher.strToGender(fchatGender);
         const theirGenders = thatGender ? [ thatGender ] : null;
 
-        const score = Matcher.scoreOrientationByGender(myGenders, orientation, theirGenders).score;
+        const score = Matcher.scoreOrientationByGender({ gender: myGenders, orientation: orientation }, { gender: theirGenders, nonbinary: false }).score;
 
         ulslog.silly('userlist.sorter.genderfromorientation', {
             you: you.name,

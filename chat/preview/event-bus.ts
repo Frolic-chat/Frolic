@@ -93,6 +93,15 @@ export interface NotificationChangeEvent {
     new: boolean,
 }
 
+export interface DownloadProgressEvent {
+    download?: boolean;
+    upload?:   boolean;
+    progress?:  number;
+    estimated?: number;
+    rate?:      number;
+    total?:     number;
+}
+
 export type EventCallback = (data: any) => void | Promise<void>;
 
 class EventBusManager {
@@ -137,6 +146,7 @@ class EventBusManager {
     $on(event: 'imagepreview-show'
             | 'imagepreview-dismiss',    callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
     $on(event: 'imagepreview-toggle-sticky', callback: (e: ImageToggleEvent) => void | Promise<void>): void;
+    $on(event: 'eicon-progress',         callback: (e: DownloadProgressEvent) => Promise<void>): void;
     //$on(event: string, callback: EventCallback): void;
     $on(event: string, callback: EventCallback): void {
         this.$off(event, callback);
@@ -245,6 +255,7 @@ class EventBusManager {
 
     $emit(event: 'imagepreview-show' | 'imagepreview-dismiss', data: ImagePreviewEvent): void;
     $emit(event: 'imagepreview-toggle-sticky', data: ImageToggleEvent): void;
+    $emit(event: 'eicon-progress',         data: DownloadProgressEvent): void;
     $emit(event: string, data?: EventBusEvent): void {
         if (event in this.callbacks) this.callbacks[event].forEach(cb => cb(data));
     }

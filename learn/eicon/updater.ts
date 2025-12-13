@@ -1,8 +1,10 @@
 import Axios, { AxiosError } from 'axios';
 import { EventBus } from '../../chat/preview/event-bus';
 
+import core from '../../chat/core';
+
 import NewLogger from '../../helpers/log';
-const log = NewLogger('eicon/updater');
+const log = NewLogger('eicons', () => core.state?.generalSettings.argv.includes('--debug-eicons'));
 
 export interface EIconRecordUpdate {
     eicon: string;
@@ -18,7 +20,7 @@ export class EIconUpdater {
 
         let user_impatience = () => controller.abort("Xariah connection timeout.");
         let no_response = setTimeout(user_impatience, 8000);
-        log.debug('eiconupdater.fetchall.timeout.start');
+        log.debug('eiconupdater.fetchAll.timeout.start');
 
         /** How to handle wrong response type?
          * In theory Axios response is `any` type, in reality
@@ -28,10 +30,13 @@ export class EIconUpdater {
         const result = await Axios.get(
             EIconUpdater.FULL_DATA_URL, {
                 signal: controller.signal,
-                onDownloadProgress: () => {
-                    log.debug('eiconupdater.fetchall.progress.datareceived');
+                onDownloadProgress: e => {
+                    log.debug('eiconupdater.fetchAll.progress.datareceived');
                     clearTimeout(no_response);
                     no_response = setTimeout(user_impatience, 5000);
+
+                    if (e.lengthComputable)
+                        EventBus.$emit('eicon-progress', { ...e });
                 },
                 timeout: 15000,
                 timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
@@ -96,11 +101,34 @@ export class EIconUpdater {
     }
 
     async fetchUpdates(fromTimestampInSecs: number): Promise<{ recordUpdates: EIconRecordUpdate[], asOfTimestamp: number }> {
-        const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`)
-                .catch(() => undefined);
+        const controller = new AbortController();
+
+        let user_impatience = () => controller.abort("Xariah connection timeout.");
+        let no_response = setTimeout(user_impatience, 8000);
+        log.debug('eiconupdater.fetchUpdates.timeout.start');
+
+
+        const result = await Axios.get(`${EIconUpdater.DATA_UPDATE_URL}/${fromTimestampInSecs}`, {
+            signal: controller.signal,
+            onDownloadProgress: e => {
+                log.debug('eiconupdater.fetchUpdates.progress.datareceived');
+                clearTimeout(no_response);
+                no_response = setTimeout(user_impatience, 3500);
+
+                if (e.lengthComputable)
+                    EventBus.$emit('eicon-progress', { ...e });
+            },
+            timeout: 10000,
+            timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
+        })
+        .catch(() => EventBus.$emit('error', {
+            source:  'eicon',
+            type:    'fetchUpdates.connection',
+            message: "Didn't receive timestamp from eicon server.",
+        }));
 
         if (!result)
-            return { asOfTimestamp: 0, recordUpdates: [] };
+            return { asOfTimestamp: fromTimestampInSecs, recordUpdates: [] };
 
         const lines = (result.data as string).split('\n');
 

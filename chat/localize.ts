@@ -157,10 +157,10 @@ const strings = {
     'chat.send': 'Send',
     'chat.noBrowser': `Please configure a browser to use incognito mode.
 
-Gear Menu -> Frolic -> Custom browser`,
+Home-> Wrench & Screwdriver -> Custom Browser`,
     'chat.brokenBrowser': `Could not execute your chosen browser. Reassign your browser.
 
-Gear Menu -> Frolic -> Custom browser`,
+Home-> Wrench & Screwdriver -> Custom Browser`,
     'logs.title': 'Logs',
     'logs.character': 'Character',
     'logs.conversation': 'Conversation',
@@ -755,7 +755,7 @@ Any existing FChat 3.0 data for this character will be overwritten.`,
     'settings.risingAutoCompareKinks.help': '',
     'settings.risingAutoExpandCustomKinks': 'Automatically expand custom kinks',
     'settings.risingAutoExpandCustomKinks.help': '',
-    'settings.risingShowUnreadOfflineCount': 'Show unread note and offline message counts at the bottom right corner',
+    'settings.risingShowUnreadOfflineCount': 'Show unread note and offline message counts on the home page and sidebar',
     'settings.risingShowUnreadOfflineCount.help': 'Enabling this feature pings the f-list website and will show you in the "Friends Browsing the Site" section of the front page.',
     'settings.risingColorblindMode': 'Colorblind mode',
     'settings.risingColorblindMode.help': '',

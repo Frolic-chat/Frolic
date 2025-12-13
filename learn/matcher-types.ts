@@ -21,6 +21,7 @@ export enum TagId {
     Species = 9,
     LanguagePreference = 49,
     PostLength = 24,
+    RPLength = 25,
 
     Kinks = 99999
 }
@@ -36,6 +37,12 @@ export enum PostLengthPreference {
     MultiParagraph_14_25 = 62
 }
 
+export enum RPLengthPreference {
+    NoPreference = 52,
+    OneShot      = 23,
+    ShortTerm    = 24,
+    LongTerm     = 25,
+}
 
 export enum Gender {
     Male = 1,
@@ -1138,7 +1145,7 @@ export const speciesMapping: SpeciesMap = {
         'dwarf', 'dwarves', 'gnome', 'halfling', 'havlin', 'hobb?it', 'homun[cg]?ulus', 'lalafell', 'yordle', 'elin',
         'draph', 'dryad', 'gith(yanki)?', 'satyr', 't[h]?(ie|ei)fling',
                     // ???
-        'dullahan',
+        'dullahan', 'goblin',
                     // Media/pop culture species:
         'zwerg', 'aasimar', 'maiar?',  'dr[ae][ae]n[ae]i', 'gem', 'crystal gem',
     ],
@@ -1149,7 +1156,7 @@ export const speciesMapping: SpeciesMap = {
 
     [Species.Monster]: [
                     // Humanoid:
-        'gnoll', 'goblin', '(gn|k)obold', 'troll', 'gargoyle', 'harpy', 'ogre', 'bokoblin', 'gremlin',
+        'gnoll', '(gn|k)obold', 'troll', 'gargoyle', 'harpy', 'ogre', 'bokoblin', 'gremlin',
                     // Animalistic:
         'behemoth', 'owlbear', 'bunyip',
                     // Monstrous:

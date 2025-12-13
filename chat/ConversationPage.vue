@@ -8,73 +8,80 @@
 >
     <template v-slot:prescroll>
         <!-- Header -->
-        <template v-if="isPrivate(conversation) || isChannel(conversation) || isConsole">
+        <template v-if="!isActivity">
             <div class="info d-flex align-items-center">
-                <span v-if="isPrivate(conversation)" class="mr-auto d-flex align-items-center"><!-- left side: userview -->
-                    <img v-if="settings.showAvatars" class="flex-shrink-0 d-none d-sm-block" :src="characterImage" style="height: 3em"/>
+                <span v-if="isPrivate(conversation)" class="mr-auto"><!-- left side: userview -->
+                    <img v-if="settings.showAvatars" class="d-none d-sm-block flex-shrink-0 h-100" :src="characterImage" />
                     <span class="d-flex flex-column align-self-start">
                         <user :character="conversation.character"
                             classes="text-truncate" style="height: 1.5em;"
                             :match="false" :reusable="true" :showStatus="true" :immediate="true"
                         ></user>
-                        <span v-if="conversation.character.status !== 'online'" style="height: 1.5em;" class="text-truncate">
-                            {{ userStatusWord }}
-                        </span>
-                        <span v-else-if="userMemo" class="text-truncate" style="height: 1.5em;">
-                            <b class="d-none d-lg-inline">{{ l('chat.memoHeader') }}</b>
-                            <b class="d-lg-none fa-solid fa-square-pen"></b>
-                             {{ userMemo.split('\n')[0] }}
-                        </span>
+                        <div class="text-truncate" style="height: 1.5em;">
+                            <template v-if="conversation.character.status !== 'online'">
+                                {{ userStatusWord }}
+                            </template>
+                            <template v-else-if="userMemo">
+                                <b class="fa-solid fa-square-pen"></b>
+                                {{ userMemo.split('\n')[0] }}
+                            </template>
+                            <template v-else>
+                                {{ userStatusWord }}
+                            </template>
+                        </div>
                     </span>
                 </span>
                 <span v-else class="mr-auto"><!-- left side: channel name -->
-                    <h5 class="text-truncate">{{ conversation.name }}</h5>
+                    <h5 class="text-truncate mb-0">
+                        {{ conversation.name }}
+                    </h5>
                 </span>
 
-                <span class="ml-auto d-flex flex-shrink-0"><!-- right side -->
-                    <span style="display:contents;">
-                        <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
+                <span class="ml-auto flex-shrink-0"><!-- right side -->
+                    <span v-if="isChannelMod">
+                        <a href="#" @click.prevent="showManage()" class="btn btn-outline-secondary">
                             <span class="fa fa-edit"></span>
-                            <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span> -->
                         </a>
-                        <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                            <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                                <span class="fa fa-file-alt"></span>
-                                <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
-                            </a>
-                            <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
-                                <span class="fa fa-exclamation-triangle"></span>
-                                <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
-                            </a>
-                        </template>
-                        <dropdown v-if="isChannel(conversation)" title=""
-                            v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
-                            :keep-open="false"
-                            text-class="d-none d-lg-inline"
-                            :icon-class="{
-                                fas: true,
-                                'fa-comments': conversation.mode === 'chat',
-                                'fa-ad':       conversation.mode === 'ads',
-                                'fa-asterisk': conversation.mode === 'both',
-                            }"
-                            wrap-class="btn-group views"
-                            link-class="btn btn-outline-secondary dropdown-toggle"
-                        >
-                            <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                                {{l('channel.mode.' + mode)}}
-                            </button>
-                            <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                            <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                                {{l('channel.ads.incompatible')}}
-                            </button>
-                            <template v-show="conversation.settings.adSettings.ads.length">
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item" @click="showAdSettings()">
-                                    {{l('channel.ads.edit')}}
-                                </button>
-                            </template>
-                        </dropdown>
                     </span>
+                    <dropdown v-if="isChannel(conversation)" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
+                        title=""
+                        :keep-open="false"
+                        text-class="d-none d-lg-inline"
+                        :icon-class="{
+                            fas: true,
+                            'fa-comments': conversation.mode === 'chat',
+                            'fa-ad':       conversation.mode === 'ads',
+                            'fa-asterisk': conversation.mode === 'both',
+                        }"
+                        wrap-class="btn-group views"
+                        link-class="btn btn-outline-secondary dropdown-toggle"
+                    >
+                        <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
+                            {{l('channel.mode.' + mode)}}
+                        </button>
+                        <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
+                        <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+                            {{l('channel.ads.incompatible')}}
+                        </button>
+                        <template v-if="conversation.settings.adSettings.ads.length">
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item" @click="showChannelAds()">
+                                {{ l('channel.ads.edit') }}
+                            </button>
+                        </template>
+                    </dropdown>
+                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                            <span class="fa fa-file-alt"></span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
+                        </a>
+                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
+                            <span class="fa fa-exclamation-triangle"></span>
+                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
+                        </a>
+                    </template>
+
                     <slot name="title-end"></slot>
                 </span>
             </div>
@@ -114,7 +121,7 @@
                 <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
                     {{l('admgr.renew')}}
                 </a>
-                <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
+                <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showChannelAds()" v-if="adsRequireSetup">
                     {{l('admgr.setup')}}
                 </a>
             </div>
@@ -153,10 +160,6 @@
                 :type="'big'"
             >
                 <template v-slot:default>
-                    <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-                        <user :character="conversation.character" :match="false" :bookmark="false"></user>
-                        &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
-                    </span>
                     <div v-show="conversation.infoText" class="chat-info-text">
                         <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
                         <span style="flex:1;margin-left:5px">
@@ -179,38 +182,51 @@
 
             <!-- footer -->
             <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
-                <span class="channel-key d-none d-md-inline mr-auto text-left">
-                    {{ isChannel(conversation) ? conversation.key : '' }}
+                <span class="channel-key text-left">
+                    <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
+                        <user :character="conversation.character" :match="false" :bookmark="false"></user>
+                        &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
+                    </span>
+
+                    <span v-else-if="isChannel(conversation)">
+                        {{ conversation.key }}
+                    </span>
                 </span>
-                <div class="send-ads-switcher mx-auto btn-group btn-group-sm" v-if="isChannel(conversation)">
-                    <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'"
-                        class="btn" :class="{
-                            'btn-secondary': !conversation.isSendingAds,
-                            'btn-outline-secondary': conversation.isSendingAds,
-                            disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
-                        }"
-                        @click.prevent="setSendingAds(false)" href="#"
-                    >
-                        {{ l('channel.mode.chat') }}
-                    </a>
-                    <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'"
-                        class="btn" :class="{
-                            'btn-secondary': conversation.isSendingAds,
-                            'btn-outline-secondary': !conversation.isSendingAds,
-                            disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
-                        }"
-                        @click.prevent="setSendingAds(true)" href="#"
-                    >
-                        {{ adsMode }}
-                    </a>
+                <div class="send-ads-switcher text-center btn-group btn-group-sm">
+                    <template v-if="isChannel(conversation) && (conversation.channel.mode === 'both' || conversation.channel.mode === 'chat')">
+                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'chat'" class="btn" :class="{
+                                'btn-secondary':        !conversation.isSendingAds,
+                                'btn-outline-secondary': conversation.isSendingAds,
+                                disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
+                            }"
+                            @click.prevent="setSendingAds(false)" href="#"
+                        >
+                            {{ l('channel.mode.chat') }}
+                        </a>
+                    </template>
+                    <template v-if="isChannel(conversation) && (conversation.channel.mode === 'both' || conversation.channel.mode === 'ads')">
+                        <a v-show="conversation.channel.mode === 'both' || conversation.channel.mode === 'ads'" class="btn" :class="{
+                                'btn-secondary':          conversation.isSendingAds,
+                                'btn-outline-secondary': !conversation.isSendingAds,
+                                disabled: conversation.channel.mode != 'both' || conversation.adManager.isActive(),
+                            }"
+                            @click.prevent="setSendingAds(true)" href="#"
+                        >
+                            {{ adsMode }}
+                        </a>
+                    </template>
                 </div>
-                <span class="message-length ml-auto text-right" v-if="isChannel(conversation) || isPrivate(conversation)">
-                    {{ messageLength }}<span class="d-none d-sm-inline"> / {{ conversation.maxMessageLength }}</span>
+                <span class="message-length text-right">
+                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
+                        {{ messageLength }}<span class="d-none d-sm-inline"> / {{ conversation.maxMessageLength }}</span>
+                    </template>
                 </span>
             </div>
         </div>
 
         <!-- Modals -->
+
+        <channelAdSettings ref="channelAdSettingsDialog" :conversation="conversation"></channelAdSettings>
         <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
     </template>
 </page>
@@ -235,13 +251,13 @@
 
     import type Logs         from './Logs.vue';
     import type ReportDialog from './ReportDialog.vue';
-    import type CommandHelp from './CommandHelp.vue';
+    import type CommandHelp  from './CommandHelp.vue';
 
     import ManageChannel from './ManageChannel.vue';
     import ConversationAdSettings from './ads/ConversationAdSettings.vue';
 
     // Recon buttons, can go away.
-    import CharacterAdView from './character/CharacterAdView.vue';
+    // import CharacterAdView from './character/CharacterAdView.vue';
     //import CharacterChannelList from './character/CharacterChannelList.vue';
     import { MemoManager } from './character/memo';
 
@@ -262,19 +278,18 @@
             page: HomePageLayout,
 
             user: UserView,
-            'bbcode-editor': Editor,
-            'message-view': MessageView,
-            bbcode: BBCodeView(core.bbCodeParser),
-
             dropdown: Dropdown,
-
             channelAdSettings: ConversationAdSettings,
             'manage-channel': ManageChannel,
+
+            'message-view': MessageView,
+            bbcode: BBCodeView(core.bbCodeParser),
+            'bbcode-editor': Editor,
 
             modal: Modal,
 
             // TODO: Combine into recon
-            'ad-view': CharacterAdView,
+            // 'ad-view': CharacterAdView,
             //'channel-list': CharacterChannelList,
         }
     })
@@ -433,15 +448,12 @@
             this.$watch(() => this.conversation.adManager.isActive(), () => (this.refreshAutoPostingTimer()));
             this.refreshAutoPostingTimer();
 
-            this.configUpdateHook = () => this.updateOwnName();
             EventBus.$on('configuration-update', this.configUpdateHook);
-
-            this.memoUpdateHook = e => this.refreshMemo(e);
             EventBus.$on('character-memo', this.memoUpdateHook);
         }
 
-        protected configUpdateHook?: () => void;
-        protected memoUpdateHook?: (e: MemoEvent) => void;
+        protected configUpdateHook = () => this.updateOwnName();
+        protected memoUpdateHook = (e: MemoEvent) => this.refreshMemo(e);
 
         @Hook('destroyed')
         destroyed(): void {
@@ -452,10 +464,8 @@
             clearInterval(this.autoPostingUpdater);
             clearInterval(this.adCountdown);
 
-            if (this.configUpdateHook)
-                EventBus.$off('configuration-update', this.configUpdateHook);
-            if (this.memoUpdateHook)
-                EventBus.$off('character-memo', this.memoUpdateHook);
+            EventBus.$off('configuration-update', this.configUpdateHook);
+            EventBus.$off('character-memo', this.memoUpdateHook);
         }
 
         hideSearch(): void {
@@ -577,12 +587,6 @@
         @Watch('conversation.infoText')
         textChanged(newValue: string, oldValue: string): void {
             if (oldValue.length === 0 && newValue.length > 0)
-                this.keepScroll();
-        }
-
-        @Watch('conversation.typingStatus')
-        typingStatusChanged(_str: string, oldValue: string): void {
-            if (oldValue === 'clear')
                 this.keepScroll();
         }
 
@@ -735,9 +739,9 @@
 
         showLogs(): void       { this.logs.show() }
         report(): void         { this.reportDialog.report() }
-        showAdSettings(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
+        showChannelAds(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
         showManage(): void     { (<ManageChannel>this.$refs['manageDialog']).show() }
-        showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
+        // showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
         //showChannels(): void   { (<CharacterChannelList>this.$refs['channelList']).show() }
 
         isAutopostingAds(): boolean {
@@ -890,13 +894,10 @@
 }
 
 .conversation .header .info {
-    height: 3em;
-
-    > .mr-auto {
-        gap: 0.5rem;
-    }
-
-    > .ml-auto {
+    > .ml-auto, > .mr-auto {
+        display: flex;
+        align-items: center;
+        height: 3em;
         gap: 0.5rem;
     }
 
@@ -909,6 +910,10 @@
         overflow:      hidden;
         text-overflow: ellipsis;
         white-space:   nowrap;
+    }
+
+    .dropdown-item.selected::before {
+        content: '✓';
     }
 }
 
@@ -1012,6 +1017,11 @@
         }
 
     }
+}
+
+.footer > :first-child, .footer > :last-child {
+    flex-grow: 1;
+    flex-basis: 0;
 }
 
 .chat-info-text {

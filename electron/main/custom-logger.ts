@@ -13,7 +13,7 @@ import Logger from 'electron-log/main';
  * @returns A logger object with capabilities mapped to those of electron-log
  */
 export default function NewLogger(scope: string, condition?: (...a: any) => any) {
-    const c = process.argv.includes(`--debug-${scope}`);
+    const c = process.argv.includes('--debug-' + scope.toLowerCase());
     const cond = condition ?? (() => c);
 
     const l = Logger.scope(scope);

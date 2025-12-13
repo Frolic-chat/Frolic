@@ -11,23 +11,27 @@
             </div>
         </div>
 
-        <!-- Settings tabs; redo later. -->
-        <tabs v-model="tab"
-            :tabs="[
-                l('settings.tabs.general'),
-                l('settings.tabs.notifications'),
-                l('settings.tabs.bonus'),
-                l('settings.tabs.filters'),
-                l('settings.tabs.hideAds'),
-                l('settings.tabs.browser'),
-                l('settings.tabs.hqp'),
-                l('settings.tabs.import'),
-            ]">
-        </tabs>
+        <div class="d-flex flex-row flex-wrap justify-content-center" style="gap: 0.5rem">
+            <button v-for="entry in [
+                    l('settings.tabs.general'),
+                    l('settings.tabs.notifications'),
+                    l('settings.tabs.bonus'),
+                    l('settings.tabs.filters'),
+                    l('settings.tabs.hideAds'),
+                    l('settings.tabs.browser'),
+                    l('settings.tabs.import'),
+                ]"
+                :key="entry" class="btn btn-primary"
+                :class="{ active: activeCollapse === entry }"
+                @click.prevent="openSection(entry)"
+            >
+                {{ entry }}
+            </button>
+        </div>
     </template>
 
     <template v-slot:default>
-        <div v-show="tab === '0'">
+        <collapse :id="tab0name" :ref="tab0name" :title="tab0name" :initial="false" class="mb-4 mt-4">
             <text-input setting="disallowedTags" :validator="vdDisallowedTags" :transformer="tfDisallowedTags"></text-input>
             <checkbox setting="clickOpensMessage"></checkbox>
 
@@ -48,8 +52,8 @@
             <checkbox setting="logAds"      :disabled="!settings.logMessages"></checkbox>
 
             <number   setting="fontSize" :default="fontSizeDefault" :localArgs="fontSizeArgs" :min="fontSizeMin" :max="fontSizeMax"></number>
-        </div>
-        <div v-show="tab === '1'">
+        </collapse>
+        <collapse :id="tab1name" :ref="tab1name" :title="tab1name" :initial="false" class="mb-4">
             <checkbox setting="playSound"></checkbox>
             <checkbox setting="alwaysNotify" :disabled="!settings.playSound"></checkbox>
             <range    setting="notifyVolume" :localArgs="notifyVolumeArgs" :marks="notifyVolumeMarks" :disabled="!settings.playSound"></range>
@@ -72,8 +76,8 @@
             <checkbox setting="showNeedsReply"></checkbox>
             <checkbox setting="joinMessages"></checkbox>
             <checkbox setting="eventMessages"></checkbox>
-        </div>
-        <div v-show="tab === '2'">
+        </collapse>
+        <collapse :id="tab2name" :ref="tab2name" :title="tab2name" :initial="false" class="mb-4">
             <h5>{{l('rising.header.matching')}}</h5>
 
             <checkbox setting="risingAdScore"></checkbox>
@@ -99,14 +103,14 @@
             <checkbox setting="risingShowPortraitNearInput"></checkbox>
             <checkbox setting="risingShowPortraitInMessage"></checkbox>
             <dropdown setting="risingCharacterTheme">
-                <option value="">{{l('rising.theme.default')}}</option>
+                <option value="">{{ l('rising.theme.default') }}</option>
                 <option disabled>---</option>
                 <option v-for="theme in risingAvailableThemes" :value="theme">
                     {{ theme }}
                 </option>
             </dropdown>
-        </div>
-        <div v-show="tab === '3'">
+        </collapse>
+        <collapse :id="tab3name" :ref="tab3name" :title="tab3name" :initial="false" class="mb-4">
             <div class="warning">
                 <h5>{{l('rising.header.dangerZone')}}</h5>
                 <p>{{ l('rising.header.desc') }}</p>
@@ -148,8 +152,8 @@
 
             <generic-text :obj="settings.risingFilter"
                 setting="exceptionNames" prefix="risingFilter"></generic-text>
-        </div>
-        <div v-show="tab === '4'">
+        </collapse>
+        <collapse :id="tab4name" :ref="tab4name" :title="tab4name" :initial="false" class="mb-4">
             <h5>{{ l('settings.hideAds.title') }}</h5>
             <div>{{ l('settings.hideAds.desc') }}</div>
             <template v-if="hidden.length">
@@ -161,41 +165,11 @@
             <template v-else>
                 {{l('settings.hideAds.empty')}}
             </template>
-        </div>
-        <custom-browser-settings v-show="tab === '5'"></custom-browser-settings>
-        <div v-show="tab === '6'">
-            <h5>{{ l('settings.hqp.title') }}</h5>
-            <div>{{ l('settings.hqp.desc1') }}</div>
-
-            <checkbox setting="risingShowHighQualityPortraits"></checkbox>
-
-            <div class="warning" style="margin-top: 10px">
-                <h5>{{ l('settings.hqp.alert') }}</h5>
-                <div>{{ l('settings.hqp.desc2') }}</div>
-            </div>
-
-            <div>
-                {{ l('settings.hqp.allowedDomains') }}
-                <ul>
-                    <li>static.f-list.net {{ l('settings.hqp.flist') }}</li>
-                    <li>freeimage.host</li>
-                    <li>iili.io</li>
-                    <li>e621.net</li>
-                    <li>redgifs</li>
-                </ul>
-            </div>
-
-            <div class="form-group">
-                <textarea class="hqp-input form-control" v-model="normalLink" @keydown.enter.prevent.stop="" rows="1" :placeholder="l('settings.hqp.input.ph')"></textarea>
-                <div class="form-label">{{ l('settings.hqp.copy')}}</div>
-                <div v-if="hqpError">
-                    {{ l('settings.hqp.error') }}
-                    <div class="hqp-error">{{ l(hqpError) }}</div>
-                </div>
-                <textarea class="hqp-input form-control" @click="selectAllIfValid" :value="hqpLink" rows="1" :placeholder="l('settings.hqp.output.ph')" readonly="true"></textarea>
-            </div>
-        </div>
-        <div v-show="tab === '7'">
+        </collapse>
+        <collapse :id="tab5name" :ref="tab5name" :title="tab5name" :initial="false" class="mb-4">
+            <custom-browser-settings></custom-browser-settings>
+        </collapse>
+        <collapse :id="tab6name" :ref="tab6name" :title="tab6name" :initial="false" class="mb-4">
             <div class="form-label">{{ l('settings.import.desc') }}</div>
             <div class="form-group d-flex">
                 <select id="import" class="form-control" v-model="importCharacter" style="flex:1;margin-right:10px">
@@ -206,7 +180,7 @@
                     {{l('settings.import')}}
                 </button>
             </div>
-        </div>
+        </collapse>
     </template>
 </page>
 </template>
@@ -216,10 +190,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import Vue from 'vue';
-import { Component, Hook, Watch } from '@f-list/vue-ts';
+import { Component, Hook } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
-import Tabs from '../../components/tabs';
+import Collapse from '../../components/collapse.vue';
+
 import Checkbox from './settings/Checkbox.vue';
 import GenericCheckbox from './settings/GenericCheckbox.vue';
 import TextInput from './settings/TextInput.vue';
@@ -228,21 +203,20 @@ import NumberInput from './settings/Number.vue';
 import GenericNumber from './settings/GenericNumber.vue';
 import Range from './settings/Range.vue';
 import Dropdown from './settings/Dropdown.vue';
+
 import BrowserSettings from './Settings-CustomBrowserPage.vue';
 
 import { Settings as SettingsInterface, Relation } from '../interfaces';
 import { /* SmartFilterSelection, */ smartFilterTypes as smartFilterTypesImport } from '../../learn/filter/types';
-import { ProfileCache } from '../../learn/profile-cache';
 
 import core from '../core';
 import l from '../localize';
 
-type hqpErrorString = 'settings.hqp.errorUrl' | 'settings.hqp.errorDomain' | 'settings.hqp.errorBrace' | '';
-
 @Component({
     components: {
         page: HomePageLayout,
-        tabs: Tabs,
+        collapse: Collapse,
+
         checkbox: Checkbox,
         'generic-check': GenericCheckbox,
         'text-input': TextInput,
@@ -251,6 +225,7 @@ type hqpErrorString = 'settings.hqp.errorUrl' | 'settings.hqp.errorDomain' | 'se
         'generic-num': GenericNumber,
         range: Range,
         dropdown: Dropdown,
+
         'custom-browser-settings': BrowserSettings,
     }
 })
@@ -260,11 +235,37 @@ export default class Settings extends Vue {
     generalSettings = core.state.generalSettings;
     settings = core.state.settings;
 
-    tab = '0';
-    @Watch('tab')
-    scrollToTop(): void {
-        const home_page = (this.$refs['homePageLayout'] as HTMLElement & { scrollToTop: () => void });
-        home_page.scrollToTop();
+    tab0name = l('settings.tabs.general');
+    tab1name = l('settings.tabs.notifications');
+    tab2name = l('settings.tabs.bonus');
+    tab3name = l('settings.tabs.filters');
+    tab4name = l('settings.tabs.hideAds');
+    tab5name = l('settings.tabs.browser');
+    tab6name = l('settings.tabs.import');
+
+    get tabNames() {
+        return [ this.tab0name, this.tab1name, this.tab2name, this.tab3name, this.tab4name, this.tab5name, this.tab6name ];
+    }
+
+    activeCollapse = '';
+    openSection(id: string): void {
+        const element = document.getElementById(id);
+
+        if (element) {
+            this.tabNames.forEach(n => {
+                if (n === id)
+                    (this.$refs[n] as Collapse).open(true);
+                else
+                    (this.$refs[n] as Collapse).close(true);
+            });
+
+            window.requestAnimationFrame(() =>
+                element.scrollIntoView({ behavior: 'smooth' })
+            );
+
+
+            this.activeCollapse = id;
+        }
     }
 
     @Hook('mounted')
@@ -364,39 +365,6 @@ export default class Settings extends Vue {
 
     /**
      * Tab 6
-     */
-    normalLink = '';
-    get hqpLink() {
-        return this.normalLink
-            ? '[i=' + this.normalLink.replace(/^https:\/\//, 'hqp://') + '][/i]'
-            : '';
-    };
-
-    selectAllIfValid(e: MouseEvent) {
-        if (this.hqpError)
-            return;
-        else if (e.target instanceof HTMLTextAreaElement)
-            e.target.select();
-    }
-
-    get hqpError() {
-        if (!this.normalLink)
-            return '' as hqpErrorString;
-
-        if (!this.normalLink.startsWith('https://'))
-            return 'settings.hqp.errorUrl' as hqpErrorString;
-
-        if (this.normalLink.includes(']'))
-            return 'settings.hqp.errorBrace' as hqpErrorString;
-
-        if (!ProfileCache.isSafePortraitURL(this.normalLink))
-            return 'settings.hqp.errorDomain' as hqpErrorString;
-
-        return '' as hqpErrorString;
-    }
-
-    /**
-     * Tab 7
      */
     importCharacter = '';
 

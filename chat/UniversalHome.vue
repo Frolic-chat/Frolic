@@ -5,22 +5,20 @@
             listClasses="nav nav-tabs"
             itemClasses="nav-item"
             linkClasses="nav-link" -->
-    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" linkClasses="btn btn-secondary-outline">
-        <span class="channel-title"><!-- Chat -->
+    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" linkClasses="btn btn-secondary-outline">
+        <span><!-- Chat -->
             <span :class="{
                 'fa-fw fa-solid fa-house-user':   isHome,
                 'fa-fw fa       fa-star':         isOfficialChannel,
                 'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
                 'fa-fw fa-solid fa-user':         isPrivate,
             }"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab0Name }}</span> -->
         </span>
         <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
             <span v-if="isHome" :class="{
                 'fa-fw fa-solid fa-terminal':  isHome,
                 'fa-fw fa-solid fa-link':     !isHome,
             }"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab1Name }}</span> -->
         </span>
         <span><!-- Personalize/Description/Recon -->
             <span :class="{
@@ -28,15 +26,12 @@
                 'fa-fw fa-solid fa-align-left':     isChannel,
                 'fa-fw fa-solid fa-satellite-dish': isPrivate,
             }"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab2Name }}</span> -->
         </span>
         <span><!-- Settings -->
             <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab3Name }}</span> -->
         </span>
         <span><!-- Data -->
             <span class="fa-fw fa-solid fa-file-contract"></span>
-            <!-- <span class="tab-text d-none d-xl-inline">{{ tab4Name }}</span> -->
         </span>
     </tabs>
 
@@ -347,6 +342,10 @@ export default class HomeScreen extends Vue {
 
     get tab4Name() { return l('home.tab.data') }
 
+    get tabTooltips() {
+        return [ this.tab0Name, this.tab1Name, this.tab2Name, this.tab3Name, this.tab4Name ];
+    };
+
     primaryView!:  ConversationView;
     secondaryView: ConversationView | undefined;
 
@@ -653,32 +652,33 @@ export default class HomeScreen extends Vue {
     }
 
     .nav-item {
-        &:has(.hidden-tab) {
-            display: none;
+        > .active {
+            color: var(--gray-dark);
+        }
+
+        > :not(.active) {
+            color: var(--gray);
+        }
+
+        &:has(.active) {
+            border-bottom: 1px solid var(--gray-dark);
+        }
+
+        &:not(:has(.active)) {
+            border-bottom: 1px solid var(--gray);
         }
     }
 
-    .channel-title {
-        font-size: 1.25rem;
-        font-weight: 500;
-    }
-
-    img {
-        /* It really doesn't look that good, though. */
-        height: 0.778em;
-    }
-
-    .tab-text {
-        margin-left: 5px;
+    .nav-item:has(.hidden-tab) {
+        display: none !important;
     }
 }
 
 .page-header {
-    > .mr-auto {
-        gap: 0.5rem;
-    }
-
-    > .ml-auto {
+    > .ml-auto, > .mr-auto {
+        display: flex;
+        align-items: center;
+        height: 3em;
         gap: 0.5rem;
     }
 }
