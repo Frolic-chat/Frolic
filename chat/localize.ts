@@ -157,10 +157,10 @@ const strings = {
     'chat.send': 'Send',
     'chat.noBrowser': `Please configure a browser to use incognito mode.
 
-Gear Menu -> Frolic -> Custom browser`,
+Home-> Wrench & Screwdriver -> Custom Browser`,
     'chat.brokenBrowser': `Could not execute your chosen browser. Reassign your browser.
 
-Gear Menu -> Frolic -> Custom browser`,
+Home-> Wrench & Screwdriver -> Custom Browser`,
     'logs.title': 'Logs',
     'logs.character': 'Character',
     'logs.conversation': 'Conversation',
