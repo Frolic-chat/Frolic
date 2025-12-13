@@ -182,7 +182,7 @@ export default class Data extends Vue {
             this.loadedLicense.body = await ipcRenderer.invoke('get-text-for-license', f);
             this.loadedLicense.name = f;
 
-            this.$nextTick(() => (this.$refs['licenseView'] as Modal).scrollToTop());
+            (this.$refs['licenseView'] as Modal).scrollToTop();
         }
         catch (e) {
             log.warn('Failed to load license text.', e);
