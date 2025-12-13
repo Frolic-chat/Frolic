@@ -296,9 +296,9 @@ export function ExtractReferences<T extends Record<string, any>>(obj: T) {
 //     return keys;
 // }
 
-// Every pair is a `[oldValue, newValue]`. Only CHANGED keys are compared; value must exist in both sides.
+// Every pair is a `[oldValue, newValue]` tuple. Only CHANGED keys are compared.
 // TS is the worst :) Please become haskell
-export function ComparePrimitives<T extends object>(oldObj: T, newObj: T): Record<keyof T, [any, any]> {
+export function ComparePrimitives<T extends Record<string, any>>(oldObj: T, newObj: T): Record<keyof T, [any, any]> {
     const result = {} as Record<keyof T, [any, any]>;
 
     for (const key of Object.keys(oldObj) as (keyof T)[]) {

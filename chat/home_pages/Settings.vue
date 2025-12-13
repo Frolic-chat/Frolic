@@ -103,7 +103,7 @@
             <checkbox setting="risingShowPortraitNearInput"></checkbox>
             <checkbox setting="risingShowPortraitInMessage"></checkbox>
             <dropdown setting="risingCharacterTheme">
-                <option value="">{{l('rising.theme.default')}}</option>
+                <option value="">{{ l('rising.theme.default') }}</option>
                 <option disabled>---</option>
                 <option v-for="theme in risingAvailableThemes" :value="theme">
                     {{ theme }}

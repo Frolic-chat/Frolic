@@ -529,7 +529,7 @@
 
         get styling(): string {
             try {
-                return `<style id="themeStyle">${fs.readFileSync(path.join(__dirname, `themes/${((this.character != undefined && core.state.settings.risingCharacterTheme) || this.settings.theme)}.css`), 'utf8').toString()}</style>`;
+                return `<style id="themeStyle">${fs.readFileSync(path.join(__dirname, `themes/${((this.character && core.state.settings.risingCharacterTheme) || this.settings.theme)}.css`), 'utf8').toString()}</style>`;
             }
             catch (e) {
                 if ((<Error & { code: string }>e).code === 'ENOENT' && this.settings.theme !== 'default') {
