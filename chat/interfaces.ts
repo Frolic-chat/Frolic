@@ -312,7 +312,7 @@ export namespace Settings {
 
         risingFilter: SmartFilterSettings;
 
-        risingCharacterTheme: string | undefined;
+        risingCharacterTheme: string | null;
 
         /**
          * Legacy: deprecate by removing from place of use, but retain it in settings for backporting capability; as long as we want to suporrt that.

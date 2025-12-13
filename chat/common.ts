@@ -119,7 +119,7 @@ export class Settings implements ISettings {
         exceptionNames: []
     };
 
-    risingCharacterTheme: string | undefined = undefined;
+    risingCharacterTheme: string | null = null;
 }
 
 
