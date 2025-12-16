@@ -3,6 +3,22 @@
 import { platform } from "process";
 import { execSync } from "child_process";
 
+import * as Electron from 'electron';
+
+/**
+ *  'eicon-status'
+    'eicon-search'
+    'eicon-page'
+    'eicon-refresh'
+ */
+export function invoke(channel: 'eicon-status'): Promise<{ status?: string, amount: number }>;
+export function invoke(channel: 'eicon-search', query: string): Promise<string[]>;
+export function invoke(channel: 'eicon-page', amount: number): Promise<string[]>;
+export function invoke(channel: 'eicon-refresh', force?: boolean): Promise<boolean>;
+export function invoke<P extends any[], R>(channel: string, ...args: P): Promise<R> {
+    return Electron.ipcRenderer.invoke(channel, ...args)
+}
+
 /**
  * Find a given filename on the system, using `where` in `Program Files` on
  * Windows and `which` on Linux.
@@ -28,8 +44,12 @@ export function FindExeFileFromName(exe: string): string {
  * A fast randomization algorithm.
  * @param arr An array to be randomized; will be modified in-place
  */
-export async function FisherYatesShuffle(arr: any[]): Promise<void> {
-    for (let cp = arr.length - 1; cp > 0; cp--) {
+export async function FisherYatesShuffle(arr: any[], amount: number = 0): Promise<void> {
+    const end = amount >= 0 && amount <= arr.length
+        ? Math.floor(arr.length - amount)
+        : 0;
+
+    for (let cp = arr.length - 1; cp >= end; cp--) {
         const np = Math.floor(Math.random() * (cp + 1));
         [arr[cp], arr[np]] = [arr[np], arr[cp]];
     }
@@ -445,4 +465,44 @@ export function sleep(ms: number) {
 // Still uncertain how to use this reliably.
 export function has<K, T extends K>(set: ReadonlySet<T> | ReadonlyMap<T, any>, key: K): key is T {
     return set.has(key as T);
+}
+
+/**
+ * Flip through entries of an array in the style of a rolodex, rotating them
+ * from front to back while preserving the circular order.
+ * @param arr The "rolodex" to cycle through; will be modified in-place
+ * @param amount Number of results to move from front to back
+ * @returns An array of the entries that were flipped through
+ */
+export function Rotate<T>(arr: T[], amount: number): T[] {
+    const remove = arr.splice(0, amount);
+
+    arr.push(...remove);
+
+    return remove;
+}
+
+/**
+ * Confirms whether a given subject is an array that contains only strings;
+ * useful for runtime verification of files, websites, and
+ * other imported data.
+ * @param subj Any type; will validate as array before having its values checked
+ * @returns Is the subject an array that contains only strings?
+ */
+export function isArrayOfStrings(subj: any): subj is string[] {
+    return Array.isArray(subj) && subj.every(item => typeof item === 'string');
+}
+
+/**
+ * Confirms whether a given subject is an array that contains only objects;
+ * useful for runtime verification of files, websites, and
+ * other imported data.
+ *
+ * This does not check that the objects contain any
+ * particular internal structure.
+ * @param subj Any type; will validate as array before having its values checked
+ * @returns Is the subject an array that contains only objects?
+ */
+export function isArrayOfObjects(subj: any): subj is object[] {
+    return Array.isArray(subj) && subj.every(item => typeof item === 'object');
 }

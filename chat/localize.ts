@@ -851,6 +851,7 @@ Any existing FChat 3.0 data for this character will be overwritten.`,
 
     'eicon.select': 'Select EIcon',
     'eicon.loading': 'Loading...',
+    'eicon.notready': "The eicon service isn't ready yet; please wait",
     'eicon.search': 'Search eicons...',
     'eicon.favorites': 'Favorites',
     'eicon.expressions': 'Expressions',

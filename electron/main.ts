@@ -123,6 +123,10 @@ import * as GeneralSettingsManager from './main/general-settings';
 const settings_path = path.join(settingsDir, 'settings');
 const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 
+// We wouldn't want to await this even if we were using an ES that supported such a thing.
+import * as EiconManager from './main/eicon-store';
+void EiconManager.init(settingsDir, 'eicons');
+
 import InitScratchpad from './main/scratchpad';
 const scratchpad_path = path.join(settingsDir, 'scratchpad');
 InitScratchpad(scratchpad_path);

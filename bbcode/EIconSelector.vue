@@ -1,8 +1,8 @@
 <template>
-  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" @close="close" dialogClass="eicon-selector big">
+  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
     <div class="eicon-selector-ui">
-      <div v-if="refreshing" class="d-flex align-items-center loading">
-        <strong>{{ l('eicon.loading') }}</strong>
+      <div v-if="!isReady" class="d-flex align-items-center loading">
+        <strong>{{ l('eicon.notready') }}</strong>
         <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
       </div>
       <div v-else>
@@ -59,8 +59,12 @@
 
         <div class="carousel slide w-100 results">
           <div class="carousel-inner w-100" role="listbox">
-            <div class="carousel-item" v-for="eicon in results" :key="eicon" role="img" :aria-label="eicon" tabindex="0">
-              <img class="eicon" v-if="results.includes(eicon)" :alt="eicon" :src="'https://static.f-list.net/images/eicon/' + eicon + '.gif'" :title="eicon" role="button" :aria-label="eicon" @click.prevent.stop="selectIcon(eicon, $event)">
+            <template v-if="refreshing">
+                <strong>{{ l('eicon.loading') }}</strong>
+                <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+            </template>
+            <div v-else class="carousel-item" v-for="eicon in results" :key="eicon" role="img" :aria-label="eicon" tabindex="0">
+              <img class="eicon" v-if="results.includes(eicon)" :alt="eicon" :src="'https://static.f-list.net/images/eicon/' + eicon + '.gif'" :title="eicon" loading="lazy" role="button" :aria-label="eicon" @click.prevent.stop="selectIcon(eicon, $event)">
 
               <div class="btn favorite-toggle" v-if="results.includes(eicon)" :class="{ favorited: isFavorite(eicon) }" @click.prevent.stop="toggleFavorite(eicon)" role="button" :aria-label="isFavorite(eicon) ? l('eicon.favRemove') : l('eicon.favAdd')">
                 <i class="fas fa-thumbtack"></i>
@@ -75,18 +79,20 @@
 </template>
 
 <script lang="ts">
-import l from '../chat/localize';
 import { Component, Hook, Prop } from '@f-list/vue-ts';
-import { EIconStore } from '../learn/eicon/store';
-import core from '../chat/core';
-import modal from '../components/Modal.vue';
 import CustomDialog from '../components/custom_dialog';
+import modal from '../components/Modal.vue';
+
+import * as Electron from 'electron';
+import core from '../chat/core';
+import l from '../chat/localize';
+import * as Utils from '../helpers/utils';
+
 import { debounce } from '../helpers/utils';
+import { AxiosProgressEvent } from 'axios';
 
-// import NewLogger from '../helpers/log';
-// const log = NewLogger('eicons');
-
-let store: EIconStore | undefined;
+import NewLogger from '../helpers/log';
+const log = NewLogger('eicons');
 
 @Component({ components: { modal } })
 export default class EIconSelector extends CustomDialog {
@@ -96,147 +102,116 @@ export default class EIconSelector extends CustomDialog {
     l = l;
 
     results: string[] = [];
-    search: string = '';
-    refreshing: boolean = true;
+    search = '';
+    refreshing = true;
+    status: 'ready'   | 'unverified'
+          | 'loading' | 'uninitialized' | 'error' = 'uninitialized';
+    loadingPercent = 100;
 
-    searchUpdateDebounce = debounce(() => this.runSearch(), { wait: 350 });
+    get isReady() { return this.status !== 'loading' && this.status !== 'uninitialized' && this.status !== 'error' };
 
-    @Hook('mounted')
-    async mounted(): Promise<void> {
-        store = await EIconStore.getSharedStore();
+    searchUpdateDebounce = debounce(async () => this.results = await this.runSearch(), { wait: 350 });
+
+    @Hook('created')
+    created() {
+        Electron.ipcRenderer.on('eicon-progress', (_, e: AxiosProgressEvent) =>
+            this.loadingPercent = (e.progress || 100)
+        );
+
+        // register eicon error.
+        Electron.ipcRenderer.on('eicon-error', () => {});
+
+        void this.pollStatus();
+    }
+
+    async pollStatus() {
+        this.status = 'loading';
+        this.refreshing = true;
+
+        const r = await Utils.invoke('eicon-status').catch();
+
+        log.debug('selector.pollStatus', r);
+
+        if (r?.status) {
+            if (r.status === 'ready' || r.status === 'error')
+                this.status = r.status;
+            else
+                this.status = 'unverified';
+
+            this.refreshing = false;
+
+            log.debug('selector.pollStatus.ready', this.status);
+
+            void this.searchWithString(this.search || `category:favorites:${core.characters.ownCharacter.name}`);
+        }
+        else {
+            log.debug('selector.pollStatus.queuerepoll');
+
+            setTimeout(() => this.pollStatus(), 1000);
+        }
+    }
+
+    /**
+     * Search and assign the results into the results storage.
+     * @param s
+     */
+    async searchWithString(s: string) {
+        this.search = s;
+        this.results = await this.runSearch();
+    }
+
+    /**
+     * Search and return the results.
+     */
+    async runSearch() {
+        this.refreshing = true;
+
+        const r = this.search
+            ? await Utils.invoke('eicon-search', this.search).catch()
+            : await this.getPage();
+
+        log.debug('selector.runSearch.results', r.length);
+
         this.refreshing = false;
 
-        this.searchWithString('category:favorites');
-    }
-
-    searchWithString(s: string) {
-        this.search = s;
-        this.runSearch();
-    }
-
-    runSearch() {
-        const s = this.search.toLowerCase();
-
-        if (s.startsWith('category:')) {
-            const category = s.substring(9).trim();
-
-            if (category === 'random')
-                this.results = store?.nextPage() || [];
-            else
-                this.results = this.getCategoryResults(category);
-        }
-        else if (s.length === 0)
-            this.results = store?.nextPage() || [];
-        else
-            this.results = store?.search(s).slice(0, 301) || [];
-    }
-
-    getCategoryResults(category: string): string[] {
-        switch(category) {
-        case 'expressions':
-            return [
-                            // Memetic
-                'shhh', 'excuse me',
-                            // Anime:
-                'no tax refund', 'kizunaai', 'robotsmug', 'angyraihan', 'heartseyes', 'confused01', 'moronyeh', 'ashemote3', 'howembarrassing', 'hyperahegao', 'luminosebleed', 'baisergushing', 'aijam',
-                            // Cartoon-ish:
-                'nuttoohard', 'bangfingerbang', 'simpwaifu', 'paishake', 'lip',
-                            // Cartoon:
-                'fluttersorry', 'thirstytwi', 'horseeyes', 'horsepls',
-                            // Emoji adjacent:
-                'catblob',  'catblobangery', 'blobhugs', 'geblobcatshrug', 'badkitty', 'eggplantemoji', 'peachemoji', 'splashemoji', 'eyes emoji',
-                            // Emoji:
-                'flushedemoji', 'pensiveemoji', 'heart eyes', 'kissing heart', 'melting emoji', 'thinkingemoji', 'party emoji', 'triumphemoji', 'uwuemoji', 'bottomfingers', 'heartflooshed', 'blushpanic', 'love2', 'whentheohitsright', 'embarassment', 'twittersob',
-            ];
-
-        case 'soft':
-            return [
-                            // Hi!:
-                'dogdoin', 'doggohi', 'smile5', 'fluffbrain', 'coolraccoon', 'cat sit', 'kittypeeky',
-                            // Fun:
-                'kicky', 'yappers', 'nyehe', 'nyeheh', 'kittygiggle', 'samodance', 'dogewut', 'wibbl', 'dogcited', 'wagglebrow', 'fennec2', 'blobfoxbongo', 'akittyclap', 'nodnodnod', 'catbop', 'ermtime', 'bunnana', 'cateatingchips', 'catkiss',
-                            // Soft:
-                'imdieforever', 'waitingcuddles', 'waitingforforeheadkissie', 'blushcat', 'bunhug', 'meowhuggies', 'bunanxiety', 'cat_waddle',
-                            // Chaos:
-                'catnapping', 'catheadempty', 'bunnywavedash', 'bunnyscrem8', 'cry cat', 'yote gasp', 'cat2back', 'stupid little woo woo boy', 'chedoggo', 'scuffedhamster', 'angydoggo', 'kittyangy',
-                            // Bye:
-                'eepy', 'sleepdog', 'cat faceplant',
-            ];
-
-        case 'sexual':
-            return [
-                            // Act:
-                'asutired1', 'asutired2', 'vanessamasturbate', 'musclefuck2', 'worshipping3', 'lapgrind', 'salivashare', 'slurpkiss', 'cockiss', 'lovetosuck', 'donglove', 'horseoral9a', 'swallowit', 'paiplop', 'satsukinailed', 'kntbch1', 'dickslurp',
-                            // Showing Off:
-                'influencerhater', 'sloppy01', 'fingersucc', 'cmontakeit', 'hopelessly in love', 'ahega01 2', 'absbulge', 'edgyoops', 'oralcreampie100px', 'debonairdick4', 'kirari1e', 'pinkundress', 'georgiethot',
-                            // Body:
-                'jhab1', 'coralbutt4', 'rorobutt2', 'ballsack3', 'blackshem1', 'cheegrope2', 'dropsqueeze', 'flaunt', 'haigure',
-                            // BDSM:
-                'gagged2', 'cumringgag',
-                            // Symbols:
-                'thekonlook', 'melodypeg', 'heart beat', 'lovebreeders', 'cummies', 'a condom', 'kissspink',
-            ];
-
-        case 'bubbles':
-            return [
-                            // Memetic:
-                'speedl', 'speedr', 'notcashmoney', 'taftail', 'fuckyouasshole', 'ciaig', 'crimes', 'nagagross', 'rude1', 'helpicantstopsuckingcocks', 'eyesuphere', 'peggable2', 'sydeanothere', 'dickdick', 'frfister',
-                            // Cutesy:
-                'iacs', 'pat my head', 'pawslut', 'inbagg',
-                            // Sexual:
-                'lickme', 'takemetohornyjail', 'knotslutbubble', 'toofuckinghot', 'pbmr', 'imabimbo', 'fatdick', 'callmemommy', 'breakthesubs', 'fuckingnya', 'suckfuckobey', 'breedmaster', 'buttslutbb', 'simpbait', 'muskslut', '4lewdbubble', 'hypnosiss', 'imahypnoslut', 'notahealslut', '5lewdbubble', 'ratedmilf', 'ratedstud', 'ratedslut',  'xarcuminme', 'xarcumonme', 'fuckbun', 'fuckpiggy', 'plappening', 'goodboy0', 'spitinmouth',
-            ];
-
-        case 'symbols':
-            return [
-                            // Gender:
-                'gender-cuntboy', 'gender-female', 'gender-herm', 'gender-male', 'gender-mherm', 'gender-none', 'gender-shemale', 'gender-transgender',
-                            // Mosaics:
-                'no ai', 'xpgameover1', 'xpgameover2', 'goldboomboxl', 'goldboomboxr',
-                            // Pop culture:
-                'getnorgetout', 'playstation', 'autobotsemblem', 'decepticonemblem',
-                            // Cards
-                'suitspades', 'suithearts', 'suitdiamonds',  'suitclubs',
-                            // Letters and numbers:
-                'num-1', 'num-2', 'num-3', 'num-4', 'num-5', 'num-6', 'num-7', 'num-8', '9ball', 'agrade',
-                            // Emoji adjacent:
-                'pimpdcash', 'discovered', 'pls stop', 'question mark', 'questget', 'music', 'speaker emoji', 'cam',
-                            // Misc:
-                'goldendicegmgolddicegif', 'smashletter', 'pentagramo', 'cuffed', 'paw2', 'sunnyuhsuperlove', 'transflag', 'streamlive', 'computer', 'you got mail',
-            ];
-
-        case 'memes':
-            return [
-                'flowercatnopls', 'flowercatpls', 'bad eicon detected', 'admiss', 'perish', 'fsquint', 'kille', 'majimamelon', 'dogboom', 'catexplode',  'despairing', 'doorkick', 'doorkick2', 'emptyhand', 'sweat 1', 'tap the sign', 'soypoint', 'pethand', 'tailwaggy', 'tailsooo', 'e62pog', 'thehorse', 'guncock', 'nct1', 'michaelguns', 'squirtlegun', 'palpatine', 'thatskindahot', 'ygod', 'flirting101', 'loudnoises', 'nyancat', 'gayb', 'apologize to god', 'jabbalick', 'raisefinger', 'whatislove', 'surprisemothafucka', 'thanksihateit', 'hell is this', 'confused travolta', 'no words', 'coffindance', 'homelander', 'thatsapenis', 'kermitbusiness', 'imdyingsquirtle', 'goodbye', 'oag',
-            ];
-
-        case 'favorites':
-            return Object.keys(core.state.favoriteEIcons);
-        }
-
-        return [];
+        return Array.isArray(r) ? r : [];
     }
 
     selectIcon(eicon: string, event: MouseEvent): void {
         const shift = event.shiftKey;
 
-        if (this.onSelect) {
-            this.onSelect(eicon, shift);
-        }
+        this.onSelect?.(eicon, shift);
     }
 
-    async refreshIcons(payload: MouseEvent): Promise<void> {
+    /**
+     * Return a specific number of entries. Default is one full page.
+     */
+    async getPage(n: number = 0) {
+        const r = await Utils.invoke('eicon-page', n).catch();
+
+        log.debug('selector.runSearch.results', r.length);
+
+        return Array.isArray(r) ? r : [];
+    }
+
+    async refreshIcons(payload: MouseEvent) {
         this.refreshing = true;
 
-        await store?.checkForUpdates(payload.shiftKey);
-        this.runSearch();
+        await Utils.invoke('eicon-refresh', payload.shiftKey).catch();
+
+        this.results = await this.runSearch();
 
         this.refreshing = false;
     }
 
+    /**
+     * On focus, we may be in 'loading' mode and there is no search input.
+     */
     setFocus(): void {
-        (this.$refs['search'] as HTMLInputElement).focus();
-        (this.$refs['search'] as HTMLInputElement).select();
+        const search = (this.$refs['search'] as HTMLInputElement | undefined);
+
+        search?.focus();
+        search?.select();
     }
 
     isFavorite(eicon: string): boolean {
@@ -252,10 +227,6 @@ export default class EIconSelector extends CustomDialog {
         void core.settingsStore.set('favoriteEIcons', core.state.favoriteEIcons);
 
         this.$forceUpdate();
-    }
-
-    close(): void {
-        store?.shuffle();
     }
 }
 </script>
