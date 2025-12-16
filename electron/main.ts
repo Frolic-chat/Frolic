@@ -69,12 +69,6 @@ import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
-import * as LicenseHandler from './main/license-handler';
-(async () => {
-    if (!(await LicenseHandler.init(app.getAppPath())))
-        log.warn('Failed to load license handler main-side.');
-})();
-
 import * as ChildProcess from 'child_process';
 import { FindExeFileFromName } from '../helpers/utils';
 
@@ -112,6 +106,9 @@ const icon = {
 let PrimaryWindow: Electron.BrowserWindow | undefined;
 const characters: string[] = [];
 let tabCount = 0;
+
+import * as LicenseHandler from './main/license-handler';
+LicenseHandler.init(app.getAppPath());
 
 const baseDir = app.getPath('userData');
 fs.mkdirSync(baseDir, {recursive: true});
