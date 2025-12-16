@@ -29,8 +29,8 @@
 
             </div>
 
-            <div v-show="widgets.news" class="home-row flex-row">
-                <news></news>
+            <div v-show="widgets.news" :style="{ 'order: 999;': hideNews }" class="home-row flex-row">
+                <news @update="handleNewsUpdate"></news>
             </div>
 
             <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
@@ -128,6 +128,12 @@ export default class Home extends Vue {
 
     logsTitle = l('logs.title');
     showLogs() { this.logs?.show() }
+
+
+    hideNews = false;
+    handleNewsUpdate(hasNews: boolean) {
+        this.hideNews = !hasNews;
+    }
 
 
     get shouldShowActivity() { return !!core.conversations.activityTab.messages.length }

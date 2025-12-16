@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component, Hook, Watch } from '@f-list/vue-ts';
 
 import Collapse from '../../../components/collapse.vue';
 
@@ -114,6 +114,11 @@ export default class NewsWidget extends Vue {
                 this.toggle.news = !u.current.known || !u.latest;
             }
         }
+    }
+
+    @Watch('hasUpdate')
+    emitUpdate() {
+        this.$emit('update', this.hasUpdate);
     }
 
     /**
