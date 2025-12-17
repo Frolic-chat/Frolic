@@ -327,26 +327,19 @@ export default function(this: void, connection: Connection): Interfaces.State {
     connection.onEvent('connecting', async (isReconnect) => {
         logConnecting.debug('characters.default.onEvent.connecting', { isReconnect });
 
-        const bm_list = await connection.queryApi('bookmark-list.php');
-        const fr_list = await connection.queryApi('friend-list.php');
+        state.friends   = [];
+        state.bookmarks = [];
 
-        // Currently always runs.
-        if (bm_list) {
-            logConnecting.debug('characters.default.onEvent.connecting.bm_list');
-            state.bookmarks = [];
-            state.bookmarkList = new Set(bm_list.characters);
+        const bm_list = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
+        const fr_list = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php')).friends.map(x => x.dest);
 
-            EventBus.$emit('bookmark-list', state.bookmarks);
-        }
+        logConnecting.debug('characters.default.onEvent.connecting.fr_bm_list', { fr: fr_list, bm: bm_list });
 
-        // Currently always runs.
-        if (fr_list) {
-            logConnecting.debug('characters.default.onEvent.connecting.fr_list');
-            state.friends = [];
-            state.friendList = new Set(fr_list.friends.map(x => x.dest));
+        state.bookmarkList = new Set(bm_list);
+        state.friendList   = new Set(fr_list);
 
-            EventBus.$emit('friend-list', state.friends);
-        }
+        EventBus.$emit('bookmark-list', state.bookmarks);
+        EventBus.$emit('friend-list',   state.friends);
 
         if (isReconnect && state.ownCharacter.name !== '') {
             reconnectStatus = {
