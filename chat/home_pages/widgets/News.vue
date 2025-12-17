@@ -13,8 +13,8 @@
 
     <template v-slot:default>
         <div v-if="hasUpdate" v-html="sanitizedChangelog" style="user-select:text"></div>
-        <div v-else-if="unknownVersion" class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
-            <p>You are using Frolic version {{ update.current.version }}. An update could not be found.</p>
+        <div v-else-if="unknownVersion" class="border-inline-warning rounded-lg p-3">
+            <p>You are using Frolic version <span class="text-info">{{ update.current.version }}</span>. An update could not be found.</p>
             <p>This is not a problem if you are using a beta or testing release.</p>
             <p>Additionally, this may occur if you couldn't connect to the update server. (Is github down?)</p>
         </div>

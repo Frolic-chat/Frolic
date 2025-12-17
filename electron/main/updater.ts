@@ -12,12 +12,22 @@ type ReleaseInfo = {
     body: string;
 };
 
-// version -> changelog mapping
-const versions: {
-    current:  { version: string, changelog: string, known: boolean },
-    latest?:  { version: string, changelog: string },
+interface VersionInfo {
+    version:   string;
+    changelog: string;
+}
+
+interface CurrentVersionInfo extends VersionInfo {
+    known: boolean;
+}
+
+export interface UpdateState {
+    current:  CurrentVersionInfo,
+    latest?:  VersionInfo,
     updateCount: number,
-} = {
+}
+// version -> changelog mapping
+const versions: UpdateState = {
     current: { version: '', changelog: '', known: false },
     updateCount: 0,
 };

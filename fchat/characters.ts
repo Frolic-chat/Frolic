@@ -261,16 +261,12 @@ class State implements Interfaces.State {
                 if (emit && options?.date)  EventBus.$emit('activity-friend-logout', { character, date: options.date });
             }
             else if (options?.date) {
-                // Cache in case our listeners are async.
-                const old_status     = character.status;
-                const old_status_msg = character.statusText;
-
                 EventBus.$emit('activity-friend-status', {
                     character,
                     status:       newStatus,
                     statusmsg:    text,
-                    oldStatus:    old_status,
-                    oldStatusMsg: old_status_msg,
+                    oldStatus:    character.status,
+                    oldStatusMsg: character.statusText,
                     date:         options?.date,
                 });
             }

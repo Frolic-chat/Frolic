@@ -1,14 +1,14 @@
 import Vue from 'vue';
-import {BBCodeElement, CoreBBCodeParser, analyzeUrlTag} from '../bbcode/core';
+import { BBCodeElement, CoreBBCodeParser, analyzeUrlTag } from '../bbcode/core';
 //tslint:disable-next-line:match-default-export-name
 import BaseEditor from '../bbcode/Editor.vue';
-import {BBCodeTextTag} from '../bbcode/parser';
+import { BBCodeTextTag } from '../bbcode/parser';
 import ChannelView from './ChannelTagView.vue';
 // import {characterImage} from './common';
 import core from './core';
 // import {Character} from './interfaces';
-import {default as UrlView} from '../bbcode/UrlTagView.vue';
-import {default as IconView} from '../bbcode/IconView.vue';
+import UrlTagView from '../bbcode/UrlTagView.vue';
+import IconView from '../bbcode/IconView.vue';
 import UserView from './UserView.vue';
 
 export class Editor extends BaseEditor {
@@ -104,7 +104,7 @@ export default class BBCodeParser extends CoreBBCodeParser {
                     return;
                 }
 
-                const view = new UrlView({el: root, propsData: {url: tagData.url, text: tagData.textContent, domain: tagData.domain}});
+                const view = new UrlTagView({el: root, propsData: {url: tagData.url, text: tagData.textContent, domain: tagData.domain}});
                 this.cleanup.push(view);
 
                 return root;

@@ -371,8 +371,8 @@
                 core.connection.setCredentials(this.settings.account, this.password);
 
                 this.characters = Object.keys(data.characters)
-                        .map(name => ({ name, id: data.characters[name], deleted: false }))
-                        .sort((x, y) => x.name.localeCompare(y.name));
+                    .map(name => ({ name, id: data.characters[name], deleted: false }))
+                    .sort((x, y) => x.name.localeCompare(y.name));
 
                 this.defaultCharacter = data.default_character;
             }
@@ -413,7 +413,6 @@
             if ((<HTMLElement>e.target).tagName === 'A') {
                 const target = <HTMLAnchorElement>e.target;
                 if (target.hostname !== '') {
-                    //tslint:disable-next-line:prefer-template
                     preview.className = 'link-preview ' +
                         (e.clientX < window.innerWidth / 2 && e.clientY > window.innerHeight - 150 ? ' right' : '');
                     preview.textContent = target.href;
@@ -428,7 +427,6 @@
         async openProfileInBrowser(): Promise<void> {
             electron.ipcRenderer.send('open-url-externally', `https://www.f-list.net/c/${this.profileName}`);
 
-            // tslint:disable-next-line: no-any no-unsafe-any
             (this.$refs.profileViewer as any).hide();
         }
 
@@ -438,7 +436,6 @@
 
             conversation.show();
 
-            // tslint:disable-next-line: no-any no-unsafe-any
             (this.$refs.profileViewer as any).hide();
         }
 
@@ -451,14 +448,11 @@
 
 
         reloadCharacter(/* payload: MouseEvent */): void {
-            // tslint:disable-next-line: no-any no-unsafe-any
             (this.$refs.characterPage as any).reload(/* payload.shiftKey || payload.button === 2 */);
         }
 
 
         getThemeClass(): Record<string, boolean> {
-          // console.log('getThemeClassIndex', core.state.generalSettings?.risingDisableWindowsHighContrast);
-
             try {
             // Hack!
                 if (process.platform === 'win32') {
@@ -562,17 +556,13 @@
 
         async openWordDefinitionInBrowser(): Promise<void> {
             electron.ipcRenderer.send('open-url-externally', (this.$refs.wordDefinitionLookup as any).getWebUrl());
-            //await remote.shell.openExternal((this.$refs.wordDefinitionLookup as any).getWebUrl());
 
-            // tslint:disable-next-line: no-any no-unsafe-any
             (this.$refs.wordDefinitionViewer as any).hide();
         }
 
 
         unpinUrlPreview(e: Event): void {
             const imagePreview = (this.$refs['chat'] as Chat)?.getChatView()?.getImagePreview();
-
-            // const imagePreview = this.$refs['imagePreview'] as ImagePreview;
 
             if (imagePreview?.isVisible() && imagePreview.sticky) {
                 e.stopPropagation();
