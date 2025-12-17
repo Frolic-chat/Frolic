@@ -308,7 +308,8 @@ class State implements Interfaces.State {
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
         const char = this.get(name, false);
 
-        Vue.set(char.overrides, type, value);
+        if (['avatarUrl', 'gender', 'status'].includes(type)) // runtime safety
+            Vue.set(char.overrides, type, value);
     }
 
     async resolveOwnProfile(): Promise<void> {
