@@ -391,28 +391,29 @@ export default function(this: void, connection: Connection): Interfaces.State {
     connection.onMessage('ADL', (data) => {
         state.opList = new Set(data.ops);
     });
-    connection.onMessage('LIS', async (data) => {
+    connection.onMessage('LIS', (data) => {
         for (const char of data.characters) {
             const character = state.get(char[0], false);
             character.gender = char[1];
             state.setStatus(character, char[2], char[3]);
         }
 
-        const overridesForEveryone = await core.cache.profileCache.getBatchOfOverrides(
+        core.cache.profileCache.getBatchOfOverrides(
             data.characters.map(([ name ]) => name)
-        );
+        ).then(everyonesOverrides => {
+            const count = everyonesOverrides ? Object.keys(everyonesOverrides).length : 0;
+            logCG.debug(`On LIS, querying for ${data.characters.length} characters, for which only ${count} had entries in the db.`);
 
-        logCG.debug(`On LIS, querying for ${data.characters.length} characters, for which only ${overridesForEveryone ? Object.keys(overridesForEveryone).length : 'none'} had entries in the db.`);
-
-        if (overridesForEveryone) {
-            Object.entries(overridesForEveryone).forEach(([ char, indexedOverride ]) => {
-                const c = state.characters[char];
-                if (c && !Object.keys(c.overrides).length) {
-                    for (const indexed of Object.entries(indexedOverride))
-                        state.setOverride(char, indexed[0] as keyof CharacterOverrides, indexed[1]);
-                }
-            });
-        }
+            if (everyonesOverrides) {
+                Object.entries(everyonesOverrides).forEach(([ char, indexedOverride ]) => {
+                    const c = state.characters[char];
+                    if (c && !Object.keys(c.overrides).length) {
+                        for (const [i, v] of Object.entries(indexedOverride))
+                            state.setOverride(char, i as keyof CharacterOverrides, v);
+                    }
+                });
+            }
+        });
     });
     connection.onMessage('FLN', (data, date) => {
         state.setStatus(state.get(data.character), 'offline', '', { date });
