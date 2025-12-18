@@ -148,9 +148,9 @@ class State implements Interfaces.State {
         if (!char) {
             char = new Character(name);
 
-            char.isFriend     = this.friendList.has(name);
-            char.isBookmarked = this.bookmarkList.has(name);
-            char.isChatOp     = this.opList.has(name);
+            char.isFriend     = this.friendList.has(key);
+            char.isBookmarked = this.bookmarkList.has(key);
+            char.isChatOp     = this.opList.has(key);
             char.isIgnored    = this.ignoreList.has(key);
 
             this.characters[key] = char;
@@ -373,13 +373,11 @@ export default function(this: void, connection: Connection): Interfaces.State {
         state.friends   = [];
         state.bookmarks = [];
 
-        const bm_list = (await connection.queryApi<{ characters: string[] }>('bookmark-list.php')).characters;
-        const fr_list = (await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php')).friends.map(x => x.dest);
+        const bm_list = await connection.queryApi<{ characters: string[] }>('bookmark-list.php');
+        const fr_list = await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php');
 
-        logConnecting.debug('characters.default.onEvent.connecting.fr_bm_list', { fr: fr_list, bm: bm_list });
-
-        state.bookmarkList = new Set(bm_list);
-        state.friendList   = new Set(fr_list);
+        state.bookmarkList = new Set(bm_list.characters.map(x => x.toLowerCase()));
+        state.friendList   = new Set(fr_list.friends.map(x => x.dest.toLowerCase()));
 
         EventBus.$emit('bookmark-list', state.bookmarks);
         EventBus.$emit('friend-list',   state.friends);
@@ -426,7 +424,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
     connection.onMessage('IGN', (data) => {
         switch(data.action) {
         case 'init':
-            state.ignoreList = new Set(data.characters);
+            state.ignoreList = new Set(data.characters.map(n => n.toLowerCase()));
             break;
         case 'add':
             state.ignoreList.add(data.character.toLowerCase());
@@ -438,7 +436,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
         }
     });
     connection.onMessage('ADL', (data) => {
-        state.opList = new Set(data.ops);
+        state.opList = new Set(data.ops.map(c => c.toLowerCase()));
     });
     connection.onMessage('CON', (data) => {
         logConnecting.silly(`characters.CON.${data.count}`);
