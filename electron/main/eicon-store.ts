@@ -668,7 +668,7 @@ function search(searchString: string): string[] {
     });
 
     // Prevent a flood of eicons for generic search phrases
-    const desired_count = EICON_PAGE_RESULTS_COUNT * query.length * 1.43;
+    const desired_count = Math.floor(EICON_PAGE_RESULTS_COUNT * query.length * 1.43);
     if (found.length > desired_count)
         found.length = desired_count;
 
