@@ -18,6 +18,7 @@ import NewLogger from '../helpers/log';
 const log = NewLogger('conversations', () => core?.state.generalSettings.argv.includes('--debug-conversations'));
 const logS = NewLogger('conversation-settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
 const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
+const logRTB = NewLogger('rtb', () => core?.state.generalSettings.argv.includes('--debug-rtb'));
 
 const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
 
@@ -1611,7 +1612,7 @@ export default function(this: any): Interfaces.State {
     connection.onMessage('RTB', async(data, time) => {
         //state.activityTab.parse({ e: 'RTB', data, time });
 
-        log.warn(`${time} conversations.RTB`, data);
+        logRTB.warn(`conversations.RTB.${data.type}`, { data, time });
 
         let url = 'https://www.f-list.net/';
         let text: string, character: string;

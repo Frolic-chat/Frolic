@@ -434,7 +434,12 @@ export default function(this: void, connection: Connection): Interfaces.State {
     connection.onMessage('ADL', (data) => {
         state.opList = new Set(data.ops);
     });
+    connection.onMessage('CON', (data) => {
+        logConnecting.silly(`characters.CON.${data.count}`);
+    });
     connection.onMessage('LIS', (data) => {
+        logConnecting.silly('characters.LIS', data.characters.length);
+
         for (const char of data.characters) {
             const character = state.get(char[0], false);
             character.gender = char[1];
