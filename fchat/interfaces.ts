@@ -198,10 +198,13 @@ export namespace Character {
         readonly ownCharacter: Character
         readonly friends:      Character[]
         readonly bookmarks:    Character[]
+
+        /**
+         * IgnoreList is read by slash commands (to see your list);
+         * this may be a pointless endeavor, or we can sanitize the list into something printable.
+         * Alternatively, we could add the other lists back into the interface so you can modify them from the UI.
+         */
         readonly ignoreList:   Set<string>
-        readonly opList:       Set<string>
-        readonly friendList:   Set<string>
-        readonly bookmarkList: Set<string>
 
         readonly ownProfile?: CharacterProfile;
 
