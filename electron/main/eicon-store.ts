@@ -165,7 +165,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
             ? count
             : 0;
 
-            return nextPage(n);
+        return randomPage(n);
     });
 
     Electron.ipcMain.handle('eicon-search', (_e, query: any): string[] => {
@@ -174,7 +174,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
         if (query && typeof query === 'string')
             return search(query);
         else
-            return nextPage();
+            return randomPage();
     });
 
     Electron.ipcMain.handle('eicon-refresh', async (_e, payload): Promise<boolean> => {
@@ -644,12 +644,12 @@ async function emitProgress(e: AxiosProgressEvent) {
  * @returns A locale sorted array of all eicons whos names contain the given searchString.
  */
 function search(searchString: string): string[] {
+    logEicon.silly('store.search.start', searchString);
+
+    if (!searchString)
+        return randomPage();
+
     const query = searchString.toLowerCase();
-
-    logEicon.silly('store.search.start', query);
-
-    if (!query)
-        return nextPage();
 
     if (query.startsWith('category:'))
         return getCategoryResults(query.substring(9).trim());
@@ -694,8 +694,12 @@ async function shuffle(amount?: number): Promise<void> {
  * @param amount The number of results to return in this page
  * @returns An array of eicon names
  */
-function nextPage(amount: number = 0): string[] {
-    return Utils.Rotate(store, amount || EICON_PAGE_RESULTS_COUNT);
+function randomPage(amount: number = 0): string[] {
+    const r = Utils.Rotate(store, amount || EICON_PAGE_RESULTS_COUNT);
+
+    shuffle(r.length);
+
+    return r;
 }
 
 /**
@@ -776,7 +780,7 @@ function ImplicitlyVersion1(d: any): d is { records: object[] } {
 function getCategoryResults(category: string): string[] {
     switch(category) {
     case 'random':
-        return nextPage();
+        return randomPage();
 
     case 'expressions':
         return [
