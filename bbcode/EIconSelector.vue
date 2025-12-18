@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
   <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
     <div class="eicon-selector-ui">
@@ -9,7 +10,7 @@
         <div class="search-bar">
         <input type="text" class="form-control search" id="search" v-model="search" ref="search" :placeholder="l('eicon.search')" @input="searchUpdateDebounce()" tabindex="0" @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop />
         <div class="btn-group search-buttons">
-            <div class="btn expressions" @click.prevent.stop="searchWithString('category:favorites')" :title="l('eicon.favorites')" role="button" tabindex="0">
+            <div class="btn expressions" @click.prevent.stop="searchWithString(favesSearchString)" :title="l('eicon.favorites')" role="button" tabindex="0">
             <i class="fas fa-thumbtack"></i>
             </div>
 
@@ -88,11 +89,10 @@ import core from '../chat/core';
 import l from '../chat/localize';
 import * as Utils from '../helpers/utils';
 
-import { debounce } from '../helpers/utils';
 import { AxiosProgressEvent } from 'axios';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('eicons');
+const log = NewLogger('eicons', () => core.state.generalSettings.argv.includes('--debug-eicons'));
 
 @Component({ components: { modal } })
 export default class EIconSelector extends CustomDialog {
@@ -108,9 +108,11 @@ export default class EIconSelector extends CustomDialog {
           | 'loading' | 'uninitialized' | 'error' = 'uninitialized';
     loadingPercent = 100;
 
+    favesSearchString = 'f:';
+
     get isReady() { return this.status !== 'loading' && this.status !== 'uninitialized' && this.status !== 'error' };
 
-    searchUpdateDebounce = debounce(async () => this.results = await this.runSearch(), { wait: 350 });
+    searchUpdateDebounce = Utils.debounce(async () => this.results = await this.runSearch(), { wait: 350 });
 
     @Hook('created')
     created() {
@@ -128,7 +130,7 @@ export default class EIconSelector extends CustomDialog {
         this.status = 'loading';
         this.refreshing = true;
 
-        const r = await Utils.invoke('eicon-status').catch();
+        const r = await Utils.invoke('eicon-status').catch(() => undefined);
 
         log.debug('selector.pollStatus', r);
 
@@ -142,7 +144,7 @@ export default class EIconSelector extends CustomDialog {
 
             log.debug('selector.pollStatus.ready', this.status);
 
-            void this.searchWithString(this.search || `category:favorites:${core.characters.ownCharacter.name}`);
+            void this.searchWithString(this.search || this.favesSearchString);
         }
         else {
             log.debug('selector.pollStatus.queuerepoll');
@@ -163,14 +165,23 @@ export default class EIconSelector extends CustomDialog {
     /**
      * Search and return the results.
      */
-    async runSearch() {
+    async runSearch(): Promise<string[]> {
         this.refreshing = true;
 
-        const r = this.search
-            ? await Utils.invoke('eicon-search', this.search).catch()
-            : await this.getPage();
+        let r: string[] | undefined;
 
-        log.debug('selector.runSearch.results', r.length);
+        if (this.search) {
+            const s = this.search === this.favesSearchString
+                ? `${this.favesSearchString}${core.characters.ownCharacter.name}`
+                : this.search;
+
+            r = await Utils.invoke('eicon-search', s).catch(() => undefined);
+        }
+        else {
+            r = await this.getPage();
+        }
+
+        log.debug('selector.runSearch.results', r?.length);
 
         this.refreshing = false;
 
@@ -186,10 +197,10 @@ export default class EIconSelector extends CustomDialog {
     /**
      * Return a specific number of entries. Default is one full page.
      */
-    async getPage(n: number = 0) {
-        const r = await Utils.invoke('eicon-page', n).catch();
+    async getPage(count: number = 0): Promise<string[]> {
+        const r = await Utils.invoke('eicon-page', count).catch(() => undefined);
 
-        log.debug('selector.runSearch.results', r.length);
+        log.debug('selector.runSearch.results', r?.length);
 
         return Array.isArray(r) ? r : [];
     }
@@ -197,7 +208,7 @@ export default class EIconSelector extends CustomDialog {
     async refreshIcons(payload: MouseEvent) {
         this.refreshing = true;
 
-        await Utils.invoke('eicon-refresh', payload.shiftKey).catch();
+        await Utils.invoke('eicon-refresh', payload.shiftKey).catch(() => {});
 
         this.results = await this.runSearch();
 

@@ -11,6 +11,7 @@ import * as Electron from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import * as FChatFs from './filesystem';
 import Axios, { AxiosError, AxiosProgressEvent } from 'axios';
 import * as Utils from '../../helpers/utils';
 
@@ -94,6 +95,17 @@ let status: EiconStoreExport['status'] = 'uninitialized';
 let storeFile = '';
 
 /**
+ * Name of the favorites file.
+ * This should always be what's used by the settingsStore.
+ */
+let favoritesFile = '';
+
+/**
+ * Function that gets the directory where character names are. Passing this directory to readSync() should return the folders named after characters.
+ */
+let getCharDir: (() => string) | undefined;
+
+/**
  * Used for debugging, especially for grabbing timestamps of potentially lengthy processes like shuffling.
  */
 const dev = process.env.NODE_ENV === 'development';
@@ -103,8 +115,11 @@ const dev = process.env.NODE_ENV === 'development';
  * @param partialPath
  * @returns
  */
-export async function init(directory: string, expectedFilename: string): Promise<EiconStoreExport> {
-    getStoreFilename(directory, expectedFilename);
+export async function init(directory: string, storeFilename: string, favoritesFilename: string, getLogDir: () => string): Promise<EiconStoreExport> {
+    getCharDir = getLogDir;
+
+    getStoreFile(directory, storeFilename);
+    favoritesFile = favoritesFilename;
 
     registerIPC();
 
@@ -168,11 +183,28 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
         return randomPage(n);
     });
 
-    Electron.ipcMain.handle('eicon-search', (_e, query: any): string[] => {
-        logEicon.silly('store.handle.eicon-search', query);
+    Electron.ipcMain.handle('eicon-search', async (_e, userQuery: any): Promise<string[]> => {
+        logEicon.silly('store.handle.eicon-search', userQuery);
 
-        if (query && typeof query === 'string')
+        if (userQuery && typeof userQuery === 'string') { // exists AND has text
+            const query = userQuery.toLowerCase();
+
+            const c = query.match(/^cat(?:egory)?:(.+)/);
+            if (c?.[1])
+                return getCategoryResults(c[1].trim());
+
+            const m = query.match(/^(?:c(?:har(?:acter)?)?|f(?:av(?:es?)?|avou?rites?)?):(.+)/);
+            if (m?.[1]) {
+                const d = getCharDir?.();
+
+                if (d)
+                    return await getCharacterResults(m[1].trim(), d);
+                else // explicit to avoid lengthy no return because :
+                    return [];
+            }
+
             return search(query);
+        }
         else
             return randomPage();
     });
@@ -192,7 +224,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
  * error is caught, logged, and ignored.
  */
 async function save(): Promise<boolean> {
-    const filename = getStoreFilename();
+    const filename = getStoreFile();
 
     if (!filename) {
         logEicon.error('store.save.filename.failure', "Can't save eicon store because no filename.");
@@ -245,7 +277,7 @@ async function save(): Promise<boolean> {
  * "array of eicon names".
  */
 async function load(): Promise<EiconStoreExport> {
-    const filename = getStoreFilename();
+    const filename = getStoreFile();
 
     if (!filename) {
         logEicon.error('store.load.filename.failure', "Eicon store failed to load because storeFilename didn't resolve.");
@@ -359,7 +391,7 @@ async function load(): Promise<EiconStoreExport> {
  * @param partial partial filename
  * @returns The full path to the eicon db file.
  */
-function getStoreFilename(directory?: string, partial?: string): string {
+function getStoreFile(directory?: string, partial?: string): string {
     if (!storeFile) {
         const file = partial || 'eicons';
 
@@ -371,7 +403,7 @@ function getStoreFilename(directory?: string, partial?: string): string {
             : path.join(directory, `${file}.json`);
     }
 
-    logEicon.silly('store.getStoreFilename.success', storeFile);
+    logEicon.silly('store.getStoreFile.success', storeFile);
 
     return storeFile;
 }
@@ -643,18 +675,11 @@ async function emitProgress(e: AxiosProgressEvent) {
  * @param searchString The user query
  * @returns A locale sorted array of all eicons whos names contain the given searchString.
  */
-function search(searchString: string): string[] {
-    logEicon.silly('store.search.start', searchString);
+function search(searchKey: string): string[] {
+    logEicon.silly('store.search.start', searchKey);
 
-    if (!searchString)
-        return randomPage();
+    const query = searchKey.toLowerCase();
 
-    const query = searchString.toLowerCase();
-
-    if (query.startsWith('category:'))
-        return getCategoryResults(query.substring(9).trim());
-
-    // else:
     const found = store.filter(e => e.includes(query));
 
     found.sort((a, b) => {
@@ -778,6 +803,8 @@ function ImplicitlyVersion1(d: any): d is { records: object[] } {
  */
 
 function getCategoryResults(category: string): string[] {
+    logEicon.debug('store.getCategoryResults', category);
+
     switch(category) {
     case 'random':
         return randomPage();
@@ -860,9 +887,36 @@ function getCategoryResults(category: string): string[] {
         ];
 
     case 'favorites':
-        //return Object.keys(core.state.favoriteEIcons);
-        // New format is category:username
         return []; // TODO:
+    }
+
+    return [];
+}
+
+async function getCharacterResults(query: string, dir: string): Promise<string[]> {
+    logEicon.debug('store.getCharacterResults', query, dir);
+
+    if (!fs.existsSync(dir))
+        return [];
+
+    const player_query = new RegExp(query, 'i');
+
+    const sorted_chars = (await FChatFs.getAvailableCharacters(dir))
+        .filter(d => player_query.test(d))
+        .sort((a, b) => a.localeCompare(b));
+
+    const settings_dir = FChatFs.getCharacterSettingsDir(dir, sorted_chars[0]);
+
+    const fn = path.join(settings_dir, favoritesFile);
+    if (fs.existsSync(fn)) {
+        try {
+            const json = JSON.parse(await fs.promises.readFile(fn, 'utf8'));
+
+            return Object.keys(json);
+        }
+        catch {
+            return [];
+        }
     }
 
     return [];
