@@ -394,11 +394,17 @@ export default function(this: void, connection: Connection): Interfaces.State {
         // This is exclusively for reconnect; state.character is empty on first connect.
         // Normally I'd replace it with destruction of the character holder and do a full refresh on 'LIS' but reconnect-time is a factor in getting back into RP.
         for (const key in state.characters) {
-            const character = state.characters[key]!;
-            character.isFriend     = state.friendList.has(key);
-            character.isBookmarked = state.bookmarkList.has(key);
-            character.status = 'offline';
-            character.statusText = '';
+            const character = state.characters[key];
+
+            if (character) {
+                character.isFriend     = state.friendList.has(key);
+                character.isBookmarked = state.bookmarkList.has(key);
+                character.status = 'offline';
+                character.statusText = '';
+            }
+            else {
+                logConnecting.warn('characters.connecting.voiding.noCharacter', key);
+            }
         }
     });
     connection.onEvent('connected', async (isReconnect) => {
