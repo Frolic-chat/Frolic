@@ -111,10 +111,10 @@ import * as LicenseHandler from './main/license-handler';
 LicenseHandler.init(app.getAppPath());
 
 const baseDir = app.getPath('userData');
-fs.mkdirSync(baseDir, {recursive: true});
+fs.mkdirSync(baseDir, { recursive: true });
 
 const settingsDir = path.join(baseDir, 'data');
-fs.mkdirSync(settingsDir, {recursive: true});
+fs.mkdirSync(settingsDir, { recursive: true });
 
 import * as GeneralSettingsManager from './main/general-settings';
 const settings_path = path.join(settingsDir, 'settings');
@@ -122,7 +122,7 @@ const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 
 // We wouldn't want to await this even if we were using an ES that supported such a thing.
 import * as EiconManager from './main/eicon-store';
-void EiconManager.init(settingsDir, 'eicons');
+void EiconManager.init(settingsDir, 'eicons', 'favoriteEIcons', () => settings.raw.logDirectory);
 
 import InitScratchpad from './main/scratchpad';
 const scratchpad_path = path.join(settingsDir, 'scratchpad');

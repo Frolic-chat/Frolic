@@ -2,11 +2,11 @@
 <sidebar id="user-list" :label="l('users.title')" icon="fa-users" :right="true" :open="expanded">
     <tabs style="flex-shrink:0" :tabs="channel ? { 0: l('users.friends'), 1: l('users.members') } : !isConsoleOrActivity ? { 0: l('users.friends'), 1: 'Profile'} : { 0: l('users.friends') }" v-model="tab"></tabs>
     <div class="users" style="padding-left:10px" v-show="tab === '0'">
-        <h4>{{l('users.friends')}}</h4>
+        <h4>{{ l('users.friends') + ` (${friends.length})` }}</h4>
         <div v-for="character in friends" :key="character.name">
             <user :character="character" :showStatus="true" :bookmark="false"></user>
         </div>
-        <h4>{{l('users.bookmarks')}}</h4>
+        <h4>{{ l('users.bookmarks') + ` (${bookmarks.length})` }}</h4>
         <div v-for="character in bookmarks" :key="character.name">
             <user :character="character" :showStatus="true" :bookmark="false"></user>
         </div>
@@ -64,7 +64,7 @@ import { EventBus, CharacterDataEvent } from './preview/event-bus';
 import { debounce } from '../helpers/utils';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('UseList');
+const log = NewLogger('userlist');
 
 type StatusSort = { [key in Character.Status]: number };
 type GenderSort = { [key in Character.Gender]: number };

@@ -14,6 +14,10 @@ const logCG = NewLogger('custom-gender', () => core.state.generalSettings.argv.i
 const logConnecting = NewLogger('connecting', () => core.state.generalSettings.argv.includes('--debug-connecting'));
 
 class Character implements Interfaces.Character {
+    /**
+     * Name; if character is created using state.get(name), character is created with server-case name.
+     */
+    name: string = '';
     gender: Interfaces.Gender = 'None';
     status: Interfaces.Status = 'offline';
     statusText = '';
@@ -23,7 +27,8 @@ class Character implements Interfaces.Character {
     isIgnored = false;
     overrides: CharacterOverrides = {};
 
-    constructor(public name: string) {
+    constructor(name: string) {
+        this.name = name;
     }
 }
 
@@ -34,16 +39,45 @@ export interface CharacterOverrides {
 }
 
 class State implements Interfaces.State {
+    /**
+     * Collection of all logged in characters, plus once-logged in characters.
+     * Theoretically can grow infinite.
+     */
     characters: {[key: string]: Character | undefined} = {};
 
     ownCharacter: Character = new Character('');
     ownProfile?: CharacterProfile;
 
-    friends:      Character[] = [];
-    bookmarks:    Character[] = [];
-    ignoreList:   Set<string> = new Set();
-    opList:       Set<string> = new Set();
-    friendList:   Set<string> = new Set();
+    /**
+     * Your online friends.
+     */
+    friends: Character[] = [];
+
+    /**
+     * Your online bookmarks.
+     */
+    bookmarks: Character[] = [];
+
+    /**
+     * A list of character names (in lowercase)
+     */
+    ignoreList: Set<string> = new Set();
+
+    /**
+     * A list of character names (in lowercase)
+     */
+    opList: Set<string> = new Set();
+
+    /**
+     * Your entire freinds list.
+     * A list of character names (in lowercase)
+     */
+    friendList: Set<string> = new Set();
+
+    /**
+     * Your entire bookmark list.
+     * A list of character names (in lowercase)
+     */
     bookmarkList: Set<string> = new Set();
 
     /**
@@ -243,7 +277,14 @@ class State implements Interfaces.State {
      * @param text new status message; `character.statusText` is the old status message.
      * @param date date if received from date-based event (server message, for example)
      */
-    setStatus(character: Character, newStatus: Interfaces.Status, text: string, options?: { isReconnect?: boolean, date?: Date, emitEvents?: boolean }): void {
+    setStatus(character: Character,
+              newStatus: Interfaces.Status,
+              text: string,
+              options?: {
+                  isReconnect?: boolean,
+                  date?: Date,
+                  emitEvents?: boolean,
+             }): void {
         const emit = options?.emitEvents ?? true;
 
         if (character.isFriend) {
@@ -323,9 +364,11 @@ let state: State;
 
 export default function(this: void, connection: Connection): Interfaces.State {
     state = new State();
-    let reconnectStatus: Connection.ClientCommands['STA'];
+
+    let reconnectStatus: Connection.ClientCommands['STA'] | undefined = undefined;
+
     connection.onEvent('connecting', async (isReconnect) => {
-        logConnecting.debug('characters.default.onEvent.connecting', { isReconnect });
+        logConnecting.debug('characters.connecting', { isReconnect });
 
         state.friends   = [];
         state.bookmarks = [];
@@ -348,6 +391,8 @@ export default function(this: void, connection: Connection): Interfaces.State {
             };
         }
 
+        // This is exclusively for reconnect; state.character is empty on first connect.
+        // Normally I'd replace it with destruction of the character holder and do a full refresh on 'LIS' but reconnect-time is a factor in getting back into RP.
         for (const key in state.characters) {
             const character = state.characters[key]!;
             character.isFriend     = state.friendList.has(key);
@@ -360,12 +405,16 @@ export default function(this: void, connection: Connection): Interfaces.State {
         if (!isReconnect)
             return;
 
-        connection.send('STA', reconnectStatus);
+        if (reconnectStatus)
+            connection.send('STA', reconnectStatus);
 
         for (const key in state.characters) {
-            const character = state.characters[key]!;
-            character.isIgnored = state.ignoreList.has(key);
-            character.isChatOp  = state.opList.has(key);
+            const character = state.characters[key];
+
+            if (character) {
+                character.isIgnored = state.ignoreList.has(key);
+                character.isChatOp  = state.opList.has(key);
+            }
         }
     });
     connection.onMessage('IGN', (data) => {

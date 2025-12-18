@@ -1425,8 +1425,8 @@ export default function(this: any): Interfaces.State {
             await state.consoleTab.addMessage(new EventMessage(msg.event, time));
         }
         else if (conversation.settings.notify === Interfaces.Setting.True
-        || (shouldNotifyOnFriendMessage()   && core.characters.friendList.has(data.character))
-        || (shouldNotifyOnBookmarkMessage() && core.characters.bookmarkList.has(data.character))) {
+        || (shouldNotifyOnFriendMessage()   && core.characters.get(data.character.toLowerCase()).isFriend)
+        || (shouldNotifyOnBookmarkMessage() && core.characters.get(data.character.toLowerCase()).isBookmarked)) {
             await core.notifications.notify(conversation, conversation.name, messageToString(message),
                 core.characters.getImage(data.character), 'attention');
 
