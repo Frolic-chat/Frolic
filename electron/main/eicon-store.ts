@@ -921,3 +921,10 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
 
     return [];
 }
+
+export function startFromScratch() {
+    store.length = 0;
+    asOfTimestamp = 0;
+
+    checkForUpdates(true);
+}
