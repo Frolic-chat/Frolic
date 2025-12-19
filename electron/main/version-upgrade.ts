@@ -7,15 +7,25 @@ const log = Logger.scope('election/version-upgrade');
 /**
  * Run all upgrade tasks starting from the provided version number.
  */
-export default function (start: string, end: string): string {
-    const upgrades = Object.keys(routines)
-            .filter(e => semver.gt(e, start) && semver.lte(e, end))
-            .sort((a, b) => semver.compare(a, b));
+export default function (start: string, end: string, bonusRoutines: { [key: string]: () => boolean }): string {
+    const ug_set = new Set(Object.keys(routines)
+        .filter(e => semver.gt(e, start) && semver.lte(e, end)));
+
+    Object.keys(bonusRoutines).forEach(v => {
+        if (semver.gt(v, start) && semver.lte(v, end))
+            ug_set.add(v)
+    });
+
+    const versions = Array.from(ug_set).sort((a, b) => semver.compare(a, b));
 
     // This should be rewritten with error handling using the routine returns.
-    upgrades.forEach(v => routines[v]());
+    versions.forEach(v => { // clobber duplicates
+        // the versions may be from the other object, so undef check
+        routines[v]?.();
+        bonusRoutines[v]?.();
+    });
 
-    log.debug('default.finished', { from: start, to: end, count: upgrades.length });
+    log.debug('default.finished', { from: start, to: end, count: versions.length });
     return end;
 }
 
