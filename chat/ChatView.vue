@@ -53,7 +53,9 @@
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
                     <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
-                        class="list-group-item list-group-item-action">
+                        :aria-label="homeButtonTooltip" data-balloon-pos="right"
+                        class="list-group-item list-group-item-action"
+                    >
                         <template v-if="siteCheckerCount">
                             {{ siteCheckerCount }}
                             <span :class="siteCheckerIconClass" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
@@ -236,9 +238,15 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         get homeConversation(): Conversation {
             return core.state.generalSettings.defaultToHome
-                ? core.conversations.activityTab
-                : core.conversations.consoleTab;
+                ? this.conversations.activityTab
+                : this.conversations.consoleTab;
+        }
 
+        get homeButtonTooltip(): string | undefined {
+            if (this.conversations.selectedConversation === this.conversations.activityTab)
+                return 'Click again for the console';
+            else if (this.conversations.selectedConversation === this.conversations.consoleTab)
+                return 'Click again for the home page';
         }
 
         @Watch('conversations.channelConversations')
@@ -778,7 +786,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
             .body {
                 display: block;
-                // overflow-x: hidden; // Possible solution to username ellipses overflowing.
+                overflow: visible;
             }
 
             .expander {

@@ -10,7 +10,7 @@
             </span>
             <span class="ml-auto flex-shrink-0">
                 <span v-if="logs">
-                    <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                    <a href="#" @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-pos="down" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>
                         <!-- <span class="btn-text">{{ logsTitle }}</span> -->
                     </a>
@@ -61,7 +61,7 @@
     <template v-slot:postscroll>
         <div class="d-flex flex-wrap-reverse justify-content-between small border-top">
             <span class="mr-auto d-flex align-items-center"><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
-                <button @click.prevent="openWidgetOptions()" class="btn btn-outline-secondary">
+                <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="up" class="btn btn-outline-secondary">
                     <span class="fa-solid fa-screwdriver-wrench"></span>
                 </button>
             </span>
