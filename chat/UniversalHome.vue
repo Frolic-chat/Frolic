@@ -38,7 +38,7 @@
     <!-- Pseudo-teleport -->
     <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
-        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
+        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
         :class="isHome ? '' : 'page'"
            :id="isHome ? '' : 'home'"
          :role="isHome ? '' : 'tabpanel'"
@@ -70,7 +70,7 @@
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
         class="page" role="tabpanel"
         :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
+        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
     >
         <template v-slot:title-end>
             <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>
@@ -194,6 +194,7 @@
     <logs         ref="logsDialog" :conversation="logsConversation"></logs>
     <command-help ref="commandHelpDialog"></command-help>
     <!-- + reportDialog -->
+    <!-- + eiconSelector -->
 </div>
 </template>
 
@@ -212,9 +213,10 @@ import Personality from './home_pages/Personalization.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
-import type ReportDialog from './ReportDialog.vue';
-import      CommandHelp  from './CommandHelp.vue';
-import      Logs         from '../chat/Logs.vue';
+import type ReportDialog  from './ReportDialog.vue';
+import type EIconSelector from '../bbcode/EIconSelector.vue';
+import      CommandHelp   from './CommandHelp.vue';
+import      Logs          from '../chat/Logs.vue';
 
 import { Conversation } from './interfaces';
 import { getAsNumber } from '../helpers/utils';
@@ -267,6 +269,12 @@ export default class HomeScreen extends Vue {
      */
     @Prop({ required: true })
     readonly reportDialog!: ReportDialog;
+
+    /**
+     * Use the global eicon dialog; exclusively here to pass to the conversation.
+     */
+    @Prop({ required: true })
+    readonly eiconSelector!: EIconSelector;
 
     commandHelp!: CommandHelp;
     logs!: Logs;
@@ -356,6 +364,7 @@ export default class HomeScreen extends Vue {
 
         this.logs        = this.$refs['logsDialog'] as Logs;
         this.commandHelp = this.$refs['commandHelpDialog'] as CommandHelp;
+        // eiconSelector is passed in as prop.
         // reportDialog is passed in as prop.
 
         window.addEventListener('keydown', this.onKey);

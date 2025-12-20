@@ -14,7 +14,7 @@
         </div>
         <div class="form-group">
             <label class="control-label">{{l('chat.setStatus.message')}}</label>
-            <editor id="text" v-model="text" classes="form-control" maxlength="255">
+            <editor id="text" v-model="text" classes="form-control" maxlength="255" :eiconSelector="eiconSelector">
                 <div class="bbcode-editor-controls">
                     {{ textLength }} / 255
                 </div>
@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-    import {Component} from '@f-list/vue-ts';
+    import { Component, Prop } from '@f-list/vue-ts';
     import CustomDialog from '../components/custom_dialog';
     import Dropdown from '../components/Dropdown.vue';
     import Modal from '../components/Modal.vue';
@@ -40,11 +40,15 @@
     import l from './localize';
     import {getStatusIcon} from './UserView.vue';
     import StatusPicker from './StatusPicker.vue';
+    import type EIconSelector from '../bbcode/EIconSelector.vue';
 
     @Component({
         components: {modal: Modal, editor: Editor, dropdown: Dropdown, 'status-picker': StatusPicker}
     })
     export default class StatusSwitcher extends CustomDialog {
+        @Prop
+        readonly eiconSelector?: EIconSelector;
+
         selectedStatus: Character.Status | undefined;
         enteredText: string | undefined;
         statuses = userStatuses;

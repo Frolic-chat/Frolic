@@ -158,6 +158,7 @@
                 :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
                 :characterName="ownName"
                 :type="'big'"
+                :eiconSelector="eiconSelector"
             >
                 <template v-slot:default>
                     <div v-show="conversation.infoText" class="chat-info-text">
@@ -260,6 +261,7 @@
     // import CharacterAdView from './character/CharacterAdView.vue';
     //import CharacterChannelList from './character/CharacterChannelList.vue';
     import { MemoManager } from './character/memo';
+    import type EIconSelector from '../bbcode/EIconSelector.vue';
 
     import core from './core';
     import l from './localize';
@@ -296,6 +298,9 @@
     export default class ConversationView extends Vue {
         @Prop({ required: true })
         readonly conversation!: Conversation;
+
+        @Prop
+        readonly eiconSelector?: EIconSelector;
 
         @Prop({ required: true })
         readonly logs!: Logs;
