@@ -35,7 +35,7 @@
         </span>
     </tabs>
 
-    <!-- Pseudo-teleport -->
+    <!-- Pseudo-teleport primary conversation -->
     <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
         :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
@@ -66,7 +66,7 @@
 
     <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
 
-    <!-- console -->
+    <!-- console/secondary conversation -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
         class="page" role="tabpanel"
         :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"

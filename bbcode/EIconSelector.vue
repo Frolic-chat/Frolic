@@ -108,11 +108,11 @@ export default class EIconSelector extends CustomDialog {
           | 'loading' | 'uninitialized' | 'error' = 'uninitialized';
     loadingPercent = 100;
 
-    favesSearchString = 'f:';
+    readonly favesSearchString = 'f:';
 
     get isReady() { return this.status !== 'loading' && this.status !== 'uninitialized' && this.status !== 'error' };
 
-    searchUpdateDebounce = Utils.debounce(async () => this.results = await this.runSearch(), { wait: 350 });
+    readonly searchUpdateDebounce = Utils.debounce(async () => this.results = await this.runSearch(), { wait: 350 });
 
     // private engagedTextBox?: HTMLTextAreaElement | HTMLInputElement;
 
