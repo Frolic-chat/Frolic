@@ -901,16 +901,23 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
 
     const player_query = new RegExp(query, 'i');
 
-    const sorted_chars = (await FChatFs.getAvailableCharacters(dir))
-        .filter(d => player_query.test(d))
-        .sort((a, b) => a.localeCompare(b));
+    const chars = (await FChatFs.getAvailableCharacters(dir))
+        .reduce((box, char) => {
+            const rank = char.search(player_query);
+            if (rank > -1)
+                box.push([ char, rank ]);
 
-    const settings_dir = FChatFs.getCharacterSettingsDir(dir, sorted_chars[0]);
+            return box;
+        }, [] as [ string, number ][])
+        .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+        .map(e => e[0]);
+
+    const settings_dir = FChatFs.getCharacterSettingsDir(dir, chars[0]);
 
     const fn = path.join(settings_dir, favoritesFile);
     if (fs.existsSync(fn)) {
         try {
-            const json = JSON.parse(await fs.promises.readFile(fn, 'utf8'));
+            const json = JSON.parse(await fs.promises.readFile(fn, 'utf-8'));
 
             return Object.keys(json);
         }
