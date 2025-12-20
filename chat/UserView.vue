@@ -124,7 +124,7 @@ export default class UserView extends Vue {
     readonly classes!: string | undefined;
 
     @Prop({ default: undefined })
-    textClass: string | undefined;
+    readonly textClass: string | undefined;
 
     cache?: CharacterCacheRecord | null;
 

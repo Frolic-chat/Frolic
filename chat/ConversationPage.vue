@@ -260,9 +260,10 @@
 
     import Modal, { isShowing as anyDialogsShown } from '../components/Modal.vue';
 
-    import type Logs         from './Logs.vue';
-    import type ReportDialog from './ReportDialog.vue';
-    import type CommandHelp  from './CommandHelp.vue';
+    import type Logs          from './Logs.vue';
+    import type ReportDialog  from './ReportDialog.vue';
+    import type CommandHelp   from './CommandHelp.vue';
+    import type EIconSelector from '../bbcode/EIconSelector.vue';
 
     import ManageChannel from './ManageChannel.vue';
     import ConversationAdSettings from './ads/ConversationAdSettings.vue';
@@ -271,7 +272,6 @@
     // import CharacterAdView from './character/CharacterAdView.vue';
     //import CharacterChannelList from './character/CharacterChannelList.vue';
     import { MemoManager } from './character/memo';
-    import type EIconSelector from '../bbcode/EIconSelector.vue';
 
     import core from './core';
     import l from './localize';
