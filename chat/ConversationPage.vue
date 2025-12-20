@@ -47,7 +47,7 @@
                     <dropdown v-if="isChannel(conversation)" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
                         title=""
                         :keep-open="false"
-                        aria-label="Manage Channel Ads" data-balloon-pos="down"
+                        aria-label="Manage Channel Ads" data-balloon-nofocus data-balloon-pos="down"
                         text-class="d-none d-lg-inline"
                         :icon-class="{
                             fas: true,
@@ -73,11 +73,11 @@
                         </template>
                     </dropdown>
                     <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                        <button @click.prevent="showLogs()" :aria-label="l('logs.title')" data-balloon-pos="down" class="btn btn-outline-secondary">
+                        <button @click.prevent="showLogs()" :aria-label="l('logs.title')" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
                             <span class="fa fa-file-alt"></span>
                             <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
                         </button>
-                        <button @click.prevent="report()" :aria-label="l('chat.report')" data-balloon-pos="down" class="btn btn-outline-secondary">
+                        <button @click.prevent="report()" :aria-label="l('chat.report')" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
                             <span class="fa fa-exclamation-triangle"></span>
                             <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
                         </button>

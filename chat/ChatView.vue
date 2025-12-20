@@ -53,7 +53,7 @@
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
                     <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
-                        :aria-label="homeButtonTooltip" data-balloon-pos="right"
+                        :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="right"
                         class="list-group-item list-group-item-action"
                     >
                         <template v-if="siteCheckerCount">

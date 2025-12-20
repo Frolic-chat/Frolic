@@ -10,10 +10,10 @@
             </span>
             <span class="ml-auto flex-shrink-0">
                 <span v-if="logs">
-                    <a href="#" @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>
                         <!-- <span class="btn-text">{{ logsTitle }}</span> -->
-                    </a>
+                    </button>
                 </span>
 
                 <slot name="title-end"></slot>
