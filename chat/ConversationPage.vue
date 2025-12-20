@@ -183,14 +183,23 @@
 
             <!-- footer -->
             <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
-                <span class="channel-key text-left">
+                <span class="channel-key text-left text-truncate">
                     <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
                         <user :character="conversation.character" :match="false" :bookmark="false"></user>
                         &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
                     </span>
 
                     <span v-else-if="isChannel(conversation)">
-                        {{ conversation.key }}
+                        <b v-if="watchedCharacters.length" aria-label="Click to copy room invite code to clipboard" data-balloon-pos="up"># </b>
+                        <span v-if="watchedCharacters.length" v-for="char, i in watchedCharacters">
+                            <template v-if="char.status !== 'offline'">
+                                <user :key="char.name" :character="char" :channel="conversation.channel" :immediate="true" :showStatus="false"></user>
+                                <span v-if="i !== conversation.settings.highlightUsernames.length - 1">, </span>
+                            </template>
+                        </span>
+                        <span v-else>
+                            {{ conversation.key }}
+                        </span>
                     </span>
                 </span>
                 <div class="send-ads-switcher text-center btn-group btn-group-sm">
@@ -855,8 +864,16 @@
           }
         }
 
+        getCharacter(name: string): Character {
+            return core.characters.get(name);
+        }
+
         get characterImage(): string {
             return core.characters.getImage(this.conversation.name);
+        }
+
+        get watchedCharacters(): Character[] {
+            return this.conversation.settings.highlightUsernames.map(n => core.characters.get(n));
         }
 
         get settings(): Settings {
