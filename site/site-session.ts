@@ -5,6 +5,8 @@ import { Response } from 'request';
 import { NoteChecker } from './note-checker';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
+import { EventBus } from '../chat/preview/event-bus';
+
 import NewLogger from '../helpers/log';
 const log = NewLogger('site-session');
 
@@ -23,6 +25,10 @@ export class SiteSession {
     readonly interfaces: SiteSessionInterfaceCollection = {
         notes: new NoteChecker(this)
     };
+
+    get isRunning(): boolean {
+        return this.state === 'active';
+    }
 
     private state: 'active' | 'inactive' = 'inactive';
     private account = '';
@@ -45,6 +51,7 @@ export class SiteSession {
             await this.login();
 
             this.state = 'active';
+            EventBus.$emit('site-session', { state: this.state });
 
             await Promise.all(
                 Object.values(this.interfaces).map(i => i.start())
@@ -52,6 +59,7 @@ export class SiteSession {
         }
         catch (err) {
             this.state = 'inactive';
+            EventBus.$emit('site-session', { state: this.state });
             log.error('sitesession.start.error', err);
         }
     }
@@ -69,6 +77,7 @@ export class SiteSession {
 
         this.csrf = '';
         this.state = 'inactive';
+        EventBus.$emit('site-session', { state: this.state });
     }
 
 
