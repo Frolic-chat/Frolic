@@ -81,6 +81,10 @@ export interface MemoEvent {
     memo: CharacterMemo;
 }
 
+export interface SiteSessionEvent {
+    state: 'active' | 'inactive';
+}
+
 export interface ErrorEvent {
     source:  'eicon' | 'index' | 'core',
     type?:   string,
@@ -121,10 +125,13 @@ class EventBusManager {
 
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
+    $on(event: 'site-session',           callback: (e: SiteSessionEvent) => void | Promise<void>): void;
+
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
 
     $on(event: 'own-profile-update',     callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'note-counts-update',     callback: () => void | Promise<void>): void;
+
     $on(event: 'activity-friend-login'
              | 'activity-friend-logout'
              | 'activity-bookmark-login'
@@ -133,6 +140,7 @@ class EventBusManager {
              | 'activity-bookmark-status',  callback: (e: ActivityStatusEvent) => void | Promise<void>): void;
     $on(event: 'bookmark-list'
              | 'friend-list',            callback: (e: CharacterState[]) => void | Promise<void>): void;
+
     $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'character-score',        callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
     $on(event: 'character-memo',         callback: (e: MemoEvent) => void | Promise<void>): void;
@@ -230,6 +238,8 @@ class EventBusManager {
     $emit(event: 'settings-from-main',     data: GeneralSettings): void;
 
     $emit(event: 'error',                  data: ErrorEvent): void;
+
+    $emit(event: 'site-session',           data: SiteSessionEvent): void;
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;
 
