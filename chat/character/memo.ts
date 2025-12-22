@@ -2,7 +2,6 @@ import core from '../core';
 import { CharacterMemo } from '../../site/character_page/interfaces';
 import { EventBus } from '../preview/event-bus';
 
-
 export class MemoManager {
   memo?: CharacterMemo;
 
@@ -25,7 +24,7 @@ export class MemoManager {
 
     const response = await core.connection.queryApi<{ note: string }>('character-memo-save.php', {target: this.memo!.id, note: message});
 
-    this.memo!.memo = response.note ?? null;
+    this.memo!.memo = response.note || null;
 
     await this.updateStores();
   }
@@ -33,7 +32,7 @@ export class MemoManager {
   protected async updateStores(): Promise<void> {
     const character = await core.cache.profileCache.get(this.character);
 
-    if (character && character.character?.memo?.memo !== this.memo!.memo) {
+    if (character && character.character.memo?.memo !== this.memo!.memo) {
       character.character.memo = this.memo;
 
       await core.cache.profileCache.register(character.character);

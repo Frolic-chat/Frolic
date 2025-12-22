@@ -207,11 +207,12 @@ import HomePageLayout from './home_pages/HomePageLayout.vue';
 
 import Home from './home_pages/Home.vue';
 import Data from './home_pages/Data.vue';
-import ConversationView from './ConversationPage.vue';
-import Collapse from '../components/collapse.vue';
 import Personality from './home_pages/Personalization.vue';
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
+
+import ConversationView from './ConversationPage.vue';
+import Collapse from '../components/collapse.vue';
 
 import type ReportDialog  from './ReportDialog.vue';
 import type EIconSelector from '../bbcode/EIconSelector.vue';
@@ -226,7 +227,7 @@ import l from './localize';
 import NewLogger from '../helpers/log';
 const log = NewLogger('home');
 const logC = NewLogger('conversation');
-//const logA = NewLogger('activity');
+// const logA = NewLogger('activity');
 const logCo = NewLogger('collapse');
 
 @Component({
@@ -271,7 +272,7 @@ export default class HomeScreen extends Vue {
     readonly reportDialog!: ReportDialog;
 
     /**
-     * Use the global eicon dialog; exclusively here to pass to the conversation.
+     * Use the global eicon dialog; exclusively here to pass to the conversation; which passes it to the bbcode editor.
      */
     @Prop({ required: true })
     readonly eiconSelector!: EIconSelector;

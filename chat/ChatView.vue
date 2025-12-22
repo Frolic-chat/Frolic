@@ -189,7 +189,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import { Dialog } from '../helpers/dialog';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
-    import Modal from '../components/Modal.vue';
     import { EventBus } from './preview/event-bus';
 
     const unreadClasses = {
@@ -210,7 +209,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             'add-pm-partner': PmPartnerAdder,
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
-            modal: Modal,
             ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/command_center.vue') } : {})
         }
     })

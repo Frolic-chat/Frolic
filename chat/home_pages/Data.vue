@@ -9,8 +9,12 @@
     </template>
 
     <template v-slot:default>
+        <slot name="before-body"></slot>
+
         <div class="d-flex flex-column flex-nowrap">
-            <slot name="before-body"></slot>
+
+            <!-- Link/unlink channel? -->
+
             <template v-if="conversation && !isHome">
                 <div class="row">
                     <div class="col-auto">Conversation key:</div>
@@ -86,6 +90,7 @@
                 </modal>
             </div>
         </div>
+
         <slot name="after-body"></slot>
     </template>
 

@@ -11,7 +11,7 @@ export interface NoteCheckerCount {
   onlineUsers: number;
 }
 
-export class NoteChecker implements SiteSessionInterface {
+export default class NoteChecker implements SiteSessionInterface {
     private static readonly CHECK_FREQUENCY = 15 * 60 * 1000;
 
     private latestCount: NoteCheckerCount = {
