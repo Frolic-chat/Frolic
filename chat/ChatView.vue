@@ -559,7 +559,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         notecheckerUpdateReceived = () => this.updateNotecheckerCount();
 
         updateNotecheckerCount(): void {
-            const { unreadNotes, unreadMessages } = core.siteSession.interfaces.notes.getCounts();
+            const { unreadNotes, unreadMessages } = core.siteSession.interfaces.noteChecker.getCounts();
             this.siteCheckerNoteCounts = unreadNotes;
             this.siteCheckerMsgCounts  = unreadMessages;
 

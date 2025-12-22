@@ -2,7 +2,7 @@ import throat from 'throat';
 import request from 'request-promise';
 import { Response } from 'request';
 
-import { NoteChecker } from './note-checker';
+import NoteChecker from './note-checker';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import { EventBus } from '../chat/preview/event-bus';
@@ -16,14 +16,14 @@ export interface SiteSessionInterface {
 }
 
 export interface SiteSessionInterfaceCollection extends Record<string, SiteSessionInterface> {
-    notes: NoteChecker;
+    noteChecker: NoteChecker;
 }
 
 export class SiteSession {
     private readonly sessionThroat = throat(1);
 
     readonly interfaces: SiteSessionInterfaceCollection = {
-        notes: new NoteChecker(this)
+        noteChecker: new NoteChecker(this),
     };
 
     get isRunning(): boolean {

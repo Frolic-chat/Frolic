@@ -93,7 +93,7 @@ hasReports(): boolean {
  * Is this jank because of typing? Or are these runtime checks necesssary?
  */
 updateCounts(): void {
-    const latest = core.siteSession.interfaces.notes.getCounts();
+    const latest = core.siteSession.interfaces.noteChecker.getCounts();
 
     const mapper: Record<'message' | 'note', Partial<keyof typeof latest>> = {
         message: 'unreadMessages',

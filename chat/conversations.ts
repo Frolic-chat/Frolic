@@ -1642,12 +1642,12 @@ export default function(this: any): Interfaces.State {
         }
         else if (data.type === 'note') {
             // tslint:disable-next-line:no-unsafe-any
-            core.siteSession.interfaces.notes.incrementNotes();
+            core.siteSession.interfaces.noteChecker.incrementNotes();
             text = l('events.rtb_note', `[user]${data.sender}[/user]`, `[url=${url}view_note.php?note_id=${data.id}]${data.subject}[/url]`);
             character = data.sender;
         } else if(data.type === 'friendrequest') {
             // tslint:disable-next-line:no-unsafe-any
-            core.siteSession.interfaces.notes.incrementMessages();
+            core.siteSession.interfaces.noteChecker.incrementMessages();
             text = l(`events.rtb_friendrequest`, `[user]${data.name}[/user]`);
             character = data.name;
         } else {
