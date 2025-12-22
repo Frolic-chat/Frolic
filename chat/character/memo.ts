@@ -9,13 +9,20 @@ export class MemoManager {
 
   }
 
-  get(): CharacterMemo {
+  getSync(): CharacterMemo {
     if (!this.memo) {
       throw new Error('Missing character memo');
     }
 
     return this.memo;
   }
+
+    async get(): Promise<CharacterMemo> {
+        if (!this.memo)
+            await this.load();
+
+        return this.memo!;
+    }
 
   async set(message: string | null): Promise<void> {
     if (!this.memo) {

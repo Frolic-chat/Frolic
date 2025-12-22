@@ -855,9 +855,8 @@
 
             try {
               this.memoManager = new MemoManager(c.name);
-              await this.memoManager.load();
 
-              this.userMemo = this.memoManager.get().memo;
+              this.userMemo = (await this.memoManager.get()).memo;
               this.editorMemo = this.userMemo ?? '';
             } catch(e) {
                 alert(errorToString(e));

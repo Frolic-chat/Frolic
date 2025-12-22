@@ -207,9 +207,7 @@ const log = NewLogger('UserMenu');
             (<Modal>this.$refs['memo']).show();
 
             try {
-              await this.memoManager.load();
-
-              this.memo = this.memoManager.get().memo;
+              this.memo = (await this.memoManager.get()).memo;
               this.memoLoading = false;
             } catch(e) {
                 alert(errorToString(e));
@@ -217,7 +215,8 @@ const log = NewLogger('UserMenu');
         }
 
         updateMemo(): void {
-          this.memoManager?.set(this.memo).catch((e: object) => alert(errorToString(e)))
+            this.memoManager?.set(this.memo)
+                .catch((e: object) => alert(errorToString(e)));
         }
 
         showAdLogs(): void {

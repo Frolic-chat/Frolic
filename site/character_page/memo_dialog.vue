@@ -63,7 +63,7 @@
 
                 await memoManager.set(this.message);
 
-                this.$emit('memo', memoManager.get());
+                this.$emit('memo', await memoManager.get());
                 this.hide();
             } catch(e) {
                 Utils.ajaxError(e, 'Unable to set memo.');
