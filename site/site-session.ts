@@ -3,6 +3,7 @@ import request from 'request-promise';
 import { Response } from 'request';
 
 import NoteChecker from './note-checker';
+import NotesApi from './notes-api';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import { EventBus } from '../chat/preview/event-bus';
@@ -17,6 +18,7 @@ export interface SiteSessionInterface {
 
 export interface SiteSessionInterfaceCollection extends Record<string, SiteSessionInterface> {
     noteChecker: NoteChecker;
+    notes:       NotesApi;
 }
 
 export class SiteSession {
@@ -24,6 +26,7 @@ export class SiteSession {
 
     readonly interfaces: SiteSessionInterfaceCollection = {
         noteChecker: new NoteChecker(this),
+        notes:       new NotesApi(this),
     };
 
     get isRunning(): boolean {
