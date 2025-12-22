@@ -52,9 +52,8 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
-                        :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="right"
-                        class="list-group-item list-group-item-action"
+                    <!-- :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="right" -->
+                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()" class="list-group-item list-group-item-action"
                     >
                         <template v-if="siteCheckerCount">
                             {{ siteCheckerCount }}
@@ -240,12 +239,15 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
                 : this.conversations.consoleTab;
         }
 
-        get homeButtonTooltip(): string | undefined {
-            if (this.conversations.selectedConversation === this.conversations.activityTab)
-                return 'Click again for the console';
-            else if (this.conversations.selectedConversation === this.conversations.consoleTab)
-                return 'Click again for the home page';
-        }
+        /**
+         * This is broken because you can't have a scrollbar in one direction and overflow in another. Seems bad.
+         */
+        // get homeButtonTooltip(): string | undefined {
+        //     if (this.conversations.selectedConversation === this.conversations.activityTab)
+        //         return 'Click again for the console';
+        //     else if (this.conversations.selectedConversation === this.conversations.consoleTab)
+        //         return 'Click again for the home page';
+        // }
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
