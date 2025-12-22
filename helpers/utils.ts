@@ -441,6 +441,14 @@ Otherwise, this would result in an infinite recursion.
 // do not include it.
 
 /**
+ * I've scryed deep into the future and TS will support this natively, but until then we'll use this extracter.
+ */
+export type AsyncReturnType<T extends (...args: any) => any> =
+	T extends (...args: any) => Promise<infer U> ? U :
+	T extends (...args: any) => infer U ? U :
+	any
+
+/**
  * Useful to avoid non-null assertions. Just x ?? `err()`
  * <T> maintains the potential to truly assert T is truly itself; however this never returns, so never asserts.
  */
