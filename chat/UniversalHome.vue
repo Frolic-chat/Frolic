@@ -128,24 +128,13 @@
     </page>
 
     <!-- Comms -->
-    <page v-else-if="isPrivate" v-show="tab === '2'"
+    <comms v-else-if="isPrivate" v-show="tab === '2'" :character="conversation.name"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
-        <template v-slot:prescroll>
-            <div class="page-header d-flex align-items-center">
-                <div class="mr-auto">
-                </div>
-                <div class="ml-auto flex-shrink-0">
-                    <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
-                </div>
-            </div>
+        <template v-slot:title-end>
+            <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
         </template>
-
-        This is where communications goes. :)
-        - Memo + editing
-        - Last spoken to (last message?)
-        - Last note exchange. Write new note?
-    </page>
+    </comms>
     </keep-alive>
 
     <!-- Settings -->
@@ -208,6 +197,8 @@ import HomePageLayout from './home_pages/HomePageLayout.vue';
 import Home from './home_pages/Home.vue';
 import Data from './home_pages/Data.vue';
 import Personality from './home_pages/Personalization.vue';
+import Comms from './home_pages/Comms.vue';
+
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
@@ -239,6 +230,7 @@ const logCo = NewLogger('collapse');
 
         'data-page':      Data,
         'personality':    Personality,
+        'comms':          Comms,
 
         'convo':          ConversationView,
         'collapse':       Collapse,
