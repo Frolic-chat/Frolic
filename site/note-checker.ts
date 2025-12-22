@@ -6,7 +6,6 @@ import NewLogger from '../helpers/log';
 const log = NewLogger('note-checker', () => core.state.generalSettings.argv.includes('--debug-notes'));
 
 export interface NoteCheckerCount {
-  unreadNotes: number;
   unreadMessages: number;
   onlineUsers: number;
 }
@@ -15,7 +14,6 @@ export default class NoteChecker implements SiteSessionInterface {
     private static readonly CHECK_FREQUENCY = 15 * 60 * 1000;
 
     private latestCount: NoteCheckerCount = {
-        unreadNotes: 0,
         unreadMessages: 0,
         onlineUsers: 0,
     };
@@ -51,7 +49,7 @@ export default class NoteChecker implements SiteSessionInterface {
             delete this.timer;
         }
 
-        this.latestCount = { unreadNotes: 0, unreadMessages: 0, onlineUsers: 0 };
+        this.latestCount = { unreadMessages: 0, onlineUsers: 0 };
     }
 
     private async check(): Promise<NoteCheckerCount> {
@@ -64,12 +62,10 @@ export default class NoteChecker implements SiteSessionInterface {
             const res = await this.session.get('', true);
 
             const messagesMatch: RegExpMatchArray | null = res.body.match(/NavigationMessages.*?([0-9]+?) Messages/);
-            const notesMatch: RegExpMatchArray | null    = res.body.match(/NavigationNotecount.*?([0-9]+?) Notes/);
             const statsMatch: RegExpMatchArray | null    = res.body.match(/Frontpage_Stats.*?([0-9]+?) characters/);
 
-            log.debug('notechecker.match.values', messagesMatch?.[1], notesMatch?.[1], statsMatch?.[1]);
+            log.debug('notechecker.match.values', messagesMatch?.[1], statsMatch?.[1]);
 
-            this.latestCount.unreadNotes    = parseInt((notesMatch?.[1]    ?? '0'), 10),
             this.latestCount.unreadMessages = parseInt((messagesMatch?.[1] ?? '0'), 10),
             this.latestCount.onlineUsers    = parseInt((statsMatch?.[1]    ?? '0'), 10),
 
@@ -85,11 +81,6 @@ export default class NoteChecker implements SiteSessionInterface {
 
     incrementMessages(): void {
         this.latestCount.unreadMessages++;
-        EventBus.$emit('note-counts-update', this.latestCount);
-    }
-
-    incrementNotes(): void {
-        this.latestCount.unreadNotes++;
         EventBus.$emit('note-counts-update', this.latestCount);
     }
 
