@@ -265,12 +265,14 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         @Hook('created')
         created() {
-            EventBus.$on('note-counts-update', this.notecheckerUpdateReceived);
+            EventBus.$on('note-counts-update', this.onNoteOrMessageEvent);
+            EventBus.$on('notes-api',          this.onNoteOrMessageEvent);
         }
 
         @Hook('beforeDestroy')
         beforeDestroy() {
-            EventBus.$off('note-counts-update', this.notecheckerUpdateReceived);
+            EventBus.$off('note-counts-update', this.onNoteOrMessageEvent);
+            EventBus.$off('notes-api',          this.onNoteOrMessageEvent);
         }
 
         @Hook('mounted')
@@ -545,7 +547,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
 
         /**
-         * NOTE CHECKER
+         * NOTE CHECKER on home tab
          */
         siteCheckerNoteCounts = 0;
         siteCheckerMsgCounts  = 0;
@@ -558,14 +560,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         siteCheckerIconClass = '';
 
-        notecheckerUpdateReceived = () => this.updateNotecheckerCount();
+        onNoteOrMessageEvent = () => this.updateNoteAndMessageCount();
 
-        updateNotecheckerCount(): void {
-            const { unreadNotes, unreadMessages } = core.siteSession.interfaces.noteChecker.getCounts();
-            this.siteCheckerNoteCounts = unreadNotes;
-            this.siteCheckerMsgCounts  = unreadMessages;
+        updateNoteAndMessageCount() {
+            this.siteCheckerMsgCounts  = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
+            this.siteCheckerNoteCounts = core.siteSession.interfaces.notes.getUnread().total ?? 0;
 
-            if ( this.siteCheckerCount > 10)
+            if (this.siteCheckerCount > 10)
                 this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelopes-bulk';
             else if (this.siteCheckerNoteCounts)
                 this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelope';
