@@ -85,6 +85,10 @@ export interface SiteSessionEvent {
     state: 'active' | 'inactive';
 }
 
+export interface NotesApiEvent {
+    type: 'unread',
+}
+
 export interface ErrorEvent {
     source:  'eicon' | 'index' | 'core',
     type?:   string,
@@ -126,6 +130,12 @@ class EventBusManager {
     $on(event: 'error',                  callback: (e: ErrorEvent) => void | Promise<void>): void;
 
     $on(event: 'site-session',           callback: (e: SiteSessionEvent) => void | Promise<void>): void;
+    /**
+     * This event is for the notes api broadcasting that something has changed internally.
+     *
+     * A 'type' is sent in order for listeners to discern whether the change was important to them. If they think so, they can invoke the relevant call to the note api interface to get the details they're after.
+     */
+    $on(event: 'notes-api',              callback: (e: NotesApiEvent) => void | Promise<void>): void;
 
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
 
@@ -240,6 +250,7 @@ class EventBusManager {
     $emit(event: 'error',                  data: ErrorEvent): void;
 
     $emit(event: 'site-session',           data: SiteSessionEvent): void;
+    $emit(event: 'notes-api',              data: NotesApiEvent): void;
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;
 

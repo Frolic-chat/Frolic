@@ -21,7 +21,7 @@
 
                 <textarea v-else-if="editingMemo" v-model="memoInEdit" id="comms-memo-edit" maxlength="1000" class="form-control"></textarea>
 
-                <p v-else class="form-control" style="user-select: text; height: auto;">{{ memoBody || 'No memo set for this character.' }}</p>
+                <p v-else class="form-control" style="user-select: text; height: auto; white-space: pre-wrap;">{{ memoBody || 'No memo set for this character.' }}</p>
 
                 <div class="d-flex mt-2" style="gap: 1em;">
                     <span class="mr-auto"><span v-if="memoError" class="text-danger fa-solid fa-fw fa-circle-exclamation"></span> {{ memoError }}</span>
@@ -50,28 +50,24 @@
                     <div v-if="latestNote">
                         Latest note was sent by {{ latestNote.source_name === character ? 'them' : 'you' }}:
                         <h5 class="d-flex" style="user-select: text;">
-                            <span :class="latestNote.read ? 'fa-envelope-open text-muted' : 'fa-envelope text-info'" class="fa-solid fa-fw"></span>
-                            <span class="mr-auto"> {{ latestNote.title }}</span>
+                            <span :class="latestNote.read ? 'fa-envelope-open text-muted' : 'fa-envelope text-info'" class="fa-solid fa-fw">
+                            </span> <span class="mr-auto">{{ latestNote.title }}</span>
+
                             <i class="ml-auto">{{ latestNote.datetime_sent }}</i>
                         </h5>
 
-                        <div class="text-truncate abbreviated" style="user-select: text;">
-                            {{ latestNote.message }}
-                        </div>
+                        <bbcode :text="latestNote.message" class="text-truncate abbreviated" style="user-select: text;"></bbcode>
 
                         <div v-if="noteError" class="text-center">
                             <span class="text-danger fa-solid fa-fw fa-circle-exclamation"></span> {{ noteError }}
                         </div>
+
+                        <hr>
                     </div>
                 </div>
             </div>
 
             <hr>
-
-            <pre>
-                This is where communications goes. :)
-                - Last spoken to (last message?)
-            </pre>
 
             <slot name="after-body"></slot>
         </div>
@@ -95,6 +91,9 @@ import { MemoManager } from '../character/memo';
 import * as SiteUtils from '../../site/utils';
 import core from '../core';
 import { EventBus, SiteSessionEvent } from '../preview/event-bus';
+import { BBCodeView } from '../../bbcode/view';
+import { Conversation } from '../interfaces';
+// import type { NoteSummary } from '../conversation_notes';
 
 // import type { CharacterMemo } from '../../site/character_page/interfaces';
 import type { TempNoteFormat } from '../../site/notes-api';
@@ -105,34 +104,48 @@ const logMemo = NewLogger('memo');
 @Component({
     components: {
         page: HomePageLayout,
+        bbcode: BBCodeView(core.bbCodeParser),
     },
 })
 export default class Comms extends Vue {
-    @Prop({ required: true })
+    /**
+     * Comms is keep-alive, and during that time we lose a character.?
+     */
+    @Prop()
     readonly character!: string;
 
-    @Hook('mounted')
-    onMount() {
-        EventBus.$on('site-session', this.onSiteSession);
+    get conversation() {
+        return core.conversations.selectedConversation;
+    }
+
+    @Hook('created')
+    created() {
+        EventBus.$on('notes-api', this.onNoteApi);
+
+        if (!core.siteSession.isRunning)
+            EventBus.$on('site-session', this.onSiteSession);
+    }
+
+    @Hook('beforeDestroy')
+    beforeDestroy() {
+        EventBus.$off('site-session', this.onSiteSession);
+        EventBus.$off('notes-api',    this.onNoteApi);
     }
 
     onSiteSession({ state }: SiteSessionEvent) {
         if (state === 'active') {
-            this.refreshNoteCount();
-
             EventBus.$off('site-session', this.onSiteSession);
+
+            this.refreshNotes();
         }
     }
 
-    @Hook('destroyed')
-    onDestroy() {
-        EventBus.$off('site-session', this.onSiteSession);
-    }
+    onNoteApi = () => this.refreshNotes();
 
     @Watch('character', { immediate: true })
     characterChanged() {
         void this.getMemoFromCache();
-        void this.refreshNoteCount();
+        void this.refreshNotes();
     }
 
     /**
@@ -145,6 +158,9 @@ export default class Comms extends Vue {
     memoError = '';
 
     async getMemoFromCache() {
+        // if (!this.character)
+        //     return;
+
         this.memoLoading = true;
         this.editingMemo = false;
         this.memoError = '';
@@ -163,6 +179,9 @@ export default class Comms extends Vue {
     }
 
     async memoButtonClicked() {
+        // if (!this.character)
+        //     return;
+
         if (!this.editingMemo) {
             this.memoInEdit = this.memoBody;
 
@@ -188,6 +207,8 @@ export default class Comms extends Vue {
         }
     }
 
+    //registerMemoTabKey
+
     async cancelOrRefreshMemo(isCancel: boolean = false) {
         if (isCancel) {
             this.editingMemo = false;
@@ -199,6 +220,9 @@ export default class Comms extends Vue {
     }
 
     async refreshMemo() {
+        // if (!this.character)
+        //     return;
+
         this.memoLoading = true;
         this.editingMemo = false;
         this.memoError = '';
@@ -225,7 +249,10 @@ export default class Comms extends Vue {
     latestNote?: TempNoteFormat;
     noteError = '';
 
-    async refreshNoteCount() {
+    async refreshNotes() {
+        // if (!this.character)
+        //     return;
+
         if (!core.siteSession.isRunning) {
             this.noteError = 'The background service has not yet started.';
             return;
@@ -235,33 +262,24 @@ export default class Comms extends Vue {
         this.noteError = '';
 
         try {
-            const res = await this.getLatestIncoming();
+            if (!Conversation.isPrivate(this.conversation))
+                return; // safety
 
-            this.noteCount = res.total;
-            this.latestNote = res.latest;
+            if (!this.conversation.notes.initialized) {
+                const server_notes = await core.siteSession.interfaces.notes.getAllBetween(core.characters.ownCharacter.name, this.character);
+
+                this.conversation.notes.init(server_notes.notes);
+            }
+
+            this.noteCount = this.conversation.notes.count;
+            this.latestNote = this.conversation.notes.latest;
         }
         catch {
-            this.noteCount = 0;
-            this.latestNote = undefined;
-            this.noteError = 'There was an error on the last attempt to fetch notes.';
+            this.noteError = 'There was an error on the last attempt to fetch notes. Your information may be out of date.';
         }
         finally {
             this.notesLoading = false;
         }
-    }
-
-    // async getLatest(): Promise<{ total: number | null, latest?: TempNoteFormat }> {
-    //     if (core.siteSession.isRunning)
-    //         return await core.siteSession.interfaces.notes.getCount(this.character, true);
-    //     else
-    //         return { total: 0 };
-    // }
-
-    async getLatestIncoming(): Promise<{ total: number | null, latest?: TempNoteFormat }> {
-        if (core.siteSession.isRunning)
-            return await core.siteSession.interfaces.notes.getLatestIncoming(core.characters.ownCharacter.name, this.character);
-        else
-            return { total: 0 };
     }
 
 
