@@ -48,6 +48,7 @@ class Channel implements Interfaces.Channel {
     constructor(readonly id: string, readonly name: string) {}
 
     async addMember(member: SortableMember): Promise<void> {
+        // May be useful to replace with key. But currently only used by 'JCH'
         this.members[member.character.name] = member;
         sortMember(this.sortedMembers, member);
 
