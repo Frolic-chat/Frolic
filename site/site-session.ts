@@ -13,7 +13,7 @@ const log = NewLogger('site-session');
 
 export interface SiteSessionInterface {
     start(): Promise<void>;
-    stop(): Promise<void>;
+    stop():  Promise<void>;
 }
 
 export interface SiteSessionInterfaceCollection extends Record<string, SiteSessionInterface> {
@@ -33,6 +33,11 @@ export class SiteSession {
         return this.state === 'active';
     }
 
+    /**
+     * Use simple states that others might care about responding to; this is broadcast when it changes.
+     *
+     * 'active' should indicate login was a success, 'inactive' should indicate no interfaces will be usable if they require login.
+     */
     private state: 'active' | 'inactive' = 'inactive';
     private account = '';
     private password = '';
@@ -42,23 +47,26 @@ export class SiteSession {
 
 
     setCredentials(account: string, password: string): void {
-        this.account = account;
+        this.account  = account;
         this.password = password;
     }
 
 
     async start(): Promise<void> {
+        this.state = 'inactive';
+
         try {
             await this.stop();
             await this.init();
             await this.login();
 
             this.state = 'active';
-            EventBus.$emit('site-session', { state: this.state });
 
             await Promise.all(
                 Object.values(this.interfaces).map(i => i.start())
             );
+
+            EventBus.$emit('site-session', { state: this.state });
         }
         catch (err) {
             this.state = 'inactive';
