@@ -120,8 +120,16 @@
 </script>
 
 <style lang="scss">
-.quick-info-block .infotag.custom-gender {
-    border: 1px solid;
-    border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1;
+// div:has(.infotag-label) {
+
+// }
+
+.quick-info-block .custom-gender .infotag-value {
+    // color: transparent;
+    // background-clip: text;
+    //background-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1;
+    // background-image: linear-gradient(45deg in oklab, red, yellow, blue, violet);
+    border-bottom: 1px solid transparent;
+    border-image: linear-gradient(90deg in oklab, red, orange, yellow, green, blue, indigo, violet) 1
 }
 </style>
