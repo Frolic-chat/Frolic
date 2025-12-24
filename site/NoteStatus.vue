@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <collapse bodyClass="d-flex flex-wrap"
     :initial="yohhlrf" @open="toggle.notes = false" @close="toggle.notes = true"
@@ -10,12 +11,16 @@
                 <template v-if="report.count">
                     {{ report.count }}
                     <span :class="{
-                            'fa-solid fa-fw fa-envelope':   report.type === 'note',
+                            'fa-solid   fa-fw fa-envelope': report.type === 'note',
                             'fa-regular fa-fw fa-envelope': report.type === 'message',
                         }" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"
                     ></span>
                 </template>
             </span>
+            <div v-if="latestNote && latestSender && latestReceiver">
+                <!-- :immediate="true" :showStatus="true" :bookmark="true" -->
+                <span class="text-muted">Latest unread:</span> <user :character="latestSender" immediate showStatus bookmark></user> => <user :character="latestReceiver" immediate></user>, <i>{{ latestNote.datetime_sent }}</i>
+            </div>
         </span>
     </template>
 
@@ -33,83 +38,95 @@
 <script lang="ts">
 import Vue from 'vue';
 import { Component, Hook } from '@f-list/vue-ts';
+
 import Collapse from '../components/collapse.vue';
+import UserView from '../chat/UserView.vue';
 
 import core from '../chat/core';
 import { EventBus } from '../chat/preview/event-bus';
+import type { TempNoteFormat } from './notes-api';
 
 interface ReportState {
-    type: string;
-    title: string;
+    type: 'message' | 'note';
+    title: 'Messages' | 'Notes';
     count: number;
-    dismissedCount: number;
     url: string;
 }
 
 @Component({
     components: {
         collapse: Collapse,
+        user: UserView,
     }
 })
 export default class NoteStatus extends Vue {
 headerTitle = 'Notes & Site Messages';
+
+latestNote?: TempNoteFormat;
+
+get latestSender() {
+    return this.latestNote?.source_name
+        ? core.characters.get(this.latestNote.source_name)
+        : undefined;
+}
+
+get latestReceiver() {
+    return this.latestNote?.dest_name
+        ? core.characters.get(this.latestNote.dest_name)
+        : undefined;
+}
 
 reports: ReportState[] = [
     {
         type: 'message',
         title: 'Messages',
         count: 0,
-        dismissedCount: 0,
         url: 'https://www.f-list.net/messages.php'
     },
     {
         type: 'note',
         title: 'Notes',
         count: 0,
-        dismissedCount: 0,
         url: 'https://www.f-list.net/read_notes.php'
     }
 ];
 
-callback = () => this.updateCounts();
+onEvent = () => this.updateNotesAndMessages();
 
-@Hook('mounted')
-mounted(): void {
-    this.updateCounts();
+@Hook('created')
+created(): void {
+    this.updateNotesAndMessages();
 
-    EventBus.$on('note-counts-update', this.callback);
+    EventBus.$on('note-counts-update', this.onEvent);
+    EventBus.$on('notes-api',          this.onEvent);
 }
 
 @Hook('beforeDestroy')
-destroying(): void {
-    EventBus.$off('note-counts-update', this.callback);
+beforeDestroy(): void {
+    EventBus.$off('note-counts-update', this.onEvent);
+    EventBus.$off('notes-api',          this.onEvent);
 }
 
 hasReports(): boolean {
-    return !!this.reports.find(r => r.count > 0);
+    return this.reports.some(r => r.count > 0);
 }
 
-/**
- * Is this jank because of typing? Or are these runtime checks necesssary?
- */
-updateCounts(): void {
-    const latest = core.siteSession.interfaces.noteChecker.getCounts();
+updateNotesAndMessages() {
+    const latestMessages = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
+    const latestNotes    = core.siteSession.interfaces.notes.getUnread();
 
-    const mapper: Record<'message' | 'note', Partial<keyof typeof latest>> = {
-        message: 'unreadMessages',
-        note: 'unreadNotes',
-    };
+    const m = this.reports.find(report => report.type === 'message');
+    if (m)
+        m.count = latestMessages;
 
-    Object.entries(mapper).forEach(([k, v]) => {
-        const report = this.reports.find(r => r.type === k);
-        if (!report)
-            return;
+    const n = this.reports.find(report => report.type === 'note');
+    if (n)
+        n.count = latestNotes.total ?? 0;
 
-        report.count = latest[v];
-    });
-  }
+    this.latestNote = latestNotes.notes.find(n => n.dest_name === core.characters.ownCharacter.name);
+}
 
-    get yohhlrf() { return this.toggle.activity ?? false }
+get yohhlrf() { return this.toggle.activity ?? false }
     toggle = core.runtime.userToggles;
 }
 </script>
