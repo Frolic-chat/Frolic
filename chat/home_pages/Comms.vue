@@ -14,14 +14,14 @@
 
             <!-- memo -->
             <div class="form-group">
-                <h5><u>Memo</u></h5>
+                <h5>Memo</h5>
                 <span v-if="memoLoading" class="text-center">
                     Loading memo...
                 </span>
 
                 <textarea v-else-if="editingMemo" v-model="memoInEdit" id="comms-memo-edit" maxlength="1000" class="form-control"></textarea>
 
-                <p v-else class="form-control" style="user-select: text; height: auto; white-space: pre-wrap;">{{ memoBody || 'No memo set for this character.' }}</p>
+                <div v-else class="form-control" style="user-select: text; height: auto; white-space: pre-wrap;">{{ memoBody || 'No memo set for this character.' }}</div>
 
                 <div class="d-flex mt-2" style="gap: 1em;">
                     <span class="mr-auto"><span v-if="memoError" class="text-danger fa-solid fa-fw fa-circle-exclamation"></span> {{ memoError }}</span>
@@ -38,6 +38,8 @@
 
             <!-- notes -->
             <div class="form-group">
+                <h5>Notes</h5>
+
                 <div v-if="notesLoading" class="text-center">
                     <span v-if="noteError" class="text-danger fa-solid fa-fw fa-circle-exclamation"></span> {{ noteError ? noteError : 'Loading latest note exchange...' }}
                 </div>
