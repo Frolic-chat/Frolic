@@ -279,6 +279,8 @@ async function save(): Promise<boolean> {
 async function load(): Promise<EiconStoreExport> {
     const filename = getStoreFile();
 
+    status = 'loading';
+
     if (!filename) {
         logEicon.error('store.load.filename.failure', "Eicon store failed to load because storeFilename didn't resolve.");
 
@@ -419,6 +421,8 @@ function getStoreFile(directory?: string, partial?: string): string {
 async function rebuildFromRemote(): Promise<void> {
     logEicon.info('store.rebuildFromRemote.start');
 
+    status = 'loading';
+
     const data = await fetchAll();
 
     if (data.eicons.length) {
@@ -450,6 +454,8 @@ async function rebuildFromRemote(): Promise<void> {
 async function update(): Promise<void> {
     logEicon.verbose('store.update.start', { asOfTimestamp });
 
+    status = 'loading';
+
     const changes = await fetchUpdates(asOfTimestamp);
 
     const removals  = changes.record['-'];
@@ -480,7 +486,7 @@ async function update(): Promise<void> {
  * As it's called from a timer, it should handle writing to the export data to the variables itself.
  */
 async function checkForUpdates(force?: boolean): Promise<void> {
-    if (force || !asOfTimestamp || !store.length || status !== 'ready') {
+    if (force || !asOfTimestamp || !store.length || (status !== 'ready' && status !== 'loading')) {
         await rebuildFromRemote();
     }
     else {
@@ -930,8 +936,14 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
 }
 
 export function startFromScratch() {
-    store.length = 0;
-    asOfTimestamp = 0;
+    console.warn('Force acquiring fresh eicon store data for new version.');
 
-    checkForUpdates(true);
+    if (status === 'loading')
+        setTimeout(() => startFromScratch(), 500);
+    else {
+        store.length = 0;
+        asOfTimestamp = 0;
+
+        checkForUpdates(true);
+    }
 }
