@@ -71,6 +71,18 @@
 
             <hr>
 
+            <!-- channel view-->
+            <div class="form-group">
+                <h5>Channels in Common</h5>
+
+                <div class="d-flex flex-row" style="gap: 1em;">
+                    <channel-tag v-for="channel in sharedChannelDisplay" :key="channel.key" :id="channel.key" :text="channel.name"></channel-tag>
+                    <div v-if="!sharedChannelDisplay.length">None.</div>
+                </div>
+            </div>
+
+            <hr>
+
             <slot name="after-body"></slot>
         </div>
     </template>
@@ -95,6 +107,7 @@ import core from '../core';
 import { EventBus, SiteSessionEvent } from '../preview/event-bus';
 import { BBCodeView } from '../../bbcode/view';
 import { Conversation } from '../interfaces';
+import ChannelView from '../ChannelTagView.vue';
 // import type { NoteSummary } from '../conversation_notes';
 
 // import type { CharacterMemo } from '../../site/character_page/interfaces';
@@ -107,12 +120,10 @@ const logMemo = NewLogger('memo');
     components: {
         page: HomePageLayout,
         bbcode: BBCodeView(core.bbCodeParser),
+        'channel-tag': ChannelView,
     },
 })
 export default class Comms extends Vue {
-    /**
-     * Comms is keep-alive, and during that time we lose a character.?
-     */
     @Prop()
     readonly character!: string;
 
@@ -134,6 +145,13 @@ export default class Comms extends Vue {
         EventBus.$off('notes-api',    this.onNoteApi);
     }
 
+    /**
+     * Invoked from external sources.
+     */
+    onShow() {
+        this.updateSharedChannelDisplay();
+    }
+
     onSiteSession({ state }: SiteSessionEvent) {
         if (state === 'active') {
             EventBus.$off('site-session', this.onSiteSession);
@@ -148,11 +166,15 @@ export default class Comms extends Vue {
     characterChanged() {
         void this.getMemoFromCache();
         void this.refreshNotes();
+        this.updateSharedChannelDisplay();
     }
+
+
 
     /**
      * Memo
      */
+
     editingMemo = false;
     memoLoading = false;
     memoBody: string | null = '';
@@ -243,6 +265,8 @@ export default class Comms extends Vue {
         }
     }
 
+
+
     /**
      * Notes
      */
@@ -282,6 +306,27 @@ export default class Comms extends Vue {
         finally {
             this.notesLoading = false;
         }
+    }
+
+
+
+    /**
+     * Shared channel display
+     */
+
+    sharedChannelDisplay: Conversation.ChannelConversation[] = [];
+
+    updateSharedChannelDisplay() {
+        this.sharedChannelDisplay = core.conversations.channelConversations.reduce(
+            (box, channel) => {
+                const match = channel.channel.members[this.character];
+                if (match)
+                    box.push(channel);
+
+                return box;
+            },
+            []  as Conversation.ChannelConversation[],
+        );
     }
 
 
