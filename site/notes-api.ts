@@ -1,5 +1,6 @@
 import { SiteSession, SiteSessionInterface } from './site-session';
 import core from '../chat/core';
+import { EventBus } from '../chat/preview/event-bus';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('notesAPI', () => core.state.generalSettings.argv.includes('--debug-notes'));
@@ -18,15 +19,30 @@ export type TempNoteFormat = {
     starred: number;
 }
 
+export type TempNormalNoteReturn = {
+    total: number | null,
+    latest?: TempNoteFormat,
+}
+
 export default class NotesApi implements SiteSessionInterface {
     constructor(private session: SiteSession) {}
+
+    unreadCount = 0;
+    unreadNotes: TempNoteFormat[] = [];
 
     async start(): Promise<void> {
         try {
             await this.stop();
         }
-        catch (err) {
-            log.error('notesAPI.start.error', err);
+        catch (e) {
+            log.error('notesAPI.start.error.stop', e);
+        }
+
+        try {
+            this.updateUnread();
+        }
+        catch (e) {
+            log.error('notesAPI.start.error.updateUnread', e);
         }
     }
 
@@ -50,7 +66,7 @@ export default class NotesApi implements SiteSessionInterface {
         try {
             const res = await this.session.get('json/notes-searchuser.json', opts);
 
-            log.warn('NotesApi.searchUser.res', res);
+            log.warn('NotesApi.searchUser.res', res.body);
 
             if (res.body) {
                 ret.notes = res.body.notes as TempNoteFormat[];
@@ -66,28 +82,40 @@ export default class NotesApi implements SiteSessionInterface {
     }
 
     async getCount(name: string, latest: boolean = false): Promise<{ total: number | null, latest?: TempNoteFormat }> {
-        const res = await this.searchUser(name, { offset: 0, amount: latest ? 1 : 0 });
+        const res = await this.searchUser(name, { offset: 0, amount: latest ? 1 : undefined });
         return {
             total: res.total,
             latest: res.notes[0],
         };
     }
 
-    async getLatestIncoming(toCharacter: string, fromCharacter: string): Promise<{ total: number | null, latest?: TempNoteFormat }> {
+    async getLatestFrom(name: string, amount: number = 1): Promise<TempNoteFormat[]> {
+        const res = await this.searchUser(name, { offset: 0, amount });
+
+        return res.notes;
+    }
+
+    async getAllBetween(    myCharacter:   string,
+                            theirCharacter: string,
+                        ): Promise<{ total?: number | null, latest?: TempNoteFormat, notes: TempNoteFormat[] }> {
         let latest_id = 0; // Order seems to be reliable, but I don't trust it.
         let offset = 0;
-        let ret: { total: number, latest?: TempNoteFormat } = { total: 0 };
-        const amount = 10;
+        let ret: { total: number, latest?: TempNoteFormat, notes: TempNoteFormat[] } = {
+            total: 0,
+            notes: [],
+        };
+        const request_amount = 20;
 
-        let res = await this.searchUser(fromCharacter, { offset, amount });
+        let response = await this.searchUser(theirCharacter, { offset, amount: request_amount });
 
-        log.debug('NotesApi.getLatestIncoming.res.total', res.total);
+        // log.debug('NotesApi.getAllBetween.res.total', res.total);
 
-        while (res.notes.length = amount) {
-            for (const note of res.notes) {
-                if (note.source_name === fromCharacter && note.dest_name === toCharacter
-                ||  note.source_name === toCharacter && note.dest_name === fromCharacter) {
+        while (true) {
+            for (const note of response.notes) {
+                if (note.source_name === theirCharacter && note.dest_name === myCharacter
+                ||  note.source_name === myCharacter && note.dest_name === theirCharacter) {
                     ret.total++;
+                    ret.notes.push(note);
 
                     if (note.note_id > latest_id) {
                         ret.latest = note;
@@ -99,15 +127,29 @@ export default class NotesApi implements SiteSessionInterface {
                 }
             }
 
-            offset += amount;
+            log.debug('NotesApi.getAllBetween.return.count', ret.notes.length);
 
-            res = await this.searchUser(fromCharacter, { offset, amount });
-        }
+            offset += request_amount;
+
+            if (response.notes.length !== request_amount)
+                break;
+
+            response = await this.searchUser(theirCharacter, { offset, amount: request_amount });
+        };
 
         return ret;
     }
 
-    async getUnread(): Promise<{ notes: TempNoteFormat[], total: number | null }>  {
+    getUnread(): { notes: TempNoteFormat[], total: number | null } {
+        return { notes: this.unreadNotes, total: this.unreadCount };
+    }
+
+    /**
+     * This will trigger the EventBus event for a new note if it detects one.
+     */
+    async updateUnread(): Promise<void> {
+        let emit_event = false;
+
         const ret: { notes: TempNoteFormat[], total: number | null } = {
             notes: [],
             total: null,
@@ -116,7 +158,7 @@ export default class NotesApi implements SiteSessionInterface {
         const opts = {
             qs: {
                 offset: 0,
-                amount: 5,
+                amount: 10,
                 folder: 1, // irrelevant
             },
             json: true,
@@ -124,18 +166,24 @@ export default class NotesApi implements SiteSessionInterface {
         try {
             const res = await this.session.get('json/notes-getunread.json', opts);
 
-            log.warn('NotesApi.getUnread.res', res);
+            log.warn('NotesApi.updateUnread.res', res.body);
 
             if (res.body) {
                 ret.notes = res.body.notes as TempNoteFormat[];
                 ret.total = res.body.total as number;
+
+                if (res.body.total !== this.unreadCount || res.body.notes[0] !== this.unreadNotes[0])
+                    emit_event = true;
+
+                this.unreadNotes = res.body.notes;
+                this.unreadCount = res.body.total;
             }
         }
         catch (e) {
-            log.error('NotesApi.getUnread.catch', e);
+            log.error('NotesApi.updateUnread.catch', e);
         }
-        finally {
-            return ret;
-        }
+
+        if (emit_event)
+            EventBus.$emit('notes-api', { type: 'unread' });
     }
 }
