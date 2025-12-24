@@ -786,7 +786,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
             .body {
                 display: block;
-                overflow: visible;
+                // overflow-x: hidden; // Possible solution to username ellipses overflowing.
             }
 
             .expander {
