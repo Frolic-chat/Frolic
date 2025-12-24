@@ -1621,6 +1621,14 @@ export default function(this: any): Interfaces.State {
 
         logRTB.warn(`conversations.RTB.${data.type}`, { data, time });
 
+        if (process.env.NODE_ENV === 'development') {
+            const debug_string = Object.entries(data)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(', ');
+
+            await addEventMessage(new EventMessage(debug_string, time));
+        }
+
         let url = 'https://www.f-list.net/';
         let text: string, character: string;
 
@@ -1662,8 +1670,9 @@ export default function(this: any): Interfaces.State {
 
             text = l('events.rtb_note', `[user]${data.sender}[/user]`, `[url=${url}view_note.php?note_id=${data.id}]${data.subject}[/url]`);
             character = data.sender;
+
+            await core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
         } else if(data.type === 'friendrequest') {
-            // tslint:disable-next-line:no-unsafe-any
             core.siteSession.interfaces.noteChecker.incrementMessages();
             text = l(`events.rtb_friendrequest`, `[user]${data.name}[/user]`);
             character = data.name;
@@ -1692,8 +1701,6 @@ export default function(this: any): Interfaces.State {
             character = data.name;
         }
         await addEventMessage(new EventMessage(text, time));
-        if(data.type === 'note')
-            await core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
     });
     const sfcList: Interfaces.SFCMessage[] = [];
     connection.onMessage('SFC', async(data, time) => {
