@@ -128,7 +128,7 @@
     </page>
 
     <!-- Comms -->
-    <comms v-else-if="isPrivate" v-show="tab === '2'" :character="conversation.name"
+    <comms v-else-if="isPrivate" v-show="tab === '2'" ref="comms" :character="conversation.name"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
         <template v-slot:title-end>
@@ -588,7 +588,16 @@ export default class HomeScreen extends Vue {
                 }
             }
         }
+        // Ungeneric version of below:
+        else if (this.tab === '3' && this.isPrivate) {
+            this.$nextTick(() => {
+                const ref = this.$refs['comms'] as Comms;
+                ref.onShow();
+            });
+        }
 
+        // This doesn't work because we removed tab refs:
+        /*
         // Webpack complains `show` and `id` are "never", so fix that to "sometimes".
         const target = <{ show?: () => void }>this.$refs[`tab${this.tab}`];
         if (!target)
@@ -600,6 +609,7 @@ export default class HomeScreen extends Vue {
             if ('show' in target && typeof target.show === 'function')
                 target.show();
         });
+         */
     }
 
     moveTabs() {
