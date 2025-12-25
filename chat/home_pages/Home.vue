@@ -33,10 +33,6 @@
                 <news @update="handleNewsUpdate"></news>
             </div>
 
-            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
-                <note-status></note-status>
-            </div>
-
             <div v-show="widgets.activity && shouldShowActivity" class="home-row flex-row">
                 <collapse v-show="shouldShowActivity" class="chat-container" bodyClass="p-0"
                     :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true"
@@ -53,6 +49,10 @@
 
             <div v-show="widgets.scratchpad" class="home-row flex-row">
                 <scratchpad></scratchpad>
+            </div>
+
+            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
+                <note-status></note-status>
             </div>
 
         </div>
