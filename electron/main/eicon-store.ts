@@ -279,6 +279,8 @@ async function save(): Promise<boolean> {
 async function load(): Promise<EiconStoreExport> {
     const filename = getStoreFile();
 
+    status = 'loading';
+
     if (!filename) {
         logEicon.error('store.load.filename.failure', "Eicon store failed to load because storeFilename didn't resolve.");
 
@@ -419,6 +421,8 @@ function getStoreFile(directory?: string, partial?: string): string {
 async function rebuildFromRemote(): Promise<void> {
     logEicon.info('store.rebuildFromRemote.start');
 
+    status = 'loading';
+
     const data = await fetchAll();
 
     if (data.eicons.length) {
@@ -450,6 +454,8 @@ async function rebuildFromRemote(): Promise<void> {
 async function update(): Promise<void> {
     logEicon.verbose('store.update.start', { asOfTimestamp });
 
+    status = 'loading';
+
     const changes = await fetchUpdates(asOfTimestamp);
 
     const removals  = changes.record['-'];
@@ -480,7 +486,7 @@ async function update(): Promise<void> {
  * As it's called from a timer, it should handle writing to the export data to the variables itself.
  */
 async function checkForUpdates(force?: boolean): Promise<void> {
-    if (force || !asOfTimestamp || !store.length || status !== 'ready') {
+    if (force || !asOfTimestamp || !store.length || (status !== 'ready' && status !== 'loading')) {
         await rebuildFromRemote();
     }
     else {
@@ -496,6 +502,7 @@ async function checkForUpdates(force?: boolean): Promise<void> {
 async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> {
     const controller = new AbortController();
 
+    // @ts-ignore
     let user_impatience = () => controller.abort("Xariah connection timeout.");
     let no_response = setTimeout(user_impatience, 8000);
 
@@ -589,6 +596,7 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
 async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExport> {
     const controller = new AbortController();
 
+    // @ts-ignore
     let user_impatience = () => controller.abort("Xariah connection timeout.");
     let no_response = setTimeout(user_impatience, 8000);
 
@@ -901,16 +909,23 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
 
     const player_query = new RegExp(query, 'i');
 
-    const sorted_chars = (await FChatFs.getAvailableCharacters(dir))
-        .filter(d => player_query.test(d))
-        .sort((a, b) => a.localeCompare(b));
+    const chars = (await FChatFs.getAvailableCharacters(dir))
+        .reduce((box, char) => {
+            const rank = char.search(player_query);
+            if (rank > -1)
+                box.push([ char, rank ]);
 
-    const settings_dir = FChatFs.getCharacterSettingsDir(dir, sorted_chars[0]);
+            return box;
+        }, [] as [ string, number ][])
+        .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+        .map(e => e[0]);
+
+    const settings_dir = FChatFs.getCharacterSettingsDir(dir, chars[0]);
 
     const fn = path.join(settings_dir, favoritesFile);
     if (fs.existsSync(fn)) {
         try {
-            const json = JSON.parse(await fs.promises.readFile(fn, 'utf8'));
+            const json = JSON.parse(await fs.promises.readFile(fn, 'utf-8'));
 
             return Object.keys(json);
         }
@@ -920,4 +935,17 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
     }
 
     return [];
+}
+
+export function startFromScratch() {
+    console.warn('Force acquiring fresh eicon store data for new version.');
+
+    if (status === 'loading')
+        setTimeout(() => startFromScratch(), 500);
+    else {
+        store.length = 0;
+        asOfTimestamp = 0;
+
+        checkForUpdates(true);
+    }
 }

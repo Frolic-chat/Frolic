@@ -8,6 +8,7 @@
   @click.middle.prevent.stop="toggleStickyness()"
   @click.right.passive="dismiss(true)"
   @click.left.passive="dismiss(true)"
+  v-bind:character.prop="characterData"
   ><img :src="getAvatarUrl()" class="character-avatar icon" :title="character" :alt="character" v-once></a>
 </template>
 
@@ -24,6 +25,10 @@ export default class IconView extends Vue {
 
     @Prop({required: true})
     readonly character!: string;
+
+    get characterData() {
+        return core.characters.get(this.character);
+    }
 
     @Hook('mounted')
     mounted(): void {

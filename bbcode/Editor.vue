@@ -17,8 +17,6 @@
             </div>
             <div class="modal-backdrop show color-popup-visible" v-show="colorPopupVisible" v-if="colorPopupVisible"></div>
 
-            <EIconSelector :onSelect="onSelectEIcon" ref="eIconSelector"></EIconSelector>
-
             <div class="btn-group toolbar-buttons">
                 <slot name="toolbar-start"></slot>
                 <div v-if="!!characterName" class="btn btn-light btn-sm character-btn">
@@ -63,17 +61,20 @@
     import {defaultButtons, EditorButton, EditorSelection} from './editor';
     import {BBCodeParser} from './parser';
     import {default as IconView} from './IconView.vue';
-    import {default as EIconSelector} from './EIconSelector.vue';
-    import Modal from '../components/Modal.vue';
+    import type EIconSelector from './EIconSelector.vue';
 
     @Component({
       components: {
         'icon': IconView,
-        'EIconSelector': EIconSelector
       },
       mixins: [ clickaway ]
     })
     export default class Editor extends Vue {
+      /**
+       * Is it okay not to have an eicon selector on this component? Probably.
+       */
+        @Prop
+        readonly eiconSelector?: EIconSelector;
         @Prop
         readonly extras?: EditorButton[];
 
@@ -271,12 +272,12 @@
         }
 
         dismissEIconSelector(): void {
-          (this.$refs['eIconSelector'] as Modal).hide();
+          this.eiconSelector?.hide();
         }
 
         showEIconSelector(): void {
-          (this.$refs['eIconSelector'] as Modal).show();
-          setTimeout(() => (this.$refs['eIconSelector'] as any).setFocus(), 50);
+          this.eiconSelector?.engage({ onSelect: this.onSelectEIcon });
+          this.$nextTick(() => this.eiconSelector?.setFocus());
         }
 
         onSelectEIcon(eiconId: string, shift: boolean): void {

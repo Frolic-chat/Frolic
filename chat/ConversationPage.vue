@@ -39,7 +39,7 @@
 
                 <span class="ml-auto flex-shrink-0"><!-- right side -->
                     <span v-if="isChannelMod">
-                        <a href="#" @click.prevent="showManage()" class="btn btn-outline-secondary">
+                        <a href="#" @click.prevent="showManage()" :aria-label="l('manageChannel.open')" data-balloon-pos="down" class="btn btn-outline-secondary">
                             <span class="fa fa-edit"></span>
                             <!-- <span class="btn-text d-none d-lg-inline">{{l('manageChannel.open')}}</span> -->
                         </a>
@@ -47,6 +47,7 @@
                     <dropdown v-if="isChannel(conversation)" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')"
                         title=""
                         :keep-open="false"
+                        aria-label="Manage Channel Ads" data-balloon-nofocus data-balloon-pos="down"
                         text-class="d-none d-lg-inline"
                         :icon-class="{
                             fas: true,
@@ -72,14 +73,14 @@
                         </template>
                     </dropdown>
                     <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                        <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                        <button @click.prevent="showLogs()" :aria-label="l('logs.title')" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
                             <span class="fa fa-file-alt"></span>
                             <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
-                        </a>
-                        <a href="#" @click.prevent="report()" class="btn btn-outline-secondary">
+                        </button>
+                        <button @click.prevent="report()" :aria-label="l('chat.report')" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
                             <span class="fa fa-exclamation-triangle"></span>
                             <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
-                        </a>
+                        </button>
                     </template>
 
                     <slot name="title-end"></slot>
@@ -158,6 +159,7 @@
                 :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
                 :characterName="ownName"
                 :type="'big'"
+                :eiconSelector="eiconSelector"
             >
                 <template v-slot:default>
                     <div v-show="conversation.infoText" class="chat-info-text">
@@ -182,14 +184,23 @@
 
             <!-- footer -->
             <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
-                <span class="channel-key text-left">
+                <span class="channel-key text-left text-truncate">
                     <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
                         <user :character="conversation.character" :match="false" :bookmark="false"></user>
                         &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
                     </span>
 
                     <span v-else-if="isChannel(conversation)">
-                        {{ conversation.key }}
+                        <b v-if="watchedCharacters.length" aria-label="Click to copy room invite code to clipboard" data-balloon-pos="up"># </b>
+                        <span v-if="watchedCharacters.length" v-for="char, i in watchedCharacters">
+                            <template v-if="char.status !== 'offline'">
+                                <user :key="char.name" :character="char" :channel="conversation.channel" :immediate="true" :showStatus="false"></user>
+                                <span v-if="i !== conversation.settings.highlightUsernames.length - 1">, </span>
+                            </template>
+                        </span>
+                        <span v-else>
+                            {{ conversation.key }}
+                        </span>
                     </span>
                 </span>
                 <div class="send-ads-switcher text-center btn-group btn-group-sm">
@@ -249,9 +260,10 @@
 
     import Modal, { isShowing as anyDialogsShown } from '../components/Modal.vue';
 
-    import type Logs         from './Logs.vue';
-    import type ReportDialog from './ReportDialog.vue';
-    import type CommandHelp  from './CommandHelp.vue';
+    import type Logs          from './Logs.vue';
+    import type ReportDialog  from './ReportDialog.vue';
+    import type CommandHelp   from './CommandHelp.vue';
+    import type EIconSelector from '../bbcode/EIconSelector.vue';
 
     import ManageChannel from './ManageChannel.vue';
     import ConversationAdSettings from './ads/ConversationAdSettings.vue';
@@ -296,6 +308,9 @@
     export default class ConversationView extends Vue {
         @Prop({ required: true })
         readonly conversation!: Conversation;
+
+        @Prop
+        readonly eiconSelector?: EIconSelector;
 
         @Prop({ required: true })
         readonly logs!: Logs;
@@ -840,9 +855,8 @@
 
             try {
               this.memoManager = new MemoManager(c.name);
-              await this.memoManager.load();
 
-              this.userMemo = this.memoManager.get().memo;
+              this.userMemo = (await this.memoManager.get()).memo;
               this.editorMemo = this.userMemo ?? '';
             } catch(e) {
                 alert(errorToString(e));
@@ -850,8 +864,16 @@
           }
         }
 
+        getCharacter(name: string): Character {
+            return core.characters.get(name);
+        }
+
         get characterImage(): string {
             return core.characters.getImage(this.conversation.name);
+        }
+
+        get watchedCharacters(): Character[] {
+            return this.conversation.settings.highlightUsernames.map(n => core.characters.get(n));
         }
 
         get settings(): Settings {

@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big">
+  <modal :action="l('eicon.select')" ref="dialog" :buttons="false" dialogClass="eicon-selector big" @close="disengage()">
     <div class="eicon-selector-ui">
       <div v-if="!isReady" class="d-flex align-items-center loading">
         <strong>{{ l('eicon.notready') }}</strong>
@@ -8,7 +8,8 @@
       </div>
       <div v-else>
         <div class="search-bar">
-        <input type="text" class="form-control search" id="search" v-model="search" ref="search" :placeholder="l('eicon.search')" @input="searchUpdateDebounce()" tabindex="0" @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop />
+        <input type="text" class="form-control search" id="search" v-model="search" ref="search" :placeholder="l('eicon.search')" @input="searchUpdateDebounce()" tabindex="0" />
+        <!-- @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop -->
         <div class="btn-group search-buttons">
             <div class="btn expressions" @click.prevent.stop="searchWithString(favesSearchString)" :title="l('eicon.favorites')" role="button" tabindex="0">
             <i class="fas fa-thumbtack"></i>
@@ -80,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook } from '@f-list/vue-ts';
 import CustomDialog from '../components/custom_dialog';
 import modal from '../components/Modal.vue';
 
@@ -96,8 +97,7 @@ const log = NewLogger('eicons', () => core.state.generalSettings.argv.includes('
 
 @Component({ components: { modal } })
 export default class EIconSelector extends CustomDialog {
-    @Prop
-    readonly onSelect?: (eicon: string, shift: boolean) => void;
+    private onSelect?: (eicon: string, shift: boolean) => void;
 
     l = l;
 
@@ -108,11 +108,26 @@ export default class EIconSelector extends CustomDialog {
           | 'loading' | 'uninitialized' | 'error' = 'uninitialized';
     loadingPercent = 100;
 
-    favesSearchString = 'f:';
+    readonly favesSearchString = 'f:';
 
     get isReady() { return this.status !== 'loading' && this.status !== 'uninitialized' && this.status !== 'error' };
 
-    searchUpdateDebounce = Utils.debounce(async () => this.results = await this.runSearch(), { wait: 350 });
+    readonly searchUpdateDebounce = Utils.debounce(async () => this.results = await this.runSearch(), { wait: 350 });
+
+    // private engagedTextBox?: HTMLTextAreaElement | HTMLInputElement;
+
+    engage(options: { onSelect?: (eicon: string, shift: boolean) => void,
+                      /* textarea?: HTMLTextAreaElement | HTMLInputElement, */
+                    } = {}) {
+        // this.engagedTextBox = options.textarea;
+        this.onSelect = options.onSelect;
+        this.show();
+    }
+
+    disengage() {
+        // this.engagedTextBox = undefined;
+        this.onSelect       = undefined;
+    }
 
     @Hook('created')
     created() {
@@ -192,6 +207,8 @@ export default class EIconSelector extends CustomDialog {
         const shift = event.shiftKey;
 
         this.onSelect?.(eicon, shift);
+
+        // else if this.engagedTextBox ... so on.
     }
 
     /**

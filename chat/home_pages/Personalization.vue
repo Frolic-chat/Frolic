@@ -18,6 +18,7 @@
 
     <gender class="mb-4"></gender>
 
+    <!--
     <pre style="color:inherit;">
         This is where your personality helper goes.
 
@@ -32,6 +33,7 @@
 
         // TOOLS section
     </pre>
+    -->
 
     <!-- parts of personality: -->
     <!-- Eidol builder -->

@@ -52,8 +52,9 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()"
-                        class="list-group-item list-group-item-action">
+                    <!-- :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="right" -->
+                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()" class="list-group-item list-group-item-action"
+                    >
                         <template v-if="siteCheckerCount">
                             {{ siteCheckerCount }}
                             <span :class="siteCheckerIconClass" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
@@ -141,11 +142,11 @@
                 </a>
             </div>
 
-            <home-screen :activeConversationClicked="currentClicked" :reportDialog="$refs['reportDialog']"></home-screen>
+            <home-screen :activeConversationClicked="currentClicked" :reportDialog="reportDialog" :eiconSelector="eiconSelector"></home-screen>
         </div>
         <user-list></user-list>
         <channels ref="channelsDialog"></channels>
-        <status-switcher ref="statusDialog"></status-switcher>
+        <status-switcher ref="statusDialog" :eiconSelector="eiconSelector"></status-switcher>
         <character-search ref="searchDialog"></character-search>
         <adLauncher ref="adLauncher"></adLauncher>
         <adCenter ref="adCenter"></adCenter>
@@ -155,6 +156,7 @@
         <dev-tools ref="devTools"></dev-tools>
         <image-preview ref="imagePreview"></image-preview>
         <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
+        <eicon-selector ref="eiconSelector"></eicon-selector>
     </div>
 </template>
 
@@ -175,6 +177,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import PmPartnerAdder from './PmPartnerAdder.vue';
     import RecentConversations from './RecentConversations.vue';
     import ReportDialog from './ReportDialog.vue';
+    import EIconSelector from '../bbcode/EIconSelector.vue';
     import Sidebar from './Sidebar.vue';
     import StatusSwitcher from './StatusSwitcher.vue';
     import {getStatusIcon} from './UserView.vue';
@@ -185,7 +188,6 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import { Dialog } from '../helpers/dialog';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
-    import Modal from '../components/Modal.vue';
     import { EventBus } from './preview/event-bus';
 
     const unreadClasses = {
@@ -199,13 +201,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             'user-list': UserList, channels: ChannelList, 'status-switcher': StatusSwitcher, 'character-search': CharacterSearch,
             'home-screen': HomeScreen,
             'report-dialog': ReportDialog,
+            'eicon-selector': EIconSelector,
             sidebar: Sidebar,
             'user-menu': UserMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
-            modal: Modal,
             ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/command_center.vue') } : {})
         }
     })
@@ -217,6 +219,10 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         conversations = core.conversations;
         getStatusIcon = getStatusIcon;
         coreState = core.state;
+
+        eiconSelector!: EIconSelector;
+        reportDialog!: ReportDialog;
+
         keydownListener!: (e: KeyboardEvent) => void;
         focusListener!: () => void;
         blurListener!: () => void;
@@ -229,10 +235,19 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         get homeConversation(): Conversation {
             return core.state.generalSettings.defaultToHome
-                ? core.conversations.activityTab
-                : core.conversations.consoleTab;
-
+                ? this.conversations.activityTab
+                : this.conversations.consoleTab;
         }
+
+        /**
+         * This is broken because you can't have a scrollbar in one direction and overflow in another. Seems bad.
+         */
+        // get homeButtonTooltip(): string | undefined {
+        //     if (this.conversations.selectedConversation === this.conversations.activityTab)
+        //         return 'Click again for the console';
+        //     else if (this.conversations.selectedConversation === this.conversations.consoleTab)
+        //         return 'Click again for the home page';
+        // }
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -250,16 +265,21 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         @Hook('created')
         created() {
-            EventBus.$on('note-counts-update', this.notecheckerUpdateReceived);
+            EventBus.$on('note-counts-update', this.onNoteOrMessageEvent);
+            EventBus.$on('notes-api',          this.onNoteOrMessageEvent);
         }
 
         @Hook('beforeDestroy')
         beforeDestroy() {
-            EventBus.$off('note-counts-update', this.notecheckerUpdateReceived);
+            EventBus.$off('note-counts-update', this.onNoteOrMessageEvent);
+            EventBus.$off('notes-api',          this.onNoteOrMessageEvent);
         }
 
         @Hook('mounted')
         mounted(): void {
+            this.eiconSelector = this.$refs['eiconSelector'] as EIconSelector;
+            this.reportDialog  = this.$refs['reportDialog']  as ReportDialog;
+
             this.keydownListener = (e: KeyboardEvent) => this.onKeyDown(e);
             window.addEventListener('keydown', this.keydownListener);
             this.setFontSize(core.state.settings.fontSize);
@@ -527,7 +547,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         }
 
         /**
-         * NOTE CHECKER
+         * NOTE CHECKER on home tab
          */
         siteCheckerNoteCounts = 0;
         siteCheckerMsgCounts  = 0;
@@ -540,14 +560,13 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
         siteCheckerIconClass = '';
 
-        notecheckerUpdateReceived = () => this.updateNotecheckerCount();
+        onNoteOrMessageEvent = () => this.updateNoteAndMessageCount();
 
-        updateNotecheckerCount(): void {
-            const { unreadNotes, unreadMessages } = core.siteSession.interfaces.notes.getCounts();
-            this.siteCheckerNoteCounts = unreadNotes;
-            this.siteCheckerMsgCounts  = unreadMessages;
+        updateNoteAndMessageCount() {
+            this.siteCheckerMsgCounts  = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
+            this.siteCheckerNoteCounts = core.siteSession.interfaces.notes.getUnread().total ?? 0;
 
-            if ( this.siteCheckerCount > 10)
+            if (this.siteCheckerCount > 10)
                 this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelopes-bulk';
             else if (this.siteCheckerNoteCounts)
                 this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelope';

@@ -3,6 +3,7 @@ import {Connection} from '../fchat';
 
 import {Channel, Character} from '../fchat/interfaces';
 import { AdManager } from './ads/ad-manager';
+import ConversationNoteManager from './conversation_notes';
 import { SmartFilterSettings } from '../learn/filter/types';
 export {Connection, Channel, Character} from '../fchat/interfaces';
 /**
@@ -104,6 +105,8 @@ export namespace Conversation {
     export interface PrivateConversation extends TabConversation {
         readonly character: Character
         readonly typingStatus: TypingStatus
+
+        notes: ConversationNoteManager;
 
         sendMessageEx(text: string): Promise<void>;
     }

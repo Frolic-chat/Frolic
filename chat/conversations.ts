@@ -3,6 +3,7 @@ import Vue from 'vue';
 import {queuedJoin} from '../fchat/channels';
 import {decodeHTML} from '../fchat/common';
 import { AdManager } from './ads/ad-manager';
+import ConversationNoteManager from './conversation_notes';
 import { ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
 import { sleep } from '../helpers/utils';
@@ -19,6 +20,7 @@ const log = NewLogger('conversations', () => core?.state.generalSettings.argv.in
 const logS = NewLogger('conversation-settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
 const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
 const logRTB = NewLogger('rtb', () => core?.state.generalSettings.argv.includes('--debug-rtb'));
+const logNotes = NewLogger('notes', () => core?.state.generalSettings.argv.includes('--debug-notes'));
 
 const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
 
@@ -224,6 +226,8 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         this.reportMessages.unshift(...messages);
         this.messages = this.allMessages.slice();
     });
+
+    notes = new ConversationNoteManager();
 
     constructor(readonly character: Character) {
         super(character.name.toLowerCase(), state.pinned.private.indexOf(character.name) !== -1);
@@ -1264,6 +1268,9 @@ export default function(this: any): Interfaces.State {
     });
     const connection = core.connection;
     connection.onEvent('connecting', async(isReconnect) => {
+        // We always have to clear the note structures.
+        state.privateConversations.forEach(pm => pm.notes.uninit());
+
         state.channelConversations = [];
         state.channelMap = {};
         if(!isReconnect) {
@@ -1614,6 +1621,14 @@ export default function(this: any): Interfaces.State {
 
         logRTB.warn(`conversations.RTB.${data.type}`, { data, time });
 
+        if (process.env.NODE_ENV === 'development') {
+            const debug_string = Object.entries(data)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(', ');
+
+            await addEventMessage(new EventMessage(debug_string, time));
+        }
+
         let url = 'https://www.f-list.net/';
         let text: string, character: string;
 
@@ -1641,13 +1656,24 @@ export default function(this: any): Interfaces.State {
             character = data.name;
         }
         else if (data.type === 'note') {
-            // tslint:disable-next-line:no-unsafe-any
-            core.siteSession.interfaces.notes.incrementNotes();
+            void core.siteSession.interfaces.notes.updateUnread();
+
+            const convo = state.byKey(data.sender) as PrivateConversation | undefined;
+
+            logNotes.debug('RTB.note.convo', { key: convo?.key, init: convo?.notes.initialized});
+
+            if (convo?.notes.initialized) { // if not, when opening a PM it will be.
+                core.siteSession.interfaces.notes.getLatestFrom(data.sender)
+                    .then(res => convo.notes.add(res))
+                    .catch(() => undefined);
+            }
+
             text = l('events.rtb_note', `[user]${data.sender}[/user]`, `[url=${url}view_note.php?note_id=${data.id}]${data.subject}[/url]`);
             character = data.sender;
+
+            await core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
         } else if(data.type === 'friendrequest') {
-            // tslint:disable-next-line:no-unsafe-any
-            core.siteSession.interfaces.notes.incrementMessages();
+            core.siteSession.interfaces.noteChecker.incrementMessages();
             text = l(`events.rtb_friendrequest`, `[user]${data.name}[/user]`);
             character = data.name;
         } else {
@@ -1675,8 +1701,6 @@ export default function(this: any): Interfaces.State {
             character = data.name;
         }
         await addEventMessage(new EventMessage(text, time));
-        if(data.type === 'note')
-            await core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
     });
     const sfcList: Interfaces.SFCMessage[] = [];
     connection.onMessage('SFC', async(data, time) => {

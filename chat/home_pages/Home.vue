@@ -10,10 +10,10 @@
             </span>
             <span class="ml-auto flex-shrink-0">
                 <span v-if="logs">
-                    <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
+                    <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
                         <span class="fa fa-file-alt"></span>
                         <!-- <span class="btn-text">{{ logsTitle }}</span> -->
-                    </a>
+                    </button>
                 </span>
 
                 <slot name="title-end"></slot>
@@ -29,12 +29,8 @@
 
             </div>
 
-            <div v-show="widgets.news" class="home-row flex-row">
-                <news></news>
-            </div>
-
-            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
-                <note-status></note-status>
+            <div v-show="widgets.news" :style="newsStyle" class="home-row flex-row">
+                <news @update="handleNewsUpdate"></news>
             </div>
 
             <div v-show="widgets.activity && shouldShowActivity" class="home-row flex-row">
@@ -55,13 +51,17 @@
                 <scratchpad></scratchpad>
             </div>
 
+            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
+                <note-status></note-status>
+            </div>
+
         </div>
     </template>
 
     <template v-slot:postscroll>
         <div class="d-flex flex-wrap-reverse justify-content-between small border-top">
             <span class="mr-auto d-flex align-items-center"><!-- This span causes the button to expand to full height; not sure why its needed - flex maybe? -->
-                <button @click.prevent="openWidgetOptions()" class="btn btn-outline-secondary">
+                <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="up" class="btn btn-outline-secondary">
                     <span class="fa-solid fa-screwdriver-wrench"></span>
                 </button>
             </span>
@@ -128,6 +128,13 @@ export default class Home extends Vue {
 
     logsTitle = l('logs.title');
     showLogs() { this.logs?.show() }
+
+
+    newsStyle = '';
+    handleNewsUpdate(hasNews: boolean) {
+        if (hasNews) this.newsStyle = '';
+        else         this.newsStyle = 'order: 999;';
+    }
 
 
     get shouldShowActivity() { return !!core.conversations.activityTab.messages.length }

@@ -35,10 +35,10 @@
         </span>
     </tabs>
 
-    <!-- Pseudo-teleport -->
+    <!-- Pseudo-teleport primary conversation -->
     <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
-        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
+        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
         :class="isHome ? '' : 'page'"
            :id="isHome ? '' : 'home'"
          :role="isHome ? '' : 'tabpanel'"
@@ -66,11 +66,11 @@
 
     <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
 
-    <!-- console -->
+    <!-- console/secondary conversation -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
         class="page" role="tabpanel"
         :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp"
+        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
     >
         <template v-slot:title-end>
             <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>
@@ -128,24 +128,13 @@
     </page>
 
     <!-- Comms -->
-    <page v-else-if="isPrivate" v-show="tab === '2'"
+    <comms v-else-if="isPrivate" v-show="tab === '2'" ref="comms" :character="conversation.name"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
-        <template v-slot:prescroll>
-            <div class="page-header d-flex align-items-center">
-                <div class="mr-auto">
-                </div>
-                <div class="ml-auto flex-shrink-0">
-                    <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
-                </div>
-            </div>
+        <template v-slot:title-end>
+            <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
         </template>
-
-        This is where communications goes. :)
-        - Memo + editing
-        - Last spoken to (last message?)
-        - Last note exchange. Write new note?
-    </page>
+    </comms>
     </keep-alive>
 
     <!-- Settings -->
@@ -194,6 +183,7 @@
     <logs         ref="logsDialog" :conversation="logsConversation"></logs>
     <command-help ref="commandHelpDialog"></command-help>
     <!-- + reportDialog -->
+    <!-- + eiconSelector -->
 </div>
 </template>
 
@@ -206,15 +196,19 @@ import HomePageLayout from './home_pages/HomePageLayout.vue';
 
 import Home from './home_pages/Home.vue';
 import Data from './home_pages/Data.vue';
-import ConversationView from './ConversationPage.vue';
-import Collapse from '../components/collapse.vue';
 import Personality from './home_pages/Personalization.vue';
+import Comms from './home_pages/Comms.vue';
+
 import Settings from './home_pages/Settings.vue';
 import ConversationSettings from './ConversationSettings.vue';
 
-import type ReportDialog from './ReportDialog.vue';
-import      CommandHelp  from './CommandHelp.vue';
-import      Logs         from '../chat/Logs.vue';
+import ConversationView from './ConversationPage.vue';
+import Collapse from '../components/collapse.vue';
+
+import type ReportDialog  from './ReportDialog.vue';
+import type EIconSelector from '../bbcode/EIconSelector.vue';
+import      CommandHelp   from './CommandHelp.vue';
+import      Logs          from '../chat/Logs.vue';
 
 import { Conversation } from './interfaces';
 import { getAsNumber } from '../helpers/utils';
@@ -224,7 +218,7 @@ import l from './localize';
 import NewLogger from '../helpers/log';
 const log = NewLogger('home');
 const logC = NewLogger('conversation');
-//const logA = NewLogger('activity');
+// const logA = NewLogger('activity');
 const logCo = NewLogger('collapse');
 
 @Component({
@@ -236,6 +230,7 @@ const logCo = NewLogger('collapse');
 
         'data-page':      Data,
         'personality':    Personality,
+        'comms':          Comms,
 
         'convo':          ConversationView,
         'collapse':       Collapse,
@@ -267,6 +262,12 @@ export default class HomeScreen extends Vue {
      */
     @Prop({ required: true })
     readonly reportDialog!: ReportDialog;
+
+    /**
+     * Use the global eicon dialog; exclusively here to pass to the conversation; which passes it to the bbcode editor.
+     */
+    @Prop({ required: true })
+    readonly eiconSelector!: EIconSelector;
 
     commandHelp!: CommandHelp;
     logs!: Logs;
@@ -356,6 +357,7 @@ export default class HomeScreen extends Vue {
 
         this.logs        = this.$refs['logsDialog'] as Logs;
         this.commandHelp = this.$refs['commandHelpDialog'] as CommandHelp;
+        // eiconSelector is passed in as prop.
         // reportDialog is passed in as prop.
 
         window.addEventListener('keydown', this.onKey);
@@ -586,7 +588,16 @@ export default class HomeScreen extends Vue {
                 }
             }
         }
+        // Ungeneric version of below:
+        else if (this.tab === '3' && this.isPrivate) {
+            this.$nextTick(() => {
+                const ref = this.$refs['comms'] as Comms;
+                ref.onShow();
+            });
+        }
 
+        // This doesn't work because we removed tab refs:
+        /*
         // Webpack complains `show` and `id` are "never", so fix that to "sometimes".
         const target = <{ show?: () => void }>this.$refs[`tab${this.tab}`];
         if (!target)
@@ -598,6 +609,7 @@ export default class HomeScreen extends Vue {
             if ('show' in target && typeof target.show === 'function')
                 target.show();
         });
+         */
     }
 
     moveTabs() {

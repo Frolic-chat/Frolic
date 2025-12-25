@@ -14,18 +14,10 @@
     import {Component, Prop, Watch} from '@f-list/vue-ts';
     import CustomDialog from '../../components/custom_dialog';
     import Modal from '../../components/Modal.vue';
-    import {SimpleCharacter} from '../../interfaces';
     import * as Utils from '../utils';
+    import { CharacterMemo } from './interfaces';
     // import {methods} from './data_store';
     import { MemoManager } from '../../chat/character/memo';
-
-    export interface Memo {
-        id: number
-        memo: string
-        character: SimpleCharacter
-        created_at: number
-        updated_at: number
-    }
 
     @Component({
         components: {Modal}
@@ -34,7 +26,7 @@
         @Prop({required: true})
         readonly character!: {id: number, name: string};
         @Prop
-        readonly memo?: Memo;
+        readonly memo?: CharacterMemo;
         message: string | null = null;
         editing: boolean = false;
         saving: boolean = false;
@@ -68,9 +60,10 @@
                     this.message = null;
 
                 const memoManager = new MemoManager(this.character.name);
+
                 await memoManager.set(this.message);
 
-                this.$emit('memo', memoManager.get());
+                this.$emit('memo', await memoManager.get());
                 this.hide();
             } catch(e) {
                 Utils.ajaxError(e, 'Unable to set memo.');

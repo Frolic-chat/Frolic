@@ -197,8 +197,7 @@ const log = NewLogger('Chat');
                 core.notifications.playSound('login');
                 document.title = l('title.connected', core.connection.character);
 
-                // tslint:disable-next-line:no-floating-promises
-                core.siteSession.onConnectionEstablished();
+                void core.siteSession.onConnectionEstablished();
             });
             core.watch(
                 () => core.conversations.hasNew,

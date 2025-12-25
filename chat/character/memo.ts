@@ -2,7 +2,6 @@ import core from '../core';
 import { CharacterMemo } from '../../site/character_page/interfaces';
 import { EventBus } from '../preview/event-bus';
 
-
 export class MemoManager {
   memo?: CharacterMemo;
 
@@ -10,7 +9,7 @@ export class MemoManager {
 
   }
 
-  get(): CharacterMemo {
+  getSync(): CharacterMemo {
     if (!this.memo) {
       throw new Error('Missing character memo');
     }
@@ -18,14 +17,21 @@ export class MemoManager {
     return this.memo;
   }
 
+    async get(): Promise<CharacterMemo> {
+        if (!this.memo)
+            await this.load();
+
+        return this.memo!;
+    }
+
   async set(message: string | null): Promise<void> {
     if (!this.memo) {
       await this.load(true);
     }
 
-    const response = await core.connection.queryApi<{ note: string }>('character-memo-save.php', {target: this.memo!.id, note: message});
+    const response = await core.connection.queryApi('character-memo-save.php', { target: this.memo!.id, note: message || null });
 
-    this.memo!.memo = response.note ?? null;
+    this.memo!.memo = response.note || null;
 
     await this.updateStores();
   }
@@ -33,7 +39,7 @@ export class MemoManager {
   protected async updateStores(): Promise<void> {
     const character = await core.cache.profileCache.get(this.character);
 
-    if (character && character.character?.memo?.memo !== this.memo!.memo) {
+    if (character && character.character.memo?.memo !== this.memo!.memo) {
       character.character.memo = this.memo;
 
       await core.cache.profileCache.register(character.character);
@@ -43,7 +49,8 @@ export class MemoManager {
   }
 
   async load(skipStoreUpdate: boolean = false): Promise<void> {
-    const memo = await core.connection.queryApi<{note: string | null, id: number}>('character-memo-get2.php', {target: this.character});
+    const memo = await core.connection.queryApi('character-memo-get2.php', { target: this.character });
+
     this.memo = { id: memo.id, memo: memo.note || '' };
 
     if (!skipStoreUpdate) {

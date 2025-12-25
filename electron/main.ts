@@ -551,7 +551,12 @@ function onReady(): void {
 
         // Run all routines necessary to upgrade the general settings.
         // Realistically these should be unified with the generalsettings or updater.
-        versionUpgradeRoutines(currVersion, targetVersion);
+        versionUpgradeRoutines(currVersion, targetVersion, {
+            '0.8.3': () => {
+                EiconManager.startFromScratch();
+                return true;
+            },
+        });
     }
 
     function updateAllZoom(c: Electron.WebContents[]   = [],
