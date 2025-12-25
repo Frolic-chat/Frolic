@@ -45,7 +45,7 @@ export default class Scratchpad extends Vue {
     scratchpad = '';
     timestamp = 0;
     skipWatch = false;
-    placeholder = "The scratchpad is a new feature in this pre-release version. Please report any bugs you find so I can make it perfect for everyone! Don't save anything important here until a release version!";
+    placeholder = "Scratchpad is a note-taking space shared across all your characters.";
 
     @Hook('created')
     async created() {
