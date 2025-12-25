@@ -94,7 +94,7 @@ export default class CharacterRelationView extends CustomDialog {
             .filter(cc => !!cc.channel.members[this.character.name])
             .sort((a, b) => a.name.localeCompare(b.name));
 
-        const cache = core.cache.adCache.get(this.character.name);
+        const cache = core.cache.adCache.getSync(this.character.name);
 
         this.messages = cache
             ? cache.posts.slice(-10).reverse()

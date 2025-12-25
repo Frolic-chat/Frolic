@@ -41,7 +41,7 @@
                 <span class="fa-solid fa-fw" :class="{'fa-eye-slash': watched, 'fa-eye': !watched }"></span>
                 {{ l(watched ? 'user.unwatch' : 'user.watch') }}
             </a>
-            <a tabindex="-1" href="#" @click.prevent="showAdLogs()" class="list-group-item list-group-item-action" :class="{ disabled: !hasAdLogs()}">
+            <a tabindex="-1" href="#" @click.prevent="showRelationship()" class="list-group-item list-group-item-action" :class="{ disabled: !hasRelationship(character)}">
                 <span class="fa-solid fa-fw fa-rectangle-ad"></span>
                 {{l('user.adLog')}}
             </a>
@@ -80,7 +80,7 @@ import { Component, Prop } from '@f-list/vue-ts';
 import Vue from 'vue';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
-import CharacterAdView from './character/CharacterAdView.vue';
+import CharacterRelationView from './character/CharacterRelationView.vue';
 import { errorToString, getByteLength, profileLink } from './common';
 import core from './core';
 import { Channel, Character } from './interfaces';
@@ -236,14 +236,14 @@ const log = NewLogger('UserMenu');
             if (!c)
                 return false;
 
-            const cache = core.cache.adCache.getSync(this.character.name);
+            const cache = core.cache.adCache.getSync(c.name);
 
             if (cache?.count && cache.count() > 0)
                 return true;
 
             // Channels
-            return !!core.conversations.channelConversations.find(convs => !!convs.channel.members[c.name]);
-
+            return !!core.conversations.channelConversations
+                .some(conv => !!conv.channel.members[c.name]);
         }
 
         get isChannelMod(): boolean {
