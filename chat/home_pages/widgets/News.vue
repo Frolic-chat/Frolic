@@ -116,9 +116,9 @@ export default class NewsWidget extends Vue {
         }
     }
 
-    @Watch('hasUpdate')
-    emitUpdate() {
-        this.$emit('update', this.hasUpdate);
+    @Watch('hasUpdate', { immediate: true })
+    emitUpdate(newValue: boolean) {
+        this.$emit('update', newValue);
     }
 
     /**

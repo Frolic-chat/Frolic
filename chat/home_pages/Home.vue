@@ -29,7 +29,7 @@
 
             </div>
 
-            <div v-show="widgets.news" :style="{ 'order: 999;': hideNews }" class="home-row flex-row">
+            <div v-show="widgets.news" :style="newsStyle" class="home-row flex-row">
                 <news @update="handleNewsUpdate"></news>
             </div>
 
@@ -130,9 +130,10 @@ export default class Home extends Vue {
     showLogs() { this.logs?.show() }
 
 
-    hideNews = false;
+    newsStyle = '';
     handleNewsUpdate(hasNews: boolean) {
-        this.hideNews = !hasNews;
+        if (hasNews) this.newsStyle = '';
+        else         this.newsStyle = 'order: 999;';
     }
 
 
