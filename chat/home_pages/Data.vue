@@ -64,6 +64,7 @@
                             <p class="card-text">Frolic is free software; you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
                             <p class="card-text">Frolic is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.</p>
                             <p class="card-text">You should have received a copy of the GNU Affero General Public License along with this program; if not, see https://www.gnu.org/licenses.</p>
+                            <p class="card-text">All of the following licenses apply in some way to Frolic. <i>These licenses come into play when you distribute copies of Frolic, not simply by using the app.</i> If you're confused about how you may use Frolic's code, open a new issue on the source code repository (linked below) with your questions.</p>
                         </div>
                         <div v-if="licenseFiles.length" class="btn-group-vertical mx-auto my-2" role="group" aria-label="license information">
                             <button v-for="f in licenseFiles" :key="f" class="btn btn-primary" @click="loadLicense(f)">

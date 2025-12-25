@@ -502,6 +502,7 @@ async function checkForUpdates(force?: boolean): Promise<void> {
 async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> {
     const controller = new AbortController();
 
+    // @ts-ignore
     let user_impatience = () => controller.abort("Xariah connection timeout.");
     let no_response = setTimeout(user_impatience, 8000);
 
@@ -595,6 +596,7 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
 async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExport> {
     const controller = new AbortController();
 
+    // @ts-ignore
     let user_impatience = () => controller.abort("Xariah connection timeout.");
     let no_response = setTimeout(user_impatience, 8000);
 

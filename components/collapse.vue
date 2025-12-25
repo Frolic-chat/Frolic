@@ -54,6 +54,9 @@
         @Prop({ default: undefined })
         readonly maxHeight?: string;
 
+        /**
+         * An action for the button to run when pressed. If specified, clicking the button area no longer opens and closes the collapse.
+         */
         @Prop({ default: () => {} })
         readonly action?: () => void;
         btnClick(e: MouseEvent) {
