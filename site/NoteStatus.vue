@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <collapse bodyClass="d-flex flex-wrap"
-    :initial="yohhlrf" @open="toggle.notes = false" @close="toggle.notes = true"
+    :initial="yohhlrf" @open="toggle.notes = false" @close="toggle.notes = true" :action="onClickRefresh"
 >
     <template v-slot:header>
         <span>
@@ -22,6 +22,10 @@
                 <span class="text-muted">Latest unread:</span> <user :character="latestSender" immediate showStatus bookmark></user> => <user :character="latestReceiver" immediate></user>, <i>{{ latestNote.datetime_sent }}</i>
             </div>
         </span>
+    </template>
+
+    <template v-slot:button>
+        <span class="fa-solid fa-arrows-rotate"></span>
     </template>
 
     <div v-for="report in reports" :key="`report-body-${report.title}`" class="note-status-report flex-grow-1">
@@ -91,11 +95,11 @@ reports: ReportState[] = [
     }
 ];
 
-onEvent = () => this.updateNotesAndMessages();
+onEvent = () => this.getNotesAndMessages();
 
 @Hook('created')
 created(): void {
-    this.updateNotesAndMessages();
+    this.getNotesAndMessages();
 
     EventBus.$on('note-counts-update', this.onEvent);
     EventBus.$on('notes-api',          this.onEvent);
@@ -111,13 +115,23 @@ hasReports(): boolean {
     return this.reports.some(r => r.count > 0);
 }
 
-updateNotesAndMessages() {
+getNotesAndMessages() {
     const latestMessages = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
     const latestNotes    = core.siteSession.interfaces.notes.getUnread();
 
     const m = this.reports.find(report => report.type === 'message');
     if (m)
         m.count = latestMessages;
+
+    const n = this.reports.find(report => report.type === 'note');
+    if (n)
+        n.count = latestNotes.total ?? 0;
+
+    this.latestNote = latestNotes.notes.find(n => n.dest_name === core.characters.ownCharacter.name);
+}
+
+async onClickRefresh() {
+    const latestNotes = await core.siteSession.interfaces.notes.getUnreadAsync();
 
     const n = this.reports.find(report => report.type === 'note');
     if (n)

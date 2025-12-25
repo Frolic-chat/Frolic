@@ -146,6 +146,14 @@ export default class NotesApi implements SiteSessionInterface {
     }
 
     /**
+     * getUnread but first request new unread from the server.
+     */
+    async getUnreadAsync(): Promise<{ notes: TempNoteFormat[], total: number | null }> {
+        await this.updateUnread();
+        return this.getUnread();
+    }
+
+    /**
      * This will trigger the EventBus event for a new note if it detects one.
      */
     async updateUnread(): Promise<void> {
