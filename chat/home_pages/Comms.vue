@@ -76,7 +76,9 @@
                 <h5>Channels in Common</h5>
 
                 <div class="d-flex flex-row" style="gap: 1em;">
-                    <channel-tag v-for="channel in sharedChannelDisplay" :key="channel.key" :id="channel.key" :text="channel.name"></channel-tag>
+                    <template v-for="channel in sharedChannelDisplay">
+                        <a href="#" @click.prevent="jumpToChannel(channel)">#{{channel.name}}</a>
+                    </template>
                     <div v-if="!sharedChannelDisplay.length">None.</div>
                 </div>
             </div>
@@ -327,6 +329,10 @@ export default class Comms extends Vue {
             },
             []  as Conversation.ChannelConversation[],
         );
+    }
+
+    jumpToChannel(channel: Conversation.ChannelConversation): void {
+        channel.show();
     }
 
 
