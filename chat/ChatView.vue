@@ -52,8 +52,9 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <!-- :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="right" -->
+                    <!--  -->
                     <a :class="getHomeClasses()" href="#" @click.prevent="goHome()" class="list-group-item list-group-item-action"
+                        :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="up" data-balloon-length="fit"
                     >
                         <template v-if="siteCheckerCount">
                             {{ siteCheckerCount }}
@@ -242,12 +243,12 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
         /**
          * This is broken because you can't have a scrollbar in one direction and overflow in another. Seems bad.
          */
-        // get homeButtonTooltip(): string | undefined {
-        //     if (this.conversations.selectedConversation === this.conversations.activityTab)
-        //         return 'Click again for the console';
-        //     else if (this.conversations.selectedConversation === this.conversations.consoleTab)
-        //         return 'Click again for the home page';
-        // }
+        get homeButtonTooltip(): string | undefined {
+            if (this.conversations.selectedConversation === this.conversations.activityTab)
+                return 'Click again for the console';
+            else if (this.conversations.selectedConversation === this.conversations.consoleTab)
+                return 'Click again for the home page';
+        }
 
         @Watch('conversations.channelConversations')
         channelConversationsChange() {
@@ -787,7 +788,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
 
             .body {
                 display: block;
-                // overflow-x: hidden; // Possible solution to username ellipses overflowing.
+                overflow-x: hidden;
             }
 
             .expander {
