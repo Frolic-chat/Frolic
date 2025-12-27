@@ -14,6 +14,7 @@
                 {{ console }}
             </label>
         </div>
+        <small>{{ homeSwitchTip }}</small>
     </div>
 
     <div class="form-group"><hr></div>
@@ -52,6 +53,7 @@ export default class WidgetOptions extends CustomDialog {
     title       = l('home.widgetOptions.title');
 
     defaultHome = l('home.widgetOptions.defaultHome');
+    homeSwitchTip = l('home.widgetOptions.switchTip');
     home        = l('home');
     console     = l('chat.consoleTab');
 

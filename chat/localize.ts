@@ -356,6 +356,7 @@ Are you sure?`,
     // Home page widgets
     'home.widgetOptions.title': 'Customize homepage',
     'home.widgetOptions.defaultHome': 'Visit the console or home page by default?',
+    'home.widgetOptions.switchTip': 'To quickly switch between home and console,e without changing your default setting, click on the Home tab on the sidebar while already on the home/console to switch to the other.',
     'home.widgetOptions.desc': 'Enable widgets for extra home page functionality',
     'settings.widgets.inbox': 'Notes',
     'settings.widgets.inbox.help': 'Lightweight inbox for the f-list note system',
