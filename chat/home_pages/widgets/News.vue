@@ -1,6 +1,6 @@
 <template>
 <!-- :action="getUpdate" -->
-<collapse bodyClass="d-flex flex-column"
+<collapse bodyClass="d-flex flex-column" ref="collapseRef"
     :initial="yohhlrf" @open="toggle.news = false" @close="toggle.news = true"
 >
     <template v-slot:header>
@@ -88,8 +88,14 @@ export default class NewsWidget extends Vue {
     created() {
         Electron.ipcRenderer.on('update-available', this.handleUpdate);
 
-        setImmediate(() => this.getUpdate());
+        void this.getUpdate();
         logC.debug('NewsWidget.created', { runtimeToggle: this.toggle.news });
+    }
+
+    @Hook('mounted')
+    mounted() {
+        if (this.$refs['collapseRef'] && !this.hasUpdate)
+            (this.$refs['collapseRef'] as Collapse).close(true);
     }
 
     @Hook('beforeDestroy')
@@ -118,6 +124,9 @@ export default class NewsWidget extends Vue {
 
     @Watch('hasUpdate', { immediate: true })
     emitUpdate(newValue: boolean) {
+        if (this.$refs['collapseRef'] && !newValue)
+            (this.$refs['collapseRef'] as Collapse).close(true);
+
         this.$emit('update', newValue);
     }
 
