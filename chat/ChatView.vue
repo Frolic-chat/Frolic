@@ -52,7 +52,6 @@
 
             <div class="nav-group-container"><!-- CONSOLE -->
                 <div class="list-group conversation-nav">
-                    <!--  -->
                     <a :class="getHomeClasses()" href="#" @click.prevent="goHome()" class="list-group-item list-group-item-action"
                         :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="up" data-balloon-length="fit"
                     >
@@ -552,9 +551,14 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
          */
         siteCheckerNoteCounts = 0;
         siteCheckerMsgCounts  = 0;
+
+        @Watch('coreState.settings.risingShowUnreadOfflineCount')
+        onUnreadSettingChanged() {
+            this.updateNoteAndMessageCount();
+        }
+
         get siteCheckerCount() {
-            return this.coreState.settings.risingShowUnreadOfflineCount
-                && this.coreState.generalSettings.widgets.inbox
+            return this.coreState.generalSettings.widgets.inbox
                     ? this.siteCheckerNoteCounts + this.siteCheckerMsgCounts
                     : 0;
         }

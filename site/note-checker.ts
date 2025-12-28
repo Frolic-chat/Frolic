@@ -55,8 +55,10 @@ export default class NoteChecker implements SiteSessionInterface {
     private async check(): Promise<NoteCheckerCount> {
         log.debug('notechecker.check');
 
-        if (!core.state.settings.risingShowUnreadOfflineCount)
+        if (!core.state.settings.risingShowUnreadOfflineCount) {
+            this.latestCount = { unreadMessages: 0, onlineUsers: 0 };
             return this.latestCount;
+        }
 
         try {
             const res = await this.session.get('', true);
@@ -85,6 +87,9 @@ export default class NoteChecker implements SiteSessionInterface {
     }
 
     getCounts(): NoteCheckerCount {
+        if (!core.state.settings.risingShowUnreadOfflineCount)
+            this.latestCount = { unreadMessages: 0, onlineUsers: 0 };
+
         return this.latestCount;
     }
 }

@@ -56,7 +56,7 @@
                 <scratchpad></scratchpad>
             </div>
 
-            <div v-show="widgets.inbox && settings.risingShowUnreadOfflineCount" class="home-row flex-row">
+            <div v-show="widgets.inbox" class="home-row flex-row">
                 <note-status></note-status>
             </div>
 
