@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <div class="d-flex flex-row flex-wrap justify-content-center" style="gap: 0.5rem">
+        <div class="d-flex flex-row flex-wrap justify-content-center mb-1" style="gap: 0.5rem">
             <button v-for="entry in [
                     l('settings.tabs.general'),
                     l('settings.tabs.notifications'),
