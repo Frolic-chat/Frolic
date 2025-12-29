@@ -649,9 +649,6 @@ class ActivityConversation extends Conversation {
     readonly name = l('chat.activityTab');
     readonly maxMessageLength = 0;
     readonly enteredText = '';
-    // We're opting to include these to overwrite them with readonlies:
-    readonly errorText = '';
-    readonly infoText  = '';
 
     _messages: Array<Interfaces.Message | undefined> = [];
 

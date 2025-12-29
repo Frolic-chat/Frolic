@@ -133,13 +133,13 @@ export default class NewsWidget extends Vue {
     /**
      * Visuals
      */
-    get yohhlrf() { return this.toggle.news ?? !!this.update.latest }
-
     get sanitizedChangelog() {
         const raw = this.update.latest?.changelog ?? this.update.current.changelog;
         const html = marked(raw, { async: false });
         return DOMPurify.sanitize(html);
     }
+
+    get yohhlrf() { return this.toggle.news ?? !!this.update.latest }
 
     toggle = core.runtime.userToggles;
 }

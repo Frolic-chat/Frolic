@@ -343,7 +343,7 @@ export interface State {
 }
 
 /**
- * Miscellaneous elements needed only by the current run of the application. If you need to save anything, you should use `core.state` and its associated disk-writing features.
+ * Miscellaneous elements that are pointless to persist across sessions. Typically, this means information relevant to the UI/display, or cache dependent on constantly updating state. If you need to save anything, you should use `core.state` and its associated disk-writing features.
  */
 export interface Runtime {
     dialogStack: Modal[];
