@@ -929,6 +929,9 @@ class ActivityConversation extends Conversation {
         this.updateDisplay(true);
     }
 
+    /**
+     * Clear data that's been outdated by time or missing message.
+     */
     protected cleanseOutdatedData(): void {
         const current_time = Date.now();
 

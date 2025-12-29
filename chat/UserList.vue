@@ -180,9 +180,9 @@ export default class UserList extends Vue {
     }
 
     get isConsoleOrActivity() {
-            return core.conversations.selectedConversation === core.conversations.consoleTab
-                || core.conversations.selectedConversation === core.conversations.activityTab;
-        }
+        return core.conversations.selectedConversation === core.conversations.consoleTab
+            || core.conversations.selectedConversation === core.conversations.activityTab;
+    }
 
     get profileName(): string | undefined {
         return this.channel ? undefined : core.conversations.selectedConversation.name;

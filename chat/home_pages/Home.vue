@@ -30,10 +30,6 @@
 
     <template v-slot:default>
         <div class="d-flex flex-column flex-nowrap" style="gap: 1em;">
-            <div class="home-row flex-row"><!-- Top row -->
-
-            </div>
-
             <div v-show="widgets.news" :style="newsStyle" class="home-row flex-row">
                 <news @update="handleNewsUpdate"></news>
             </div>

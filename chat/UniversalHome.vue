@@ -5,7 +5,7 @@
             listClasses="nav nav-tabs"
             itemClasses="nav-item"
             linkClasses="nav-link" -->
-    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" linkClasses="btn btn-secondary-outline">
+    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" linkClasses="btn">
         <span><!-- Chat -->
             <span :class="{
                 'fa-fw fa-solid fa-house-user':   isHome,
