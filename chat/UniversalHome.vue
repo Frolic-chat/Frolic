@@ -35,8 +35,19 @@
         </span>
     </tabs>
 
-    <!-- Pseudo-teleport primary conversation -->
-    <convo v-show="tab === '0'" ref="primaryView" :conversation="primaryConversation"
+    <!-- home page -->
+    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
+        :logs="logs"
+        :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
+    >
+        <template v-slot:title-end>
+            <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
+        </template>
+
+        <!-- Drafts -->
+    </home>
+
+    <convo v-show="tab === '0' && !isHome" ref="primaryView" :conversation="primaryConversation"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
         :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
         :class="isHome ? '' : 'page'"
@@ -47,24 +58,6 @@
             <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
         </template>
     </convo>
-
-    <!-- home page -->
-    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
-        :logs="logs"
-        :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
-    >
-        <template v-slot:title-end>
-            <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
-        </template>
-
-        <template v-slot:chat>
-            <div ref="primaryContainer" id="primary-container-in-home" style="display: contents;"></div>
-        </template>
-        <!-- Notes -->
-        <!-- Drafts -->
-    </home>
-
-    <div v-else ref="primaryContainer" id="primary-container-full-screen" style="display: contents;"></div>
 
     <!-- console/secondary conversation -->
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
@@ -373,7 +366,6 @@ export default class HomeScreen extends Vue {
             // x-origin blocked: reportdialog: this.reportDialog,
         });
 
-        this.moveConvo();
         this.moveTabs();
     }
 
@@ -507,6 +499,7 @@ export default class HomeScreen extends Vue {
         if (this.tab === '0') {
             if (n === this.primaryConversation) {
                 n.clearUnread();
+                this.$nextTick(() => this.focusInput());
             }
             else if (n === this.secondaryConversation) {
                 this.tab = '1';
@@ -522,22 +515,6 @@ export default class HomeScreen extends Vue {
         }
         // Not on tab 0 or 1:
         //     don't clear unread messages.
-    }
-
-    @Watch('isHome')
-    moveConvo() {
-        this.$nextTick(() => {
-            logC.debug('Conversation mover triggered.', this.primaryView?.conversation?.name);
-
-            if (!this.primaryView?.$el)
-                return;
-
-            const convoEl = this.primaryView.$el;
-            const target = (this.$refs['primaryContainer'] as HTMLDivElement | undefined);
-
-            if (target && target !== convoEl.parentNode)
-                target.appendChild(convoEl);
-        });
     }
 
     /**
