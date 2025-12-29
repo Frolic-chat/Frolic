@@ -650,7 +650,9 @@ export default class HomeScreen extends Vue {
         }
 
         &:has(.active) {
-            border-bottom: 1px solid var(--gray-dark);
+            // Heuristic values
+            background: radial-gradient(circle at 48% 53%, var(--info), color-mix(in oklab, var(--info), transparent) 20%, transparent 57%);
+            border-bottom: 1px solid var(--info);
         }
 
         &:not(:has(.active)) {
