@@ -22,7 +22,7 @@ const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includ
 const logRTB = NewLogger('rtb', () => core?.state.generalSettings.argv.includes('--debug-rtb'));
 const logNotes = NewLogger('notes', () => core?.state.generalSettings.argv.includes('--debug-notes'));
 
-const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
+const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
 
 function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
     if(type === MessageType.Message && isAction(text)) {
@@ -938,7 +938,7 @@ class ActivityConversation extends Conversation {
         [ this.login, this.status, this.looking, this.returned ]
             .forEach(map => map.forEach((i, name) => {
                 // @ts-ignore Webpack TS :)
-                if (!this._messages[i] || current_time - this._messages[i].time.getTime() > TWENTY_MINUTES_IN_MS) {
+                if (!this._messages[i] || current_time - this._messages[i].time.getTime() > THIRTY_MINUTES_IN_MS) {
                     map.delete(name);
                     this._messages[i] = undefined;
                 }
