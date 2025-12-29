@@ -22,8 +22,7 @@
 <script lang="ts">
     import {Component, Hook, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';
-    import {EventBus} from '../chat/preview/event-bus';
-    // import core from './core';
+    import EventBus from '../chat/preview/event-bus';
 
     @Component
     export default class UrlTagView extends Vue {

@@ -26,7 +26,7 @@ import {
 } from '../site/character_page/interfaces';
 import * as Utils from '../site/utils';
 import core from './core';
-import { EventBus } from './preview/event-bus';
+import EventBus from './preview/event-bus';
 import * as FLIST from '../constants/flist';
 
 /**

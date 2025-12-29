@@ -101,7 +101,8 @@ import {
   TagId
 } from '../../learn/matcher-types';
 import { BBCodeView } from '../../bbcode/view';
-import { EventBus, CharacterScoreEvent } from './event-bus';
+import EventBus from './event-bus';
+import type { CharacterScoreEvent } from './event-bus';
 // import { CustomKink } from '../../interfaces';
 import { testSmartFilters } from '../../learn/filter/smart-filter';
 import { smartFilterTypes } from '../../learn/filter/types';

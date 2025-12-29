@@ -12,7 +12,7 @@ import isChannel = Interfaces.isChannel;
 import l from './localize';
 import {CommandContext, isAction, isCommand, isWarn, parse as parseCommand} from './slash_commands';
 import MessageType = Interfaces.Message.Type;
-import {EventBus} from './preview/event-bus';
+import EventBus from './preview/event-bus';
 import throat from 'throat';
 
 import NewLogger from '../helpers/log';

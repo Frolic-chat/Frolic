@@ -1,6 +1,6 @@
 import core from '../core';
-import { CharacterMemo } from '../../site/character_page/interfaces';
-import { EventBus } from '../preview/event-bus';
+import type { CharacterMemo } from '../../site/character_page/interfaces';
+import EventBus from '../preview/event-bus';
 
 export class MemoManager {
   memo?: CharacterMemo;

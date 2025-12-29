@@ -47,7 +47,7 @@ import Collapse from '../components/collapse.vue';
 import UserView from '../chat/UserView.vue';
 
 import core from '../chat/core';
-import { EventBus } from '../chat/preview/event-bus';
+import EventBus from '../chat/preview/event-bus';
 import type { TempNoteFormat } from './notes-api';
 
 interface ReportState {

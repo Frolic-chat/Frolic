@@ -1,5 +1,6 @@
 import core from '../chat/core';
-import { ChannelAdEvent, ChannelMessageEvent, CharacterDataEvent, EventBus, SelectConversationEvent } from '../chat/preview/event-bus';
+import EventBus from '../chat/preview/event-bus';
+import type { ChannelAdEvent, ChannelMessageEvent, CharacterDataEvent, SelectConversationEvent } from '../chat/preview/event-bus';
 import { Conversation } from '../chat/interfaces';
 import { methods } from '../site/character_page/data_store';
 import { Character as ComplexCharacter } from '../site/character_page/interfaces';

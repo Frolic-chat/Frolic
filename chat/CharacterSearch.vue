@@ -64,7 +64,8 @@ import core from './core';
 import { Character, Connection, ExtendedSearchData, SearchData, SearchKink, SearchSpecies } from './interfaces';
 import l from './localize';
 import UserView from './UserView.vue';
-import {EventBus, CharacterScoreEvent} from './preview/event-bus';
+import EventBus from './preview/event-bus';
+import type { CharacterScoreEvent } from './preview/event-bus';
 import CharacterSearchHistory from './CharacterSearchHistory.vue';
 import { Matcher } from '../learn/matcher';
 import {

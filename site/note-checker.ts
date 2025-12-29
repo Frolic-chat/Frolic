@@ -1,5 +1,5 @@
 import { SiteSession, SiteSessionInterface } from './site-session';
-import { EventBus } from '../chat/preview/event-bus';
+import EventBus from '../chat/preview/event-bus';
 import core from '../chat/core';
 
 import NewLogger from '../helpers/log';

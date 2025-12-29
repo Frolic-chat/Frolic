@@ -47,7 +47,7 @@
     import {Component, Hook} from '@f-list/vue-ts';
     import Vue from 'vue';
     import core from '../core';
-    import { EventBus } from './event-bus';
+    import EventBus from './event-bus';
     import {domain} from '../../bbcode/core';
     import {ImageDomMutator} from './image-dom-mutator';
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import * as Electron from 'electron';
 import core from '../chat/core';
-import { EventBus } from '../chat/preview/event-bus';
+import EventBus from '../chat/preview/event-bus';
 import { AsyncCache } from './cache';
 
 import type { PermanentIndexedStore, CharacterOverridesBatch } from './store/types';

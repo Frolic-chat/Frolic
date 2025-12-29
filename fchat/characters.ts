@@ -6,7 +6,7 @@ import {Character as Interfaces, Connection} from './interfaces';
 import { Character as CharacterProfile } from '../site/character_page/interfaces';
 import { ProfileCache } from '../learn/profile-cache';
 import Vue from 'vue';
-import { EventBus } from '../chat/preview/event-bus';
+import EventBus from '../chat/preview/event-bus';
 import l from '../chat/localize';
 
 import NewLogger from '../helpers/log';

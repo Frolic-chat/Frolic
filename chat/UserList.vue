@@ -50,7 +50,7 @@ import Vue from 'vue';
 import VirtualScroller from '../components/VirtualScroller.vue';
 import Tabs from '../components/tabs';
 import core from './core';
-import { Channel, Character, Conversation } from './interfaces';
+import type { Channel, Character, Conversation } from './interfaces';
 import { isImportantToChannel } from './conversations';
 import l from './localize';
 import Sidebar from './Sidebar.vue';
@@ -59,8 +59,9 @@ import characterPage from '../site/character_page/character_sheet.vue';
 import { profileLink } from './common';
 
 import UserListSorter from '../learn/user-list-sorter';
-import { Scoring } from '../learn/matcher-types';
-import { EventBus, CharacterDataEvent } from './preview/event-bus';
+import type { Scoring } from '../learn/matcher-types';
+import EventBus from './preview/event-bus';
+import type { CharacterDataEvent } from './preview/event-bus';
 import { debounce } from '../helpers/utils';
 
 import NewLogger from '../helpers/log';

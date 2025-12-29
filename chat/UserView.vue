@@ -6,13 +6,14 @@
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
-import {Channel, Character} from '../fchat';
+import type { Channel, Character } from '../fchat';
 import { isImportantToChannel } from './conversations';
 import { Score } from '../learn/matcher';
 import core from './core';
-import { EventBus, CharacterScoreEvent } from './preview/event-bus';
+import EventBus from './preview/event-bus';
+import type { CharacterScoreEvent } from './preview/event-bus';
 import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
-import { CharacterCacheRecord } from '../learn/profile-cache';
+import type { CharacterCacheRecord } from '../learn/profile-cache';
 
 export function getStatusIcon(status: Character.Status): string {
     switch(status) {

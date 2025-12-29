@@ -6,7 +6,7 @@ import NoteChecker from './note-checker';
 import NotesApi from './notes-api';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
-import { EventBus } from '../chat/preview/event-bus';
+import EventBus from '../chat/preview/event-bus';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('site-session');

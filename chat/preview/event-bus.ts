@@ -289,5 +289,6 @@ class EventBusManager {
 }
 
 // This should be turned into a module; with the initialization in well-defined place.
-export const EventBus = new EventBusManager();
+const EventBus = new EventBusManager();
+export default EventBus;
 //log.verbose('init.eventbus');

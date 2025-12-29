@@ -188,7 +188,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import { Dialog } from '../helpers/dialog';
     import AdCenterDialog from './ads/AdCenter.vue';
     import AdLauncherDialog from './ads/AdLauncher.vue';
-    import { EventBus } from './preview/event-bus';
+    import EventBus from './preview/event-bus';
 
     const unreadClasses = {
         [Conversation.UnreadState.None]: '',

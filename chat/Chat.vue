@@ -50,7 +50,7 @@ const log = NewLogger('Chat');
 
     import {init as profileApiInit} from './profile_api';
     import { AdManager } from './ads/ad-manager';
-    import { EventBus } from './preview/event-bus';
+    import EventBus from './preview/event-bus';
 
     type BBCodeNode = Node & {bbcodeTag?: string, bbcodeParam?: string};
 

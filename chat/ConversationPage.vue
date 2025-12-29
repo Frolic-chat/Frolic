@@ -278,7 +278,8 @@
     import { Keys } from '../keys'; // Even needed?
     import { errorToString, getByteLength, getKey } from './common';
     import { isCommand } from './slash_commands';
-    import { EventBus, MemoEvent } from './preview/event-bus';
+    import EventBus from './preview/event-bus';
+    import type { MemoEvent } from './preview/event-bus';
     import { Channel, channelModes, Character, Conversation, Settings } from './interfaces';
 
     import NewLogger from '../helpers/log';

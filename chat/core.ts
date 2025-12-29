@@ -2,7 +2,7 @@
 import Vue, {WatchHandler} from 'vue';
 import * as Electron from 'electron';
 import * as qs from 'querystring';
-import { deepEqual, ExtractReferences, ComparePrimitives } from '../helpers/utils';
+import { deepEqual, ExtractReferences, ComparePrimitives, SettingsMerge } from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
 import {Channels, Characters} from '../fchat';
 import BBCodeParser from './bbcode';
@@ -13,9 +13,8 @@ import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
 import { AdCenter } from './ads/ad-center';
 import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
 import { SiteSession } from '../site/site-session';
-import { SettingsMerge } from '../helpers/utils';
 
-import { EventBus } from './preview/event-bus';
+import EventBus from './preview/event-bus';
 import NewLogger from '../helpers/log';
 const log = NewLogger('core', () => process.env.NODE_ENV === 'development');
 const logS = NewLogger('settings', () => core.state.generalSettings.argv.includes('--debug-settings'));

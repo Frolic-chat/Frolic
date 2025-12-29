@@ -2,7 +2,7 @@
 
 import core from './core';
 import {Conversation, Notifications as Interface} from './interfaces';
-import { EventBus } from './preview/event-bus';
+import EventBus from './preview/event-bus';
 
 const codecs = { mpeg: 'mp3' } as const;
 

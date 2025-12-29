@@ -155,7 +155,7 @@
     import * as FLIST from '../constants/flist';
     import { fixLogs /*SettingsStore, Logs as FSLogs*/ } from './renderer/filesystem';
     import * as SlimcatImporter from './renderer/importer';
-    import { EventBus } from '../chat/preview/event-bus';
+    import EventBus from '../chat/preview/event-bus';
     import * as ErrorHandler from './error-service';
 
     import BBCodeTester from '../bbcode/Tester.vue';
