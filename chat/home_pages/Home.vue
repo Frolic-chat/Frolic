@@ -128,7 +128,7 @@ export default class Home extends Vue {
     }
 
 
-    get shouldShowActivity() { return !!core.conversations.activityTab.messages.length }
+    get shouldShowActivity() { return !!core.conversations.activityTab.members.length }
 
     openLicense() {
         this.$emit("navigate", {
