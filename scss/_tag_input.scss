@@ -36,7 +36,7 @@
     border: 1px solid theme-color-level(danger, $alert-border-level);
     background-color: theme-color-level(danger, $alert-bg-level);
     .tag-input {
-        text-color: theme-color-level(danger, $alert-color-level);
+        color: theme-color-level(danger, $alert-color-level);
         background-color: theme-color-level(danger, $alert-bg-level);
     }
 }
