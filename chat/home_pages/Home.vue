@@ -35,17 +35,7 @@
             </div>
 
             <div v-show="widgets.activity && shouldShowActivity" class="home-row flex-row">
-                <collapse v-show="shouldShowActivity" class="chat-container" bodyClass="p-0"
-                    :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true"
-                >
-                    <template v-slot:header>
-                        Recent Activity
-                    </template>
-                    <template v-slot:button></template>
-                    <template v-slot:default>
-                        <slot name="chat"></slot>
-                    </template>
-                </collapse>
+                <recent-activity></recent-activity>
             </div>
 
             <div v-show="widgets.scratchpad" class="home-row flex-row">
@@ -84,6 +74,7 @@ import { Component, Prop } from '@f-list/vue-ts';
 import HomePageLayout from './HomePageLayout.vue';
 import WidgetOptions from './WidgetOptions.vue';
 
+import RecentActivity from './widgets/Activity.vue';
 import NewsWidget from './widgets/News.vue';
 import Scratchpad from './widgets/Scratchpad.vue';
 import NoteStatus from '../../site/NoteStatus.vue';
@@ -102,10 +93,12 @@ import l from '../localize';
         'page': HomePageLayout,
         'widget-options': WidgetOptions,
 
-        'news':     NewsWidget,
-        'scratchpad': Scratchpad,
-        'note-status': NoteStatus,
         'collapse': Collapse,
+
+        'recent-activity': RecentActivity,
+        'news':            NewsWidget,
+        'scratchpad':      Scratchpad,
+        'note-status':     NoteStatus,
     },
 })
 export default class Home extends Vue {
@@ -136,8 +129,6 @@ export default class Home extends Vue {
 
 
     get shouldShowActivity() { return !!core.conversations.activityTab.messages.length }
-    get yohhlrf() { return this.toggle.activity ?? false }
-    toggle = core.runtime.userToggles;
 
     openLicense() {
         this.$emit("navigate", {

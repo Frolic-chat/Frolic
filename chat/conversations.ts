@@ -696,6 +696,52 @@ class ActivityConversation extends Conversation {
     protected readonly returned: Map<string, number> = new Map();
     protected readonly MAX_RETURNED = 0;
 
+    members: string[] = [];
+
+    // private rebuildMembers() {
+    //     this.members.length = 0;
+    //     this.members.push(
+    //         ...this.login.keys(),
+    //         ...this.status.keys(),
+    //         ...this.looking.keys(),
+    //         ...this.returned.keys(),
+    //     );
+    // }
+
+    protected addToMemberList(name: string) {
+        if (!this.members.includes(name))
+            this.members.push(name);
+    }
+
+    protected removeFromMemberList(name: string) {
+        const i = this.members.indexOf(name);
+
+        if (i >= 1)
+            this.members.splice(i, 1);
+    }
+
+    public clearMember(name: string) {
+        this.removeCharacter(name);
+        this.removeFromMemberList(name);
+    }
+
+    // public messageTypeForMember(name: string): Interfaces.ActivityType | null {
+    //     if      (this.login.has(name))      return 'login';
+    //     else if (this.status.has(name))     return 'status';
+    //     else if (this.looking.has(name))    return 'looking';
+    //     else if (this.returned.has(name))   return 'returned';
+    //     else                                return null;
+    // }
+
+    // public messageForMember(name: string): Interfaces.Message | null {
+    //     const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name) ?? this.returned.get(name);
+
+    //     // @ts-ignore "type undefined not assignable" Give me a break.
+    //     return i && this._messages[i]
+    //         ? this._messages[i]
+    //         : null;
+    // }
+
     /**
      * Heuristics
      * Unused yet. Useful to check custom statuses if showing all custom statuses doesn't work.
@@ -815,6 +861,7 @@ class ActivityConversation extends Conversation {
             const message = new EventMessage(l('events.login', `[user]${c.name}[/user]`), activity.date);
             this._messages[index ?? index2] = message;
 
+            this.addToMemberList(c.name);
             this.cleanseOutdatedData();
             this.updateDisplay(true);
             // c.isFriend && shouldNotifyOnFriendLogin() || c.isBookmarked && shouldNotifyOnBookmarkLogin()
@@ -839,7 +886,7 @@ class ActivityConversation extends Conversation {
         });
 
         this.removeCharacter(activity.character.name);
-
+        this.removeFromMemberList(activity.character.name);
         this.cleanseOutdatedData();
         this.updateDisplay();
     }
@@ -914,6 +961,7 @@ class ActivityConversation extends Conversation {
                 oldStatus: activity.oldStatus,
             });
             this.removeCharacter(activity.character.name);
+            this.removeFromMemberList(activity.character.name);
             this.updateDisplay(); // removed
             return; // Other status changes shouldn't be received here.
         }
@@ -926,6 +974,7 @@ class ActivityConversation extends Conversation {
         target_map.set(activity.character.name, index ?? index2);
         this._messages[index ?? index2] = message;
 
+        this.addToMemberList(activity.character.name);
         this.cleanseOutdatedData();
         this.updateDisplay(true);
     }

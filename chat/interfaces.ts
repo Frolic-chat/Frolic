@@ -74,6 +74,15 @@ export namespace Conversation {
         }
     }
 
+    /**
+     * A string version list of the maps available in the activity conversation.
+     */
+    export type ActivityType =
+        | 'login'
+        | 'status'
+        | 'looking'
+        | 'returned';
+
     export type ActivityContext =
         | { e?: undefined; data?: undefined; time?: Date }
         | { e: 'EBL'; } & ActivityEvent
@@ -131,6 +140,11 @@ export namespace Conversation {
         readonly errorText: string;
         readonly infoText:  string;
         messages: Array<Message>;
+
+        readonly members: string[];
+        // messageForMember(name: string): Message | null;
+        // messageTypeForMember(name: string): ActivityType | null;
+        clearMember(name: string): void;
 
         parse(activity: ActivityContext): Promise<void>;
     }
