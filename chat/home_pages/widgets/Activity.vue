@@ -40,12 +40,7 @@ const log = NewLogger('activity');
     }
 })
 export default class RecentActivity extends Vue {
-    /**
-     * Normally we could accept a channel, but this activity is currently so highly specific it's pointless to avoid the truth, we care only about the activity tab.
-     */
-    // @Prop({ required: true })
-    // readonly conversation!: Conversation;
-
+    // Genericize by making this accept different conversations
     conversation = core.conversations.activityTab;
 
     activityInformation = 'A general summary of recently active users';
@@ -57,6 +52,7 @@ export default class RecentActivity extends Vue {
 
     closeUser(name: string) {
         this.conversation.clearMember(name);
+        log.debug(`RecentActivity.closeUser.${name}`, this.conversation.members);
     }
 
     get yohhlrf() { return this.toggle.activity ?? false }

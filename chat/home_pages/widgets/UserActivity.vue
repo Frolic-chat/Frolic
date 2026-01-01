@@ -3,12 +3,15 @@
      v-bind character and channel are used in UserMenu handleEvent when crawling up the DOM -->
 <template>
 <div :class="{
-        'faded': fadeVisibility,
+        'faded': faded,
         'border-success': character.isFriend,
         'border-primary': character.isBookmarked && !character.isFriend
     }"
     class="user-activity-card p-2 border rounded-lg"
 >
+    <div @click="removeUser()" class="btn-sm btn-outline-danger close-button">
+        <span class="fa-solid fa-fw fa-circle-xmark"></span>
+    </div>
     <!-- :id="classId" -->
     <div class="simple-column d-flex flex-column no-wrap" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character"><!-- Icon+Name stack -->
         <div class="d-flex flex-column no-wrap mb-auto align-items-center" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)">
@@ -18,17 +21,6 @@
             </div>
             <div class="text-center text-truncate">
                 is {{ character.status }}
-            </div>
-        </div>
-        <div class="d-flex flex-row flex-shrink-0 flex-grow-0 justify-content-around"><!-- Interaction Buttons -->
-            <div @click.prevent.stop="removeUser()" class="btn-sm btn-outline-danger">
-                <span class="fa-solid fa-fw fa-circle-xmark"></span>
-            </div>
-            <div class="btn-sm btn-outline-primary">
-                <span class="fa-solid fa-fw fa-circle-xmark"></span>
-            </div>
-            <div class="btn-sm btn-outline-primary">
-                <span class="fa-solid fa-fw fa-circle-xmark"></span>
             </div>
         </div>
     </div>
@@ -48,10 +40,9 @@ import EventBus from '../../preview/event-bus';
 import {BBCodeView} from '../../../bbcode/view';
 
 import type { Character } from '../../../fchat';
-// import type { Conversation } from '../../interfaces';
 
-// import NewLogger from '../../../helpers/log';
-// const log = NewLogger('activity');
+import NewLogger from '../../../helpers/log';
+const log = NewLogger('activity');
 
 @Component({
     components: {
@@ -102,11 +93,17 @@ export default class UserActivity extends Vue {
      * Fade out
      */
 
-    fadeVisibility = false;
+    faded = false;
 
     removeUser() {
-        this.fadeVisibility = true;
-        setTimeout(() => this.$emit('close', this.character.name), 400);
+        this.faded = true;
+        setTimeout(
+            () => {
+                log.debug('UserActivity.removeUser.setTimeout.activate', this.character.name, this.faded);
+                this.$emit('close', this.character.name);
+            },
+            400
+        );
     }
 
 
@@ -144,11 +141,21 @@ export default class UserActivity extends Vue {
     flex-grow: 0;
     flex-shrink: 0;
 
+    position: relative;
+
     opacity: 1;
     transition: opacity 0.38s ease-out;
 
     &.faded {
         opacity: 0;
+    }
+
+    .close-button {
+        position: absolute;
+        top:  -1px; // -1 for matching border;
+        left: -1px;
+
+        cursor: pointer;
     }
 
     .user-avatar {
@@ -158,13 +165,13 @@ export default class UserActivity extends Vue {
 
     .simple-column {
         height: 100%; // For flex margins
-        max-height: calc(4lh + 80px); // 80 heuristic, can we size buttons and avatar in lh?
+        max-height: calc(3lh + 80px); // 80 heuristic, can we size buttons and avatar in lh?
         max-width: calc(80px + 1em);
     }
 
     .secondary-column {
         height: 100%;
-        max-height: calc(4lh + 80px);
+        max-height: calc(3lh + 80px);
         max-width: calc(160px + 2em); // x2
     }
 }
