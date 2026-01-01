@@ -713,16 +713,8 @@ class ActivityConversation extends Conversation {
             this.members.push(name);
     }
 
-    protected removeFromMemberList(name: string) {
-        const i = this.members.indexOf(name);
-
-        if (i >= 1)
-            this.members.splice(i, 1);
-    }
-
     public clearMember(name: string) {
         this.removeCharacter(name);
-        this.removeFromMemberList(name);
     }
 
     // public messageTypeForMember(name: string): Interfaces.ActivityType | null {
@@ -814,12 +806,17 @@ class ActivityConversation extends Conversation {
     }
 
     /**
-     * Remove a character from the map and return a free slot if one was freed; null otherwise.
+     * Remove a character from the mappings and from the member list and return a free slot if one was freed; null otherwise.
      * @param name Character name to look for in the maps.
      * @returns index of slot in `_messages` that's now undefined; null if a character wasn't removed.
      */
     protected removeCharacter(name: string): number | null {
         logA.debug('ActivityConversation.removeCharacter.start', name);
+
+        // Remove from member list
+        const ml_index = this.members.indexOf(name);
+        if (ml_index >= 0)
+            this.members.splice(ml_index, 1);
 
         // For an entry in each of the groups, use the entry to remove the message from messages[];
         const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name) ?? this.returned.get(name);
@@ -886,7 +883,6 @@ class ActivityConversation extends Conversation {
         });
 
         this.removeCharacter(activity.character.name);
-        this.removeFromMemberList(activity.character.name);
         this.cleanseOutdatedData();
         this.updateDisplay();
     }
@@ -961,7 +957,6 @@ class ActivityConversation extends Conversation {
                 oldStatus: activity.oldStatus,
             });
             this.removeCharacter(activity.character.name);
-            this.removeFromMemberList(activity.character.name);
             this.updateDisplay(); // removed
             return; // Other status changes shouldn't be received here.
         }
