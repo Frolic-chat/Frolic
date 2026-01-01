@@ -7,9 +7,10 @@ import NotesApi from './notes-api';
 import { Domain as FLIST_DOMAIN } from '../constants/flist';
 
 import EventBus from '../chat/preview/event-bus';
+import core from '../chat/core';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('site-session');
+const log = NewLogger('site-session', () => core.state.generalSettings.argv.includes('--debug-site-session'));
 
 export interface SiteSessionInterface {
     start(): Promise<void>;
@@ -71,7 +72,7 @@ export class SiteSession {
         catch (err) {
             this.state = 'inactive';
             EventBus.$emit('site-session', { state: this.state });
-            log.error('sitesession.start.error', err);
+            log.error('site-session.start.error', err);
         }
     }
 
@@ -83,7 +84,7 @@ export class SiteSession {
             );
         }
         catch (err) {
-            log.error('sitesession.stop.error', err);
+            log.error('site-session.stop.error', err);
         }
 
         this.csrf = '';
@@ -93,7 +94,7 @@ export class SiteSession {
 
 
     private async init(): Promise<void> {
-        log.debug('sitesession.init');
+        log.debug('site-session.init');
 
         this.request = request.defaults({ jar: request.jar() });
         this.csrf = '';
@@ -123,7 +124,7 @@ export class SiteSession {
 
 
     private async login(): Promise<void> {
-        log.debug('sitesession.login');
+        log.debug('site-session.login');
 
         if (this.password === '' || this.account === '')
             throw new Error('User credentials not set');
@@ -149,7 +150,7 @@ export class SiteSession {
         if (res.statusCode !== 302)
             throw new Error('Invalid status code');
 
-        log.debug('sitesession.login.success');
+        log.debug('site-session.login.success');
     }
 
 
