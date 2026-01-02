@@ -125,11 +125,7 @@
 // }
 
 .quick-info-block .custom-gender .infotag-value {
-    // color: transparent;
-    // background-clip: text;
-    //background-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1;
-    // background-image: linear-gradient(45deg in oklab, red, yellow, blue, violet);
     border-bottom: 1px solid transparent;
-    border-image: linear-gradient(90deg in oklab, red, orange, yellow, green, blue, indigo, violet) 1
+    border-image: linear-gradient(90deg in oklab, #b9e3ff, #ebd0ff, #ffd19a, #67ffad) 1
 }
 </style>
