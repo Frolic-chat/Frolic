@@ -5,35 +5,43 @@
 >
     <template v-slot:header>
         <span>
-            {{ headerTitle }}
+            {{ headerTitle }}:
 
-            <span v-for="report in reports" :key="`report-head-${report.title}`">
-                <template v-if="report.count">
-                    {{ report.count }}
-                    <span :class="{
-                            'fa-solid   fa-fw fa-envelope': report.type === 'note',
-                            'fa-regular fa-fw fa-envelope': report.type === 'message',
-                        }" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"
-                    ></span>
-                </template>
+            <span v-if="coreStateSettings.risingShowUnreadOfflineCount"><!-- Messages -->
+                {{ messages.count }}
+                <span class="mr-1 fa-regular fa-fw fa-envelope" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
             </span>
-            <div v-if="latestNote && latestSender && latestReceiver">
-                <!-- :immediate="true" :showStatus="true" :bookmark="true" -->
-                <span class="text-muted">Latest unread:</span> <user :character="latestSender" immediate showStatus bookmark></user> => <user :character="latestReceiver" immediate></user>, <i>{{ latestNote.datetime_sent }}</i>
-            </div>
+
+            <span><!-- Notes -->
+                {{ notes.count }}
+                <span class="mr-1 fa-solid fa-fw fa-envelope" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
+            </span>
         </span>
+
+        <div v-if="latestUnreadForThisCharacter && latestSender && latestReceiver">
+            <span class="text-muted">Latest unread:</span> <user :character="latestSender" immediate showStatus bookmark></user> => <user :character="latestReceiver" immediate></user>, <i>{{ latestUnreadForThisCharacter.datetime_sent }}</i>
+        </div>
     </template>
 
     <template v-slot:button>
         <span class="fa-solid fa-arrows-rotate"></span>
     </template>
 
-    <div v-for="report in reports" :key="`report-body-${report.title}`" class="note-status-report flex-grow-1">
-        <a :href="report.url">
+    <div v-if="coreStateSettings.risingShowUnreadOfflineCount" class="note-status-report flex-grow-1"><!-- Messages -->
+        <a :href="messages.url">
             <span class="count">
-                {{ report.count }}
+                {{ messages.count }}
             </span>
-            {{ `${report.count !== 1 ? report.title : report.title.substring(0, report.title.length - 1)}` }}
+            {{ messages.count !== 1 ? messages.title : messages.title.substring(0, messages.title.length - 1) }}
+        </a>
+    </div>
+
+    <div class="note-status-report flex-grow-1"><!-- Notes -->
+        <a :href="notes.url">
+            <span class="count">
+                {{ notes.count }}
+            </span>
+            {{ notes.count !== 1 ? notes.title : notes.title.substring(0, notes.title.length - 1) }}
         </a>
     </div>
 </collapse>
@@ -68,34 +76,33 @@ coreStateSettings = core.state.settings;
 
 headerTitle = 'Notes & Site Messages';
 
-latestNote?: TempNoteFormat;
+latestUnreadForThisCharacter?: TempNoteFormat;
 
 get latestSender() {
-    return this.latestNote?.source_name
-        ? core.characters.get(this.latestNote.source_name)
+    return this.latestUnreadForThisCharacter?.source_name
+        ? core.characters.get(this.latestUnreadForThisCharacter.source_name)
         : undefined;
 }
 
 get latestReceiver() {
-    return this.latestNote?.dest_name
-        ? core.characters.get(this.latestNote.dest_name)
+    return this.latestUnreadForThisCharacter?.dest_name
+        ? core.characters.get(this.latestUnreadForThisCharacter.dest_name)
         : undefined;
 }
 
-reports: ReportState[] = [
-    {
-        type: 'message',
-        title: 'Messages',
-        count: 0,
-        url: 'https://www.f-list.net/messages.php'
-    },
-    {
-        type: 'note',
-        title: 'Notes',
-        count: 0,
-        url: 'https://www.f-list.net/read_notes.php'
-    }
-];
+messages: ReportState = {
+    type: 'message',
+    title: 'Messages',
+    count: 0,
+    url: 'https://www.f-list.net/messages.php'
+}
+
+notes: ReportState = {
+    type: 'note',
+    title: 'Notes',
+    count: 0,
+    url: 'https://www.f-list.net/read_notes.php'
+}
 
 onEvent = () => this.getNotesAndMessages();
 
@@ -118,33 +125,25 @@ onMessageCountSettingChanged() {
     this.getNotesAndMessages();
 }
 
-hasReports(): boolean {
-    return this.reports.some(r => r.count > 0);
-}
-
 getNotesAndMessages() {
     const latestMessages = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
     const latestNotes    = core.siteSession.interfaces.notes.getUnread();
 
-    const m = this.reports.find(report => report.type === 'message');
-    if (m)
-        m.count = latestMessages;
+    this.messages.count = latestMessages;
+    this.notes.count    = latestNotes.total ?? 0;
 
-    const n = this.reports.find(report => report.type === 'note');
-    if (n)
-        n.count = latestNotes.total ?? 0;
-
-    this.latestNote = latestNotes.notes.find(n => n.dest_name === core.characters.ownCharacter.name);
+    this.latestUnreadForThisCharacter = latestNotes.notes.find(n => n.dest_name === core.characters.ownCharacter.name);
 }
 
+/**
+ * Async handler for getting unread messages
+ */
 async onClickRefresh() {
     const latestNotes = await core.siteSession.interfaces.notes.getUnreadAsync();
 
-    const n = this.reports.find(report => report.type === 'note');
-    if (n)
-        n.count = latestNotes.total ?? 0;
+    this.notes.count = latestNotes.total ?? 0;
 
-    this.latestNote = latestNotes.notes.find(n => n.dest_name === core.characters.ownCharacter.name);
+    this.latestUnreadForThisCharacter = latestNotes.notes.find(n => n.dest_name === core.characters.ownCharacter.name);
 }
 
 get yohhlrf() { return this.toggle.activity ?? false }
