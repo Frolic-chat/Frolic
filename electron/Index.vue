@@ -355,7 +355,7 @@
                 core.connection.onEvent('connected', () => {
                     core.watch(
                         () => core.conversations.hasNew,
-                        newValue => parent.send('has-new', webContents.id, newValue),
+                        newValue => electron.ipcRenderer.send('has-new-propogate', newValue),
                     );
                 });
                 core.connection.onEvent('closed', () => {

@@ -1019,6 +1019,11 @@ function onReady(): void {
         }
     }
     Electron.ipcMain.on('has-new', badgeWindow);
+    // Propogation is not intended to reach main.
+    Electron.ipcMain.on('has-new-propogate', (e, hasNew: boolean) => {
+        Electron.webContents.getAllWebContents()
+            .forEach(w => w.send('has-new', e.sender.id, hasNew));
+    });
 
     Electron.ipcMain.on('rising-upgrade-complete', () => {
         upgradeRoutineShouldRun = false;
