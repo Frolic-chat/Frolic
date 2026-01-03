@@ -576,8 +576,6 @@
                     (this.$refs['fixLogsModal'] as Modal).show();
                 });
 
-                Electron.ipcRenderer.on('update-zoom', (_e, zoomLevel) => webContents.setZoomLevel(zoomLevel));
-
                 Electron.ipcRenderer.on('active-tab',   () => core.cache.setTabActive(true));
                 Electron.ipcRenderer.on('inactive-tab', () => core.cache.setTabActive(false));
 

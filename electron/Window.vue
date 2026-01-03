@@ -54,8 +54,6 @@
 
     const browserWindow = remote.getCurrentWindow();
 
-    // void browserWindow.webContents.setVisualZoomLevelLimits(1, 5);
-
     function getWindowBounds(): Electron.Rectangle {
         const bounds = browserWindow.getContentBounds();
         const height = document.body.offsetHeight;
@@ -148,13 +146,8 @@
                 }
             });
 
-            // electron.ipcRenderer.on('update-zoom', (_e: Event, zoomLevel: number) => {
-            //   // log.info('WINDOWVUE ZOOM UPDATE', zoomLevel);
-            //   // browserWindow.webContents.setZoomLevel(zoomLevel);
-            // });
-
-            electron.ipcRenderer.on('connect', (_e: IpcRendererEvent, id: number, name: string) => {
-                log.debug('Received connect in window.');
+            electron.ipcRenderer.on('connect', (_e, id: number, name: string) => {
+                log.debug('Received "connect" in window.');
 
                 const tab = this.tabMap[id];
                 tab.user = name;

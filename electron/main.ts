@@ -583,23 +583,14 @@ function onReady(): void {
         });
     }
 
-    function updateAllZoom(c: Electron.WebContents[]   = [],
-                           zoomLevel: number
-                        ): void {
-        c.forEach(w => w.send('update-zoom', zoomLevel));
-        PrimaryWindow?.webContents.send('update-zoom', zoomLevel);
-    }
-
     const viewItem = {
         label: `&${ l('action.view') }`,
         submenu: <Electron.MenuItemConstructorOptions[]>[
             // {role: 'resetZoom'},
             {
                 label: l('action.resetZoom'),
-                click: () => {
-                    zoomLevel = 0;
-                    updateAllZoom(Electron.webContents.getAllWebContents(), zoomLevel);
-                },
+                click: () => Electron.webContents.getAllWebContents()
+                    .forEach(w => w.setZoomLevel(0)),
                 accelerator: 'CmdOrCtrl+0'
             },
             {
@@ -610,7 +601,9 @@ function onReady(): void {
                     // Will we ever be in a situation where it's otherwise?
                     if (w instanceof Electron.BrowserWindow) {
                         zoomLevel = Math.min(zoomLevel + w.webContents.getZoomFactor()/2, 6);
-                        updateAllZoom(Electron.webContents.getAllWebContents(), zoomLevel);
+
+                        Electron.webContents.getAllWebContents()
+                            .forEach(w => w.setZoomLevel(zoomLevel));
                     }
                 },
                 accelerator: 'CmdOrCtrl+='
@@ -624,7 +617,8 @@ function onReady(): void {
                     if (w instanceof Electron.BrowserWindow) {
                         zoomLevel = Math.max(-5, zoomLevel - w.webContents.getZoomFactor()/2);
 
-                        updateAllZoom(Electron.webContents.getAllWebContents(), zoomLevel);
+                        Electron.webContents.getAllWebContents()
+                            .forEach(w => w.setZoomLevel(zoomLevel));
                     }
                 },
                 accelerator: 'CmdOrCtrl+-'
@@ -1051,11 +1045,6 @@ function onReady(): void {
         upgradeRoutineShouldRun = false;
         for (const w of Electron.webContents.getAllWebContents())
             w.send('rising-upgrade-complete');
-    });
-
-    Electron.ipcMain.on('update-zoom', (_e, zl: number) => {
-        for (const w of Electron.webContents.getAllWebContents())
-            w.send('update-zoom', zl);
     });
 
     Electron.ipcMain.handle('browser-option-browse', async () => {
