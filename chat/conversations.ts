@@ -709,8 +709,10 @@ class ActivityConversation extends Conversation {
     // }
 
     protected addToMemberList(name: string) {
-        if (!this.members.includes(name))
-            this.members.push(name);
+        const key = name.toLowerCase();
+
+        if (!this.members.includes(key))
+            this.members.push(key);
     }
 
     /**
@@ -718,7 +720,7 @@ class ActivityConversation extends Conversation {
      * @param name Name of character - will be sanitized into a name-key
      */
     public clearMember(name: string) {
-        this.removeCharacter(name);
+        this.removeCharacter(name.toLowerCase() /* key */);
     }
 
     // public messageTypeForMember(name: string): Interfaces.ActivityType | null {
@@ -770,11 +772,11 @@ class ActivityConversation extends Conversation {
             let oldestKey:  string | undefined;
             let oldestTime: number | undefined;
 
-            for (const [name, i] of map.entries()) {
+            for (const [key, i] of map.entries()) {
                 const m = this._messages[i];
                 if (!m) { // mystery orphan, use it
-                    map.delete(name);
-                    logA.debug('ActivityConversation.freeSlot.orphan', name, i);
+                    map.delete(key);
+                    logA.debug('ActivityConversation.freeSlot.orphan', key, i);
                     return i;
                 }
 
@@ -783,7 +785,7 @@ class ActivityConversation extends Conversation {
                     logA.debug('Time for', m.text, 'is', this_time, 'while oldest is', oldestTime);
 
                     oldestTime = this_time;
-                    oldestKey = name;
+                    oldestKey = key;
                 }
             }
 
@@ -815,18 +817,20 @@ class ActivityConversation extends Conversation {
      * @returns index of slot in `_messages` that's now undefined; null if a character wasn't removed.
      */
     protected removeCharacter(name: string): number | null {
-        logA.debug('ActivityConversation.removeCharacter.start', name);
+        const key = name.toLowerCase();
+
+        logA.debug('ActivityConversation.removeCharacter.start', key);
 
         // Remove from member list
-        const ml_index = this.members.indexOf(name);
+        const ml_index = this.members.indexOf(key);
         if (ml_index >= 0)
             this.members.splice(ml_index, 1);
 
         // For an entry in each of the groups, use the entry to remove the message from messages[];
-        const i = this.login.get(name) ?? this.status.get(name) ?? this.looking.get(name) ?? this.returned.get(name);
+        const i = this.login.get(key) ?? this.status.get(key) ?? this.looking.get(key) ?? this.returned.get(key);
 
         [ this.login, this.status, this.looking, this.returned ]
-            .forEach(map => map.delete(name));
+            .forEach(map => map.delete(key));
 
         if (i === undefined) {
             logA.debug('ActivityConversation.removeCharacter.none');
@@ -840,7 +844,9 @@ class ActivityConversation extends Conversation {
     };
 
     protected isTracked(name: string): boolean {
-        return this.login.has(name) ?? this.status.has(name) ?? this.looking.has(name) ?? this.returned.has(name);
+        const key = name.toLowerCase();
+
+        return this.login.has(key) ?? this.status.has(key) ?? this.looking.has(key) ?? this.returned.has(key);
     }
 
     protected isHere(status: Character.Status): status is 'online' | 'looking' | 'crown' {
@@ -849,26 +855,28 @@ class ActivityConversation extends Conversation {
 
     // Login is any status change with the character 'offline' but the status 'online'.
     protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
-        const c = activity.character;
+        const c   = activity.character;
+        const key = activity.character.name.toLowerCase();
+
         if (c.isFriend || c.isBookmarked) { // expanded to bookmarks for now.
-            logA.debug('ActivityConversation.handleLogin.start.friend', c.name);
+            logA.debug('ActivityConversation.handleLogin.start.friend', key);
 
             // Clear a spot.
-            const index = this.removeCharacter(c.name);
+            const index  = this.removeCharacter(key);
             const index2 = this.freeSlot(this.login, this.MAX_LOGINS); // This does not remove properly.
 
             // add index to login map.
-            this.login.set(c.name, index ?? index2);
-            const message = new EventMessage(l('events.login', `[user]${c.name}[/user]`), activity.date);
+            this.login.set(key, index ?? index2);
+            const message = new EventMessage(l('events.login', `[user]${key}[/user]`), activity.date);
             this._messages[index ?? index2] = message;
 
-            this.addToMemberList(c.name);
+            this.addToMemberList(key);
             this.cleanseOutdatedData();
             this.updateDisplay(true);
             // c.isFriend && shouldNotifyOnFriendLogin() || c.isBookmarked && shouldNotifyOnBookmarkLogin()
 
             logA.debug('ActivityConversation.handleLogin.postAdd', {
-                name: c.name,
+                name: key,
                 index: index ?? index2,
                 loginEntries: [ ...this.login.entries() ].map(e => `${e[0]}->${e[1]}`),
             });
@@ -879,14 +887,16 @@ class ActivityConversation extends Conversation {
         }
     }
 
-    // Logout is any status change with the character 'online' but the status 'offline'.
+    // Logout is any status change with the character whos new status is 'offline'.
     protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+        const key = activity.character.name.toLowerCase();
+
         logA.debug('ActivityConversation.handleLogout.tracked', {
-            name: activity.character.name,
+            name: key,
             x:    activity.date
         });
 
-        this.removeCharacter(activity.character.name);
+        this.removeCharacter(key);
         this.cleanseOutdatedData();
         this.updateDisplay();
     }
@@ -899,6 +909,8 @@ class ActivityConversation extends Conversation {
      * 4. Set custom message. add to `this.status`.
      */
     protected async handleStatus(activity: Interfaces.ActivityContext & { e: 'EBS' }): Promise<void> {
+        const key = activity.character.name.toLowerCase();
+
         let target_map: Map<string, number> | undefined;
         let target_max: number | undefined;
         let message: Interfaces.Message | undefined;
@@ -911,7 +923,7 @@ class ActivityConversation extends Conversation {
 
             message = new EventMessage(
                 l(activity.statusmsg ? 'events.status.message' : 'events.status',
-                    `[user]${activity.character.name}[/user]`,
+                    `[user]${key}[/user]`,
                     l(`status.${activity.status}`),
                     decodeHTML(activity.statusmsg)
                 ),
@@ -926,7 +938,7 @@ class ActivityConversation extends Conversation {
 
             message = new EventMessage(
                 l(activity.statusmsg ? 'events.status.message' : 'events.status',
-                    `[user]${activity.character.name}[/user]`,
+                    `[user]${key}[/user]`,
                     l(`status.${activity.status}`),
                     decodeHTML(activity.statusmsg)
                 ),
@@ -942,7 +954,7 @@ class ActivityConversation extends Conversation {
 
             message = new EventMessage(
                 l(activity.statusmsg ? 'events.status.message' : 'events.status',
-                    `[user]${activity.character.name}[/user]`,
+                    `[user]${key}[/user]`,
                     l(`status.${activity.status}`),
                     decodeHTML(activity.statusmsg)
                 ),
@@ -956,24 +968,24 @@ class ActivityConversation extends Conversation {
         }
         else {
             logA.debug('ActivityConversation.handleStatus.shouldntBeHitbyLogin', {
-                name:      activity.character.name,
+                name:      key,
                 status:    activity.status,
                 oldStatus: activity.oldStatus,
             });
-            this.removeCharacter(activity.character.name);
+            this.removeCharacter(key);
             this.updateDisplay(); // removed
             return; // Other status changes shouldn't be received here.
         }
 
-        const index =  this.removeCharacter(activity.character.name);
+        const index =  this.removeCharacter(key);
         const index2 = this.freeSlot(target_map, target_max);
 
         logA.debug('handleStatus.indexDecided', { i1: index, i2: index2 });
 
-        target_map.set(activity.character.name, index ?? index2);
+        target_map.set(key, index ?? index2);
         this._messages[index ?? index2] = message;
 
-        this.addToMemberList(activity.character.name);
+        this.addToMemberList(key);
         this.cleanseOutdatedData();
         this.updateDisplay(true);
     }
@@ -985,18 +997,18 @@ class ActivityConversation extends Conversation {
         const current_time = Date.now();
 
         [ this.status, this.looking ].forEach(map =>
-            map.forEach((i, name) => {
+            map.forEach((i, key) => {
                 // @ts-ignore Webpack TS :)
                 if (!this._messages[i] || current_time - this._messages[i].time.getTime() > THIRTY_MINUTES_IN_MS)
-                    this.removeCharacter(name);
+                    this.removeCharacter(key);
             })
         );
 
         [ this.login, this.returned ].forEach(map =>
-            map.forEach((i, name) => {
+            map.forEach((i, key) => {
                 // @ts-ignore Webpack TS :)
                 if (!this._messages[i] || current_time - this._messages[i].time.getTime() > TWENTY_MINUTES_IN_MS)
-                    this.removeCharacter(name);
+                    this.removeCharacter(key);
             })
         );
     }
