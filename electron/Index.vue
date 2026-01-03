@@ -155,19 +155,6 @@
     const webContents = remote.getCurrentWebContents();
     const parent = remote.getCurrentWindow().webContents;
 
-    // Allow requests to imgur.com
-    const session = remote.session;
-
-    session.defaultSession.webRequest.onBeforeSendHeaders(
-        {
-            urls: [ 'https://api.imgur.com/*', 'https://i.imgur.com/*' ],
-        },
-        (details, callback) => {
-            details.requestHeaders['Origin'] = '';
-            callback({requestHeaders: details.requestHeaders});
-        }
-    );
-
     @Component({
         components: {
             chat: Chat,

@@ -133,6 +133,24 @@ if (!settings.raw.hwAcceleration) {
     app.disableHardwareAcceleration();
 }
 
+/**
+ * Imgur may have had problems in the past with electron headers; uncertain this is necessary anymore.
+ */
+function fixImgurCORS() {
+    Electron.session.defaultSession.webRequest.onBeforeSendHeaders(
+        {
+            urls: [
+                'https://api.imgur.com/*',
+                'https://i.imgur.com/*',
+            ]
+        },
+        (details, callback) => {
+            details.requestHeaders['Origin'] = '';
+            callback({requestHeaders: details.requestHeaders});
+        }
+    );
+}
+
 // region Dictionary
 // async function setDictionary(lang: string | undefined): Promise<void> {
 //     if(lang !== undefined) await ensureDictionary(lang);
@@ -461,6 +479,8 @@ function createWindow(): Electron.BrowserWindow | undefined {
             e.preventDefault();
         }
     });
+    // Tweaks:
+    fixImgurCORS();
 
     // tslint:disable-next-line:no-floating-promises
     window.loadFile(
