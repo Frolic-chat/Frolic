@@ -170,7 +170,7 @@ function blockWebviewDownloadPrompts() {
 //     updateGeneralSettings(settings);
 // }
 
-export function updateSpellCheckerLanguages(langs: string[]): void {
+function updateSpellCheckerLanguages(langs: string[]): void {
     Electron.session.defaultSession.setSpellCheckerLanguages(langs);
 
     PrimaryWindow?.webContents.session.setSpellCheckerLanguages(langs);
@@ -487,8 +487,7 @@ function createWindow(): Electron.BrowserWindow | undefined {
     fixImgurCORS();
     blockWebviewDownloadPrompts();
 
-    // tslint:disable-next-line:no-floating-promises
-    window.loadFile(
+    void window.loadFile(
         path.join(__dirname, 'window.html'),
         {
             query: {
