@@ -50,7 +50,7 @@
     import { getSafeLanguages, updateSupportedLanguages } from './language';
 
     import Logger from 'electron-log/renderer';
-    const log = Logger.scope('Window.vue');
+    const log = Logger.scope('window');
 
     const browserWindow = remote.getCurrentWindow();
 
@@ -154,6 +154,8 @@
             // });
 
             electron.ipcRenderer.on('connect', (_e: IpcRendererEvent, id: number, name: string) => {
+                log.debug('Received connect in window.');
+
                 const tab = this.tabMap[id];
                 tab.user = name;
                 const menu = this.createTrayMenu(tab);
@@ -169,7 +171,7 @@
                 Vue.set(tab, 'avatarUrl', url);
                 // tab.avatarUrl = url;
             });
-            electron.ipcRenderer.on('disconnect', (_e: IpcRendererEvent, id: number) => {
+            electron.ipcRenderer.on('disconnect', (_e, id: number) => {
                 const tab = this.tabMap[id];
 
                 if (tab.hasNew) {
@@ -181,7 +183,7 @@
 
                 Vue.set(tab, 'avatarUrl', undefined);
             });
-            electron.ipcRenderer.on('has-new', (_e: IpcRendererEvent, id: number, hasNew: boolean) => {
+            electron.ipcRenderer.on('has-new', (_e, id: number, hasNew: boolean) => {
                 const tab = this.tabMap[id];
                 tab.hasNew = hasNew;
                 electron.ipcRenderer.send('has-new', this.tabs.reduce((cur, t) => cur || t.hasNew, false));

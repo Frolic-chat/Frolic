@@ -960,17 +960,15 @@ function onReady(): void {
 
     // Tray handlers
     Electron.ipcMain.on('connect', (e, character: string) => {
-        if (e.sender) {
-            //browserWindows.tabAddHandler(webContents, settings);
             tabMap.set(character, e.sender);
             tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
-        }
-    }
-    );
+    });
+
     Electron.ipcMain.on('disconnect', (_e, character: string) => {
         tabMap.delete(character);
         tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
     });
+
 
     Electron.ipcMain.on('update-avatar-url', (_e, n: string, u: string) =>
         PrimaryWindow?.webContents.send('update-avatar-url', n, u)

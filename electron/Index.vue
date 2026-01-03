@@ -359,7 +359,7 @@
                     );
                 });
                 core.connection.onEvent('closed', () => {
-                    if (this.character === undefined)
+                    if (!this.character)
                         return;
 
                     electron.ipcRenderer.send('disconnect', this.character);
