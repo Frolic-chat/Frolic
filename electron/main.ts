@@ -926,6 +926,7 @@ function onReady(): void {
             PrimaryWindow?.webContents.send('open-tab');
     });
 
+    // Character connection handlers
     Electron.ipcMain.on('connect', (e, character: string) => { //hack
         if (characters.includes(character)) { // Logged in already!
             log.debug('ipcMain.connect.alreadyLoggedIn');
@@ -936,16 +937,28 @@ function onReady(): void {
         else {
             log.debug('ipcMain.connect.notLoggedIn');
             characters.push(character);
+
+            Electron.webContents.getAllWebContents()
+                .forEach(w => w.send('connect', e.sender.id, character));
+
             e.returnValue = true;
             return true;
         }
 
     });
-    Electron.ipcMain.on('disconnect', (_e, character: string) => {
+
+    Electron.ipcMain.on('disconnect', (e, character: string) => {
         const index = characters.indexOf(character);
-        if (index !== -1) characters.splice(index, 1);
+        if (index !== -1) {
+            characters.splice(index, 1);
+
+            Electron.webContents.getAllWebContents()
+                .forEach(w => w.send('disconnect', e.sender.id));
+        }
     });
 
+
+    // Tray handlers
     Electron.ipcMain.on('connect', (e, character: string) => {
         if (e.sender) {
             //browserWindows.tabAddHandler(webContents, settings);

@@ -338,7 +338,6 @@
                         return core.connection.close();
                     }
 
-                    parent.send('connect', webContents.id, core.connection.character);
                     this.character = core.connection.character;
 
                     if ((await core.settingsStore.get('settings')) === undefined &&
@@ -364,8 +363,8 @@
                         return;
 
                     electron.ipcRenderer.send('disconnect', this.character);
+
                     this.character = undefined;
-                    parent.send('disconnect', webContents.id);
                 });
 
                 core.connection.setCredentials(this.settings.account, this.password);
