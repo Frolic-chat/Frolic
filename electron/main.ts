@@ -151,6 +151,18 @@ function fixImgurCORS() {
     );
 }
 
+/**
+ * This prevents automatic download prompts on certain webview URLs without stopping conversation logs from being downloaded
+ */
+function blockWebviewDownloadPrompts() {
+    Electron.session.defaultSession.on('will-download', (e, item) => {
+        if (!item.getURL().match(/^blob:file:/)) {
+            log.info('download.prevent', { item, event: e });
+            e.preventDefault();
+        }
+    });
+}
+
 // region Dictionary
 // async function setDictionary(lang: string | undefined): Promise<void> {
 //     if(lang !== undefined) await ensureDictionary(lang);
@@ -471,16 +483,9 @@ function createWindow(): Electron.BrowserWindow | undefined {
     // Set up ad blocker
     BlockerIntegration.factory(baseDir);
 
-    // This prevents automatic download prompts on certain webview URLs without
-    // stopping conversation logs from being downloaded
-    Electron.session.defaultSession.on('will-download', (e, item) => {
-        if (!item.getURL().match(/^blob:file:/)) {
-            log.info('download.prevent', { item, event: e });
-            e.preventDefault();
-        }
-    });
     // Tweaks:
     fixImgurCORS();
+    blockWebviewDownloadPrompts();
 
     // tslint:disable-next-line:no-floating-promises
     window.loadFile(
