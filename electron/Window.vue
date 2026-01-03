@@ -163,16 +163,16 @@
             });
             electron.ipcRenderer.on('update-avatar-url', (_e: IpcRendererEvent, characterName: string, url: string) => {
                 const tab = this.tabs.find(tab => tab.user === characterName);
-
-                if (!tab) {
+                if (!tab)
                     return;
-                }
 
                 Vue.set(tab, 'avatarUrl', url);
                 // tab.avatarUrl = url;
             });
             electron.ipcRenderer.on('disconnect', (_e, id: number) => {
                 const tab = this.tabMap[id];
+                if (!tab)
+                    return;
 
                 if (tab.hasNew) {
                     tab.hasNew = false;
