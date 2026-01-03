@@ -129,7 +129,6 @@
     import WordDefinitionViewer from './WordDefinitionViewer.vue';
 
     import * as Electron from 'electron';
-    import * as remote from '@electron/remote';
     import Axios from 'axios';
     import * as fs from 'fs';
     import * as path from 'path';
@@ -149,11 +148,8 @@
     import { BBCodeView } from '../bbcode/view';
 
     import NewLogger from '../helpers/log';
-    const log = NewLogger('Index');
+    const log = NewLogger('index');
     // const logBB = NewLogger('bbcode');
-
-    const webContents = remote.getCurrentWebContents();
-    const parent = remote.getCurrentWindow().webContents;
 
     @Component({
         components: {
@@ -254,7 +250,6 @@
                 this.upgradeMessage = 'Version upgrade; this may take a while.';
 
                 // It is pointless to make this wait for anything to actually change; app version is already upgraded to latest in electron main, so we'll never "rerun" an upgrade even if it fails.
-                parent.send('rising-upgrade-complete');
                 Electron.ipcRenderer.send('rising-upgrade-complete');
                 this.upgradeRoutineShouldRun = false;
             }
