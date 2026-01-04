@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div v-if="character.statusText" class="secondary-column d-flex flex-column"><!-- Status -->
+    <div v-if="character.statusText" class="secondary-column ml-2 mr-1 d-flex flex-column"><!-- Status -->
         <bbcode class="flex-grow-1" style="overflow-x: hidden; overflow-y: auto;" :text="character.statusText.trim()"></bbcode>
     </div>
 </div>
