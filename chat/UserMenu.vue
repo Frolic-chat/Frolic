@@ -15,9 +15,15 @@
                 <span class="fa fa-fw fa-user"></span>
                 {{l('user.profile')}}
             </a>
-            <a tabindex="-1" href="#" @click.prevent="openConversation(true)" class="list-group-item list-group-item-action">
-                <span class="fa fa-fw fa-comment"></span>
-                {{l('user.messageJump')}}
+            <a tabindex="-1" href="#" @click.prevent="openConversation(jumpToConversation)" class="list-group-item list-group-item-action d-flex" style="padding-right: 0 !important;">
+                <span>
+                    <span class="fa fa-fw fa-comment"></span>
+                    {{ openConversationText }}
+                </span>
+
+                <span :class="{ 'text-info': jumpToConversation }" class="d-inline-block text-right flex-grow-1" @mouseenter="jumpToConvo(true)" @mouseleave="jumpToConvo(false)">
+                    <span class="fa-solid fa-right-to-bracket" style="padding-right: 3px;"></span>
+                </span>
             </a>
             <!--
             <a tabindex="-1" href="#" @click.prevent="openConversation(false)" class="list-group-item list-group-item-action">
@@ -134,6 +140,14 @@ const log = NewLogger('UserMenu');
 
         get memoLength() {
             return this.memo ? getByteLength(this.memo) : 0;
+        }
+
+        jumpToConversation = false;
+        openConversationText = l('user.message');
+        jumpToConvo(hover: boolean) {
+            this.jumpToConversation = hover;
+
+            this.openConversationText = hover ? l('user.messageJump') : l('user.message');
         }
 
         openConversation(jump: boolean): void {
