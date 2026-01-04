@@ -642,6 +642,26 @@ class ActivityConversation extends Conversation {
         EventBus.$on('activity-bookmark-login',  e => this.handleLogin({ e: 'EBL', ...e }));
         EventBus.$on('activity-bookmark-logout', e => this.handleLogout({ e: 'EBL', ...e }));
         EventBus.$on('activity-bookmark-status', e => this.handleStatus({ e: 'EBS', ...e }));
+
+        core.connection.onEvent('connected', isReconnect => {
+            if (!isReconnect)
+                return;
+
+            logA.info('ActivityConversation.reconnect', this.members.length);
+
+            this.members.forEach(key => {
+                const status = core.characters.get(key).status;
+
+                if (!this.isHere(status)) {
+                    logA.debug(`ActivityConversation.reconnect.remove.${key}`);
+
+                    this.removeCharacter(key);
+                }
+            });
+
+            this.cleanseOutdatedData();
+            this.updateDisplay();
+        })
     }
 
     //override messages: Array<Interfaces.Message | undefined> = [];
@@ -973,6 +993,7 @@ class ActivityConversation extends Conversation {
                 oldStatus: activity.oldStatus,
             });
             this.removeCharacter(key);
+            this.cleanseOutdatedData();
             this.updateDisplay(); // removed
             return; // Other status changes shouldn't be received here.
         }
