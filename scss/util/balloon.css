@@ -152,4 +152,4 @@ button[aria-label][data-balloon-pos] {
       [aria-label][data-balloon-pos][data-balloon-length="xlarge"]:after {
         width: 90vw; } }
   [aria-label][data-balloon-pos][data-balloon-length="fit"]:after {
-    width: 100%; }
+    width: 98%; }

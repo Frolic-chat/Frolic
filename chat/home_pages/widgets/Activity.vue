@@ -5,10 +5,11 @@
 <template>
 <collapse :initial="yohhlrf" @open="toggle.activity = false" @close="toggle.activity = true">
     <template v-slot:header>
-        Recent Activity
+        {{ activityName }}
     </template>
     <template v-slot:button>
-        <div :aria-label="activityInformation" data-balloon-nofocus data-balloon-pos="down-right">
+        <!-- data-balloon-length="fit" -->
+        <div :aria-label="activityInformation" data-balloon-nofocus data-balloon-pos="down-right" data-balloon-break>
             <span class="fa-solid fa-circle-question"></span>
         </div>
     </template>
@@ -29,6 +30,7 @@ import Collapse from '../../../components/collapse.vue';
 import UserActivity from './UserActivity.vue';
 
 import core from '../../core';
+import l from '../../localize';
 
 import NewLogger from '../../../helpers/log';
 const log = NewLogger('activity');
@@ -43,7 +45,8 @@ export default class RecentActivity extends Vue {
     // Genericize by making this accept different conversations
     conversation = core.conversations.activityTab;
 
-    activityInformation = 'A general summary of recently active users';
+    activityName = l('chat.activityTab');
+    activityInformation = l('chat.activityTab.help');
 
     getCharacterFor(n: string) {
         log.debug('RecentActivity.getCharacterFor', n);
