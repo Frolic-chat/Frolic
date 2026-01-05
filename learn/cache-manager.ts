@@ -99,22 +99,26 @@ export class CacheManager {
             return;
         }
 
-        log.debug('profile.cache.queue', { name, skipCacheCheck, channelId, from: core.characters.ownCharacter.name });
+        log.debug('CacheManager.queue', { name, skipCacheCheck, channelId, from: core.characters.ownCharacter.name });
 
         if (!skipCacheCheck) {
             const c = await this.profileCache.get(name);
 
             if (c) {
                 this.updateAdScoringForProfile(c.character, c.match.matchScore, c.match.isFiltered);
+
+                log.debug('CacheManager.queue.cached', { name });
+
                 return;
             }
         }
 
         const key = ProfileCache.nameKey(name);
 
-        // Store them as lowercase and we won't have to check the key.
-        if (this.queue.some(q => q.key === key))
+        if (this.queue.some(q => q.key === key)) {
+            log.debug('CacheManager.queue.alreadyQueued', { name });
             return;
+        }
 
         const entry: ProfileCacheQueueEntry = {
             name,
@@ -125,8 +129,10 @@ export class CacheManager {
             retryCount: 0
         };
 
-        if (!this.queue.length)
+        if (!this.queue.length) {
+            log.debug('CacheManager.queue.add.empty', { name });
             this.queue.push(entry);
+        }
         else {
             let low = 0, high = this.queue.length;
             let sorts = 0;
@@ -143,6 +149,8 @@ export class CacheManager {
             }
 
             this.queue.splice(low, 0, entry);
+
+            log.debug('CacheManager.queue.add', { character: this.queue[low], length: this.queue.length });
         }
     }
 

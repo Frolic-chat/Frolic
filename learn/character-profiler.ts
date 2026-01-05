@@ -7,6 +7,9 @@ import { TagId } from './matcher-types';
 import { Scoring } from './matcher-types';
 import UserListSorter from './user-list-sorter';
 
+import NewLogger from '../helpers/log';
+const logC = NewLogger('cache', () => core?.state.generalSettings.argv.includes('--debug-cache'));
+
 
 export class CharacterProfiler {
     static readonly ADVERTISEMENT_RECENT_RANGE = 22 * 60 * 1000;
@@ -25,22 +28,29 @@ export class CharacterProfiler {
      * @param characterName
      * @returns Numerical rating used to reorganize the profile queue; higher scores to the front
      */
-    calculateInterestScore(characterName: string): number {
+    calculateInterestScore(characterName: string, offset: number = 0): number {
+        // It may be appropriate to use getAsync here to wait for overrides to resolve.
         const c = core.characters.get(characterName);
-
-        if (!c)
-            return 0;
 
         const genderScore = this.getInterestScoreForGender(this.me, c);
         const statusScore = this.getInterestScoreForStatus(c);
         const adScore = (genderScore > 0) ? this.getLastAdvertisementStatus(c) : Scoring.NEUTRAL;
         const friendlyScore = this.getInterestScoreForFriendlies(c);
 
-        // tslint:disable-next-line: number-literal-format binary-expression-operand-order
-        const score = ((1.0 * genderScore) + (1.0 * statusScore) + (1.0 * adScore) + (1.0 * friendlyScore));
+        logC.debug('CharacterProfiler.calculateInterestScore.results', {
+            characterName,
+            genderScore,
+            statusScore,
+            adScore,
+            friendlyScore,
+            offset,
+        });
 
-        // tslint:disable-next-line: number-literal-format binary-expression-operand-order
-        return (c.status === 'looking') ? score + 10.0 : score;
+        return 1.0 * genderScore
+             + 1.0 * statusScore
+             + 1.0 * adScore
+             + 1.0 * friendlyScore
+             + offset;
     }
 
 
@@ -63,14 +73,18 @@ export class CharacterProfiler {
     getInterestScoreForGender(me: ComplexCharacter, c: CharacterFChatInf.Character): Scoring {
         const g = Matcher.strToGender(c.gender);
 
-        if (!g)
+        if (!g) {
+            logC.warn('CharacterProfiler.getInterestScoreForGender.noGender', g);
             return Scoring.NEUTRAL;
+        }
 
         const myGender = UserListSorter.GetGenderArray(me.character);
         const myOrientation = Matcher.getTagValueList(TagId.Orientation, me.character);
-        const score = Matcher.scoreOrientationByGender({ gender: myGender, orientation: myOrientation}, { gender: [ g ], nonbinary: false });
+        const score = Matcher.scoreOrientationByGender({ gender: myGender, orientation: myOrientation}, { gender: [ g ], nonbinary: false }).score;
 
-        return score.score;
+        logC.silly('CharacterProfiler.getInterestScoreForGender.result', { myGender, myOrientation, score });
+
+        return score;
     }
 
 
