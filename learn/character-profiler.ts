@@ -96,9 +96,9 @@ export class CharacterProfiler {
         case 'dnd':
             return Scoring.WEAK_MISMATCH;
         case 'looking':
-            return Scoring.WEAK_MATCH;
+            return Scoring.MATCH;
         default:
-            return Scoring.NEUTRAL;
+            return Scoring.WEAK_MATCH;
         }
     }
 
