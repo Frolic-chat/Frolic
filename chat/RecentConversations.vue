@@ -5,7 +5,7 @@
         <div>
             <div v-show="selectedTab === '0'" class="recent-conversations">
                 <template v-for="recent in recentPrivate">
-                    <user-view v-if="recent.character" :key="recent.character" :character="getCharacter(recent.character)"></user-view>
+                    <user v-if="recent.character" :key="recent.character" :character="getCharacter(recent.character)"></user>
                 </template>
             </div>
             <div v-show="selectedTab === '1'" class="recent-conversations">
@@ -28,7 +28,12 @@
     import UserView from './UserView.vue';
 
     @Component({
-        components: {'user-view': UserView, 'channel-view': ChannelView, modal: Modal, tabs: Tabs}
+        components: {
+            'user': UserView,
+            'channel-view': ChannelView,
+            modal: Modal,
+            tabs: Tabs,
+        }
     })
     export default class RecentConversations extends CustomDialog {
         l = l;

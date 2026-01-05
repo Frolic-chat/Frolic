@@ -75,7 +75,7 @@ export class CacheManager {
       if (this.isActiveTab) {
         void this.onSelectConversation({ conversation: core.conversations.selectedConversation });
       } else {
-        void this.onSelectConversation({ conversation: null! });
+        void this.onSelectConversation({ conversation: null });
       }
     }
 

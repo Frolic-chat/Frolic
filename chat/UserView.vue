@@ -96,7 +96,7 @@ export default class UserView extends Vue {
     readonly showStatus = false;
 
     /**
-     * Use special color for friends/bookmarks
+     * Use special color for friends/bookmarks (if enabled in settings)
      */
     @Prop({ default: true })
     readonly bookmark = true;

@@ -111,9 +111,6 @@ import type { SiteSessionEvent } from '../preview/event-bus';
 import { BBCodeView } from '../../bbcode/view';
 import { Conversation } from '../interfaces';
 import ChannelView from '../ChannelTagView.vue';
-// import type { NoteSummary } from '../conversation_notes';
-
-// import type { CharacterMemo } from '../../site/character_page/interfaces';
 import type { TempNoteFormat } from '../../site/notes-api';
 
 import NewLogger from '../../helpers/log';
@@ -185,9 +182,6 @@ export default class Comms extends Vue {
     memoError = '';
 
     async getMemoFromCache() {
-        // if (!this.character)
-        //     return;
-
         this.memoLoading = true;
         this.editingMemo = false;
         this.memoError = '';
@@ -206,9 +200,6 @@ export default class Comms extends Vue {
     }
 
     async memoButtonClicked() {
-        // if (!this.character)
-        //     return;
-
         if (!this.editingMemo) {
             this.memoInEdit = this.memoBody;
 
@@ -279,9 +270,6 @@ export default class Comms extends Vue {
     noteError = '';
 
     async refreshNotes() {
-        // if (!this.character)
-        //     return;
-
         if (!core.siteSession.isRunning) {
             this.noteError = 'The background service has not yet started.';
             return;

@@ -713,6 +713,10 @@ class ActivityConversation extends Conversation {
             this.members.push(name);
     }
 
+    /**
+     * `removeCharacter` was designed to reveal information about removal, which was initially considered undesirable to reveals - but now I can't see how it matters, so possibly just make `removeCharacter` public to replace this.
+     * @param name Name of character - will be sanitized into a name-key
+     */
     public clearMember(name: string) {
         this.removeCharacter(name);
     }
