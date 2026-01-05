@@ -7,7 +7,7 @@ import { genderToKinkMap, kinkToGenderMap, Gender, Scoring, KinkPreference, TagI
 import core from '../chat/core';
 
 import NewLogger from '../helpers/log';
-const ulslog = NewLogger('UserListSorter', () => core.state.generalSettings.argv.includes('--debug-chat'));
+const ulslog = NewLogger('chat', () => core.state.generalSettings.argv.includes('--debug-chat'));
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 const UserListSorter = {

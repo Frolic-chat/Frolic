@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import NewLogger from '../helpers/log';
-const log = NewLogger('Chat');
+const log = NewLogger('chat');
 
     import {Component, Hook, Prop} from '@f-list/vue-ts';
     import Vue from 'vue';

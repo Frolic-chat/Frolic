@@ -15,7 +15,7 @@ import { Component, Prop } from '@f-list/vue-ts';
 import l from '../../localize';
 
 import NewLogger from '../../../helpers/log';
-const log = NewLogger('SettingsGenericNumber');
+const log = NewLogger('settings-minor');
 
 @Component({})
 export default class GenericNumber extends Vue {

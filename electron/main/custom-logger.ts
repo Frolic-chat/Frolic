@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Logger from 'electron-log/main';
+import { LogType } from '../common';
 
 /**
  * Ties electron-log to a custom condition. The condition is checked regardless of log level.
@@ -12,8 +13,8 @@ import Logger from 'electron-log/main';
  * @param condition Must be true to invoke logging
  * @returns A logger object with capabilities mapped to those of electron-log
  */
-export default function NewLogger(scope: string, condition?: (...a: any) => any) {
-    const c = process.argv.includes('--debug-' + scope.toLowerCase());
+export default function NewLogger(scope: LogType, condition?: (...a: any) => any) {
+    const c = process.argv.includes('--debug-' + scope);
     const cond = condition ?? (() => c);
 
     const l = Logger.scope(scope);

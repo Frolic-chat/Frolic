@@ -17,7 +17,7 @@ import core from '../../core';
 import l from '../../localize';
 
 import NewLogger from '../../../helpers/log';
-const log = NewLogger('SettingsNumber', () => process.env.NODE_ENV === 'development');
+const log = NewLogger('settings-minor', () => process.env.NODE_ENV === 'development');
 
 @Component({})
 export default class NumberInput extends Vue {

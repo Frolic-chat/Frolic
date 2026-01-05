@@ -20,7 +20,7 @@ import { Component, Hook, Prop } from '@f-list/vue-ts';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('WordDefinition');
+const log = NewLogger('dictionary');
 
 // tslint:disable-next-line:ban-ts-ignore
 // @ts-ignore

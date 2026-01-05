@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Logger from 'electron-log/renderer';
+import { LogType } from '../electron/common';
 
 import core from '../chat/core';
 
@@ -14,9 +15,9 @@ import core from '../chat/core';
  * @param condition Must be true to invoke logging
  * @returns A logger object with capabilities mapped to those of electron-log
  */
-export default function NewLogger(scope: string, condition?: (...a: any) => any) {
+export default function NewLogger(scope: LogType, condition?: (...a: any) => any) {
     // Skips logging if default generalSettings. (argv empty by default)
-    const s = core?.state.generalSettings.argv.includes('--debug-' + scope.toLowerCase()) ?? true;
+    const s = core?.state.generalSettings.argv.includes('--debug-' + scope) ?? true;
     const c = condition ?? (() => s);
 
     const l = Logger.scope(scope);

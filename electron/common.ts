@@ -51,3 +51,20 @@ export class GeneralSettings {
     };
     argv: string[] = [];
 }
+
+export type LogType =
+    | 'main'    | 'core'
+    | 'index'   | 'chat'    | 'home'
+    | 'connection'  | 'websocket'   | 'conversation'
+    | 'settings'    | 'settings-minor'
+    | 'worker'  | 'matcher' | 'rtb' | 'cache'
+    | 'site-session' | 'devtools'
+    | 'ads' | 'filters' | 'profile-helper'
+    | 'character-sheet' | 'search'  | 'eicons'
+    | 'activity'    | 'collapse'
+    | 'memo'    | 'updater' | 'scratchpad'
+    | 'logs'    | 'notes'   | 'browser' | 'dictionary'
+    | 'user-menu'   | 'chat'    | 'widgets' | 'bbcode'
+    | 'custom-gender'   | 'virtual-scroller'
+    | 'utils' // This one is bad, but no idea how to fit.
+;

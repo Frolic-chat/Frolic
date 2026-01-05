@@ -1,7 +1,7 @@
 import throat from 'throat';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('ad-manager');
+const log = NewLogger('ads');
 
 import core from '../core';
 import { FisherYatesShuffle } from '../../helpers/utils';

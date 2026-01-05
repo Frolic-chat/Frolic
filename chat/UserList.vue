@@ -65,7 +65,7 @@ import type { CharacterDataEvent } from './preview/event-bus';
 import { debounce } from '../helpers/utils';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('userlist');
+const log = NewLogger('chat');
 
 type StatusSort = { [key in Character.Status]: number };
 type GenderSort = { [key in Character.Gender]: number };

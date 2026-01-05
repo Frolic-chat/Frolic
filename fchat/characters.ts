@@ -11,7 +11,7 @@ import l from '../chat/localize';
 
 import NewLogger from '../helpers/log';
 const logCG = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
-const logConnecting = NewLogger('connecting', () => core.state.generalSettings.argv.includes('--debug-connecting'));
+const logConnecting = NewLogger('connection', () => core.state.generalSettings.argv.includes('--debug-connection'));
 
 class Character implements Interfaces.Character {
     /**

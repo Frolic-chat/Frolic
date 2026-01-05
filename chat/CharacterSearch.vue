@@ -77,7 +77,7 @@ import {
 import { CharacterCacheRecord } from '../learn/profile-cache';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('CharacterSearch');
+const log = NewLogger('search');
 
 type Options = {
     kinks: SearchKink[],

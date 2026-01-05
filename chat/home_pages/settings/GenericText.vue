@@ -14,7 +14,7 @@ import { Component, Prop } from '@f-list/vue-ts';
 import l from '../../localize';
 
 import NewLogger from '../../../helpers/log';
-const log = NewLogger('SettingsText');
+const log = NewLogger('settings-minor');
 
 @Component({})
 export default class GenericText extends Vue {

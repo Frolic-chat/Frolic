@@ -3,7 +3,7 @@ import {InlineDisplayMode, Settings, SimpleCharacter} from '../interfaces';
 import { dialog } from 'electron';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('site/utils');
+const log = NewLogger('utils');
 
 type FlashMessageType = 'info' | 'success' | 'warning' | 'danger';
 type FlashMessageImpl = (type: FlashMessageType, message: string) => void;

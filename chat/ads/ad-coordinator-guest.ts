@@ -1,7 +1,7 @@
 import { ipcRenderer, IpcRendererEvent } from 'electron';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('AdCoordinatorGuest');
+const log = NewLogger('ads');
 
 import core from '../core';
 

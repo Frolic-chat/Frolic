@@ -116,7 +116,7 @@ import core from '../core';
 import { Conversation } from '../interfaces';
 
 import NewLogger from '../../helpers/log';
-const log = NewLogger('home-data');
+const log = NewLogger('home');
 
 @Component({
     components: {

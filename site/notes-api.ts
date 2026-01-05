@@ -4,7 +4,7 @@ import core from '../chat/core';
 import EventBus from '../chat/preview/event-bus';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('notesAPI', () => core.state.generalSettings.argv.includes('--debug-notes'));
+const log = NewLogger('notes', () => core.state.generalSettings.argv.includes('--debug-notes'));
 
 export type TempNoteFormat = {
     note_id: number;

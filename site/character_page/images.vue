@@ -34,7 +34,7 @@
     //import core from '../../chat/core';
 
     import NewLogger from '../../helpers/log';
-    const log = NewLogger('cahracter_page_images');
+    const log = NewLogger('character-sheet');
 
     @Component
     export default class ImagesView extends Vue {

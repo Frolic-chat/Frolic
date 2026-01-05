@@ -97,7 +97,7 @@ import MatchTags from './preview/MatchTags.vue';
 import { MemoManager } from './character/memo';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('UserMenu');
+const log = NewLogger('user-menu');
 
 @Component({
         components: {

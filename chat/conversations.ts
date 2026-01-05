@@ -16,8 +16,8 @@ import EventBus from './preview/event-bus';
 import throat from 'throat';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('conversations', () => core?.state.generalSettings.argv.includes('--debug-conversations'));
-const logS = NewLogger('conversation-settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
+const log = NewLogger('conversation', () => core?.state.generalSettings.argv.includes('--debug-conversation'));
+const logS = NewLogger('settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
 const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
 const logRTB = NewLogger('rtb', () => core?.state.generalSettings.argv.includes('--debug-rtb'));
 const logNotes = NewLogger('notes', () => core?.state.generalSettings.argv.includes('--debug-notes'));
