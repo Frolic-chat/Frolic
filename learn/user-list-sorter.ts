@@ -40,10 +40,12 @@ const UserListSorter = {
 
     GetGenderArray(c: Character): Gender[] | null {
         const overrides = core.characters.get(c.name).overrides.gender?.match ?? [];
-        if (overrides)
+
+        if (overrides.length) {
             return overrides
                 .map(k => kinkToGenderMap[k])
                 .filter((g): g is Gender => g !== undefined); // Imagine having to spell it out. Nice, TS.
+        }
 
         const tag = Matcher.getTagValueList(TagId.Gender, c);
         return tag ? [ tag ] : null;
