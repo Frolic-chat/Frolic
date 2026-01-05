@@ -25,6 +25,10 @@ const log = NewLogger('cache-manager', () => core?.state.generalSettings.argv.in
 
 import { shouldFilterPrivate } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
 
+/**
+ * Limiter on the accuracy of the profile queue in order to speed up queueing. It really shouldn't be that impactful.
+ */
+const QUEUE_MAX_SORTS = 2;
 
 export interface ProfileCacheQueueEntry {
     name: string;
@@ -125,13 +129,17 @@ export class CacheManager {
             this.queue.push(entry);
         else {
             let low = 0, high = this.queue.length;
-            while (low < high) {
+            let sorts = 0;
+
+            while (sorts < QUEUE_MAX_SORTS && low < high) {
                 const mid = (low + high) >> 1; // floor
 
                 if (this.queue[mid].score < entry.score)
                     high = mid;
                 else
                     low = mid + 1;
+
+                sorts++;
             }
 
             this.queue.splice(low, 0, entry);
