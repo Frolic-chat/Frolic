@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-    <modal :action="nameTheModal()" ref="dialog" dialogClass="" @submit="handle" buttonText="Submit">
+    <modal :action="nameTheModal()" ref="dialog" dialogClass="w-100 modal-xl" @submit="handle" buttonText="Submit">
         <tabs style="flex-shrink:0" :tabs="tabNames" v-model="tab"></tabs>
 
         <spoof  v-show="tab === '0'" ref="0" id="devtools-spoof"  ></spoof>
