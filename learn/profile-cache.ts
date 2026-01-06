@@ -97,7 +97,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         this.MAX_CACHE_SIZE = this.MAX_CACHE_BUFFER + this.friend_cache_size + this.bookmark_cache_size + this.channel_cache_size + this.user_cache_size;
 
-        logCache.debug('ProfileCache.recalcCacheSize', this.MAX_CACHE_SIZE);
+        logCache.silly('ProfileCache.recalcCacheSize', this.MAX_CACHE_SIZE);
     }
 
     protected setFriendCount(n: number) {
