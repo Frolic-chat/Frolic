@@ -27,11 +27,11 @@
         </button>
     </div>
 
-    <!-- Results section needed -->
+    <h5 class="text-center">{{ results.length }} results</h5>
      <div class="d-flex flex-grow-1" style="overflow: auto">
         <div class="results row flex-wrap">
-            <div v-for="char in results" class="col d-flex flex-column">
-                <user :character="char" showStatus match avatar></user>
+            <div v-for="char in results" :key="char.name" class="col-auto d-flex flex-column">
+                <user :character="char" :showStatus="true" :match="true"></user>
                 <div>
                     <span class="text-success">{{ char.isFriend ? '1' : '0' }}</span>
                     <span class="text-info">{{ char.isBookmarked ? '1' : '0' }}</span>
@@ -124,7 +124,7 @@ export default class Search extends Vue {
         const chars = Object.values(this.characterList);
         const results: Character[] = [];
 
-        const process = async (start: number) => {
+        const process = async (start: number = 0) => {
             if (this.canceled)
                 return;
 
@@ -167,9 +167,9 @@ export default class Search extends Vue {
                 process(stop);
         }
 
-        process(0);
+        process();
 
-        this.results = results;
+        this.$set(this, 'results', results);
     }
 }
 </script>
