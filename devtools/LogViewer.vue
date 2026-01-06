@@ -4,9 +4,8 @@
     <div>Levels: {{ levels.join(', ') }}.</div>
     <hr />
     <div class="row" v-for="_, scope in scopes" :key="scope">
-        <input type="checkbox" :value="scopes[scope]" @change="updateLogLevel(scope, $event)"  />
-        <!-- <div style="flex-grow: 1; margin-left: 13px">{{ levels[level] }}</div> -->
-        <div style="min-width: 33%">{{ scope }}</div>
+        <input type="checkbox" :id="`toggle-log-${scope}`" :checked="scopes[scope]" @change="updateLogging(scope, $event.target.checked)" class="col-auto" />
+        <label :for="`toggle-log-${scope}`" class="col">{{ scope }}</label>
     </div>
 </div>
 </template>
@@ -18,36 +17,55 @@ import { Component, Hook } from '@f-list/vue-ts';
 import core from '../chat/core';
 
 import Logger from 'electron-log/renderer';
+import { LogType } from '../electron/common';
+
+import NewLogger from '../helpers/log';
+const log = NewLogger('devtools');
+
+// Based on common.ts types.
+const loggers: ReadonlyArray<LogType> = [ 'main', 'core', 'index', 'chat', 'home', 'connection', 'websocket', 'conversation', 'settings', 'settings-minor', 'worker', 'matcher', 'rtb', 'cache', 'site-session', 'devtools', 'ads', 'filters', 'profile-helper', 'character-sheet', 'search', 'eicons', 'activity', 'collapse', 'memo', 'updater', 'scratchpad', 'logs', 'notes', 'browser', 'dictionary', 'user-menu', 'chat', 'widgets', 'bbcode', 'custom-gender', 'virtual-scroller', 'utils', ] as const;
 
 @Component
 export default class LogViewer extends Vue {
 levels: string[] = Logger.levels;
-scopes: Record<string, boolean> = {
-    'CharacterSearch':  false,
-    'Chat':             false,
-    'event-bus':        false,
-    'chat':             false,
-    'Index':            false,
-    'blocker':          false,
-    'cache-manager':    false,
-    'matcher':          false,
-    'UserListSorter':   false,
-    'WordDefinition':   false,
-    'note-checker':     false,
-    'site-session':     false,
-};
+scopes: Record<LogType, boolean> = loggers.reduce(
+    (box, scope) => {
+        box[scope] = false;
+
+        return box;
+    },
+    {} as Record<LogType, boolean>
+);
 desc: string[] = [];
 logs: { [key: string]: number } = {};
 
-@Hook('created')
-created() {
-    Object.keys(this.scopes).forEach(k => {
-        this.scopes[k] = core.state.generalSettings.argv.includes(`--debug-${k}`);
+@Hook('beforeMount')
+beforeMount() {
+    loggers.forEach(scope => {
+        const state = core.state.generalSettings.argv.includes(`--debug-${scope}`);
+        this.scopes[scope] = state;
+
+        log.silly(`LogViewer.beforeMount.${scope}.${state}`);
     });
 }
 
-updateLogLevel(_scope: string, _e: Event) {
-    // const value = e.target.value
+updateLogging(scope: LogType, checked: boolean) {
+    log.debug('LogViewer.updateLogging', { old: this.scopes[scope], new: checked });
+
+    this.scopes[scope] = checked;
+
+    const flag = `--debug-${scope}`;
+
+    const index = core.state.generalSettings.argv.indexOf(flag);
+
+    if (checked) {
+        if (index < 0)
+            core.state.generalSettings.argv.push(flag);
+    }
+    else {
+        if (index > -1)
+            core.state.generalSettings.argv.splice(index, 1);
+    }
 }
 }
 </script>
