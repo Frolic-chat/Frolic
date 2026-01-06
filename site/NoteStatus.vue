@@ -19,7 +19,7 @@
         </span>
 
         <div v-if="latestUnreadForThisCharacter && latestSender && latestReceiver">
-            <span class="text-muted">Latest unread:</span> <user :character="latestSender" immediate showStatus bookmark></user> => <user :character="latestReceiver" immediate></user>, <i>{{ latestUnreadForThisCharacter.datetime_sent }}</i>
+            <span class="text-muted">Latest unread:</span> <user :character="latestSender" :immediate="true" :showStatus="true" :bookmark="true"></user> => <user :character="latestReceiver" :immediate="true" :showStatus="true" :bookmark="true"></user>, <i>{{ latestUnreadForThisCharacter.datetime_sent }}</i>
         </div>
     </template>
 
