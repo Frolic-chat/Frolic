@@ -114,6 +114,9 @@ export class CoreBBCodeParser extends BBCodeParser {
             const content = parser.createElement('span');
             link.href = '#';
             link.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
                 const target = e.target as HTMLElement;
                 target.parentElement!.replaceChild(content, target);
                 return false;
