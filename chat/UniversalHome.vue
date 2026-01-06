@@ -361,8 +361,8 @@ export default class HomeScreen extends Vue {
         });
 
         log.debug('UniversalHome.mounted.modals', {
-            logs:         this.logs,
-            commandHelp:  this.commandHelp,
+            // logs:         this.logs,
+            // commandHelp:  this.commandHelp,
             // x-origin blocked: reportdialog: this.reportDialog,
         });
 
