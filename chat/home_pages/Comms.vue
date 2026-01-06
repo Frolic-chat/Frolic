@@ -12,6 +12,12 @@
         <div class="d-flex flex-column flex-nowrap">
             <slot name="before-body"></slot>
 
+            <!-- status -->
+            <div class="form-group" v-if="char && char.statusText.trim()">
+                <h5>Status</h5>
+                <bbcode :text="char.statusText" class="form-control" style="user-select: text; height: auto;"></bbcode>
+            </div>
+
             <!-- memo -->
             <div class="form-group">
                 <h5>Memo</h5>
@@ -109,7 +115,7 @@ import core from '../core';
 import EventBus from '../preview/event-bus';
 import type { SiteSessionEvent } from '../preview/event-bus';
 import { BBCodeView } from '../../bbcode/view';
-import { Conversation } from '../interfaces';
+import { Conversation, Character } from '../interfaces';
 import ChannelView from '../ChannelTagView.vue';
 import type { TempNoteFormat } from '../../site/notes-api';
 
@@ -126,6 +132,21 @@ const logMemo = NewLogger('memo');
 export default class Comms extends Vue {
     @Prop()
     readonly character!: string;
+    char?: Character;
+
+    @Watch('character', { immediate: true })
+    onCharacterChanged() {
+        if (!Conversation.isPrivate(this.conversation)) {
+            this.char = undefined;
+        }
+        else {
+            this.char = core.characters.get(this.character);
+
+            void this.getMemoFromCache();
+            void this.refreshNotes();
+            this.updateSharedChannelDisplay();
+        }
+    }
 
     get conversation() {
         return core.conversations.selectedConversation;
@@ -161,14 +182,6 @@ export default class Comms extends Vue {
     }
 
     onNoteApi = () => this.refreshNotes();
-
-    @Watch('character', { immediate: true })
-    characterChanged() {
-        void this.getMemoFromCache();
-        void this.refreshNotes();
-        this.updateSharedChannelDisplay();
-    }
-
 
 
     /**
