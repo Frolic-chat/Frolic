@@ -208,7 +208,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             'add-pm-partner': PmPartnerAdder,
             adCenter: AdCenterDialog,
             adLauncher: AdLauncherDialog,
-            ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/command_center.vue') } : {})
+            ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/CommandCenter.vue') } : {})
         }
     })
     export default class ChatView extends Vue {
