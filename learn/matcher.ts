@@ -88,6 +88,11 @@ export interface MatchResultScores {
 
 export type OmittedScores = TagId[];
 
+/**
+ * totalScoreDimensions is a metric of how filled-out each of your profiles are. Big number means you both filled out your profiles substantially.
+ * The dimensionsAtScoreLevel is a metric of consistency.
+ * There's also an "above level score" used in the search results matcher (which applies additional penalties to generate your search-matching score)
+ */
 export interface MatchScoreDetails {
     totalScoreDimensions: number;
     dimensionsAtScoreLevel: number;
@@ -418,10 +423,10 @@ export class Matcher {
                     null
                 );
 
+        // Manage edge cases where high score may not be ideal
         if (finalScore !== null && finalScore > 0) {
-            // Manage edge cases where high score may not be ideal
 
-            // Nothing to score
+            // Not enough information for accurate score
             if (yourScores.length === 0 || theirScores.length === 0) {
                 return Scoring.NEUTRAL;
             }

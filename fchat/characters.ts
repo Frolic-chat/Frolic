@@ -137,9 +137,12 @@ class State implements Interfaces.State {
          */
     }
 
+    /**
+     * `get()` will dispatch an asynchronous request to the overrides store to populate the chat-character with overrides from cache. If you need to be sure you have valid overrides, wait on `getAsync`.
+     */
     get(name: string, useStore = true): Character {
         // Avoid the complexity of converting to `Character | null`
-        if (!name.trim()) name = 'Frolic Chat';
+        if (!name.trim()) name = 'Frolic';
         //else       name = this.sanitize(name);
 
         const key = name.toLowerCase();
