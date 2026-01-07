@@ -368,5 +368,6 @@ export interface Runtime {
         activity?:   boolean,
         scratchpad?: boolean,
         notes?:      boolean,
+        licenses?:   boolean,
     }
 }
