@@ -126,6 +126,6 @@
 
 .quick-info-block .custom-gender .infotag-value {
     border-bottom: 1px solid transparent;
-    border-image: linear-gradient(90deg in oklab, #b9e3ff, #ebd0ff, #ffd19a, #67ffad) 1
+    border-image: linear-gradient(90deg in oklab, color-mix(in oklab, #b9e3ff, #67ffad), #b9e3ff, #ebd0ff, #ffd19a, #67ffad, color-mix(in oklab, #b9e3ff, #67ffad)) 1
 }
 </style>
