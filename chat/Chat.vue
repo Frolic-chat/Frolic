@@ -181,9 +181,6 @@ const log = NewLogger('chat');
                     },
                     this.ownCharacters
                 );
-
-                if (core.state.settings.notifications)
-                    await core.notifications.requestPermission();
             });
             core.connection.onEvent('connected', () => {
                 log.debug('connection.connected', {
