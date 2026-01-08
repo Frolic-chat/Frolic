@@ -16,7 +16,6 @@ import { GeneralSettings } from '../electron/common';
 import { Gender } from './matcher-types';
 import { WorkerStore } from './store/worker';
 import { PermanentIndexedStore } from './store/types';
-import * as path from 'path';
 import { lastElement } from '../helpers/utils';
 import { matchesSmartFilters } from './filter/smart-filter';
 
@@ -302,9 +301,10 @@ export class CacheManager {
 
         log.silly('CacheManager.start');
 
-        this.profileStore = await WorkerStore.open(
-            path.join(/*electron.remote.app.getAppPath(),*/ 'storeWorkerEndpoint.js')
-        ); // await IndexedStore.open();
+        // Use existence check because the thread isn't shut down; when reusing the state-based `core.cache`
+        if (!this.profileStore) {
+            this.profileStore = await WorkerStore.open('storeWorkerEndpoint.js');
+        }
 
         this.profileCache.setStore(this.profileStore);
 

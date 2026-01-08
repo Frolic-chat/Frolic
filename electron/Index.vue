@@ -149,6 +149,7 @@
 
     import NewLogger from '../helpers/log';
     const log = NewLogger('index');
+    const logC = NewLogger('cache');
     // const logBB = NewLogger('bbcode');
 
     @Component({
@@ -521,7 +522,7 @@
                 );
             },
             cache: async () => {
-                log.debug('init.chat.cache.start');
+                logC.debug('init.chat.cache.start');
 
                 try {
                     await core.cache.start(this.settings, this.upgradeRoutineShouldRun);
@@ -539,7 +540,7 @@
                     });
                 };
 
-                log.debug('init.chat.cache.done');
+                logC.debug('init.chat.cache.done');
             },
             listeners: async () => {
                 Electron.ipcRenderer.on('open-profile', (_e, name: string) => {

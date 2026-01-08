@@ -159,9 +159,8 @@ const log = NewLogger('chat');
                 core.adCoordinator.clear();
                 EventBus.clear();
 
-                // tslint:disable-next-line:no-floating-promises
-                core.siteSession.onConnectionClosed();
-                core.cache.stop();
+                void core.siteSession.onConnectionClosed();
+                void core.cache.stop();
 
                 document.title = l('title');
             });
