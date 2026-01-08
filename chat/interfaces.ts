@@ -372,5 +372,6 @@ export interface Runtime {
         notes?:           boolean,
         licenses?:        boolean,
         devMatchDetails?: boolean,
+        devLogging?:      boolean,
     }
 }

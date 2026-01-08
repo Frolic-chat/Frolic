@@ -12,7 +12,7 @@
     <template v-slot:default>
         <div class="d-flex flex-column">
             <div class="text-xl-center text-justify font-italic">This tool reveals the inner machinations of the Rising matchmaker. If you report an issue with matchmaking or ads, you may be asked to provide this information to help find the cause of the issue.</div>
-            <hr>
+            <hr class="my-3">
             <h5 v-if="bestMatchReport" class="text-center">
                 {{ bestMatchReport.you.you.name }} <-> {{ bestMatchReport.them.you.name }}
             </h5>

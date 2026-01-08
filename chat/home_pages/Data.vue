@@ -57,8 +57,9 @@
                 <licenses bodyClass="d-flex flex-column" ref="licenses"></licenses>
             </div>
 
-            <!-- Match details -->
+            <!-- Developer assistance -->
             <dev-match-details v-if="isPrivate" :conversation="conversation"></dev-match-details>
+            <dev-logging v-else-if="isHome"></dev-logging>
         </div>
 
         <slot name="after-body"></slot>
@@ -77,6 +78,7 @@ import { Component, Prop, Watch } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import Licenses from './widgets/Licenses.vue';
+import DeveloperLogging from './widgets/DeveloperLogging.vue';
 import MatchDetailsDeveloperDisplay from './widgets/DeveloperMatchDetails.vue';
 
 import core from '../core';
@@ -91,6 +93,7 @@ import { Conversation } from '../interfaces';
 
         // Home pages:
         licenses: Licenses,
+        'dev-logging': DeveloperLogging,
 
         // Private Conversation:
         'dev-match-details': MatchDetailsDeveloperDisplay,
