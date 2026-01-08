@@ -99,7 +99,7 @@ export class CacheManager {
             return;
         }
 
-        log.debug('CacheManager.queue', { name, skipCacheCheck, channelId, from: core.characters.ownCharacter.name });
+        log.debug('CacheManager.queue', { name, skipCacheCheck, channelId, from: core.characters.ownCharacter.name, current_queue: this.queue });
 
         if (!skipCacheCheck) {
             const c = await this.profileCache.get(name);
@@ -249,19 +249,24 @@ export class CacheManager {
      */
     consumeNextInQueue(): ProfileCacheQueueEntry | null {
         if (this.queue.length === 0) {
+            log.silly('CacheManager.consumeNextInQueue.empty');
+
             return null;
         }
 
-        log.debug('QUEUE', this.queue.map(q => `${q.name}: ${q.score}`));
+        log.silly('CacheManager.consumeNextInQueue.prePop', this.queue.map(q => `${q.name}: ${q.score}`));
 
         const entry = this.queue.shift();
 
-        if (!entry)
+        if (entry) {
+            log.debug('CacheManager.consumeNextInQueue.postPop', entry.name, this.queue.length);
+
+            return entry;
+        }
+        else {
+            log.warn('CacheManager.consumeNextInQueue.blankEntry', { queue: this.queue });
             return null;
-
-        log.debug('PopFromQueue', entry.name, this.queue.length);
-
-        return entry;
+        }
     }
 
     calculateScore(e: ProfileCacheQueueEntry): number {
@@ -269,30 +274,25 @@ export class CacheManager {
     }
 
     private on_character_data = async(data: CharacterDataEvent) => {
-      // this promise is intentionally NOT chained
-      // tslint:disable-next-line: no-floating-promises
-      this.onCharacterData(data);
+        void this.onCharacterData(data);
     }
+
     private on_channel_message = async(data: ChannelMessageEvent) => {
-      // this promise is intentionally NOT chained
-      // tslint:disable-next-line: no-floating-promises
-      this.onChannelMessage(data);
+        void this.onChannelMessage(data);
     };
+
     private on_channel_ad = async(data: ChannelAdEvent) => {
-      // this promise is intentionally NOT chained
-      // tslint:disable-next-line: no-floating-promises
-      this.onChannelAd(data);
+        void this.onChannelAd(data);
     };
+
     private on_select_conversation = async(data: SelectConversationEvent) => {
-      // this promise is intentionally NOT chained
-      // tslint:disable-next-line: no-floating-promises
-      this.onSelectConversation(data);
+        this.onSelectConversation(data);
     };
+
     private on_conversation_load_more = async(data: SelectConversationEvent) => {
-      // this promise is intentionally NOT chained
-      // tslint:disable-next-line: no-floating-promises
-      this.onLoadMoreConversation(data);
+        this.onLoadMoreConversation(data);
     };
+
     private on_smartfilters_update = async () => {
         this.rebuildFilters();
     }
@@ -300,20 +300,26 @@ export class CacheManager {
     async start(settings: GeneralSettings, flushCache: boolean = false): Promise<void> {
         await this.stop();
 
+        log.silly('CacheManager.start');
+
         this.profileStore = await WorkerStore.open(
             path.join(/*electron.remote.app.getAppPath(),*/ 'storeWorkerEndpoint.js')
         ); // await IndexedStore.open();
 
         this.profileCache.setStore(this.profileStore);
 
-        if (flushCache)
+        if (flushCache) {
             await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
+
+            log.info('CacheManager.start.flushCache', { time: new Date().toLocaleDateString() });
+        }
 
         EventBus.$on('character-data',          this.on_character_data);
         EventBus.$on('channel-message',         this.on_channel_message);
         EventBus.$on('channel-ad',              this.on_channel_ad);
         EventBus.$on('select-conversation',     this.on_select_conversation);
         EventBus.$on('conversation-load-more',  this.on_conversation_load_more);
+        EventBus.$on('smartfilters-update',     this.on_smartfilters_update);
         // EventBus.$on('private-message', (data: PrivateMessageEvent) => {}); // Never used.
 
 
@@ -557,7 +563,7 @@ export class CacheManager {
         EventBus.$off('channel-ad',             this.on_channel_ad);
         EventBus.$off('select-conversation',    this.on_select_conversation);
         EventBus.$off('conversation-load-more', this.on_conversation_load_more);
-        EventBus.$on('smartfilters-update',     this.on_smartfilters_update);
+        EventBus.$off('smartfilters-update',    this.on_smartfilters_update);
     }
 
 
