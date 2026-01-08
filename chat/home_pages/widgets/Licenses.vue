@@ -3,7 +3,7 @@
     Activity is a special chat window that only shows recent things you can respond to. It's important that they're actionable; people should look here if they want a head's-up.
 -->
 <template>
-<collapse ref="licenseCollapse" :initial="yohhlrf" @open="toggle.licenses = false" @close="toggle.licenses = true">
+<collapse ref="licenseCollapse" :bodyClass="bodyClass" :initial="yohhlrf" @open="toggle.licenses = false" @close="toggle.licenses = true">
     <template v-slot:header>
         Applicable Licenses
     </template>
@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component, Prop, Hook } from '@f-list/vue-ts';
 import Vue from 'vue';
 
 import Collapse from '../../../components/collapse.vue';
@@ -60,15 +60,18 @@ const log = NewLogger('home');
     }
 })
 export default class Licenses extends Vue {
-     @Hook('mounted')
-     onMount() {
+    @Prop({ default: undefined })
+    readonly bodyClass?: string;
+
+    @Hook('mounted')
+    onMount() {
         setImmediate(async () => {
             try {
                 this.licenseFiles = await Electron.ipcRenderer.invoke('get-license-files');
             }
             catch {}
         });
-     }
+    }
 
     licenseFiles: string[] = [];
     loading_a_license = false;
@@ -117,4 +120,12 @@ export default class Licenses extends Vue {
 </script>
 
 <style lang="scss">
+.preformatted-shrink-wrap {
+    color:inherit; /* Claaaaassic bootstrap! HaHaHa! */
+
+    display:inline-block;
+
+    white-space: pre-wrap;
+    user-select:text;
+}
 </style>

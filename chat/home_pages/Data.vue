@@ -11,7 +11,7 @@
     <template v-slot:default>
         <slot name="before-body"></slot>
 
-        <div class="d-flex flex-column flex-nowrap">
+        <div class="d-flex flex-column flex-nowrap" style="gap: 1em;">
 
             <!-- Link/unlink channel? -->
 
@@ -142,14 +142,5 @@ export default class Data extends Vue {
 <style>
 .page-header {
     height: 3em;
-}
-
-.preformatted-shrink-wrap {
-    color:inherit; /* Claaaaassic bootstrap! HaHaHa! */
-
-    display:inline-block;
-
-    white-space: pre-wrap;
-    user-select:text;
 }
 </style>
