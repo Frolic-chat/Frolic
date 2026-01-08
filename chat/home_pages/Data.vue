@@ -56,6 +56,9 @@
             <div v-if="isHome" id="frolic-licenses" class="card modal-content d-flex flex-column">
                 <licenses bodyClass="d-flex flex-column" ref="licenses"></licenses>
             </div>
+
+            <!-- Match details -->
+            <dev-match-details v-if="isPrivate" :conversation="conversation"></dev-match-details>
         </div>
 
         <slot name="after-body"></slot>
@@ -74,6 +77,7 @@ import { Component, Prop, Watch } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import Licenses from './widgets/Licenses.vue';
+import MatchDetailsDeveloperDisplay from './widgets/DeveloperMatchDetails.vue';
 
 import core from '../core';
 import { Conversation } from '../interfaces';
@@ -84,7 +88,12 @@ import { Conversation } from '../interfaces';
 @Component({
     components: {
         page: HomePageLayout,
+
+        // Home pages:
         licenses: Licenses,
+
+        // Private Conversation:
+        'dev-match-details': MatchDetailsDeveloperDisplay,
     },
 })
 export default class Data extends Vue {

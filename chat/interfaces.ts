@@ -363,11 +363,14 @@ export interface Runtime {
     dialogStack: Modal[];
     primaryInput: HTMLInputElement | HTMLTextAreaElement | null;
     registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement): void;
-    userToggles: { [key: string]: boolean } & {
-        news?:       boolean,
-        activity?:   boolean,
-        scratchpad?: boolean,
-        notes?:      boolean,
-        licenses?:   boolean,
+    userToggles: {
+        [key: string]: boolean
+    } & {
+        news?:            boolean,
+        activity?:        boolean,
+        scratchpad?:      boolean,
+        notes?:           boolean,
+        licenses?:        boolean,
+        devMatchDetails?: boolean,
     }
 }
