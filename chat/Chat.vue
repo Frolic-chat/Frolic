@@ -194,6 +194,9 @@ const log = NewLogger('chat');
                 document.title = l('title.connected', core.connection.character);
 
                 void core.siteSession.onConnectionEstablished();
+
+                // Compatible with the core starting earlier in Index.vue virtue of calling `stop` inside. (And that `stop` call actually working.)
+                core.cache.start();
             });
             core.watch(
                 () => core.conversations.hasNew,

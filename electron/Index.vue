@@ -243,7 +243,9 @@
 
             await this.start.taskDisplay();
 
-            void this.awaitStartUpTask('core', this.start.cache);
+            if (this.upgradeRoutineShouldRun)
+                void this.awaitStartUpTask('core', this.start.cache);
+
             if (this.settings.account)
                 void this.awaitStartUpTask('index', this.start.restoreLogin);
 
@@ -517,15 +519,18 @@
                     );
                 }
 
-                this.tasks.push(
-                    { id: 'core',  name: 'Core Services', running: true },
-                );
+                if (this.upgradeRoutineShouldRun) {
+                    this.tasks.push(
+                        { id: 'core',  name: 'Core Services', running: true },
+                    );
+                }
             },
             cache: async () => {
                 logC.debug('init.chat.cache.start');
 
                 try {
-                    await core.cache.start(this.upgradeRoutineShouldRun);
+                    // Early cache start to deal with removing old profiles.
+                    await core.cache.start(true);
                 }
                 catch (e) {
                     const msg = typeof e === 'string'
