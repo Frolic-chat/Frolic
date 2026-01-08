@@ -525,7 +525,7 @@
                 logC.debug('init.chat.cache.start');
 
                 try {
-                    await core.cache.start(this.settings, this.upgradeRoutineShouldRun);
+                    await core.cache.start(this.upgradeRoutineShouldRun);
                 }
                 catch (e) {
                     const msg = typeof e === 'string'

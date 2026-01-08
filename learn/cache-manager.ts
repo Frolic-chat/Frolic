@@ -12,7 +12,6 @@ import ChannelConversation = Conversation.ChannelConversation;
 import Message = Conversation.Message;
 import { Character as ChatCharacter } from '../fchat/interfaces';
 import ChatMessage = Conversation.ChatMessage;
-import { GeneralSettings } from '../electron/common';
 import { Gender } from './matcher-types';
 import { WorkerStore } from './store/worker';
 import { PermanentIndexedStore } from './store/types';
@@ -296,7 +295,7 @@ export class CacheManager {
         this.rebuildFilters();
     }
 
-    async start(settings: GeneralSettings, flushCache: boolean = false): Promise<void> {
+    async start(flushCache = false, expirationInDays = 30): Promise<void> {
         await this.stop();
 
         log.silly('CacheManager.start');
@@ -309,7 +308,7 @@ export class CacheManager {
         this.profileCache.setStore(this.profileStore);
 
         if (flushCache) {
-            await this.profileStore.flushProfiles(settings.risingCacheExpiryDays);
+            await this.profileStore.flushProfiles(expirationInDays);
 
             log.info('CacheManager.start.flushCache', { time: new Date().toLocaleDateString() });
         }
