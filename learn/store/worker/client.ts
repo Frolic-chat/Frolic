@@ -56,11 +56,11 @@ export class WorkerClient {
       }
 
       if (res.state === 'ok') {
-        // const t = Date.now() - waiter.initiated;
-
-        // if (t > 200) {
-        //   log.debug('store.worker.client.msg.slow', { t: t / 1000, req: waiter.request, res });
-        // }
+        log.silly('store.worker.client.msg.timer', {
+          t: Date.now() - waiter.initiated / 1000,
+          req: waiter.request,
+          res,
+        });
 
         waiter.resolve(res.result);
       }
