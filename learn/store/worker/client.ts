@@ -1,17 +1,9 @@
-import { IndexedRequest, IndexedResponse, ProfileStoreCommand } from './types';
+import { IndexedRequest, IndexedResponse, WaiterDef } from './types';
 
 import NewLogger from '../../../helpers/log';
 const log = NewLogger('worker');
 
-export interface WaiterDef {
-  id: string;
-  resolve(result?: any): void;
-  reject(result?: any): void;
-  initiated: number;
-  request: IndexedRequest;
-}
-
-export class WorkerClient {
+export class WorkerClient<CommandType> {
   // @ts-ignore
   private _isVue = true;
 
@@ -19,7 +11,7 @@ export class WorkerClient {
 
   private idCounter = 0;
 
-  private waiters: WaiterDef[] = [];
+  private waiters: WaiterDef<CommandType>[] = [];
 
   constructor(jsFile: string) {
     this.worker = new Worker(jsFile);
@@ -34,7 +26,7 @@ export class WorkerClient {
   }
 
 
-  private when(id: string, resolve: (result?: any) => void, reject: (reason?: any) => void, request: IndexedRequest): void {
+  private when(id: string, resolve: (result?: any) => void, reject: (reason?: any) => void, request: IndexedRequest<CommandType>): void {
     this.waiters.push({ id, resolve, reject, request, initiated: Date.now() });
   }
 
@@ -92,10 +84,10 @@ export class WorkerClient {
    * @param params
    * @returns
    */
-  async request(cmd: ProfileStoreCommand, params: Record<string, any> = {}): Promise<any> {
+  async request(cmd: CommandType, params: Record<string, any> = {}): Promise<any> {
     const id = this.generateId();
 
-    const request: IndexedRequest = {
+    const request: IndexedRequest<CommandType> = {
       cmd, id, params,
     };
 

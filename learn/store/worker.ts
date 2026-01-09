@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {Character as ComplexCharacter, CharacterGroup, Guestbook} from '../../site/character_page/interfaces';
 import { PermanentIndexedStore, ProfileRecord, OverrideRecord, CharacterOverridesBatch } from './types';
+import { ProfileStoreCommand } from './worker/types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
 import { CharacterOverrides } from '../../fchat/characters';
 
@@ -21,7 +22,7 @@ export class WorkerStore implements PermanentIndexedStore {
     // @ts-ignore
     private _isVue = true;
 
-    protected readonly workerClient: WorkerClient;
+    protected readonly workerClient: WorkerClient<ProfileStoreCommand>;
 
     constructor(jsEndpointFile: string) {
       this.workerClient = new WorkerClient(jsEndpointFile);

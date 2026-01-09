@@ -5,10 +5,20 @@ export type ProfileStoreCommand =
   | 'get-profile'   /*| 'get-profile-batch'*/   | 'store-profile'   | 'flush-profiles'
   | 'get-overrides' | 'get-overrides-batch' | 'store-overrides' | 'flush-overrides';
 
-export interface IndexedRequest {
-  cmd: ProfileStoreCommand;
+  export type ProfileStoreRequest = IndexedRequest<ProfileStoreCommand>;
+
+export interface IndexedRequest<T> {
+  cmd: T;
   id: string;
   params: Record<string, any>;
+}
+
+export interface WaiterDef<T> {
+  id: string;
+  resolve(result?: any): void;
+  reject(result?: any): void;
+  initiated: number;
+  request: IndexedRequest<T>;
 }
 
 export interface IndexedResponse {

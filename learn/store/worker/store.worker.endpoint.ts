@@ -12,19 +12,19 @@
  *
  * This license header applies to this file and all of the non-third-party assets it includes.
  * @file The entry point for the store worker thread of Frolic.
- * @copyright 2021 F-Chat Rising Contributors, 2025 Frolic Contributors
+ * @copyright 2021 F-Chat Rising Contributors, 2025-2026 Frolic Contributors
  * @author F-Chat Rising Contributors, Frolic Contributors
- * @version 0.7.10
+ * @version 0.8.7
  * @see {@link https://github.com/frolic-chat/frolic|GitHub repo}
  */
 import { IndexedStore } from '../indexed';
-import { IndexedRequest, ProfileStoreCommand } from './types';
+import { ProfileStoreRequest, ProfileStoreCommand } from './types';
 
 type IndexedCallback = (params: Record<string, any>) => Promise<any>;
 
 let indexed: IndexedStore;
 
-const reply = (req: IndexedRequest, result?: any, err?: string | Error): void => {
+const reply = (req: ProfileStoreRequest, result?: any, err?: string | Error): void => {
   const res: any = {
     type: 'res',
     id: req.id,
@@ -67,7 +67,7 @@ const generateMessageProcessor = () => {
     }
   };
 
-  return async(e: MessageEvent<IndexedRequest>) => {
+  return async(e: MessageEvent<ProfileStoreRequest>) => {
     // log.silly('store.worker.endpoint.msg', { e });
 
     const req = e.data;
