@@ -109,7 +109,7 @@ export default class NotesApi implements SiteSessionInterface {
 
         let response = await this.searchUser(theirCharacter, { offset, amount: request_amount });
 
-        // log.debug('NotesApi.getAllBetween.res.total', res.total);
+        log.debug('NotesApi.getAllBetween.res.total', response.total);
 
         while (true) {
             for (const note of response.notes) {
