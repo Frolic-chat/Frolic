@@ -142,8 +142,8 @@ export default class Comms extends Vue {
         else {
             this.char = core.characters.get(this.character);
 
-            void this.getMemoFromCache();
-            void this.refreshNotes();
+            void this.getMemoFromCache(this.character);
+            void this.refreshNotes(this.character);
             this.updateSharedChannelDisplay();
         }
     }
@@ -177,11 +177,11 @@ export default class Comms extends Vue {
         if (state === 'active') {
             EventBus.$off('site-session', this.onSiteSession);
 
-            this.refreshNotes();
+            this.refreshNotes(this.character);
         }
     }
 
-    onNoteApi = () => this.refreshNotes();
+    onNoteApi = () => this.refreshNotes(this.character);
 
 
     /**
@@ -194,21 +194,29 @@ export default class Comms extends Vue {
     memoInEdit: string | null = '';
     memoError = '';
 
-    async getMemoFromCache() {
+    async getMemoFromCache(name: string) {
+        const name_key = name.toLowerCase();
+
         this.memoLoading = true;
+        this.memoBody = '';
         this.editingMemo = false;
         this.memoError = '';
 
         try {
-            const c = await core.cache.profileCache.get(this.character);
+            const c = await core.cache.profileCache.get(name_key);
 
-            this.memoBody = c?.character.memo?.memo ?? null;
+            if (name_key === this.character.toLowerCase()) {
+                this.memoBody = c?.character.memo?.memo ?? null;
+
+                // If we changed characters, we don't need to turn off memoLoading, because that change also triggered a memoLoading = true call and will turn it off when it's finished (or errors)
+                this.memoLoading = false;
+            }
         }
         catch {
             this.memoError = 'Failed to fetch memo.';
-        }
-        finally {
-            this.memoLoading = false;
+
+            if (name_key === this.character.toLowerCase())
+                this.memoLoading = false;
         }
     }
 
@@ -282,33 +290,46 @@ export default class Comms extends Vue {
     latestNote?: TempNoteFormat;
     noteError = '';
 
-    async refreshNotes() {
+    async refreshNotes(name: string) {
         if (!core.siteSession.isRunning) {
             this.noteError = 'The background service has not yet started.';
             return;
         }
 
+        const name_key = name.toLowerCase();
+        const conversation = core.conversations.byKey(name_key);
+
+        if (!conversation || !Conversation.isPrivate(conversation))
+            return;
+
+        this.noteCount = 0;
+        this.latestNote = undefined;
         this.notesLoading = true;
         this.noteError = '';
 
         try {
-            if (!Conversation.isPrivate(this.conversation))
-                return; // safety
+            if (!conversation.notes.initialized) {
+                // Still need a good way to differentiate between Server Name, string, and NameKey.
+                // You'd think this would be user id... :)
+                // So, how do you get the canonical user id of a deleted character?
+                const server_notes = await core.siteSession.interfaces.notes.getAllBetween(core.characters.ownCharacter.name, name);
 
-            if (!this.conversation.notes.initialized) {
-                const server_notes = await core.siteSession.interfaces.notes.getAllBetween(core.characters.ownCharacter.name, this.character);
-
-                this.conversation.notes.init(server_notes.notes);
+                conversation.notes.init(server_notes.notes);
             }
 
-            this.noteCount = this.conversation.notes.count;
-            this.latestNote = this.conversation.notes.latest;
+            if (this.conversation === conversation) {
+                this.noteCount = conversation.notes.count;
+                this.latestNote = conversation.notes.latest;
+
+                // If this convo is NOT the convo we're working with, then we've queried another convo since this one, and notesLoading should be controlled by that thread, not this one; so only unset this from whichever thread returns success.
+                this.notesLoading = false;
+            }
         }
         catch {
             this.noteError = 'There was an error on the last attempt to fetch notes. Your information may be out of date.';
-        }
-        finally {
-            this.notesLoading = false;
+
+            if (this.conversation === conversation)
+                this.notesLoading = false;
         }
     }
 
