@@ -78,6 +78,7 @@ export default class MatchDetailsDeveloperDisplay extends Vue {
 
     @Watch('conversation')
     onConversationChanged() {
+        this.profileCache = null;
         this.fetchProfile(this.conversation.character.name);
     }
 
