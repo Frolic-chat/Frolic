@@ -3,27 +3,11 @@ import { SiteSession, SiteSessionInterface } from './site-session';
 import core from '../chat/core';
 import EventBus from '../chat/preview/event-bus';
 
+import type { TempNoteFormat, NoteStoreFramework } from './note-types';
+
 import NewLogger from '../helpers/log';
 const log = NewLogger('notes', () => core.state.generalSettings.argv.includes('--debug-notes'));
 
-export type TempNoteFormat = {
-    note_id: number;
-    title: string;
-    message: string;
-    source_character_id: number;
-    source_name: string;
-    dest_name: string;
-    dest_character_id: string;
-    datetime_sent: string; // ???
-    folder_id: number;
-    read: number;
-    starred: number;
-}
-
-export type TempNormalNoteReturn = {
-    total: number | null,
-    latest?: TempNoteFormat,
-}
 
 export default class NotesApi implements SiteSessionInterface {
     constructor(private session: SiteSession) {}

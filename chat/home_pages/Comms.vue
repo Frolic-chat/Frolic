@@ -117,7 +117,7 @@ import type { SiteSessionEvent } from '../preview/event-bus';
 import { BBCodeView } from '../../bbcode/view';
 import { Conversation, Character } from '../interfaces';
 import ChannelView from '../ChannelTagView.vue';
-import type { TempNoteFormat } from '../../site/notes-api';
+import type { TempNoteFormat } from '../../site/note-types';
 
 import NewLogger from '../../helpers/log';
 const logMemo = NewLogger('memo');

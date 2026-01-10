@@ -56,7 +56,7 @@ import UserView from '../chat/UserView.vue';
 
 import core from '../chat/core';
 import EventBus from '../chat/preview/event-bus';
-import type { TempNoteFormat } from './notes-api';
+import type { TempNoteFormat } from './note-types';
 
 interface ReportState {
     type: 'message' | 'note';

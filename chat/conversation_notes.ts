@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { TempNoteFormat } from '../site/notes-api';
+import type { TempNoteFormat } from '../site/note-types';
 
 export interface NoteSummary {
     note_id: number;
