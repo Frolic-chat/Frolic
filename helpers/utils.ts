@@ -441,6 +441,18 @@ Otherwise, this would result in an infinite recursion.
 // do not include it.
 
 /**
+ * Fancy way to turn callback-style async into promise-style async.
+ * @param req Request you're awaiting.
+ * @returns Promise containing `result` from onsuccess() or `error` from onerror()
+ */
+export async function promisifyRequest<T>(req: IDBRequest): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        req.onsuccess = () => resolve(<T>req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+/**
  * I've scryed deep into the future and TS will support this natively, but until then we'll use this extracter.
  */
 export type AsyncReturnType<T extends (...args: any) => any> =

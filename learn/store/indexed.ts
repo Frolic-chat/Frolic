@@ -5,19 +5,7 @@ import { CharacterOverrides } from '../../fchat/characters';
 import { PermanentIndexedStore, ProfileRecord, OverrideRecord, CharacterOverridesBatch } from './types';
 import { CharacterImage, SimpleCharacter } from '../../interfaces';
 import core from './worker/slimcore';
-import { deepEqual } from '../../helpers/utils';
-
-/**
- * Fancy way to turn callback-style async into promise-style async.
- * @param req Request you're awaiting.
- * @returns Promise containing `result` from onsuccess() or `error` from onerror()
- */
-async function promisifyRequest<T>(req: IDBRequest): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-        req.onsuccess = () => resolve(<T>req.result);
-        req.onerror = () => reject(req.error);
-    });
-}
+import { deepEqual, promisifyRequest } from '../../helpers/utils';
 
 /**
  * Worker-side of the threaded store.
