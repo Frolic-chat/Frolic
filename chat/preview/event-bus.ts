@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Character as CharacterApiResponse, CharacterMemo } from '../../site/character_page/interfaces';
+import type { Character as CharacterApiResponse, CharacterMemo } from '../../site/character_page/interfaces';
 import { Message } from '../common';
-import { Settings } from '../interfaces';
-import { SmartFilterSettings } from '../../learn/filter/types';
-import { Conversation, Character as ChatCharacter } from '../interfaces';
-import { Character as CharacterState } from '../../fchat/interfaces';
-import ChannelConversation = Conversation.ChannelConversation;
+import type { Settings } from '../interfaces';
+import type { SmartFilterSettings } from '../../learn/filter/types';
+import type { Conversation, Character as ChatCharacter } from '../interfaces';
+import type { Character as CharacterState } from '../../fchat/interfaces';
+import type { CharacterCacheRecord } from '../../learn/profile-cache';
 import { NoteCheckerCount } from '../../site/note-checker';
-import { CharacterCacheRecord } from '../../learn/profile-cache';
 import { GeneralSettings } from '../../electron/common';
 
 export interface EmptyEvent {}
@@ -42,7 +41,7 @@ export interface ChannelAdEvent extends ChannelMessageEvent {
 
 export interface ChannelMessageEvent {
     message: Message;
-    channel: ChannelConversation;
+    channel: Conversation.ChannelConversation;
 }
 
 export interface PrivateMessageEvent {
