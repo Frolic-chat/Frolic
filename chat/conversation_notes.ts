@@ -66,6 +66,10 @@ export default class ConversationNoteManager {
         return results;
     }
 
+    /**
+     * @param id A presumably unique numerical id.
+     * @returns A single note matching the id, or undefined
+     */
     byId(id: number): NoteSummary | undefined {
         return this._notes.get(id);
     }
