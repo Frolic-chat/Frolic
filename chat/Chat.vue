@@ -196,7 +196,21 @@ const log = NewLogger('chat');
                 void core.siteSession.onConnectionEstablished();
 
                 // Compatible with the core starting earlier in Index.vue virtue of calling `stop` inside. (And that `stop` call actually working.)
-                core.cache.start();
+                core.cache.start()
+                .then(success => {
+                    if (!success) {
+                        const log_out = confirm("Profile cache failed to open. You will experience odd behavior.\n\nThis is usually caused by running multiple instances of Frolic.\nIt's recommended you exit the app completely, ensure all copies of Frolic have been closed, and relaunch the app.\n\nLog out now?");
+
+                        if (log_out)
+                            core.connection.close();
+                    }
+                })
+                .catch(reason => {
+                    const log_out = confirm(`ERROR opening profile cache. You will experience odd behavior.\nThis may be caused by running multiple instances of Frolic.\nIt's recommended you exit the app completely, ensure all copies of Frolic have been closed, and relaunch the app.\nError: ${typeof reason === 'string' ? reason.substring(0,255) : reason.message.substring(0,255)}\n\nLog out now?`);
+
+                    if (log_out)
+                        core.connection.close();
+                });
             });
             core.watch(
                 () => core.conversations.hasNew,
