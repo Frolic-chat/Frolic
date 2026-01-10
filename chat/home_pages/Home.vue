@@ -9,23 +9,9 @@
                 </h5>
             </span>
             <span class="ml-auto flex-shrink-0">
-                <span>
-                    <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
-                        <span class="fa-solid fa-screwdriver-wrench"></span>
-                    </button>
-                </span>
-                <span v-if="logs">
-                    <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                        <span class="fa fa-file-alt"></span>
-                        <!-- <span class="btn-text">{{ logsTitle }}</span> -->
-                    </button>
-                </span>
-
                 <slot name="title-end"></slot>
             </span>
         </div>
-
-        <widget-options ref="widgetOptionsModal"></widget-options>
     </template>
 
     <template v-slot:default>
@@ -69,20 +55,17 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop } from '@f-list/vue-ts';
+import { Component } from '@f-list/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
-import WidgetOptions from './WidgetOptions.vue';
 
 import RecentActivity from './widgets/Activity.vue';
 import NewsWidget from './widgets/News.vue';
 import Scratchpad from './widgets/Scratchpad.vue';
 import NoteStatus from '../../site/NoteStatus.vue';
-import Logs from '../Logs.vue';
 import Collapse from '../../components/collapse.vue';
 
 import core from '../core';
-import l from '../localize';
 
 // import NewLogger from '../../helpers/log';
 // const logC = NewLogger('collapse');
@@ -91,7 +74,6 @@ import l from '../localize';
 @Component({
     components: {
         'page': HomePageLayout,
-        'widget-options': WidgetOptions,
 
         'collapse': Collapse,
 
@@ -107,18 +89,6 @@ export default class Home extends Vue {
      * Temporarily needed for the rising setting control. At some point, that can be moved into the widget settings in general settings.
      */
     settings = core.state.settings;
-
-
-    openWidgetOptions() {
-         (<WidgetOptions>this.$refs['widgetOptionsModal']).show();
-    }
-
-
-    @Prop({ default: undefined })
-    readonly logs: Logs | undefined;
-
-    logsTitle = l('logs.title');
-    showLogs() { this.logs?.show() }
 
 
     newsStyle = '';

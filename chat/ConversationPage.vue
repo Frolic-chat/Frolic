@@ -72,16 +72,6 @@
                             </button>
                         </template>
                     </dropdown>
-                    <template v-if="isChannel(conversation) || isPrivate(conversation)">
-                        <button @click.prevent="showLogs()" :aria-label="l('logs.title')" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                            <span class="fa fa-file-alt"></span>
-                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('logs.title') }}</span> -->
-                        </button>
-                        <button @click.prevent="report()" :aria-label="l('chat.report')" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                            <span class="fa fa-exclamation-triangle"></span>
-                            <!-- <span class="btn-text d-none d-lg-inline">{{ l('chat.report') }}</span> -->
-                        </button>
-                    </template>
 
                     <slot name="title-end"></slot>
                 </span>
@@ -260,8 +250,6 @@
 
     import Modal, { isShowing as anyDialogsShown } from '../components/Modal.vue';
 
-    import type Logs          from './Logs.vue';
-    import type ReportDialog  from './ReportDialog.vue';
     import type CommandHelp   from './CommandHelp.vue';
     import type EIconSelector from '../bbcode/EIconSelector.vue';
 
@@ -312,12 +300,6 @@
 
         @Prop
         readonly eiconSelector?: EIconSelector;
-
-        @Prop({ required: true })
-        readonly logs!: Logs;
-
-        @Prop({ required: true })
-        readonly reportDialog!: ReportDialog;
 
         @Prop({ required: true })
         readonly commandHelp!: CommandHelp;
@@ -753,8 +735,6 @@
             }
         }
 
-        showLogs(): void       { this.logs.show() }
-        report(): void         { this.reportDialog.report() }
         showChannelAds(): void { (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show() }
         showManage(): void     { (<ManageChannel>this.$refs['manageDialog']).show() }
         // showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }

@@ -41,6 +41,16 @@
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
     >
         <template v-slot:title-end>
+            <span>
+                <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <span class="fa-solid fa-screwdriver-wrench"></span>
+                </button>
+            </span>
+            <span>
+                <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <span class="fa fa-file-alt"></span>
+                </button>
+            </span>
             <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
         </template>
 
@@ -49,12 +59,22 @@
 
     <convo v-show="tab === '0' && !isHome" ref="primaryView" :conversation="primaryConversation"
         :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
-        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+        :commandHelp="commandHelp" :eiconSelector="eiconSelector"
         :class="isHome ? '' : 'page'"
            :id="isHome ? '' : 'home'"
          :role="isHome ? '' : 'tabpanel'"
     >
         <template v-slot:title-end>
+            <span>
+                <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <span class="fa fa-file-alt"></span>
+                </button>
+            </span>
+            <span>
+                <button @click.prevent="report()" :aria-label="reportTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <span class="fa fa-exclamation-triangle"></span>
+                </button>
+            </span>
             <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
         </template>
     </convo>
@@ -63,9 +83,19 @@
     <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
         class="page" role="tabpanel"
         :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-        :logs="logs" :reportDialog="reportDialog" :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+        :commandHelp="commandHelp" :eiconSelector="eiconSelector"
     >
         <template v-slot:title-end>
+            <span v-if="isHome">
+                <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <span class="fa-solid fa-screwdriver-wrench"></span>
+                </button>
+            </span>
+            <span>
+                <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+                    <span class="fa fa-file-alt"></span>
+                </button>
+            </span>
             <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>
         </template>
     </convo>
@@ -175,6 +205,7 @@
     <!-- Modals for the conversation: -->
     <logs         ref="logsDialog" :conversation="logsConversation"></logs>
     <command-help ref="commandHelpDialog"></command-help>
+    <widget-options ref="widgetOptionsModal"></widget-options>
     <!-- + reportDialog -->
     <!-- + eiconSelector -->
 </div>
@@ -202,6 +233,7 @@ import type ReportDialog  from './ReportDialog.vue';
 import type EIconSelector from '../bbcode/EIconSelector.vue';
 import      CommandHelp   from './CommandHelp.vue';
 import      Logs          from '../chat/Logs.vue';
+import      WidgetOptions from './home_pages/WidgetOptions.vue';
 
 import { Conversation } from './interfaces';
 import { getAsNumber } from '../helpers/utils';
@@ -236,6 +268,7 @@ const logCo = NewLogger('collapse');
         // Modals:
         logs: Logs,
         'command-help': CommandHelp,
+        'widget-options': WidgetOptions,
     }
 })
 export default class HomeScreen extends Vue {
@@ -264,6 +297,16 @@ export default class HomeScreen extends Vue {
 
     commandHelp!: CommandHelp;
     logs!: Logs;
+
+    logsTitle = l('logs.title');
+    showLogs() { this.logs.show() }
+
+    reportTitle = l('chat.report');
+    report() { this.reportDialog.report() }
+
+    openWidgetOptions() {
+        (this.$refs['widgetOptionsModal'] as WidgetOptions).show();
+    }
 
     activityTab = core.conversations.activityTab;
     consoleTab  = core.conversations.consoleTab;
