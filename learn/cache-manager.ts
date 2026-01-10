@@ -295,14 +295,19 @@ export class CacheManager {
         this.rebuildFilters();
     }
 
-    async start(flushCache = false, expirationInDays = 30): Promise<void> {
+    async start(flushCache = false, expirationInDays = 30): Promise<boolean> {
         await this.stop();
 
         log.silly('CacheManager.start');
 
         // Use existence check because the thread isn't shut down; when reusing the state-based `core.cache`
         if (!this.profileStore) {
-            this.profileStore = await WorkerStore.open('storeWorkerEndpoint.js');
+            try {
+                this.profileStore = await WorkerStore.open('storeWorkerEndpoint.js');
+            }
+            catch (e) {
+                return false;
+            }
         }
 
         this.profileCache.setStore(this.profileStore);
@@ -312,6 +317,8 @@ export class CacheManager {
 
             log.info('CacheManager.start.flushCache', { time: new Date().toLocaleDateString() });
         }
+
+        log.silly('CacheManager.start.EventBus.on');
 
         EventBus.$on('character-data',          this.on_character_data);
         EventBus.$on('channel-message',         this.on_channel_message);
@@ -380,6 +387,8 @@ export class CacheManager {
         };
 
         scheduleNextFetch();
+
+        return true;
     }
 
 
