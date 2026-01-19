@@ -66,6 +66,10 @@ export default class BBCodeParser extends CoreBBCodeParser {
             const img = parser.createElement('img');
             img.src = `https://static.f-list.net/images/eicon/${content.toLowerCase()}.${extension}`;
             img.title = img.alt = content;
+
+            // Property for right click menu.
+            (img as any).eicon = content;
+
             img.className = 'character-avatar icon';
             parent.appendChild(img);
             return img;

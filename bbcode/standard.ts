@@ -159,6 +159,10 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
             img.src = `${Utils.staticDomain}images/eicon/${content.toLowerCase()}${extension}`;
             img.className = 'character-avatar icon';
             img.title = img.alt = content;
+
+            // Property for right click menu.
+            (img as any).eicon = content;
+
             parent.appendChild(img);
             return img;
         }));

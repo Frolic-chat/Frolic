@@ -65,7 +65,8 @@
                 <strong>{{ l('eicon.loading') }}</strong>
                 <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
             </template>
-            <div v-else class="carousel-item" v-for="eicon in results" :key="eicon" role="img" :aria-label="eicon" tabindex="0">
+            <!-- Test -->
+            <div v-else class="carousel-item" v-for="eicon in results" :key="eicon" role="img" :aria-label="eicon" :eicon.prop="eicon" tabindex="0">
               <img class="eicon" v-if="results.includes(eicon)" :alt="eicon" :src="'https://static.f-list.net/images/eicon/' + eicon + '.gif'" :title="eicon" loading="lazy" role="button" :aria-label="eicon" @click.prevent.stop="selectIcon(eicon, $event)">
 
               <div class="btn favorite-toggle" v-if="results.includes(eicon)" :class="{ favorited: isFavorite(eicon) }" @click.prevent.stop="toggleFavorite(eicon)" role="button" :aria-label="isFavorite(eicon) ? l('eicon.favRemove') : l('eicon.favAdd')">
