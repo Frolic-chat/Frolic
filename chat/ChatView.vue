@@ -1,6 +1,5 @@
 <template>
-    <div style="height:100%; display: flex; position: relative;" id="chatView" @click="userMenuHandle" @contextmenu="userMenuHandle" @touchstart.passive="userMenuHandle"
-        @touchend="userMenuHandle">
+    <div style="height:100%; display: flex; position: relative;" id="chatView" @click="contextMenuHandle" @contextmenu="contextMenuHandle" @touchstart.passive="contextMenuHandle" @touchend="contextMenuHandle">
         <sidebar id="sidebar" :label="l('chat.menu')" icon="fa-bars">
             <div class="character-header">
                 <div class="image-block" v-if="showAvatars">
@@ -151,7 +150,7 @@
         <adLauncher ref="adLauncher"></adLauncher>
         <adCenter ref="adCenter"></adCenter>
         <report-dialog ref="reportDialog"></report-dialog>
-        <user-menu ref="userMenu" :reportDialog="$refs['reportDialog']"></user-menu>
+        <context-menu ref="contextMenu" :reportDialog="$refs['reportDialog']"></context-menu>
         <recent-conversations ref="recentDialog"></recent-conversations>
         <dev-tools ref="devTools"></dev-tools>
         <image-preview ref="imagePreview"></image-preview>
@@ -182,7 +181,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
     import StatusSwitcher from './StatusSwitcher.vue';
     import {getStatusIcon} from './UserView.vue';
     import UserList from './UserList.vue';
-    import UserMenu from './UserMenu.vue';
+    import ContextMenu from './ContextMenu.vue';
     import ImagePreview from './preview/ContentPreview.vue';
     import PrivateConversation = Conversation.PrivateConversation;
     import { Dialog } from '../helpers/dialog';
@@ -203,7 +202,7 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             'report-dialog': ReportDialog,
             'eicon-selector': EIconSelector,
             sidebar: Sidebar,
-            'user-menu': UserMenu, 'recent-conversations': RecentConversations,
+            'context-menu': ContextMenu, 'recent-conversations': RecentConversations,
             'image-preview': ImagePreview,
             'add-pm-partner': PmPartnerAdder,
             adCenter: AdCenterDialog,
@@ -499,8 +498,8 @@ import { Component, Hook, Watch } from '@f-list/vue-ts';
             (<PmPartnerAdder>this.$refs['addPmPartnerDialog']).show();
         }
 
-        userMenuHandle(e: MouseEvent | TouchEvent): void {
-            (<UserMenu>this.$refs['userMenu']).handleEvent(e);
+        contextMenuHandle(e: MouseEvent | TouchEvent): void {
+            (this.$refs['contextMenu'] as ContextMenu).handleEvent(e);
         }
 
         get showAvatars(): boolean {

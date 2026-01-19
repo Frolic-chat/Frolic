@@ -1,6 +1,7 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
     <div>
-        <div id="userMenu" class="list-group" v-show="showContextMenu" :style="position" v-if="character" ref="menu">
+        <div id="userMenu" class="contextMenu list-group" v-show="showContextMenu" :style="position" v-if="character" ref="menu">
             <div style="min-height: 65px;padding:5px;overflow:auto" class="list-group-item" @click.stop>
                 <img :src="characterImage" style="width:60px;height:60px;margin-right:5px;float:left" v-if="showAvatars"/>
                 <h5 style="margin:0;line-height:1">{{character.name}}</h5>
@@ -72,7 +73,6 @@
                 {{l('user.chatKick')}}
             </a>
         </div>
-        <div class="modal-backdrop show usermenu-backdrop" v-show="showContextMenu" v-if="character"></div>
         <modal :action="l('user.memo.action')" ref="memo" :disabled="memoLoading" @submit="updateMemo" dialogClass="w-100">
             <div style="float:right;text-align:right;">{{ memoLength }} / 1000</div>
             <textarea class="form-control" v-model="memo" :disabled="memoLoading" maxlength="1000"></textarea>
@@ -82,7 +82,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from '@f-list/vue-ts';
+import { Component, Prop, Watch } from '@f-list/vue-ts';
 import Vue from 'vue';
 import { BBCodeView } from '../bbcode/view';
 import Modal from '../components/Modal.vue';
@@ -112,10 +112,17 @@ const log = NewLogger('user-menu');
         readonly reportDialog!: ReportDialog;
         l = l;
         showContextMenu = false;
+
+        @Watch('showContextMenu')
+        onContextMenuChanged(newValue: boolean) {
+            log.silly(`EiconMenu.onContextMenuChanged.${newValue}`);
+
+            this.$emit('toggleMenu', newValue);
+        }
+
         character: Character | undefined;
         position = {left: '', top: ''};
         characterImage: string | undefined;
-        touchedElement: HTMLElement | undefined;
         channel: Channel | undefined;
         memo: string | null = '';
         // memoId = 0;
@@ -287,53 +294,30 @@ const log = NewLogger('user-menu');
             return profileLink(this.character!.name);
         }
 
-        handleEvent(e: MouseEvent | TouchEvent): void {
-            const touch = e.type === 'touchstart' ? (<TouchEvent>e).changedTouches[0] : <MouseEvent>e;
-            let node = <HTMLElement & {character?: Character, channel?: Channel, touched?: boolean}>touch.target;
-            while(node !== document.body) {
-                if(e.type !== 'click' && node === this.$refs['menu'] || node.id === 'userMenuStatus') return;
-                if(node.character !== undefined || node.dataset['character'] !== undefined || node.parentNode === null) break;
-                node = node.parentElement!;
-            }
-            if(node.dataset['touch'] === 'false' && e.type !== 'contextmenu') return;
-            if(!node.character)
-                if(node.dataset['character'] !== undefined) node.character = core.characters.get(node.dataset['character']!);
-                else {
-                    this.showContextMenu = false;
-                    this.touchedElement = undefined;
-                    return;
-                }
-            switch(e.type) {
-                case 'click':
-                    if(node.dataset['character'] === undefined)
-                        // tslint:disable-next-line no-floating-promises
-                        if(node === this.touchedElement) this.openMenu(touch, node.character, node.channel || undefined);
-                        else this.onClick(node.character);
-                    e.preventDefault();
-                    break;
-                case 'touchstart':
-                    this.touchedElement = node;
-                    break;
-                case 'contextmenu':
-                    // tslint:disable-next-line no-floating-promises
-                    this.openMenu(touch, node.character, node.channel || undefined);
-                    e.preventDefault();
-            }
-        }
-
-        private onClick(character: Character): void {
+        /**
+         * Left click handler
+         * @param character Character data for the character you clicked on
+         */
+        onClick(character: Character): void {
             this.character = character;
             if(core.state.settings.clickOpensMessage) this.openConversation(true);
             else window.open(this.profileLink);
             this.showContextMenu = false;
         }
 
+        /**
+         * Handler for character right-clicks.
+         * @param touch Used for positioning menu
+         * @param character Character data for menu display
+         * @param channel Channel associated with the character; typically set in a UserView and used to determine if channel-related menu entries should show
+         * @param showContextMenu set internal `showContextMenu` variable to true to
+         */
+        async openMenu(touch: MouseEvent | Touch, character: Character, channel: Channel | undefined, showContextMenu: boolean = true): Promise<void> {
+            this.showContextMenu = showContextMenu;
 
-        private async openMenu(touch: MouseEvent | Touch, character: Character, channel: Channel | undefined): Promise<void> {
             this.channel = channel;
             this.character = character;
             this.characterImage = undefined;
-            this.showContextMenu = true;
             this.position = {left: `${touch.clientX}px`, top: `${touch.clientY}px`};
             this.match = null;
 
@@ -365,26 +349,3 @@ const log = NewLogger('user-menu');
         }
     }
 </script>
-
-<style lang="scss">
-    #userMenu {
-        position: fixed;
-        display: block;
-        padding: 10px 10px 5px;
-        width: 220px;
-        z-index: 1100;
-    }
-    #userMenu .list-group-item {
-        padding: 3px;
-    }
-
-    #userMenu .list-group-item-action {
-        border-top-width: 0;
-        z-index: -1;
-    }
-
-    .usermenu-backdrop.modal-backdrop.show {
-        opacity: 0;
-        z-index: 1099;
-    }
-</style>
