@@ -27,6 +27,6 @@ export default function NewLogger(scope: LogType, condition?: (...a: any) => any
         verbose: (...args: any) => { if (cond(...args)) l.verbose(...args) },
         warn:    (...args: any) => { if (cond(...args)) l.warn(...args)    },
 
-        eval:    (...args: any) => cond(...args)
+        eval:    (...args: any) => cond(...args),
     };
 }

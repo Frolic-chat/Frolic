@@ -106,11 +106,6 @@ let favoritesFile = '';
 let getCharDir: (() => string) | undefined;
 
 /**
- * Used for debugging, especially for grabbing timestamps of potentially lengthy processes like shuffling.
- */
-const dev = process.env.NODE_ENV === 'development';
-
-/**
  * This init function need to take in the partial file name and convert it to the appropriate version/json filename. IE `eicons-2.json`
  * @param partialPath
  * @returns
@@ -714,11 +709,11 @@ function search(searchKey: string): string[] {
 async function shuffle(amount?: number): Promise<void> {
     logEicon.silly('store.shuffle', amount);
 
-    if (dev) console.time(`shuffle ${amount}`);
+    if (logEicon.eval()) console.time(`shuffle ${amount}`);
 
     await Utils.FisherYatesShuffle(store, amount);
 
-    if (dev) console.timeEnd(`shuffle ${amount}`);
+    if (logEicon.eval()) console.timeEnd(`shuffle ${amount}`);
 }
 
 /**
@@ -744,25 +739,25 @@ function randomPage(amount: number = 0): string[] {
 function addAndRemoveIcons(removals: string[] = [], additions: string[] = []): void {
     logEicon.silly('store.addAndRemoveIcons.start');
 
-    logEicon.debug('Logging eicon timer:', dev);
+    logEicon.debug('Logging eicon timer:', logEicon.eval());
 
-    if (dev) console.time('addAndRemoveIcons');
+    if (logEicon.eval()) console.time('addAndRemoveIcons');
 
     const store_set = new Set(store);
 
-    if (dev) console.timeLog('addAndRemoveIcons');
+    if (logEicon.eval()) console.timeLog('addAndRemoveIcons');
 
     removals.forEach(r => store_set.delete(r));
 
-    if (dev) console.timeLog('addAndRemoveIcons');
+    if (logEicon.eval()) console.timeLog('addAndRemoveIcons');
 
     additions.forEach(a => store_set.add(a));
 
-    if (dev) console.timeLog('addAndRemoveIcons');
+    if (logEicon.eval()) console.timeLog('addAndRemoveIcons');
 
     store = Array.from(store_set);
 
-    if (dev) console.timeEnd('addAndRemoveIcons');
+    if (logEicon.eval()) console.timeEnd('addAndRemoveIcons');
 }
 
 
