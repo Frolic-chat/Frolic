@@ -79,10 +79,9 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
             clear();
             timer = setTimeout(() => callback.apply(this, args), wait);
         };
-        // @ts-ignore webpack ts 3.9
+
         f.cancel = clear;
 
-        // @ts-ignore webpack ts 3.9
         ret = f;
     }
     else { // maxWait
@@ -129,10 +128,9 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
                 );
             }
         }
-        // @ts-ignore webpack ts 3.9
+
         f.cancel = clear_timers;
 
-        // @ts-ignore webpack ts 3.9
         ret = f;
     }
 

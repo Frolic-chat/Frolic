@@ -768,7 +768,7 @@ class ActivityConversation extends Conversation {
     protected readonly preferKeywords = [ "looking for", "want", "new", "you" ];
 
     protected updateDisplay(addedAny?: boolean, elevateAlertLevel?: boolean): void {
-        this.messages = this._messages.filter((m): m is Interfaces.Message => m !== undefined); // webpack ts
+        this.messages = this._messages.filter(m => m !== undefined);
 
         if (addedAny && this !== state.selectedConversation || !state.windowFocused) {
             if (!this.messages.length) // needs better detection.
@@ -1019,7 +1019,6 @@ class ActivityConversation extends Conversation {
 
         [ this.status, this.looking ].forEach(map =>
             map.forEach((i, key) => {
-                // @ts-ignore Webpack TS :)
                 if (!this._messages[i] || current_time - this._messages[i].time.getTime() > THIRTY_MINUTES_IN_MS)
                     this.removeCharacter(key);
             })
@@ -1027,7 +1026,6 @@ class ActivityConversation extends Conversation {
 
         [ this.login, this.returned ].forEach(map =>
             map.forEach((i, key) => {
-                // @ts-ignore Webpack TS :)
                 if (!this._messages[i] || current_time - this._messages[i].time.getTime() > TWENTY_MINUTES_IN_MS)
                     this.removeCharacter(key);
             })
@@ -1105,7 +1103,6 @@ class State implements Interfaces.State {
         this.privateConversations.push(conv);
         this.privateMap[key] = conv;
 
-        // @ts-ignore Webpack TS says conv is possibly undefined.
         this.recent = this.recent.filter(c => c.character !== conv.name);
 
         if (this.recent.length >= 50) this.recent.pop();

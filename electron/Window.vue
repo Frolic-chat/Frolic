@@ -238,7 +238,7 @@
                 filter: '.addTab'
             });
 
-            window.onbeforeunload = (e: BeforeUnloadEvent) => { // Useless type for old webpack TS
+            window.onbeforeunload = e => {
                 const isConnected = this.tabs.some(tab => tab.user !== undefined);
 
                 // process.env.NODE_ENV !== 'production' ||

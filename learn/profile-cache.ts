@@ -150,7 +150,6 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
     onEachInMemory(cb: (c: CharacterCacheRecord, key: string) => void): void {
-        // @ts-ignore Webpack TS.
         this.cache.entries().forEach(([k, v]) => cb(v, k));
     }
 

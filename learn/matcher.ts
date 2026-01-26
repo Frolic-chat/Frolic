@@ -1582,8 +1582,9 @@ export class Matcher {
     }
 
     static getAllSpecies(c: Character): Species[] {
+        // Returns strings, convert back to species.
         const species = Matcher.getAllSpeciesAsStr(c);
-        // The typeguard is for Old webpack TS; modern works fine.
+
         return species
             .map(s => Matcher.getMappedSpecies(s))
             .filter((s): s is Species => s !== null);

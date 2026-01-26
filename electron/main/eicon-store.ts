@@ -329,9 +329,7 @@ async function load(): Promise<EiconStoreExport> {
             // bad cast; ts overload should have picked it up.
             ret.store = data.records.reduce<string[]>(
                 (goodRecords, record) => {
-                    // @ts-ignore webpack ts can't figure this out?
                     if ('eicon' in record && typeof record.eicon === 'string')
-                        // @ts-ignore webpack ts can't figure this out?
                         goodRecords.push(record.eicon);
 
                     return goodRecords;

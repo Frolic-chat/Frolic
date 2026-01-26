@@ -462,7 +462,7 @@ export default class CharacterSearch extends CustomDialog {
                 // @ts-ignore This works fine because category and content are derived from the same k:v in `data` so you'll never assign the wrong value to key. Feel free to rephrase this so there's no typing errors... if you can do that.
                 acc[category] = content.map(selection => {
                     const jsonSelection = JSON.stringify(selection);
-                    // @ts-ignore Old TS in webpack hates this: `find` might be different for each array type. Mordern TS doesn't complain.
+
                     const v = this.options[category].find(opt => JSON.stringify(opt) === jsonSelection);
 
                     return v || selection;

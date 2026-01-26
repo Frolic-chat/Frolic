@@ -344,8 +344,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     // MacOS bug: If app browser is Safari and OS browser is not, both will open.
     // https://developer.apple.com/forums/thread/685385
 
-    // Below as string[] cast is for ts 3.9 in webpack. remove. Tags: @ts-ignore, not utter bs for once, what's chogoma?
-    ChildProcess.spawn(settings.raw.browserPath, filtered_args as string[], { detached: true, stdio: 'ignore' }).unref();
+    ChildProcess.spawn(settings.raw.browserPath, filtered_args, { detached: true, stdio: 'ignore' }).unref();
 }
 
 function setUpWebContents(webContents: Electron.WebContents): void {
