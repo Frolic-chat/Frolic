@@ -10,7 +10,6 @@
     "@electron/packager": "^18.4.2",
     "@electron/rebuild": "^4.0.1",
     "@electron/remote": "^2.0.11",
-    "@f-list/fork-ts-checker-webpack-plugin": "^3.1.1",
     "@f-list/vue-ts": "^1.0.3",
     "@fortawesome/fontawesome-free": "^6.0.0",
     "@types/node": "22.19.7",

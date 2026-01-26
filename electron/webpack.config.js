@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
+// const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('css-minimizer-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@frolic/vue-ts/transform').default;
@@ -56,12 +56,12 @@ const mainConfig = {
         __filename: false
     },
     plugins: [
-        new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '..', 'tslint.json'),
-            tsconfig: './tsconfig-main.json',
-            ignoreLintWarnings: true,
-        })
+        // new ForkTsCheckerWebpackPlugin({
+        //     async: false,
+        //     tslint: path.join(__dirname, '..', 'tslint.json'),
+        //     tsconfig: './tsconfig-main.json',
+        //     ignoreLintWarnings: true,
+        // })
     ],
     resolve: {
         extensions: ['.ts', '.js']
@@ -205,13 +205,13 @@ const rendererConfig = {
         __filename: false
     },
     plugins: [
-        new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '../tslint.json'),
-            tsconfig: './tsconfig-renderer.json',
-            vue: true,
-            ignoreLintWarnings: true,
-        }),
+        // new ForkTsCheckerWebpackPlugin({
+        //     async: false,
+        //     tslint: path.join(__dirname, '../tslint.json'),
+        //     tsconfig: './tsconfig-renderer.json',
+        //     vue: true,
+        //     ignoreLintWarnings: true,
+        // }),
         new VueLoaderPlugin(),
         new CopyPlugin(
             {
@@ -268,13 +268,13 @@ const storeWorkerEndpointConfig = {
         global: true,
     },
     plugins: [
-        new ForkTsCheckerWebpackPlugin({
-            async: false,
-            tslint: path.join(__dirname, '..', 'tslint.json'),
-            tsconfig: path.join(__dirname, 'tsconfig-renderer.json'),
-            vue: true,
-            ignoreLintWarnings: true,
-        })
+        // new ForkTsCheckerWebpackPlugin({
+        //     async: false,
+        //     tslint: path.join(__dirname, '..', 'tslint.json'),
+        //     tsconfig: path.join(__dirname, 'tsconfig-renderer.json'),
+        //     vue: true,
+        //     ignoreLintWarnings: true,
+        // })
     ],
     resolve: {
         extensions: ['.ts', '.js']
