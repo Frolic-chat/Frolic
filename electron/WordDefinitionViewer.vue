@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook } from '@f-list/vue-ts';
+    import { Component, Hook } from '@frolic/vue-ts';
     import Vue from 'vue';
 
     import Modal from '../components/Modal.vue';

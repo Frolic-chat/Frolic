@@ -234,7 +234,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
+    import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
     import Vue from 'vue';
 
     import HomePageLayout from './home_pages/HomePageLayout.vue';

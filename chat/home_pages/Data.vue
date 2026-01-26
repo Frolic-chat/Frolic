@@ -74,7 +74,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Watch } from '@f-list/vue-ts';
+import { Component, Prop, Watch } from '@frolic/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import Licenses from './widgets/Licenses.vue';

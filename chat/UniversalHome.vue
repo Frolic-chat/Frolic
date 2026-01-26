@@ -213,7 +213,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Hook, Watch } from '@f-list/vue-ts';
+import { Component, Prop, Hook, Watch } from '@frolic/vue-ts';
 
 import Tabs from '../components/tabs';
 import HomePageLayout from './home_pages/HomePageLayout.vue';

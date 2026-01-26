@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop} from '@f-list/vue-ts';
+    import {Component, Hook, Prop} from '@frolic/vue-ts';
     import Vue from 'vue';
     import core from '../chat/core';
 

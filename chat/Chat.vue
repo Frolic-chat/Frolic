@@ -36,7 +36,7 @@
 import NewLogger from '../helpers/log';
 const log = NewLogger('chat');
 
-    import {Component, Hook, Prop} from '@f-list/vue-ts';
+    import {Component, Hook, Prop} from '@frolic/vue-ts';
     import Vue from 'vue';
     import Modal from '../components/Modal.vue';
     import {InlineDisplayMode, SimpleCharacter} from '../interfaces';

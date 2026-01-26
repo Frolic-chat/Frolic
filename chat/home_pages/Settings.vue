@@ -190,7 +190,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import Vue from 'vue';
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component, Hook } from '@frolic/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import Collapse from '../../components/collapse.vue';

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
+    import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
     import {formatDistanceToNow, format} from 'date-fns';
     import Vue from 'vue';
     import {settings} from '../site/utils';

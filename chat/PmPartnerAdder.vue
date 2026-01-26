@@ -13,7 +13,7 @@
 
 
 <script lang="ts">
-import { Component, Prop, Watch } from '@f-list/vue-ts';
+import { Component, Prop, Watch } from '@frolic/vue-ts';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
 import core from './core';

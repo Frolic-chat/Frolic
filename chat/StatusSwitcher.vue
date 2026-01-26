@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Prop } from '@f-list/vue-ts';
+    import { Component, Prop } from '@frolic/vue-ts';
     import CustomDialog from '../components/custom_dialog';
     import Dropdown from '../components/Dropdown.vue';
     import Modal from '../components/Modal.vue';

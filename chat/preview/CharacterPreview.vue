@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Watch } from '@frolic/vue-ts';
 import Vue from 'vue';
 import core from '../core';
 import { methods } from '../../site/character_page/data_store';

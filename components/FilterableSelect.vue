@@ -25,7 +25,7 @@
 <script lang="ts">
     type Multiselect<M extends boolean> = M extends true ? object[] : object;
 
-    import { Component, Prop, Watch, Hook } from '@f-list/vue-ts';
+    import { Component, Prop, Watch, Hook } from '@frolic/vue-ts';
     import Vue from 'vue';
     import Dropdown from '../components/Dropdown.vue';
 

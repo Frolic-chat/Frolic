@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component } from '@f-list/vue-ts';
+import { Component } from '@frolic/vue-ts';
 import { ServerCommandKeys, ServerCommandMap } from './api';
 import debug from './connection';
 

@@ -16,7 +16,7 @@
 </template>
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from '@frolic/vue-ts';
 import { EventBusEvent } from '../../chat/preview/event-bus';
 
 import NewLogger from '../../helpers/log';

@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from '@f-list/vue-ts';
+import { Component, Watch } from '@frolic/vue-ts';
 import Vue from 'vue';
 
 import Collapse from '../../../components/collapse.vue';

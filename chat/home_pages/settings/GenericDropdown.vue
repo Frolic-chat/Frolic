@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop } from '@f-list/vue-ts';
+import { Component, Prop } from '@frolic/vue-ts';
 
 import l from '../../localize';
 

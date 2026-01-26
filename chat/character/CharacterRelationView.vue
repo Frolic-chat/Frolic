@@ -41,7 +41,7 @@
 
 <script lang="ts">
 import l from '../localize';
-import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import { Character } from '../../fchat/interfaces';

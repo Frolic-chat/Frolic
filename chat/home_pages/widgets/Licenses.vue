@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Hook } from '@f-list/vue-ts';
+import { Component, Prop, Hook } from '@frolic/vue-ts';
 import Vue from 'vue';
 
 import Collapse from '../../../components/collapse.vue';

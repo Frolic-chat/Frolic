@@ -44,7 +44,7 @@
 
 <script lang="ts">
     import l from '../localize';
-    import {Component, Hook} from '@f-list/vue-ts';
+    import {Component, Hook} from '@frolic/vue-ts';
     import Vue from 'vue';
     import core from '../core';
     import EventBus from './event-bus';

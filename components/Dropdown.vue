@@ -18,7 +18,7 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import {Component, Prop, Watch} from '@f-list/vue-ts';
+    import {Component, Prop, Watch} from '@frolic/vue-ts';
 
     @Component
     export default class Dropdown extends Vue {

@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Watch} from '@f-list/vue-ts';
+import {Component, Watch} from '@frolic/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import core from '../core';

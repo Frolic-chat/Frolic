@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from '@f-list/vue-ts';
+import { Component } from '@frolic/vue-ts';
 import Vue from 'vue';
 
 import LogViewer from '../../../devtools/LogViewer.vue';

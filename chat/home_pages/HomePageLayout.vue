@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from '@frolic/vue-ts';
 
 @Component({})
 export default class HomePageLayout extends Vue {

@@ -160,7 +160,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Watch } from '@frolic/vue-ts';
 
     import Sortable from 'sortablejs';
 

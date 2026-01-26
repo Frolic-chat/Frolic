@@ -17,7 +17,7 @@
 </template>
 
 <script lang="ts">
-    import {Component} from '@f-list/vue-ts';
+    import {Component} from '@frolic/vue-ts';
     import CustomDialog from '../components/custom_dialog';
     import Modal from '../components/Modal.vue';
     import Tabs from '../components/tabs';

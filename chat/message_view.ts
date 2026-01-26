@@ -1,4 +1,4 @@
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from '@frolic/vue-ts';
 import {CreateElement, default as Vue, VNode, VNodeChildrenArrayContents} from 'vue';
 import {Channel} from '../fchat';
 import { Score } from '../learn/matcher';

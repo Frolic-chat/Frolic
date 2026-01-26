@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from '@f-list/vue-ts';
+import { Component } from '@frolic/vue-ts';
 
 import GenericCheckbox from './settings/GenericCheckbox.vue';
 

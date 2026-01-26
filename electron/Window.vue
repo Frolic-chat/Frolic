@@ -36,7 +36,7 @@
 <script lang="ts">
     import Sortable from 'sortablejs';
 
-    import {Component, Hook} from '@f-list/vue-ts';
+    import {Component, Hook} from '@frolic/vue-ts';
     import * as electron from 'electron';
     import { IpcRendererEvent } from 'electron';
     import * as remote from '@electron/remote';

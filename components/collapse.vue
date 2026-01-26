@@ -29,7 +29,7 @@
 
 <script lang="ts">
     import Vue from 'vue';
-    import { Component, Prop, Hook } from '@f-list/vue-ts';
+    import { Component, Prop, Hook } from '@frolic/vue-ts';
 
     import NewLogger from '../helpers/log';
     const log = NewLogger('collapse');

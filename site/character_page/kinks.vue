@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Watch, Hook} from '@f-list/vue-ts';
+    import {Component, Prop, Watch, Hook} from '@frolic/vue-ts';
     import Vue from 'vue';
     import core from '../../chat/core';
     import {Kink, KinkChoice, KinkGroup} from '../../interfaces';

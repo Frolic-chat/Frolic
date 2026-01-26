@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook } from '@f-list/vue-ts';
+import { Component, Hook } from '@frolic/vue-ts';
 
 import core from '../chat/core';
 

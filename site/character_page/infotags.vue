@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
+    import {Component, Prop} from '@frolic/vue-ts';
     import Vue from 'vue';
     import {Infotag, InfotagGroup} from '../../interfaces';
     import {Store} from './data_store';

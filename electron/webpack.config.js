@@ -3,7 +3,7 @@ const fs = require('fs');
 const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('css-minimizer-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const vueTransformer = require('@f-list/vue-ts/transform').default;
+const vueTransformer = require('@frolic/vue-ts/transform').default;
 const CopyPlugin = require('copy-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 

@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Hook, Prop } from '@f-list/vue-ts';
+import { Component, Hook, Prop } from '@frolic/vue-ts';
 import Vue from 'vue';
 import { MatchReport, MatchResultScores } from '../../learn/matcher';
 import { TagId } from '../../learn/matcher-types';

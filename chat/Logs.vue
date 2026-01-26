@@ -75,7 +75,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
+    import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
     import {format} from 'date-fns';
     import CustomDialog from '../components/custom_dialog';
     import FilterableSelect from '../components/FilterableSelect.vue';

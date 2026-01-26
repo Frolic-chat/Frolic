@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop} from '@f-list/vue-ts';
+    import {Component, Hook, Prop} from '@frolic/vue-ts';
     import ContextMenu from './context_menu';
     import CopyCustomDialog from './copy_custom_dialog.vue';
 

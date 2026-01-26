@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Hook, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Watch } from '@frolic/vue-ts';
 
 import Collapse from '../../../components/collapse.vue';
 

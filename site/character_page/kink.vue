@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Prop, Watch } from '@f-list/vue-ts';
+    import { Component, Prop, Watch } from '@frolic/vue-ts';
     import Vue from 'vue';
     import { DisplayKink } from './interfaces';
     import { kinkComparisonSwaps } from '../../learn/matcher-types';

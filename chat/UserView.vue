@@ -4,7 +4,7 @@
 <template><span v-show="showing" :class="[ userClass, classes ]" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
 
 <script lang="ts">
-import { Component, Hook, Prop, Watch } from '@f-list/vue-ts';
+import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
 import Vue from 'vue';
 import type { Channel, Character } from '../fchat';
 import { isImportantToChannel } from './conversations';

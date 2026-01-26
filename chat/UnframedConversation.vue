@@ -158,7 +158,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@f-list/vue-ts';
+    import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
     import Vue from 'vue';
     import {EditorButton, EditorSelection} from '../bbcode/editor';
     import {BBCodeView} from '../bbcode/view';

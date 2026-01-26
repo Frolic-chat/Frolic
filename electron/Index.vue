@@ -117,7 +117,7 @@
 </template>
 
 <script lang="ts">
-    import { Component, Hook, Watch } from '@f-list/vue-ts';
+    import { Component, Hook, Watch } from '@frolic/vue-ts';
     import Vue from 'vue';
 
     import Chat from '../chat/Chat.vue';

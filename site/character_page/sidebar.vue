@@ -95,7 +95,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop} from '@f-list/vue-ts';
+    import {Component, Prop} from '@frolic/vue-ts';
     import Vue, {Component as VueComponent, ComponentOptions, CreateElement, VNode} from 'vue';
     import DateDisplay from '../../components/date_display.vue';
     import {Infotag} from '../../interfaces';
