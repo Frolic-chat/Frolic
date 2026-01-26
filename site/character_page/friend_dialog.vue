@@ -1,5 +1,5 @@
 <template>
-    <Modal :action="'Friends for ' + name" :buttons="false" dialog-class="modal-dialog-centered modal-lg">
+    <Modal :action="'Friends for ' + name" :buttons="false" dialog-class="modal-dialog-centered modal-lg" ref="modal">
         <div v-show="loading" class="alert alert-info">Loading friend information.</div>
         <div v-show="error" class="alert alert-danger">{{error}}</div>
         <template v-if="!loading">
@@ -80,7 +80,7 @@
 
 <script lang="ts">
     import {Component, Prop} from '@frolic/vue-ts';
-    import CustomDialog from '../../components/custom_dialog';
+    import Vue from 'vue';
     import Modal from '../../components/Modal.vue';
     import * as Utils from '../utils';
     import {methods} from './data_store';
@@ -89,7 +89,7 @@
     @Component({
         components: {Modal}
     })
-    export default class FriendDialog extends CustomDialog {
+    export default class FriendDialog extends Vue {
         @Prop({required: true})
         readonly character!: Character;
 
@@ -173,7 +173,8 @@
         }
 
         async show(): Promise<void> {
-            super.show();
+            (this.$refs['modal'] as Modal).show();
+
             try {
                 this.loading = true;
                 const friendData = await methods.characterFriends(this.character.character.id);
@@ -185,5 +186,10 @@
             }
             this.loading = false;
         }
+
+        // Revealing this as we remove custom_dialog; having it may be unnecessary since we don't use it for anything special.
+        // hide(): void {
+        //     (this.$refs['modal'] as Modal).hide();
+        // }
     }
 </script>

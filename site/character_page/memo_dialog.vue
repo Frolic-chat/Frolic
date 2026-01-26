@@ -1,5 +1,5 @@
 <template>
-    <Modal :action="'Memo for ' + name" :buttonText="this.editing ? 'Save and Close' : 'Close'" @close="onClose" @submit="save" dialog-class="modal-lg modal-dialog-centered">
+    <Modal :action="'Memo for ' + name" :buttonText="this.editing ? 'Save and Close' : 'Close'" @close="onClose" @submit="save" dialog-class="modal-lg modal-dialog-centered" ref="modal">
         <div class="form-group" v-if="editing">
             <textarea v-model="message" maxlength="1000" class="form-control"></textarea>
         </div>
@@ -12,7 +12,7 @@
 
 <script lang="ts">
     import {Component, Prop, Watch} from '@frolic/vue-ts';
-    import CustomDialog from '../../components/custom_dialog';
+    import Vue from 'vue';
     import Modal from '../../components/Modal.vue';
     import * as Utils from '../utils';
     import { CharacterMemo } from './interfaces';
@@ -22,7 +22,7 @@
     @Component({
         components: {Modal}
     })
-    export default class MemoDialog extends CustomDialog {
+    export default class MemoDialog extends Vue {
         @Prop({required: true})
         readonly character!: {id: number, name: string};
         @Prop
@@ -36,7 +36,7 @@
         }
 
         show(): void {
-            super.show();
+            (this.$refs['modal'] as Modal).show();
             this.setMemo();
         }
 
@@ -64,7 +64,8 @@
                 await memoManager.set(this.message);
 
                 this.$emit('memo', await memoManager.get());
-                this.hide();
+
+                (this.$refs['modal'] as Modal).hide();
             } catch(e) {
                 Utils.ajaxError(e, 'Unable to set memo.');
             }
