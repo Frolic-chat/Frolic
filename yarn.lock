@@ -173,18 +173,16 @@
     minimist "^1.2.8"
     postject "^1.0.0-alpha.6"
 
-"@f-list/vue-ts@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@f-list/vue-ts/-/vue-ts-1.0.3.tgz#5eff64f6f312f47ac69e1cea503deaf2dcef1293"
-  integrity sha512-OnxqlnF4eq5OAswgyONoDXM+n1RF7bhdShi71BKyRDnsDVL9Skg8T/yiWsx80kvZ8ku8xfChrlLSFAwZMFwoaw==
-  dependencies:
-    typescript "^3.2.2"
-    vue "^2.5.20"
-
 "@fortawesome/fontawesome-free@^6.0.0":
   version "6.7.2"
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-6.7.2.tgz#8249de9b7e22fcb3ceb5e66090c30a1d5492b81a"
   integrity sha512-JUOtgFW6k9u4Y+xeIaEiLr3+cjoUPiAuLXoyKOJSia6Duzb7pq+A76P9ZdPDoAoxHdHzq6gE9/jKBGXlZT8FbA==
+
+"@frolic/vue-ts@https://github.com/Frolic-chat/vue-ts":
+  version "1.1.0"
+  resolved "https://github.com/Frolic-chat/vue-ts#39a137d147e0ba75dbc452d7581b4e83df67ea93"
+  dependencies:
+    vue "^2.5.20"
 
 "@gar/promisify@^1.0.1":
   version "1.1.3"
@@ -6307,11 +6305,6 @@ typedarray-to-buffer@^3.1.5:
   integrity sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
   dependencies:
     is-typedarray "^1.0.0"
-
-typescript@^3.2.2:
-  version "3.9.10"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.10.tgz#70f3910ac7a51ed6bef79da7800690b19bf778b8"
-  integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
 
 typescript@^4.0.0:
   version "4.9.5"
