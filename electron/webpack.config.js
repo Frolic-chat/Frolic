@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('css-minimizer-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@frolic/vue-ts/transform').default;
@@ -64,16 +65,21 @@ const mainConfig = {
                 configFile: './tsconfig-main.json',
                 diagnosticOptions: {
                     syntactic: true,
-                    semantic: true,
+                    semantic: true, // Very slow.
                     declaration: true,
                     global: true,
                 },
                 profile: true,
             },
-            eslint: {
-                enabled: false,
-                files: '', // glob pattern
-            },
+        }),
+        new ESLintPlugin({
+            context: __dirname,
+            emitWarning: true,
+            extensions: [ '.vue', '.ts', '.js' ],
+            failOnError: false,
+            lintDirtyModulesOnly: true, // set to false for initial scan.
+            stats: true,
+            threads: true,
         })
     ],
     resolve: {
@@ -226,7 +232,7 @@ const rendererConfig = {
                 configFile: path.join(__dirname, 'tsconfig-renderer.json'),
                 diagnosticOptions: {
                     syntactic: true,
-                    semantic: true,
+                    semantic: true, // Very slow.
                     declaration: true,
                     global: true,
                 },
@@ -235,10 +241,15 @@ const rendererConfig = {
                 },
                 profile: true,
             },
-            eslint: {
-                enabled: false,
-                files: '', // glob pattern
-            },
+        }),
+        new ESLintPlugin({
+            context: path.join(__dirname, '..'),
+            emitWarning: true,
+            extensions: [ '.vue', '.ts', '.js' ],
+            failOnError: false,
+            lintDirtyModulesOnly: true, // set to false for initial scan.
+            stats: true,
+            threads: true,
         }),
         new VueLoaderPlugin(),
         new CopyPlugin(
@@ -304,7 +315,7 @@ const storeWorkerEndpointConfig = {
                 configFile: path.join(__dirname, 'tsconfig-renderer.json'),
                 diagnosticOptions: {
                     syntactic: true,
-                    semantic: true,
+                    semantic: true, // Very slow.
                     declaration: true,
                     global: true,
                 },
@@ -313,10 +324,15 @@ const storeWorkerEndpointConfig = {
                 },
                 profile: true,
             },
-            eslint: {
-                enabled: false,
-                files: '', // glob pattern
-            },
+        }),
+        new ESLintPlugin({
+            context: path.join(__dirname, '..'),
+            emitWarning: true,
+            extensions: [ '.vue', '.ts', '.js' ],
+            failOnError: false,
+            lintDirtyModulesOnly: true, // set to false for initial scan.
+            stats: true,
+            threads: true,
         })
     ],
     resolve: {
