@@ -214,7 +214,7 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
 //     }
 // });
 
-export function deepEqual(obj1: any, obj2: any): boolean {
+export function deepEqual(obj1: unknown, obj2: unknown): boolean {
     // Literal same object
     if (obj1 === obj2)
         return true;
@@ -236,8 +236,12 @@ export function deepEqual(obj1: any, obj2: any): boolean {
         if (!keys2.includes(key))
             return false;
 
-        if (!deepEqual(obj1[key], obj2[key]))
+        if (!deepEqual(
+            (obj1 as Record<string | number | symbol, unknown>)[key],
+            (obj2 as Record<string | number | symbol, unknown>)[key]
+        )) {
             return false;
+        }
     }
 
     return true;
@@ -310,8 +314,10 @@ export function ExtractReferences<T extends Record<string, any>>(obj: T) {
 
 // Every pair is a `[oldValue, newValue]` tuple. Only CHANGED keys are compared.
 // TS is the worst :) Please become haskell
-export function ComparePrimitives<T extends Record<string, any>>(oldObj: T, newObj: T): Record<keyof T, [any, any]> {
-    const result = {} as Record<keyof T, [any, any]>;
+export function ComparePrimitives<
+    T extends Record<string, T[keyof T]>
+>(oldObj: T, newObj: T): { [K in keyof T]: [ T[K], T[K] ] } {
+    const result = {} as { [K in keyof T]: [ T[K], T[K] ] };
 
     for (const key of Object.keys(oldObj) as (keyof T)[]) {
         const beforeVal = oldObj[key];

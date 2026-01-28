@@ -223,15 +223,15 @@ export function init(this: any,
             });
 
             const changed = ComparePrimitives(VueUpdate.Cache, newValue);
-            const changed_keys = Object.keys(changed);
+            const changed_keys = Object.keys(changed) as (keyof Partial<SettingsClass>)[];
 
             if (changed_keys.length) {
                 logS.debug('core.data.watch.state._settings.primitives.changed', changed);
 
+                const assign_key = <T extends keyof Partial<SettingsClass>>(key: T, value: Partial<SettingsClass>[T]) => VueUpdate.Cache[key] = value;
+
                 if (!first_time) {
-                    changed_keys.forEach(ck =>
-                        VueUpdate.Cache[ck as keyof SettingsClass] = changed[ck as keyof SettingsClass][1]
-                    );
+                    changed_keys.forEach(ck => assign_key(ck, changed[ck]?.[1]));
                 }
 
                 primitives_changed = true;
