@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-const semver = require('semver');
+import * as SemVer from "semver";
 
 import Logger from "electron-log";
 const log = Logger.scope('election/version-upgrade');
@@ -9,14 +9,14 @@ const log = Logger.scope('election/version-upgrade');
  */
 export default function (start: string, end: string, bonusRoutines: { [key: string]: () => boolean }): string {
     const ug_set = new Set(Object.keys(routines)
-        .filter(e => semver.gt(e, start) && semver.lte(e, end)));
+        .filter(e => SemVer.gt(e, start) && SemVer.lte(e, end)));
 
     Object.keys(bonusRoutines).forEach(v => {
-        if (semver.gt(v, start) && semver.lte(v, end))
+        if (SemVer.gt(v, start) && SemVer.lte(v, end))
             ug_set.add(v)
     });
 
-    const versions = Array.from(ug_set).sort((a, b) => semver.compare(a, b));
+    const versions = Array.from(ug_set).sort((a, b) => SemVer.compare(a, b));
 
     // This should be rewritten with error handling using the routine returns.
     versions.forEach(v => { // clobber duplicates
