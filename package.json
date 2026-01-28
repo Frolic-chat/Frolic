@@ -5,6 +5,7 @@
   "description": "🌺 Frolic! F-Chat Client",
   "license": "AGPL-3.0-or-later",
   "main": "main.js",
+  "packageManager": "yarn@1.22.22",
   "devDependencies": {
     "@electron/packager": "^18.4.2",
     "@electron/rebuild": "^4.0.1",
