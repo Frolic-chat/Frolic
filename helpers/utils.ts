@@ -520,3 +520,47 @@ export function isArrayOfStrings(subj: any): subj is string[] {
 export function isArrayOfObjects(subj: any): subj is object[] {
     return Array.isArray(subj) && subj.every(item => typeof item === 'object');
 }
+
+/**
+ * Regex parse F-List's version of relative time which uses strings such as: `7y, 10mo, 2w, 1d ago`.
+ * Months, to be useful, must be approximate.
+ * Leap days not accounted for. (or are they?)
+ *
+ * Oh, the humanity.
+ */
+export function parseRelativeTime(relative: string): number | null {
+    // 1y, 3mo, 2w, 1d, 2h, 5m, 33s ago
+    const match = new RegExp(/^(\d+) ?(s|m|h|d|w|mo|y)(?: ago)?$/);
+    const date = new Date();
+
+    const phrases = relative.split(', ');
+    let good_ts = false;
+
+    for (const phrase of phrases) {
+        const matches = phrase.match(match)?.slice(1);
+        if (!matches)
+            continue;
+
+        const digit = matches[0],
+               unit = matches[1];
+
+        if      (unit === 'y')
+            date.setFullYear(date.getFullYear() - Number(digit));
+        else if (unit === 'mo')
+            date.setMonth(date.getMonth() - Number(digit));
+        else if (unit === 'w')
+            date.setDate(date.getDate() - (Number(digit) * 7));
+        else if (unit === 'd')
+            date.setDate(date.getDate() - Number(digit));
+        else if (unit === 'h')
+            date.setHours(date.getHours() - Number(digit));
+        else if (unit === 'm')
+            date.setMinutes(date.getMinutes() - Number(digit));
+        else if (unit === 's')
+            date.setSeconds(date.getSeconds() - Number(digit));
+
+        good_ts = true;
+    }
+
+    return good_ts ? date.getTime() : null;
+}
