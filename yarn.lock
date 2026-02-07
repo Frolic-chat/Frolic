@@ -572,10 +572,10 @@
   dependencies:
     undici-types "~7.10.0"
 
-"@types/node@22.20.0":
-  version "22.19.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.19.3.tgz#8dfde7630d7a8528dc9b34db23d34f764467c02c"
-  integrity sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==
+"@types/node@22.19.7":
+  version "22.19.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.19.7.tgz#434094ee1731ae76c16083008590a5835a8c39c1"
+  integrity sha512-MciR4AKGHWl7xwxkBa6xUGxQJ4VBOmPTF7sL+iGzuahOFaO0jHCsuEfS80pan1ef4gWId1oWOweIhrDEYLuaOw==
   dependencies:
     undici-types "~6.21.0"
 
@@ -2736,10 +2736,10 @@ electron-winstaller@^5.4.0:
   optionalDependencies:
     "@electron/windows-sign" "^1.1.2"
 
-electron@39.0.0:
-  version "39.0.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-39.0.0.tgz#6906720c5bd3c40f98f6e01802fdc301654c4550"
-  integrity sha512-UejnuOK4jpRZUq7MkEAnR/szsRWLKBJAdvn6j3xdQLT57fVv13VSNdaUHHjSheaqGzNhCGIdkPsPJnGJVh5kiA==
+electron@39.4.0:
+  version "39.4.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-39.4.0.tgz#98552bb1455312d7dff047a297b3b247c9becb2f"
+  integrity sha512-NCK/FTAqgG/N+09OXFES6bubamgPZs7TEPIjWZIrbEnm8GzEwxC22ZG6SEPid2DmJnJmBurJ6M0G4EShdSc28Q==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^22.7.7"
