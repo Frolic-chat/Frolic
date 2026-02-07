@@ -404,7 +404,7 @@
 
         // Is there a reason it's possible to invoke this without the character sheet existing? This SFC's page "loads fully" before any of its child components???
         isRefreshingProfile(): boolean {
-            return this.$refs.characterPage && (this.$refs.characterPage as CharacterPage).refreshing;
+            return !!(this.$refs.characterPage && (this.$refs.characterPage as CharacterPage).refreshing);
         }
 
 
@@ -442,7 +442,9 @@
 
             this.profilePointer++;
 
-            this.openProfile(this.profileNameHistory[this.profilePointer]);
+            const name = this.profileNameHistory[this.profilePointer];
+            if (name)
+                this.openProfile(name);
         }
 
 
@@ -457,7 +459,9 @@
 
             this.profilePointer--;
 
-            this.openProfile(this.profileNameHistory[this.profilePointer]);
+            const name = this.profileNameHistory[this.profilePointer];
+            if (name)
+                this.openProfile(name);
         }
 
 
@@ -566,14 +570,21 @@
                             return;
                         }
 
-                        this.openProfile(name);
+                        if (name)
+                            this.openProfile(name);
+
                         profileViewer.show();
                     }
                 });
 
                 Electron.ipcRenderer.on('fix-logs', async() => {
                     this.fixCharacters = await core.settingsStore.getAvailableCharacters();
-                    this.fixCharacter = this.fixCharacters[0];
+
+                    if (this.fixCharacters[0])
+                        this.fixCharacter = this.fixCharacters[0];
+                    else
+                        return;
+
                     (this.$refs['fixLogsModal'] as Modal).show();
                 });
 

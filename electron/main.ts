@@ -352,10 +352,10 @@ function setUpWebContents(webContents: Electron.WebContents): void {
     remoteMain.enable(webContents);
 
     const openLinkExternally = (url: string) => {
-        const profileMatch = url.match(/^https?:\/\/(www\.)?f-list\.net\/c\/([^/#]+)\/?#?/);
+        const profileMatch = url.match(/^https?:\/\/(?:www\.)?f-list\.net\/c\/([^/#]+)\/?#?/);
 
-        if (profileMatch !== null && settings.raw.profileViewer) {
-            webContents.send('open-profile', decodeURIComponent(profileMatch[2]));
+        if (profileMatch !== null && settings.raw.profileViewer && profileMatch[1]) {
+            webContents.send('open-profile', decodeURIComponent(profileMatch[1]));
             return;
         }
         else {
@@ -733,7 +733,7 @@ function onReady(): void {
                             properties: [ 'openDirectory' ],
                         });
 
-                        if (dir) {
+                        if (dir?.[0]) {
                             if (dir[0].startsWith(path.dirname(app.getPath('exe'))))
                                 return Electron.dialog.showErrorBox(l('settings.logDir'), l('settings.logDir.inAppDir'));
 
