@@ -16,4 +16,4 @@ export function registerMethod<K extends keyof StoreMethods>(name: K, func: Stor
     methods[name] = func;
 }
 
-export const methods: StoreMethods = <StoreMethods>{}; //tslint:disable-line:no-object-literal-type-assertion
+export const methods: StoreMethods = <StoreMethods>{};

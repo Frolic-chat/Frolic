@@ -27,7 +27,6 @@ const userPostfix: {[key: number]: string | undefined} = {
 
         const separators = core.connection.isOpen ? core.state.settings.messageSeparators : false;
 
-        /*tslint:disable-next-line:prefer-template*///unreasonable here
         let classes =
             `message message-${Conversation.Message.Type[message.type].toLowerCase()}`
           + (separators ? ' message-block' : '')

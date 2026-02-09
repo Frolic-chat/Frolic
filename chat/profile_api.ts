@@ -143,7 +143,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
             newKinks[childId] = custom.id;
     }
 
-    (<any>data.settings).block_bookmarks = (<any>data.settings).prevent_bookmarks; //tslint:disable-line:no-any
+    (<any>data.settings).block_bookmarks = (<any>data.settings).prevent_bookmarks;
 
     const newInfotags: {[key: string]: CharacterInfotag} = {};
 
@@ -195,7 +195,7 @@ function contactMethodIconUrl(name: string): string {
 }
 
 async function fieldsGet(): Promise<void> {
-    if (Store.shared !== undefined) return; //tslint:disable-line:strict-type-predicates
+    if (Store.shared !== undefined) return;
 
     try {
         const response = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {

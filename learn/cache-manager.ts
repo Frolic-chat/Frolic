@@ -21,7 +21,7 @@ import { matchesSmartFilters } from './filter/smart-filter';
 import NewLogger from '../helpers/log';
 const log = NewLogger('cache', () => core?.state.generalSettings.argv.includes('--debug-cache'));
 
-import { shouldFilterPrivate } from '../chat/conversations'; //tslint:disable-line:match-default-export-name
+import { shouldFilterPrivate } from '../chat/conversations';
 
 /**
  * Limiter on the accuracy of the profile queue in order to speed up queueing. It really shouldn't be that impactful.
@@ -351,7 +351,6 @@ export class CacheManager {
                               skipFetch = true;
                             }
 
-                            // tslint:disable-next-line: binary-expression-operand-order
                             if ((false) && (next)) {
                               console.log(`Fetch '${next.name}' for channel '${next.channelId}', gap: ${(Date.now() - this.lastFetch)}ms`);
                               this.lastFetch = Date.now();
@@ -537,8 +536,6 @@ export class CacheManager {
     //         && msg.type !== Message.Type.Warn;  // Do not decorate warnings.
     // }
 
-
-    // tslint:disable-next-line: prefer-function-over-method
     public scoreAllConversations(characterName: string, score: number, isFiltered: boolean): void {
         // Actually none of this seems to change anything with ads or messages.
         core.conversations.channelConversations.forEach(ch => {

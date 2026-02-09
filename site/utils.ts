@@ -53,8 +53,7 @@ function isCancel(value: Error | CanceledError<never>): boolean {
     return false;
 }
 
-//tslint:disable-next-line:no-any
-export function isJSONError(error: any): error is AxiosError & { response: AxiosResponse } {
+export function isJSONError(error: unknown): error is AxiosError & { response: AxiosResponse } {
     const err = error instanceof AxiosError && error.response !== undefined && typeof error.response.data === 'object';
 
     if (err) {
@@ -67,7 +66,7 @@ export function isJSONError(error: any): error is AxiosError & { response: Axios
     return err;
 }
 
-export function ajaxError(error: any, prefix: string, showFlashMessage: boolean = true): void { //tslint:disable-line:no-any
+export function ajaxError(error: unknown, prefix: string, showFlashMessage: boolean = true): void {
     let message: string | undefined;
     if (error instanceof Error) {
         if (isCancel(error))

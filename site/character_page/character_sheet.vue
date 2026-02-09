@@ -246,7 +246,6 @@
 
             const target = <ShowableVueTab>this.$refs[`tab${this.tab}`];
 
-            //tslint:disable-next-line:no-unbound-method
             if (typeof target.show === 'function')
                 target.show();
         }

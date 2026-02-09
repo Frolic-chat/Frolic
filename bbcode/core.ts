@@ -19,7 +19,6 @@ function fixURL(url: string): string {
     return url.replace(/ /g, '%20');
 }
 
-// tslint:disable-next-line: max-line-length
 export function analyzeUrlTag(parser: BBCodeParser, param: string, content: string): {success: boolean, url?: string, domain?: string, textContent: string} {
     let url: string | undefined, textContent: string = content;
     let success = true;
@@ -57,7 +56,6 @@ export function analyzeUrlTag(parser: BBCodeParser, param: string, content: stri
 
 
 export class CoreBBCodeParser extends BBCodeParser {
-    /*tslint:disable-next-line:typedef*///https://github.com/palantir/tslint/issues/711
     constructor(public makeLinksClickable = true) {
         super();
         this.addTag(new BBCodeSimpleTag('b', 'strong'));

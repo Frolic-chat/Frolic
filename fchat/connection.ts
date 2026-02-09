@@ -27,10 +27,9 @@ async function queryApi(this: void, endpoint: string, data: object): Promise<Axi
 
 export default class Connection implements Interfaces.Connection {
     character = '';
-    vars: Interfaces.Vars = <any>{}; //tslint:disable-line:no-any
+    vars: Interfaces.Vars = <any>{}; // AWFUL. AWFUL AWFUL AWFUL. TODO: FIX.
     _handleMessage: Function | undefined;
-    protected socket: WebSocketConnection | undefined = undefined;
-    //tslint:disable-next-line:no-object-literal-type-assertion
+    protected socket: WebSocketConnection | undefined = undefined; // AWFUL.
     private messageHandlers = <{ [key in keyof Interfaces.ServerCommands]: Interfaces.CommandHandler<key>[] }>{};
     private connectionHandlers: { [key in Interfaces.EventType]?: Interfaces.EventHandler[] } = {};
     private errorHandlers: ((error: Error) => void)[] = [];
@@ -285,7 +284,7 @@ export default class Connection implements Interfaces.Connection {
         }
     }
 
-    //tslint:disable:no-unsafe-any no-any
+    // We cannot drop `any` from data yet without more tight typings on the incoming data, and verification that we're receiving normal formats.
     protected async handleMessage<T extends keyof Interfaces.ServerCommands>(type: T, data: any): Promise<void> {
         const time = new Date();
         const handlers = <Interfaces.CommandHandler<T>[] | undefined>this.messageHandlers[type];
@@ -316,8 +315,6 @@ export default class Connection implements Interfaces.Connection {
                 }
         }
     }
-
-    //tslint:enable
 
     private async getTicket(password: string): Promise<string> {
         log.verbose('Acquiring new API ticket');

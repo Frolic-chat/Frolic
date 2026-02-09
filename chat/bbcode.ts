@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import { BBCodeElement, CoreBBCodeParser, analyzeUrlTag } from '../bbcode/core';
-//tslint:disable-next-line:match-default-export-name
 import BaseEditor from '../bbcode/Editor.vue';
 import { BBCodeTextTag } from '../bbcode/parser';
 import ChannelView from './ChannelTagView.vue';

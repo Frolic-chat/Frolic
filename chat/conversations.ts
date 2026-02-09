@@ -91,7 +91,7 @@ abstract class Conversation implements Interfaces.Conversation {
     set isPinned(value: boolean) {
         if(value === this._isPinned) return;
         this._isPinned = value;
-        state.savePinned(); //tslint:disable-line:no-floating-promises
+        void state.savePinned();
     }
 
     clearText(): void {
@@ -119,7 +119,6 @@ abstract class Conversation implements Interfaces.Conversation {
         }
     }
 
-    //tslint:disable-next-line:no-async-without-await
     abstract addMessage(message: Interfaces.Message): Promise<void>;
 
     loadLastSent(): void {
@@ -408,7 +407,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         if(mode === this.channel.mode && this.channel.id in state.modes) delete state.modes[this.channel.id];
         else if(mode !== this.channel.mode && mode !== state.modes[this.channel.id]) state.modes[this.channel.id] = mode;
         else return;
-        state.saveModes(); //tslint:disable-line:no-floating-promises
+        void state.saveModes();
     }
 
     get enteredText(): string {
@@ -612,7 +611,6 @@ class ConsoleConversation extends Conversation {
         this.allMessages = [];
     }
 
-    //tslint:disable-next-line:no-empty
     close(): void {
     }
 
@@ -1108,7 +1106,7 @@ class State implements Interfaces.State {
         if (this.recent.length >= 50) this.recent.pop();
 
         this.recent.unshift({character: conv.name});
-        core.settingsStore.set('recent', this.recent); //tslint:disable-line:no-floating-promises
+        void core.settingsStore.set('recent', this.recent);
 
         return conv;
     }
@@ -1149,7 +1147,6 @@ class State implements Interfaces.State {
     }
 
     async reloadSettings(): Promise<void> {
-        //tslint:disable:strict-boolean-expressions
         this.pinned = await core.settingsStore.get('pinned') || { private: [], channels: [] };
         this.modes  = await core.settingsStore.get('modes')  || {};
 
@@ -1170,7 +1167,6 @@ class State implements Interfaces.State {
             if (conv !== undefined) conv._settings = settings[key];
         }
         this.settings = settings;
-        //tslint:enable
     }
 }
 
@@ -1259,7 +1255,6 @@ export async function shouldFilterPrivate(fromChar: Character.Character, origina
 
                 await Conversation.testPostDelay();
 
-                // tslint:disable-next-line:prefer-template
                 const message = {
                     recipient: fromChar.name,
                     message: '\n[sub][color=orange][b][AUTOMATED MESSAGE][/b][/color][/sub]\n' +
@@ -1386,7 +1381,7 @@ export default function(this: any): Interfaces.State {
                 if(index !== -1) state.recentChannels.splice(index, 1);
                 if(state.recentChannels.length >= 50) state.recentChannels.pop();
                 state.recentChannels.unshift({channel: channel.id, name: conv.channel.name});
-                core.settingsStore.set('recentChannels', state.recentChannels); //tslint:disable-line:no-floating-promises
+                void core.settingsStore.set('recentChannels', state.recentChannels);
 
                 AdManager.onNewChannelAvailable(conv);
             } else {

@@ -331,6 +331,7 @@ export interface Core {
     updateMain(channel: 'settings'): void;
 }
 
+// Commentary preserved for posterity.
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack
 
 export default core;

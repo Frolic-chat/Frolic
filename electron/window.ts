@@ -18,7 +18,6 @@ const logLevel: LogLevelOption = 'warn';
 
 log.verbose('init.window.vue');
 
-//tslint:disable-next-line:no-unused-expression
 export default new Window({
     el: '#app',
     data: {

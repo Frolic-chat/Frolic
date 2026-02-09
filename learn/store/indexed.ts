@@ -106,7 +106,6 @@ export class IndexedStore implements PermanentIndexedStore {
     }
 
 
-    // tslint:disable-next-line prefer-function-over-method
     protected toProfileId(name: string): string {
         return name.toLowerCase();
     }
@@ -117,7 +116,6 @@ export class IndexedStore implements PermanentIndexedStore {
         const store = tx.objectStore(IndexedStore.STORE_NAME);
         const getRequest = store.get(this.toProfileId(name));
 
-        // tslint:disable-next-line no-any
         const data = await promisifyRequest<ProfileRecord | undefined>(getRequest);
 
         if (!data) {
@@ -125,7 +123,6 @@ export class IndexedStore implements PermanentIndexedStore {
             return;
         }
 
-        // tslint:disable-next-line: no-unsafe-any
         data.profileData = data.profileData as ComplexCharacter;
 
         // fix to clean out extra customs that somehow sometimes appear:
@@ -319,8 +316,7 @@ export class IndexedStore implements PermanentIndexedStore {
         const store = tx.objectStore(IndexedStore.STORE_NAME);
         const putRequest = store.put(data);
 
-        // tslint:disable-next-line no-any
-        await promisifyRequest<any>(putRequest);
+        await promisifyRequest<unknown>(putRequest);
 
         // console.log('IDX update counts', name, data);
     }

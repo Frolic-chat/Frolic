@@ -94,7 +94,6 @@ export class AdCenter {
     return conv.settings.adSettings.ads.every(adContent => !this.isMissingFromAdCenter(adContent));
   }
 
-  // tslint:disable-next-line:prefer-function-over-method
   protected scheduleForChannel(channelId: string, ads: Ad[], order: 'random' | 'ad-center', timeoutMinutes: number): void {
     const conv = this.getConversation(channelId);
 

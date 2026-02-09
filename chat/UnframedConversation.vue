@@ -579,7 +579,6 @@
             this.scrolledDown = false;
         }
 
-        /* tslint:disable */
         getMessageWrapperClasses(): any {
             const filter = core.state.settings.risingFilter;
             const classes:any = {};

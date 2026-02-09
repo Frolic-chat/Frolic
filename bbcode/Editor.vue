@@ -111,8 +111,7 @@
         preview = false;
         previewWarnings: ReadonlyArray<string> = [];
         previewResult = '';
-        // tslint:disable-next-line: no-unnecessary-type-assertion
-        text: string = this.value ?? '';
+        text = this.value ?? '';
         element!: HTMLTextAreaElement;
         sizer!: HTMLTextAreaElement;
         maxHeight!: number;
@@ -126,7 +125,6 @@
         private undoStack: string[] = [];
         private undoIndex = 0;
         private lastInput = 0;
-        //tslint:disable:strict-boolean-expressions
         private resizeListener!: () => void;
 
         @Hook('created')
@@ -164,8 +162,6 @@
             this.resize();
             window.addEventListener('resize', this.resizeListener);
         }
-
-        //tslint:enable
 
         @Hook('destroyed')
         destroyed(): void {

@@ -1,11 +1,7 @@
-/* tslint:disable:quotemark */
 import * as urlHelper from 'url';
 
 import { domain as extractDomain } from '../../bbcode/core';
 
-// tslint:disable-next-line:ban-ts-ignore
-// @ts-ignore
-// tslint:disable-next-line:no-submodule-imports ban-ts-ignore match-default-export-name
 import processorScript from '!!raw-loader!./assets/browser.processor.raw.js';
 
 
@@ -18,9 +14,7 @@ export interface DomMutator {
 }
 
 
-// tslint:disable-next-line:max-line-length
 const imgurOuterStyle = 'z-index: 1000000; position: absolute; bottom: 0.75rem; right: 0.75rem; background: rgba(0, 128, 0, 0.8); border: 2px solid rgba(144, 238, 144, 0.5); width: 3rem; height: 3rem; font-size: 15pt; font-weight: normal; color: white; border-radius: 3rem; margin: 0; font-family: Helvetica,Arial,sans-serif; box-shadow: 2px 2px 2px rgba(0,0,0,0.5)';
-// tslint:disable-next-line:max-line-length
 const imgurInnerStyle = 'position: absolute; top: 50%; left: 50%; transform: translateY(-50%) translateX(-50%); text-shadow: 1px 1px 2px rgba(0,0,0,0.4);';
 
 export interface DomMutatorScripts {
@@ -29,7 +23,6 @@ export interface DomMutatorScripts {
 
 
 export class ImageDomMutator {
-    // tslint:disable: prefer-function-over-method
     private hostMutators: Record<string, DomMutator> = {};
     private regexMutators: DomMutator[] = [];
     private debug: boolean;
@@ -140,7 +133,6 @@ export class ImageDomMutator {
     async init(): Promise<void> {
         await this.loadScripts();
 
-        /* tslint:disable max-line-length */
         this.add('default', this.getBaseJsMutatorScript(['.content video', '.content img', '#video, video', '#image, img']));
         this.add('about:blank', '');
         this.add('e621.net', this.getBaseJsMutatorScript(['video', '#image']));

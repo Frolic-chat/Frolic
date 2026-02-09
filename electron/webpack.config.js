@@ -58,7 +58,6 @@ const mainConfig = {
     plugins: [
         // new ForkTsCheckerWebpackPlugin({
         //     async: false,
-        //     tslint: path.join(__dirname, '..', 'tslint.json'),
         //     tsconfig: './tsconfig-main.json',
         //     ignoreLintWarnings: true,
         // })
@@ -207,7 +206,6 @@ const rendererConfig = {
     plugins: [
         // new ForkTsCheckerWebpackPlugin({
         //     async: false,
-        //     tslint: path.join(__dirname, '../tslint.json'),
         //     tsconfig: './tsconfig-renderer.json',
         //     vue: true,
         //     ignoreLintWarnings: true,
@@ -270,7 +268,6 @@ const storeWorkerEndpointConfig = {
     plugins: [
         // new ForkTsCheckerWebpackPlugin({
         //     async: false,
-        //     tslint: path.join(__dirname, '..', 'tslint.json'),
         //     tsconfig: path.join(__dirname, 'tsconfig-renderer.json'),
         //     vue: true,
         //     ignoreLintWarnings: true,

@@ -120,8 +120,7 @@
         async onMounted(): Promise<void> {
             console.info('Mounted ImagePreview');
 
-            // tslint:disable-next-line:no-floating-promises
-            this.jsMutator.init();
+            void this.jsMutator.init();
 
             EventBus.$on('imagepreview-dismiss', e => {
                 // console.log('Event dismiss', eventData.url);
@@ -183,8 +182,7 @@
                     const url = webview.getURL();
                     const js = this.jsMutator.getMutatorJsForSite(url, 'update-target-url');
 
-                    // tslint:disable-next-line
-                    this.executeJavaScript(js, 'update-target-url', e);
+                    void this.executeJavaScript(js, 'update-target-url', e);
                 }
             );
 
@@ -193,7 +191,7 @@
                 const url = webview.getURL();
                 const js = this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 
-                this.executeJavaScript(js, 'dom-ready', e);
+                void this.executeJavaScript(js, 'dom-ready', e);
 
                 this.setState('loaded');
             });
@@ -204,7 +202,7 @@
 
                 console.warn('Event: ', e.type, 'for site: ', url);
 
-                this.executeJavaScript(js, e.type, e);
+                void this.executeJavaScript(js, e.type, e);
 
                 this.setState('loaded');
             });
@@ -224,8 +222,7 @@
                         const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
                             || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
 
-                        // tslint:disable-next-line
-                        this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
+                        void this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
                         return;
                     }
 
@@ -234,16 +231,14 @@
 
                 const js = this.jsMutator.getErrorMutator(e.errorCode, e.errorDescription);
 
-                // tslint:disable-next-line
-                this.executeJavaScript(js, 'did-fail-load', e);
+                void this.executeJavaScript(js, 'did-fail-load', e);
             });
 
             webview.addEventListener('did-frame-navigate', e => {
                 if (e.httpResponseCode >= 400) {
                     const js = this.jsMutator.getErrorMutator(e.httpResponseCode, e.httpStatusText);
 
-                    // tslint:disable-next-line
-                    this.executeJavaScript(js, 'did-navigate', e);
+                    void this.executeJavaScript(js, 'did-navigate', e);
                 }
             });
 
@@ -252,7 +247,6 @@
                 this.debugLog('ImagePreview ipc-message', e);
 
                 if (e.channel === 'webview.img') {
-                    // tslint:disable-next-line:no-unsafe-any
                     this.updatePreviewSize(parseInt(e.args[0], 10), parseInt(e.args[1], 10));
                 }
                 else if (e.channel === 'webview.dom-loaded') {
@@ -306,7 +300,7 @@
         negotiateUrl(url: string): string {
             const match = url.match(FLIST_PROFILE_MATCH);
 
-            if (!match)
+            if (!match?.[2])
                 return url;
 
             return `flist-character://${decodeURI(match[2])}`;
@@ -383,7 +377,6 @@
             // This timeout makes the preview window disappear with a slight delay, which helps UX
             // when dealing with situations such as quickly scrolling text that moves the cursor away
             // from the link
-            // tslint:disable-next-line no-unnecessary-type-assertion
             this.exitInterval = setTimeout(() => this.hide(), due);
         }
 
@@ -424,7 +417,6 @@
 
             // This timer makes sure that just by accidentally brushing across a link won't show (blink) the preview
             // -- you actually have to pause on it
-            // tslint:disable-next-line no-unnecessary-type-assertion
             this.interval = setTimeout(
                 () => {
                     this.debugLog('ImagePreview: show.timeout', this.url);

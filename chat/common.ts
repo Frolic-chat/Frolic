@@ -182,16 +182,12 @@ export function messageToString(
 }
 
 export function getKey(e: KeyboardEvent): Keys {
-    // tslint:disable-next-line deprecation
     return e.keyCode;
 }
 
-/*tslint:disable:no-any no-unsafe-any*///because errors can be any
 export function errorToString(e: any): string {
     return e instanceof Error ? e.message : e !== undefined ? e.toString() : '';
 }
-
-//tslint:enable
 
 let messageId = 0;
 
@@ -204,7 +200,7 @@ export class Message implements Conversation.ChatMessage {
 
     constructor(readonly type: Conversation.Message.Type, readonly sender: Character, readonly text: string,
                 readonly time: Date = new Date()) {
-        if(Conversation.Message.Type[type] === undefined) throw new Error('Unknown type'); //tslint:disable-line
+        if(Conversation.Message.Type[type] === undefined) throw new Error('Unknown type');
     }
 }
 

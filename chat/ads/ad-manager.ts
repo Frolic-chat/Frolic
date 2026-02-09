@@ -52,7 +52,6 @@ export class AdManager {
         this.adIndex += 1;
     }
 
-    // tslint:disable-next-line
     private async delay(ms: number): Promise<void> {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
@@ -93,7 +92,7 @@ export class AdManager {
     private determineNextAdDelayMs(chanConv: Conversation.ChannelConversation): number {
         const match = chanConv.channel.description.toLowerCase().match(/\[\s*ads:\s*([0-9.]+)\s*(m|mins?|minutes?|h|hrs?|hours?|s|secs?|seconds?)\.?\s*]/);
 
-        if (!match) {
+        if (!match?.[2]) {
             return AdManager.POST_DELAY;
         }
 
@@ -133,7 +132,6 @@ export class AdManager {
           (chanConv.settings.adSettings.lastAdTimestamp || 0) + (core.connection.vars.lfrp_flood * 1000)
         ));
 
-        // tslint:disable-next-line: no-unnecessary-type-assertion
         this.interval = setTimeout(
             async() => {
                 await this.sendNextPost();
@@ -212,7 +210,6 @@ export class AdManager {
         this.expireDue = new Date(Date.now() + timeoutMs);
         this.adMap = this.generateAdMap();
 
-        // tslint:disable-next-line: no-unnecessary-type-assertion
         this.interval = setTimeout(
             async() => {
                 this.firstPost = new Date();
@@ -229,7 +226,6 @@ export class AdManager {
             clearTimeout(this.interval);
         }
 
-        // tslint:disable-next-line: no-unnecessary-type-assertion
         this.interval = setTimeout(
             async() => {
                 await this.sendNextPost();

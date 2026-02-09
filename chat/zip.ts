@@ -34,7 +34,7 @@ export default class Zip {
         for(let c, n = 0; n < 256; n++) {
             c = n;
             for(let k = 0; k < 8; k++)
-                c = ((c & 1) ? ((c >>> 1) ^ 0xEDB88320) : (c >>> 1)); //tslint:disable-line:strict-boolean-expressions
+                c = ((c & 1) ? ((c >>> 1) ^ 0xEDB88320) : (c >>> 1));
             crcTable[n] = c;
         }
     }

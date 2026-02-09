@@ -22,9 +22,6 @@ import { EventBusEvent } from '../../chat/preview/event-bus';
 import NewLogger from '../../helpers/log';
 const log = NewLogger('dictionary');
 
-// tslint:disable-next-line:ban-ts-ignore
-// @ts-ignore
-// tslint:disable-next-line:no-submodule-imports ban-ts-ignore match-default-export-name
 import mutatorScript from '!!raw-loader!./assets/mutator.raw.js';
 
 

@@ -60,7 +60,7 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
             return col;
         }));
         this.addTag(new BBCodeCustomTag('collapse', (parser, parent, param) => {
-            if(param === '') { //tslint:disable-line:curly
+            if(param === '') {
                 parser.warning('title parameter is required.');
                 // HACK: Compatability fix with old site. Titles are not trimmed on old site, so empty collapse titles need to be allowed.
                 //return null;
@@ -77,7 +77,7 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
 						headerText.appendChild(icon);
 						const splitParam = param.split('[hr]')
 						for (let iii = 0; iii < splitParam.length; iii++) {
-							const element = splitParam[iii];
+							const element = splitParam[iii] ?? '';
 							headerText.appendChild(document.createTextNode(element));
 							if (iii < splitParam.length-1) headerText.appendChild(parser.createElement('hr'))
 						}

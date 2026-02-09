@@ -40,7 +40,7 @@
         }
 
         get errorList(): ReadonlyArray<string> {
-            return this.errors[this.field] || []; //tslint:disable-line:strict-boolean-expressions
+            return this.errors[this.field] || [];
         }
 
         get helpId(): string | undefined {

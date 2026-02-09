@@ -82,7 +82,6 @@
         setStatus(): void {
             core.connection.send('STA', {status: this.status, statusmsg: this.text});
 
-            // tslint:disable-next-line
             this.updateHistory(this.text);
         }
 

@@ -35,7 +35,6 @@ export class BBCodeSimpleTag extends BBCodeTag {
         if(this.classes !== undefined && this.classes.length > 0)
             el.className = this.classes.join(' ');
         parent.appendChild(el);
-        /*tslint:disable-next-line:no-unsafe-any*/// false positive
         return el;
     }
 }
@@ -216,7 +215,7 @@ export class BBCodeParser {
                     if(element === undefined) continue;
                     (<HTMLElement & {bbcodeTag: string}>element).bbcodeTag = tagKey;
                     if(param.length > 0) (<HTMLElement & {bbcodeParam: string}>element).bbcodeParam = param;
-                } else if(self !== undefined) { //tslint:disable-line:curly
+                } else if(self !== undefined) {
                     if(self.tag === tagKey) {
                         if(parent !== undefined)
                             parent.appendChild(document.createTextNode(input.substring(mark, selfAllowed ? tagStart : i + 1)));

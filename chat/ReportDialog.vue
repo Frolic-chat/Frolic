@@ -59,7 +59,6 @@
 
         async submit(): Promise<void> {
             const conversation = core.conversations.selectedConversation;
-            /*tslint:disable-next-line:no-unnecessary-callback-wrapper*///https://github.com/palantir/tslint/issues/2430
             const log = conversation.reportMessages.map((x) => messageToString(x));
             const tab = (Conversation.isChannel(conversation) ? `${conversation.name} (${conversation.channel.id})`
                 : Conversation.isPrivate(conversation) ? l('chat.report.convoWith', conversation.name) : l('general.console'));
@@ -76,7 +75,6 @@
             try {
                 this.submitting = true;
                 const report = (await core.connection.queryApi<{log_id?: number}>('report-submit.php', data));
-                //tslint:disable-next-line:strict-boolean-expressions
                 if(!report.log_id) return;
                 core.connection.send('SFC', {action: 'report', logid: report.log_id, report: text, tab: conversation.name});
                 this.hide();

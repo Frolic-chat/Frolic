@@ -2,7 +2,6 @@ import { Character as CharacterProfile } from '../site/character_page/interfaces
 import { CharacterOverrides } from './characters';
 import { Kink as MatcherKink } from '../learn/matcher-types';
 
-//tslint:disable:no-shadowed-variable
 export namespace Connection {
     export type ClientCommands = {
         ACB: {character: string},

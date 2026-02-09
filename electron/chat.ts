@@ -48,7 +48,6 @@ import * as electron from 'electron';
 import * as remote from '@electron/remote';
 const webContents = remote.getCurrentWebContents();
 
-// tslint:disable-next-line:no-require-imports no-submodule-imports
 require('@electron/remote/main').enable(webContents);
 
 //import Axios from 'axios';

@@ -1,4 +1,3 @@
-//tslint:disable:no-shadowed-variable
 import {Connection} from '../fchat';
 
 import {Channel, Character} from '../fchat/interfaces';

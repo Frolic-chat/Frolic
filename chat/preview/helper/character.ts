@@ -30,8 +30,7 @@ export class CharacterPreviewHelper extends ImagePreviewHelper {
 
         const characterName = match[1];
 
-        // tslint:disable-next-line no-floating-promises
-        this.parent.getCharacterPreview().load(characterName);
+        void this.parent.getCharacterPreview().load(characterName);
     }
 
 
@@ -70,4 +69,3 @@ export class CharacterPreviewHelper extends ImagePreviewHelper {
             : { display: 'none' };
     }
 }
-

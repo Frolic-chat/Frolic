@@ -154,7 +154,6 @@ export class SiteSession {
     }
 
 
-  // tslint:disable-next-line:prefer-function-over-method
     private async ensureLogin(): Promise<void> {
         if (this.state !== 'active')
             throw new Error('Site session not active');

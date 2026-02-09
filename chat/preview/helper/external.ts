@@ -20,8 +20,7 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
             const webview = this.parent.getWebview();
 
             // if (this.allowCachedUrl) {
-            //     // tslint:disable-next-line:no-floating-promises
-            //     webview.executeJavaScript(this.parent.jsMutator.getHideMutator());
+            //     void webview.executeJavaScript(this.parent.jsMutator.getHideMutator());
             // } else {
 
             webview.stop();
@@ -96,8 +95,7 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
             //     if (this.debug)
             //         console.log('ImagePreview: exec re-show mutator');
             //
-            //     // tslint:disable-next-line:no-floating-promises
-            //     webview.executeJavaScript(this.parent.jsMutator.getReShowMutator());
+            //     void webview.executeJavaScript(this.parent.jsMutator.getReShowMutator());
             // } else {
             //     if (this.debug)
             //         console.log('ImagePreview: must load; skip re-show because urls don\'t match', this.url, webview.getURL());
@@ -108,7 +106,6 @@ export class ExternalImagePreviewHelper extends ImagePreviewHelper {
             webview.setAudioMuted(false);
 
             // Broken promise chain on purpose
-            // tslint:disable-next-line:no-floating-promises
             void this.urlMutator.resolve(url)
                 .then(
                     async(finalUrl: string) => {

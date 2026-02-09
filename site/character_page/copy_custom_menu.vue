@@ -27,7 +27,7 @@
                         return child.textContent!;
                 return 'Unknown';
             };
-            const name = getName(<any>element.children); //tslint:disable-line:no-any
+            const name = getName(<any>element.children);
             const description = element.title;
             (<CopyCustomDialog>this.$refs['copy-dialog']).showDialog(name, description);
         }

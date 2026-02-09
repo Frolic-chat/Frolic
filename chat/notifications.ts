@@ -37,8 +37,6 @@ export default class Notifications implements Interface {
     }
 
     getOptions(conversation: Conversation, body: string, icon: string): NotificationOptions & { renotify: boolean } {
-
-        //tslint:disable-next-line:no-require-imports no-unsafe-any
         const badge = <string>require('../electron/build/blossom.png').default;
 
         return {
@@ -87,7 +85,7 @@ export default class Notifications implements Interface {
             promises.push(audio.play().catch(e => console.error(e)));
         }
 
-        return Promise.all(promises); //tslint:disable-line:no-any
+        return Promise.all(promises);
     }
 
     async applyGlobalAudioVolume(volume: number): Promise<void> {

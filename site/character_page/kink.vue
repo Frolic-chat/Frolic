@@ -35,7 +35,6 @@
         readonly comparisons!: {[key: number]: string | undefined};
 
         @Prop({required: false})
-        // tslint:disable-next-line: vue-props
         expandedCustom = false;
 
         listClosed = true;

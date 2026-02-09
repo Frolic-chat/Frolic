@@ -126,7 +126,7 @@ export function fixLogs(character: string): void {
         let pos = 0, lastDay = 0;
         const nameEnd = buffer.readUInt8(0) + 1;
         fs.ftruncateSync(indexFd, nameEnd);
-        fs.readSync(indexFd, buffer, 0, nameEnd, null); //tslint:disable-line:no-null-keyword
+        fs.readSync(indexFd, buffer, 0, nameEnd, null);
         const size = (fs.fstatSync(fd)).size;
         try {
             while(pos < size) {
@@ -321,7 +321,6 @@ export class SettingsStore implements Settings.Store {
         return (fs.readdirSync(baseDir)).filter((x) => fs.statSync(path.join(baseDir, x)).isDirectory());
     }
 
-    //tslint:disable-next-line:no-async-without-await
     async set<K extends keyof Settings.Keys>(key: K, value: Settings.Keys[K]): Promise<void> {
         writeFile(path.join(getSettingsDir(), key), JSON.stringify(value, null, 4));
     }

@@ -84,7 +84,7 @@ import * as UpdateCheck from './main/updater';
 import versionUpgradeRoutines from './main/version-upgrade';
 
 //region: 2nd Instance
-const isSquirrelStart = require('electron-squirrel-startup'); //tslint:disable-line:no-require-imports
+const isSquirrelStart = require('electron-squirrel-startup');
 if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
     app.quit();
 else {

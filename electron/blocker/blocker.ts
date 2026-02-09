@@ -26,7 +26,6 @@ export class BlockerIntegration {
       'https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt' // uBlock Origin Unbreak
   ];
 
-  // tslint:disable-next-line:max-line-length
   constructor(protected readonly baseDir: string, protected readonly blocker?: ElectronBlocker, protected readonly session?: electron.Session) {
     // nothing yet
   }
