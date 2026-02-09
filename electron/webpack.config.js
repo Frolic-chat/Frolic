@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-// const ForkTsCheckerWebpackPlugin = require('@f-list/fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('css-minimizer-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const vueTransformer = require('@frolic/vue-ts/transform').default;
@@ -56,11 +56,25 @@ const mainConfig = {
         __filename: false
     },
     plugins: [
-        // new ForkTsCheckerWebpackPlugin({
-        //     async: false,
-        //     tsconfig: './tsconfig-main.json',
-        //     ignoreLintWarnings: true,
-        // })
+        new ForkTsCheckerWebpackPlugin({
+            async: false,
+            typescript: {
+                enabled: true,
+                // memoryLimit: 2048, // default
+                configFile: './tsconfig-main.json',
+                diagnosticOptions: {
+                    syntactic: true,
+                    semantic: true,
+                    declaration: true,
+                    global: true,
+                },
+                profile: true,
+            },
+            eslint: {
+                enabled: false,
+                files: '', // glob pattern
+            },
+        })
     ],
     resolve: {
         extensions: ['.ts', '.js']
@@ -204,12 +218,28 @@ const rendererConfig = {
         __filename: false
     },
     plugins: [
-        // new ForkTsCheckerWebpackPlugin({
-        //     async: false,
-        //     tsconfig: './tsconfig-renderer.json',
-        //     vue: true,
-        //     ignoreLintWarnings: true,
-        // }),
+        new ForkTsCheckerWebpackPlugin({
+            async: false,
+            typescript: {
+                enabled: true,
+                // memoryLimit: 2048, // default
+                configFile: path.join(__dirname, 'tsconfig-renderer.json'),
+                diagnosticOptions: {
+                    syntactic: true,
+                    semantic: true,
+                    declaration: true,
+                    global: true,
+                },
+                extensions: {
+                    vue: true,
+                },
+                profile: true,
+            },
+            eslint: {
+                enabled: false,
+                files: '', // glob pattern
+            },
+        }),
         new VueLoaderPlugin(),
         new CopyPlugin(
             {
@@ -266,12 +296,28 @@ const storeWorkerEndpointConfig = {
         global: true,
     },
     plugins: [
-        // new ForkTsCheckerWebpackPlugin({
-        //     async: false,
-        //     tsconfig: path.join(__dirname, 'tsconfig-renderer.json'),
-        //     vue: true,
-        //     ignoreLintWarnings: true,
-        // })
+        new ForkTsCheckerWebpackPlugin({
+            async: false,
+            typescript: {
+                enabled: true,
+                // memoryLimit: 2048, // default
+                configFile: path.join(__dirname, 'tsconfig-renderer.json'),
+                diagnosticOptions: {
+                    syntactic: true,
+                    semantic: true,
+                    declaration: true,
+                    global: true,
+                },
+                extensions: {
+                    vue: true,
+                },
+                profile: true,
+            },
+            eslint: {
+                enabled: false,
+                files: '', // glob pattern
+            },
+        })
     ],
     resolve: {
         extensions: ['.ts', '.js']
