@@ -1702,7 +1702,7 @@ export default function(this: any): Interfaces.State {
 
         logRTB.warn(`conversations.RTB.${data.type}`, { data, time });
 
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development' || logRTB.eval()) {
             const debug_string = Object.entries(data)
                 .map(([k, v]) => `${k}: ${v}`)
                 .join(', ');
