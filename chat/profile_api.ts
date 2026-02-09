@@ -134,6 +134,8 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
 
     for (const key in data.custom_kinks) {
         const custom = data.custom_kinks[key];
+        if (!custom)
+            continue;
 
         if (<'fave'>custom.choice === 'fave') custom.choice = 'favorite';
 
@@ -150,7 +152,9 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
     for(const key in data.infotags) {
         const characterInfotag = data.infotags[key];
         const infotag = Store.shared.infotags[key];
-        if(!infotag) continue;
+        if (!characterInfotag || !infotag)
+            continue;
+
         newInfotags[key] = infotag.type === 'list' ? {list: parseInt(characterInfotag, 10)} : {string: characterInfotag};
     }
 
@@ -325,7 +329,7 @@ export function init(settings: Settings, characters: SimpleCharacter[]): void {
     Vue.component('bbcode-editor', Editor);
     Utils.init(settings, characters);
     core.connection.onEvent('connecting', () => {
-        Utils.settings.defaultCharacter = characters.find(x => x.name === core.connection.character)!.id;
+        Utils.settings.defaultCharacter = characters.find(x => x.name === core.connection.character)?.id ?? 0;
     });
     registerMethod('characterData', characterData);
     registerMethod('contactMethodIconUrl', contactMethodIconUrl);
