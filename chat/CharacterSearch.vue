@@ -9,10 +9,8 @@
                 <template v-slot="s">{{s.option.name}}</template>
             </filterable-select>
 
-            <template v-for="item in listItems">
-                <filterable-select v-model="data[item]" :multiple="true" :placeholder="l('general.filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
-                </filterable-select>
-            </template>
+            <filterable-select v-for="item in listItems" v-model="data[item]" :multiple="true" :placeholder="l('general.filter')" :title="l('characterSearch.' + item)" :options="options[item]" :key="item">
+            </filterable-select>
 
             <filterable-select v-model="data.species" class="species-filter" :filterFunc="filterSpecies" :multiple="true" :placeholder="l('general.filter')"
                 :title="l('characterSearch.species')" :options="options.species">
@@ -371,8 +369,9 @@ export default class CharacterSearch extends CustomDialog {
                 const keywordsStr = `${keywords.join(', ')}`;
                 const details = `${keywordsStr.substring(0, 24)}...`;
 
-                if (speciesId in speciesNames) {
-                    const name = speciesNames[speciesId][0].toUpperCase() + speciesNames[speciesId].substring(1);
+                const species = speciesNames[speciesId];
+                if (species) {
+                    const name = species[0]?.toUpperCase() + species.substring(1);
 
                     return {
                         details,
