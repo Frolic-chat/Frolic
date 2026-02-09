@@ -50,8 +50,6 @@ const licenseDir = path.join(appDir, 'licenses');
 const modulesDestDir = path.join(appDir, 'node_modules');
 [
     'throat',
-    'node-fetch',
-    'jquery',
 ].forEach(p => {
     const a = Array.isArray(p);
     const from = a ? a[0] : p,

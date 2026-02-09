@@ -56,25 +56,6 @@ const previewInitiationTime = Date.now();
 // window.addEventListener('DOMContentLoaded', () => (console.log('window.DOMContentLoaded', `${(Date.now() - previewInitiationTime)/1000}s`)));
 // setTimeout(() => (console.log('Timeout', `${(Date.now() - previewInitiationTime)/1000}s`)), 0); // ---- Note that clear() below could break this
 
-
-(() => {
-    try {
-        if (window.location.href.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
-            // Inject JQuery
-            const el = document.createElement('script');
-            el.type='text/javascript';
-            el.text="console.log('JQuery Injection'); window.$ = window.jQuery = require('jquery');";
-            document.appendChild(el);
-
-            if (!window.zest) {
-                window.zest = (q) => (document.querySelectorAll(q));
-            }
-        }
-    } catch (err) {
-        console.error('PornHub integration', err);
-    }
-})();
-
 (() => {
     try {
         const clear = () => {
