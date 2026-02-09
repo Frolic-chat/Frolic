@@ -70,7 +70,6 @@
     "@ghostery/adblocker-electron": "^2.0.0",
     "@ghostery/adblocker-electron-preload": "^2.0.0",
     "@ghostery/adblocker-extended-selectors": "^2.0.0",
-    "jquery": "^4.0.0",
     "node-fetch": "^2.7.0"
   },
   "optionalDependencies": {
