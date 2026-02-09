@@ -107,7 +107,9 @@ export default class Zip {
                 Uint32Array.of(
                     file.offset,    // Relative offset of local header
                 ),
-                file.name,          // File name (variable size)
+                                    // File name (variable size)
+                new Uint8Array(file.name), // runtime version of below.
+                // file.name as Uint8Array<ArrayBuffer>, // This should work :)
             );
 
             this.offset += file.name.length + 46;

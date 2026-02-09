@@ -3,7 +3,7 @@ import { SiteSession, SiteSessionInterface } from './site-session';
 import core from '../chat/core';
 import EventBus from '../chat/preview/event-bus';
 
-import type { TempNoteFormat, NoteStoreFramework } from './note-types';
+import type { TempNoteFormat } from './note-types';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('notes', () => core.state.generalSettings.argv.includes('--debug-notes'));
