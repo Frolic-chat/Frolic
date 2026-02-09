@@ -138,7 +138,7 @@ export class CacheManager {
             while (sorts < QUEUE_MAX_SORTS && low < high) {
                 const mid = (low + high) >> 1; // floor
 
-                if (this.queue[mid].score < entry.score)
+                if ((this.queue[mid]?.score ?? 0) < entry.score)
                     high = mid;
                 else
                     low = mid + 1;
@@ -195,8 +195,9 @@ export class CacheManager {
 
       if (char && char.status !== 'offline') {
         const conv = core.conversations.getPrivate(char, true);
+        const time = conv && conv.messages.length > 0 && lastElement(conv.messages)?.time.getTime();
 
-        if (conv && conv.messages.length > 0 && Date.now() - lastElement(conv.messages).time.getTime() < 5 * 60 * 1000) {
+        if (time && Date.now() - time < 5 * 60 * 1000) {
           const sessionMessages = conv.messages.filter(m => m.time.getTime() >= this.startTime.getTime());
 
           const allMessagesFromThem = sessionMessages
@@ -341,10 +342,12 @@ export class CacheManager {
                         try {
                             let skipFetch = false;
 
-                            if (
-                              (next.name in this.ongoingLog) ||
-                              ((next.name in this.fetchLog) && (Date.now() - this.fetchLog[next.name] < 120000))
-                            ) {
+                            const next_log = () => {
+                                const log = this.fetchLog[next.name];
+                                return log !== undefined && Date.now() - log < 12000;
+                            };
+
+                            if (this.ongoingLog[next.name] || next_log()) {
                               skipFetch = true;
                             }
 

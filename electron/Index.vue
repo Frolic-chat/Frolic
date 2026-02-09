@@ -332,7 +332,7 @@
                 core.connection.setCredentials(this.settings.account, this.password);
 
                 this.characters = Object.keys(data.characters)
-                    .map(name => ({ name, id: data.characters[name], deleted: false }))
+                    .map(name => ({ name, id: data.characters[name] ?? 0, deleted: false }))
                     .sort((x, y) => x.name.localeCompare(y.name));
 
                 this.defaultCharacter = data.default_character;

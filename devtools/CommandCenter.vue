@@ -38,7 +38,7 @@ export default class DevTools extends CustomDialog {
     handle() { (this.$refs[this.tab] as { handle?: () => void }).handle?.(); }
 
     nameTheModal(): string {
-        return this.tabNames[Number(this.tab)];
+        return this.tabNames[Number(this.tab)] ?? '';
     }
 
 

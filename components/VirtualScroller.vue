@@ -53,7 +53,7 @@ export default class VirtualScroller extends Vue {
 
     @Hook('mounted')
     mounted() {
-        if (!this.items[0].id || this.itemHeight < 0 || this.overdraw < 0)
+        if (!this.items[0]?.id || this.itemHeight < 0 || this.overdraw < 0)
             throw new Error(`Forbidden act with the virtual scroller:\n + No id property on items in array.\n + Items must have a height\n + Overdraw can be absent, zero, or a positive integer.`);
 
         this.visibleHeight = (this.$refs['scroller'] as HTMLDivElement).clientHeight;

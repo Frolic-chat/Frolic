@@ -98,7 +98,9 @@ export class ImageUrlMutator {
         // https://bsky.app/profile/user/post/postid
         this.add(/^https?:\/\/((?:[^.]+\.)?(?:bsky|fxbsky|vxbsky|bskye|bskyx|bsyy)\.app)\/profile\/[^\/]+\/post\/[^\/]+/,
             async (url: string, match: RegExpMatchArray): Promise<string> => {
-                return url.replace(match[1], 'd.fxbsky.app');
+                return match[1]
+                    ? url.replace(match[1], 'd.fxbsky.app')
+                    : url;
             }
         );
 
@@ -291,7 +293,7 @@ export class ImageUrlMutator {
           ? '.mp4'
           : ext;
 
-        return `https://i.imgur.com/${imageId}${((imageId.length <= 7) && (finalExt !== '.mp4')) ? 'l' : ''}${finalExt}${rest}`;
+        return `https://i.imgur.com/${imageId}${(((imageId?.length ?? 0) <= 7) && (finalExt !== '.mp4')) ? 'l' : ''}${finalExt}${rest}`;
     }
 
 

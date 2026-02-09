@@ -568,7 +568,7 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
 
     const eicons = lines
         .filter(line => line.trim() !== '' && !line.trim().startsWith('#'))
-        .map(line => line.split('\t', 2)[0].toLowerCase());
+        .map(line => line.split('\t', 2)[0]?.toLowerCase() ?? '');
 
     const asOfLine = lines.find(line => line.startsWith('# As Of: '));
     const asOfTimestamp = asOfLine ? parseInt(asOfLine.substring(9), 10) : 0;
@@ -633,7 +633,7 @@ async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExp
 
         const [action, eicon] = line.split('\t', 3);
 
-        if (action === '+' || action === '-')
+        if (eicon && (action === '+' || action === '-'))
             recordUpdates[action].push(eicon.toLowerCase());
     });
 
@@ -912,6 +912,9 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
         }, [] as [ string, number ][])
         .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
         .map(e => e[0]);
+
+        if (!chars[0])
+            throw new Error('Impossible: You must have deleted your character folder while the app is running.');
 
     const settings_dir = FChatFs.getCharacterSettingsDir(dir, chars[0]);
 

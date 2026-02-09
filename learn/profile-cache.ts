@@ -252,9 +252,12 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         for (const match of description.matchAll(query)) {
             const [ , type, value ] = match;
 
-            if (validInlineTags.find(tag => type === tag)) {
+            const lc = type?.toLowerCase();
+            const r = validInlineTags.find(tag => lc === tag);
+
+            if (r && value) {
                 results.push({
-                    type:  type.toLowerCase() as typeof validInlineTags[number],
+                    type: r,
                     value: value,
                 });
             }
@@ -266,7 +269,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         else {
             const match = description.match(/\[url=([^\]]+)]\s*?Rising\s*?Portrait\s*?\[\/url]/i);
 
-            if (match?.[1].trim())
+            if (match?.[1]?.trim())
                 results.push({
                     type:  'hqp',
                     value: match[1],
@@ -450,7 +453,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         logPhelper.debug('dev.phelper.color.matches', matches);
 
         for (const match of matches) {
-            if (!valid_colors.includes(match[1]) && !invalid.includes(match[1]))
+            if (match?.[1] && !valid_colors.includes(match[1]) && !invalid.includes(match[1]))
                 invalid.push(match[1]);
         }
 

@@ -28,7 +28,7 @@ const log = NewLogger('dictionary');
 import mutatorScript from '!!raw-loader!./assets/mutator.raw.js';
 
 
-const scripts: Record<string, string> = {
+const scripts = {
   mutator: mutatorScript
 }
 
