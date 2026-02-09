@@ -43,6 +43,7 @@
             <hr>
 
             <!-- notes -->
+            <!--
             <div class="form-group">
                 <h5>Notes</h5>
 
@@ -76,6 +77,7 @@
             </div>
 
             <hr>
+            -->
 
             <!-- channel view-->
             <div class="form-group">
@@ -143,7 +145,7 @@ export default class Comms extends Vue {
             this.char = core.characters.get(this.character);
 
             void this.getMemoFromCache(this.character);
-            void this.refreshNotes(this.character);
+            // void this.refreshNotes(this.character);
             this.updateSharedChannelDisplay();
         }
     }
@@ -154,7 +156,7 @@ export default class Comms extends Vue {
 
     @Hook('created')
     created() {
-        EventBus.$on('notes-api', this.onNoteApi);
+        // EventBus.$on('notes-api', this.onNoteApi);
 
         if (!core.siteSession.isRunning)
             EventBus.$on('site-session', this.onSiteSession);
@@ -163,7 +165,7 @@ export default class Comms extends Vue {
     @Hook('beforeDestroy')
     beforeDestroy() {
         EventBus.$off('site-session', this.onSiteSession);
-        EventBus.$off('notes-api',    this.onNoteApi);
+        // EventBus.$off('notes-api',    this.onNoteApi);
     }
 
     /**
@@ -177,7 +179,7 @@ export default class Comms extends Vue {
         if (state === 'active') {
             EventBus.$off('site-session', this.onSiteSession);
 
-            this.refreshNotes(this.character);
+            // this.refreshNotes(this.character);
         }
     }
 
