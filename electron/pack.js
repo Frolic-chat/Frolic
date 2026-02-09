@@ -51,6 +51,7 @@ const modulesDestDir = path.join(appDir, 'node_modules');
 [
     'throat',
 ].forEach(p => {
+    // Allow [ 'x', 'y' ] entries intead of just 'x'
     const a = Array.isArray(p);
     const from = a ? a[0] : p,
           to   = a ? a[1] : p;
@@ -63,7 +64,9 @@ const modulesDestDir = path.join(appDir, 'node_modules');
 });
 
 const buildSrcDir  = path.join(import.meta.dirname, 'build');
-[ 'license' ].forEach(p => {
+[
+    'license',
+].forEach(p => {
     const a = Array.isArray(p);
     const from = a ? p[0] : p,
           to   = a ? p[1] : p;

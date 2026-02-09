@@ -184,7 +184,8 @@
     import UserView from './UserView.vue';
     import CharacterChannelList from './character/CharacterChannelList.vue';
     import Dropdown from '../components/Dropdown.vue';
-    import { EventBus, MemoEvent } from './preview/event-bus';
+    import EventBus from './preview/event-bus';
+    import type { MemoEvent } from './preview/event-bus';
     import { MemoManager } from './character/memo';
 
     @Component({
