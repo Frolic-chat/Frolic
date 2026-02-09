@@ -24,7 +24,7 @@ export class CharacterPreviewHelper extends ImagePreviewHelper {
 
         const match = url.match(CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER);
 
-        if (!match) {
+        if (!match?.[1]) {
             return;
         }
 

@@ -175,7 +175,11 @@ export class AdManager {
             this.adMap = this.generateAdMap();
         }
 
-        return ads[this.adMap[this.adIndex % this.adMap.length] % ads.length];
+        const ad_num = this.adMap[this.adIndex % this.adMap.length];
+        if (ad_num === undefined)
+            return;
+
+        return ads[ad_num % ads.length];
     }
 
     getNextPostDue(): Date | undefined {

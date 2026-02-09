@@ -287,8 +287,10 @@ import { Component, Hook, Watch } from '@frolic/vue-ts';
                 animation: 50,
                 fallbackTolerance: 5,
                 onEnd: async(e) => {
-                    if(e.oldIndex === e.newIndex) return;
-                    return core.conversations.privateConversations[e.oldIndex!].sort(e.newIndex!);
+                    if(!e.oldIndex || e.oldIndex === e.newIndex) return;
+                    const old_convo = core.conversations.privateConversations[e.oldIndex];
+                    if (old_convo)
+                        return old_convo.sort(e.newIndex!);
                 }
             });
 
@@ -296,8 +298,10 @@ import { Component, Hook, Watch } from '@frolic/vue-ts';
                 animation: 50,
                 fallbackTolerance: 5,
                 onEnd: async(e) => {
-                    if(e.oldIndex === e.newIndex) return;
-                    return core.conversations.channelConversations[e.oldIndex!].sort(e.newIndex!);
+                    if(!e.oldIndex || e.oldIndex === e.newIndex) return;
+                    const old_convo = core.conversations.privateConversations[e.oldIndex];
+                    if (old_convo)
+                        return old_convo.sort(e.newIndex!);
                 }
             });
 
@@ -367,33 +371,33 @@ import { Component, Hook, Watch } from '@frolic/vue-ts';
             const console = this.conversations.consoleTab;
             const activity = this.conversations.activityTab;
             if(getKey(e) === Keys.ArrowUp && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console || selected === activity) { //tslint:disable-line:curly
-                    if(channels.length > 0) channels[channels.length - 1].show();
-                    else if(pms.length > 0) pms[pms.length - 1].show();
+                if(selected === console || selected === activity) {
+                    if(channels.length > 0) channels[channels.length - 1]?.show();
+                    else if(pms.length > 0) pms[pms.length - 1]?.show();
                 } else if(Conversation.isPrivate(selected)) {
                     const index = pms.indexOf(selected);
                     if(index === 0) this.goHome();
-                    else pms[index - 1].show();
+                    else pms[index - 1]?.show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
                     if(index === 0)
-                        if(pms.length > 0) pms[pms.length - 1].show();
+                        if(pms.length > 0) pms[pms.length - 1]?.show();
                         else this.goHome();
-                    else channels[index - 1].show();
+                    else channels[index - 1]?.show();
                 }
             else if(getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console || selected === activity) { //tslint:disable-line:curly - false positive
-                    if(pms.length > 0) pms[0].show();
-                    else if(channels.length > 0) channels[0].show();
+                if(selected === console || selected === activity) {
+                    if(pms.length > 0) pms[0]?.show();
+                    else if(channels.length > 0) channels[0]?.show();
                 } else if(Conversation.isPrivate(selected)) {
                     const index = pms.indexOf(selected);
                     if(index === pms.length - 1) {
-                        if(channels.length > 0) channels[0].show();
+                        if(channels.length > 0) channels[0]?.show();
                         else this.goHome();
-                    } else pms[index + 1].show();
+                    } else pms[index + 1]?.show();
                 } else {
                     const index = channels.indexOf(<Conversation.ChannelConversation>selected);
-                    if(index < channels.length - 1) channels[index + 1].show();
+                    if(index < channels.length - 1) channels[index + 1]?.show();
                     else this.goHome();
                 }
         }

@@ -179,15 +179,21 @@
         get buttons(): EditorButton[] {
             const buttons = this.defaultButtons.slice();
 
-            if(this.extras !== undefined)
-                for(let i = 0, l = this.extras.length; i < l; i++)
-                    buttons.push(this.extras[i]);
+            if(this.extras !== undefined) {
+                for(let i = 0, l = this.extras.length; i < l; i++) {
+                    const e = this.extras[i]
+                    if (e)
+                        buttons.push(e);
+                }
+            }
 
-            const colorButton = buttons.findIndex(b => b.tag === 'color');
+            const colorButton = buttons.find(b => b.tag === 'color');
 
-            buttons[colorButton].outerClass = this.colorPopupVisible
-                ? 'toggled'
-                : '';
+            if (colorButton) {
+                colorButton.outerClass = this.colorPopupVisible
+                    ? 'toggled'
+                    : '';
+            }
 
             return buttons;
         }
@@ -340,15 +346,22 @@
                 if(key === Keys.KeyZ) {
                     e.preventDefault();
                     if(this.undoIndex === 0 && this.undoStack[0] !== this.text) this.undoStack.unshift(this.text);
-                    if(this.undoStack.length > this.undoIndex + 1) {
-                        this.text = this.undoStack[++this.undoIndex];
+
+                    const next = this.undoStack[this.undoIndex + 1];
+                    if(next !== undefined) {
+                        this.text = next;
+                        this.undoIndex++;
                         this.$emit('input', this.text);
                         this.lastInput = Date.now();
                     }
                 } else if(key === Keys.KeyY) {
                     e.preventDefault();
-                    if(this.undoIndex > 0) {
-                        this.text = this.undoStack[--this.undoIndex];
+                    const prev = this.undoIndex - 1 >= 0
+                        ? this.undoStack[this.undoIndex - 1]
+                        : undefined;
+                    if(prev !== undefined) {
+                        this.text = prev;
+                        this.undoIndex--;
                         this.$emit('input', this.text);
                         this.lastInput = Date.now();
                     }

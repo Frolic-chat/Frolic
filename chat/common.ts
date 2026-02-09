@@ -171,7 +171,7 @@ export function messageToString(
         const split = msg.text.match(/\[user\]([^\[]*)\[\/user\](.*)/);
         if (split?.[1]) {
             character_name = characterTransform(split[1]);
-            body           = textTransform(split[2].trim());
+            body           = textTransform(split[2]?.trim() ?? '');
         }
         else {
             body = textTransform(msg.text.trim());

@@ -43,7 +43,7 @@ export default class Zip {
         let crc = -1;
 
         for (const byte of bytes)
-            crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xFF];
+            crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xFF]!;
 
         return (crc ^ -1) >>> 0;
     }
