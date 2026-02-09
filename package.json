@@ -69,8 +69,7 @@
     "@ghostery/adblocker-content": "^2.0.0",
     "@ghostery/adblocker-electron": "^2.0.0",
     "@ghostery/adblocker-electron-preload": "^2.0.0",
-    "@ghostery/adblocker-extended-selectors": "^2.0.0",
-    "node-fetch": "^2.7.0"
+    "@ghostery/adblocker-extended-selectors": "^2.0.0"
   },
   "optionalDependencies": {
     "appdmg": "^0.6.0",
