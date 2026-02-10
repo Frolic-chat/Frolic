@@ -14,7 +14,9 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
   },
-  "include": ["chat.ts", "window.ts", "../*.d.ts"]
+  "files": [ "chat.ts", "window.ts" ],
+  "include": [ "../*.d.ts", "../**/*.vue" ]
 }

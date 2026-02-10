@@ -2,7 +2,6 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginVue from 'eslint-plugin-vue';
 import stylistic from '@stylistic/eslint-plugin';
-// import * as parser from '@typescript-eslint/parser';
 
 export default [
     eslint.configs.recommended,
@@ -32,6 +31,7 @@ export default [
     {   // Vue rules
         rules: {
             'vue/max-attributes-per-line': 'off',
+            'vue/html-self-closing': 'off',
         },
     },
     {
@@ -100,7 +100,7 @@ export default [
                 { selector: 'variable', format: [ 'camelCase' ], modifiers: [ 'exported' ] },
                 {   // hard CONST
                     selector: 'variable',
-                    format: [ 'UPPER_CASE' ],
+                    format: [ 'UPPER_CASE', 'snake_case' ],
                     modifiers: [ 'const' ],
                     types: [ 'boolean', 'number', 'string', ],
                 },
@@ -211,7 +211,7 @@ export default [
             ],
 
             // Strange stuff
-            'prefer-promise-reject-errors': 'off',
+            //'prefer-promise-reject-errors': 'off',
             '@typescript-eslint/prefer-promise-reject-errors': [
                 // Turn on when I can allow throwing DOMExceptions
                 'off', {
@@ -219,6 +219,7 @@ export default [
                     allowThrowingUnknown: false,
                 }
             ],
+            // Love this.
             "@typescript-eslint/no-confusing-void-expression": [
                 "error", {
                     ignoreArrowShorthand: true,
@@ -226,6 +227,7 @@ export default [
                     ignoreVoidReturningFunctions: true,
                 }
             ],
+            "@typescript-eslint/no-redundant-type-constituents": "off",
             "@typescript-eslint/restrict-template-expressions": [
                 "error", {
                     allow: [{

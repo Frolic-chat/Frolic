@@ -15,9 +15,11 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    // Why do we have to include esnext lib if we're targeting esnext?
     "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
   },
-  "include": [ "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts", "*.d.ts" ]
+  "files": [ "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts" ],
+  "include": [ "*.d.ts", "../**/*.vue" ]
 }
 // "./**/*.d.ts"
 // "./learn/store/worker/store.worker.endpoint.ts",
