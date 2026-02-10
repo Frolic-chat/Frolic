@@ -48,7 +48,7 @@ const log = NewLogger('chat');
 
     import Logs from './Logs.vue';
 
-    import {init as profileApiInit} from './profile_api';
+    import * as ProfileApi from './profile_api';
     import { AdManager } from './ads/ad-manager';
     import EventBus from './preview/event-bus';
 
@@ -171,7 +171,7 @@ const log = NewLogger('chat');
                     character: core.characters.ownCharacter?.name
                 });
 
-                profileApiInit(
+                ProfileApi.init(
                     {
                         defaultCharacter: this.defaultCharacter,
                         animateEicons: core.state.settings.animatedEicons,
