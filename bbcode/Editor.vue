@@ -278,11 +278,11 @@
         }
 
         showEIconSelector(): void {
-          this.eiconSelector?.engage({ onSelect: this.onSelectEIcon });
+          this.eiconSelector?.engage(this.onSelectEIcon);
           this.$nextTick(() => this.eiconSelector?.setFocus());
         }
 
-        onSelectEIcon(eiconId: string, shift: boolean): void {
+        onSelectEIcon = (eiconId: string, shift: boolean) => {
           this.eiconApply(eiconId, shift);
         }
 

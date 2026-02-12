@@ -115,19 +115,21 @@ export default class EIconSelector extends CustomDialog {
 
     readonly searchUpdateDebounce = Utils.debounce(async () => this.results = await this.runSearch(), { wait: 350 });
 
-    // private engagedTextBox?: HTMLTextAreaElement | HTMLInputElement;
+    /**
+     * The eicon needs to "do" things with the selected eicon(s). That's outside of our domain, so the logical thing is to pass in the "do things" function. If we wanted to override custom dialog `.show()` we could, but that would give the eicon `.show()` a different invocation and might cause confusion.
+     * @param onSelect the function to run when an eicon is selected. `shift` is a boolean for alternative functionality; standard behavior should be "don't close eicon dialog if shift is held."
+     */
+    engage(onSelect?: (eicon: string, shift: boolean) => void) {
+        this.onSelect = onSelect;
 
-    engage(options: { onSelect?: (eicon: string, shift: boolean) => void,
-                      /* textarea?: HTMLTextAreaElement | HTMLInputElement, */
-                    } = {}) {
-        // this.engagedTextBox = options.textarea;
-        this.onSelect = options.onSelect;
+        if (!this.isReady)
+            void this.pollStatus();
+
         this.show();
     }
 
     disengage() {
-        // this.engagedTextBox = undefined;
-        this.onSelect       = undefined;
+        this.onSelect = undefined;
     }
 
     @Hook('created')
@@ -142,6 +144,9 @@ export default class EIconSelector extends CustomDialog {
         void this.pollStatus();
     }
 
+    /**
+     * All the work for connecting to main should be in here.
+     */
     async pollStatus() {
         this.status = 'loading';
         this.refreshing = true;
