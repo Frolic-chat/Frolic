@@ -34,8 +34,16 @@
     </button>
   </div>
   <div class="bbcode-editor-text-area" style="order:100;width:100%;">
-    <textarea v-show="!preview" ref="input" v-model="text" :maxlength="maxlength" :placeholder="placeholder" :class="finalClasses" :disabled="disabled" :style="hasToolbar ? {'border-top-left-radius': 0} : undefined" @input="onInput" @keyup="onKeyUp" @paste="onPaste" @keypress="$emit('keypress', $event)" @keydown="onKeyDown"></textarea>
-    <textarea ref="sizer"></textarea>
+    <textarea v-show="!preview" ref="input" v-model="text"
+        :maxlength="maxlength" :placeholder="placeholder"
+        :disabled="disabled"
+        class="bbcode-input"
+        :class="finalClasses"
+        @paste="onPaste"
+        @input="onInput"
+        @keypress="$emit('keypress', $event)"
+        @keydown="onKeyDown" @keyup="onKeyUp"
+    ></textarea>
     <div v-show="preview" class="bbcode-preview">
       <div class="bbcode-preview-warnings">
         <div v-show="previewWarnings.length" class="alert alert-danger">
@@ -128,7 +136,7 @@ export default class Editor extends Vue {
     previewResult = '';
     text = this.value ?? '';
     element!:        HTMLTextAreaElement;
-    sizer!:          HTMLTextAreaElement;
+    // sizer!:          HTMLTextAreaElement;
     maxHeight!:      number;
     minHeight!:      number;
     showToolbar = false;
@@ -137,29 +145,26 @@ export default class Editor extends Vue {
     protected defaultButtons = defaultButtons;
 
     private isShiftPressed = false;
-    private undoStack:       string[] = [];
+    private undoStack: string[] = [];
     private undoIndex = 0;
     private lastInput = 0;
-    private resizeListener!: () => void;
 
     @Hook('created')
     created(): void {
         // console.log('EDITOR', 'created');
         this.parser = new CoreBBCodeParser();
-        this.resizeListener = () => {
-            const styles = window.getComputedStyle(this.element);
-            this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
-            this.minHeight = parseInt(styles.minHeight, 10) || 60;
-        };
     }
 
     @Hook('mounted')
     mounted(): void {
         // console.log('EDITOR', 'mounted');
         this.element = this.$refs['input'] as HTMLTextAreaElement;
+
         const styles = window.getComputedStyle(this.element);
+
         this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
         this.minHeight = parseInt(styles.minHeight, 10) || 60;
+
         window.setInterval(() => {
             if (Date.now() - this.lastInput >= 500 && this.text !== this.undoStack[0] && this.undoIndex === 0) {
                 if (this.undoStack.length >= 30)
@@ -167,22 +172,6 @@ export default class Editor extends Vue {
                 this.undoStack.unshift(this.text);
             }
         }, 500);
-        this.sizer = this.$refs['sizer'] as HTMLTextAreaElement;
-        this.sizer.style.cssText = styles.cssText;
-        this.sizer.style.height = '0';
-        this.sizer.style.minHeight = '0';
-        this.sizer.style.overflow = 'hidden';
-        this.sizer.style.position = 'absolute';
-        this.sizer.style.top = '0';
-        this.sizer.style.visibility = 'hidden';
-        this.resize();
-        window.addEventListener('resize', this.resizeListener);
-    }
-
-    @Hook('destroyed')
-    destroyed(): void {
-        // console.log('EDITOR', 'destroyed');
-        window.removeEventListener('resize', this.resizeListener);
     }
 
     get finalClasses(): string | undefined {
@@ -226,7 +215,7 @@ export default class Editor extends Vue {
 
     @Watch('value')
     watchValue(newValue: string): void {
-        this.$nextTick(() => this.resize());
+        // this.$nextTick(() => this.resize());
         if (this.text === newValue)
             return;
         this.text = newValue;
@@ -412,31 +401,6 @@ export default class Editor extends Vue {
         this.$emit('keyup', e);
     }
 
-    /** All this just to set the height of the editor box...
-         *
-         * `getComputedStyle()` will always return pixel values,
-         * so they're safe to fuck around with.
-        */
-    resize(): void {
-        const computed = window.getComputedStyle(this.element);
-        const pad_left = parseFloat(computed.paddingLeft) || 0;
-        const pad_right = parseFloat(computed.paddingRight) || 0;
-        const content_width = this.element.clientWidth - pad_left - pad_right;
-
-        this.sizer.style.fontSize = this.element.style.fontSize;
-        this.sizer.style.lineHeight = this.element.style.lineHeight;
-
-        // I wonder if clientWidth would work.
-        this.sizer.style.width = `${content_width}px`;
-        this.sizer.value = this.element.value;
-
-        const pad_bot = parseFloat(computed.paddingBottom) || 0;
-
-        // + 2 is heuristics. Spooky! 👻 (Is it the 1px border?)
-        this.element.style.height = `${Math.max(Math.min(this.sizer.scrollHeight + pad_bot + 2, this.maxHeight), this.minHeight)}px`;
-        this.sizer.style.width = '0';
-    }
-
     onPaste(e: ClipboardEvent): void {
         const data = e.clipboardData?.getData('text/plain');
         if (data) {
@@ -483,20 +447,32 @@ export default class Editor extends Vue {
 }
 </script>
 <style lang="scss">
-  .bbcode-toolbar .character-btn {
-    a {
-      width: 100%;
-      height: 100%;
-      display: inline-block;
+.bbcode-editor-text-area > textarea {
+    width: 100%;
 
-      img {
+    line-height: 1.5;
+    min-height: 3.8em !important; // Heuristics - how can I just declare content height?
+    max-height: 1.5em * 10;
+
+    field-sizing: content;
+    resize: none;
+
+    border-top-left-radius:  0;
+    border-top-right-radius: 0;
+}
+
+.bbcode-toolbar .character-btn a {
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+
+    img {
         /* Sized like a fa icon */
         width: 1.25em;
         height: 1.25em;
         vertical-align: sub;
-      }
     }
-  }
+}
 
   .bbcode-toolbar {
       .modal-backdrop.color-popup-visible {
