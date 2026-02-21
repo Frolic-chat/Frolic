@@ -1,451 +1,486 @@
 <template>
-    <div class="bbcode-editor" style="display:flex;flex-wrap:wrap;justify-content:flex-end">
-        <slot name="default"></slot>
-        <a tabindex="0" class="btn btn-light bbcode-btn btn-sm" role="button" @click="showToolbar = true" @blur="showToolbar = false"
-            style="border-bottom-left-radius:0;border-bottom-right-radius:0" v-if="hasToolbar">
-            <i class="fa fa-code"></i>
-        </a>
-        <div class="bbcode-toolbar btn-toolbar" role="toolbar" :disabled="disabled" :style="showToolbar ? {display: 'flex'} : undefined" @mousedown.stop.prevent
-            v-if="hasToolbar" style="flex:1 51%; position: relative">
-
-            <div class="popover popover-top color-selector" v-show="colorPopupVisible" v-on-clickaway="dismissColorSelector">
-                <div class="popover-body">
-                  <div class="btn-group" role="group" aria-label="Color">
-                    <button v-for="btnCol in buttonColors" type="button" class="btn text-color" :class="btnCol" :title="btnCol" @click.prevent.stop="colorApply(btnCol)" tabindex="0"></button>
-                  </div>
-                </div>
-            </div>
-            <div class="modal-backdrop show color-popup-visible" v-show="colorPopupVisible" v-if="colorPopupVisible"></div>
-
-            <div class="btn-group toolbar-buttons">
-                <slot name="toolbar-start"></slot>
-                <div v-if="!!characterName" class="btn btn-light btn-sm character-btn">
-                  <icon :character="characterName"></icon>
-                </div>
-
-                <div class="btn btn-light btn-sm" v-for="button in buttons" :class="button.outerClass" :title="button.title" @click.prevent.stop="apply(button)">
-                    <i :class="(button.class ? button.class : 'fa fa-fw ') + button.icon"></i>
-                </div>
-                <div @click="previewBBCode" class="btn btn-light btn-sm" :class="preview ? 'active' : ''"
-                    :title="preview ? 'Close Preview' : 'Preview'">
-                    <i class="fa fa-fw fa-eye"></i>
-                </div>
-                <slot name="toolbar-end"></slot>
-            </div>
-            <button type="button" class="close" aria-label="Close" style="margin-left:10px" @click="showToolbar = false">&times;</button>
+<div class="bbcode-editor" style="display:flex;flex-wrap:wrap;justify-content:flex-end">
+  <slot name="default"></slot>
+  <a v-if="hasToolbar" tabindex="0" class="btn btn-light bbcode-btn btn-sm" role="button" style="border-bottom-left-radius:0;border-bottom-right-radius:0" @click="showToolbar = true" @blur="showToolbar = false">
+    <i class="fa fa-code"></i>
+  </a>
+  <div v-if="hasToolbar" class="bbcode-toolbar btn-toolbar" role="toolbar" :disabled="disabled" :style="showToolbar ? {display: 'flex'} : undefined" style="flex:1 51%; position: relative" @mousedown.stop.prevent>
+    <div v-show="colorPopupVisible" v-on-clickaway="dismissColorSelector" class="popover popover-top color-selector">
+      <div class="popover-body">
+        <div class="btn-group" role="group" aria-label="Color">
+          <button v-for="btnCol in buttonColors" :key="btnCol" type="button" class="btn text-color" :class="btnCol" :title="btnCol" tabindex="0" @click.prevent.stop="colorApply(btnCol)"></button>
         </div>
-        <div class="bbcode-editor-text-area" style="order:100;width:100%;">
-            <textarea ref="input" v-model="text" @input="onInput" v-show="!preview" :maxlength="maxlength" :placeholder="placeholder"
-                :class="finalClasses" @keyup="onKeyUp" :disabled="disabled" @paste="onPaste" @keypress="$emit('keypress', $event)"
-                :style="hasToolbar ? {'border-top-left-radius': 0} : undefined" @keydown="onKeyDown"></textarea>
-            <textarea ref="sizer"></textarea>
-            <div class="bbcode-preview" v-show="preview">
-                <div class="bbcode-preview-warnings">
-                    <div class="alert alert-danger" v-show="previewWarnings.length">
-                        <li v-for="warning in previewWarnings">{{warning}}</li>
-                    </div>
-                </div>
-                <div class="bbcode" ref="preview-element"></div>
-            </div>
-        </div>
+      </div>
     </div>
+    <div v-show="colorPopupVisible" v-if="colorPopupVisible" class="modal-backdrop show color-popup-visible"></div>
+
+    <div class="btn-group toolbar-buttons">
+      <slot name="toolbar-start"></slot>
+      <div v-if="!!characterName" class="btn btn-light btn-sm character-btn">
+        <icon :character="characterName"></icon>
+      </div>
+
+      <!-- :key - trouble finding something unique, most attributes should be unique enough. -->
+      <div v-for="button in buttons" :key="button.title" class="btn btn-light btn-sm" :class="button.outerClass" :title="button.title" @click.prevent.stop="apply(button)">
+        <i :class="(button.class ? button.class : 'fa fa-fw ') + button.icon"></i>
+      </div>
+      <div class="btn btn-light btn-sm" :class="preview ? 'active' : ''" :title="preview ? 'Close Preview' : 'Preview'" @click="previewBBCode">
+        <i class="fa fa-fw fa-eye"></i>
+      </div>
+      <slot name="toolbar-end"></slot>
+    </div>
+    <button type="button" class="close" aria-label="Close" style="margin-left:10px" @click="showToolbar = false">
+      &times;
+    </button>
+  </div>
+  <div class="bbcode-editor-text-area" style="order:100;width:100%;">
+    <textarea v-show="!preview" ref="input" v-model="text" :maxlength="maxlength" :placeholder="placeholder" :class="finalClasses" :disabled="disabled" :style="hasToolbar ? {'border-top-left-radius': 0} : undefined" @input="onInput" @keyup="onKeyUp" @paste="onPaste" @keypress="$emit('keypress', $event)" @keydown="onKeyDown"></textarea>
+    <textarea ref="sizer"></textarea>
+    <div v-show="preview" class="bbcode-preview">
+      <div class="bbcode-preview-warnings">
+        <div v-show="previewWarnings.length" class="alert alert-danger">
+          <li v-for="warning in previewWarnings" :key="warning">
+            {{ warning }}
+          </li>
+        </div>
+      </div>
+      <div ref="preview-element" class="bbcode"></div>
+    </div>
+  </div>
+</div>
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
-    import Vue from 'vue';
-    import { mixin as clickaway } from 'vue-clickaway';
-    import {getKey} from '../chat/common';
-    import {Keys} from '../keys';
-    import {BBCodeElement, CoreBBCodeParser, urlRegex} from './core';
-    import {defaultButtons, EditorButton, EditorSelection} from './editor';
-    import {BBCodeParser} from './parser';
-    import {default as IconView} from './IconView.vue';
-    import type EIconSelector from './EIconSelector.vue';
+import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
+import Vue from 'vue';
+import { mixin as clickaway } from 'vue-clickaway';
+import {getKey} from '../chat/common';
+import {Keys} from '../keys';
+import { CoreBBCodeParser, urlRegex} from './core';
+import { defaultButtons } from './editor';
+import IconView from './IconView.vue';
 
-    @Component({
-      components: {
+import type { BBCodeElement } from './core';
+import type { EditorButton, EditorSelection } from './editor';
+import type { BBCodeParser } from './parser';
+import type EIconSelector from './EIconSelector.vue';
+
+@Component({
+    components: {
         'icon': IconView,
-      },
-      mixins: [ clickaway ]
-    })
-    export default class Editor extends Vue {
-      /**
+    },
+    mixins: [ clickaway ],
+})
+export default class Editor extends Vue {
+    /**
        * Is it okay not to have an eicon selector on this component? Probably.
        */
-        @Prop
-        readonly eiconSelector?: EIconSelector;
-        @Prop
-        readonly extras?: EditorButton[];
+    @Prop
+    readonly eiconSelector?: EIconSelector;
+    @Prop
+    readonly extras?: EditorButton[];
 
-        @Prop({default: 1000})
-        readonly maxlength!: number;
+    @Prop({default: 1000})
+    readonly maxlength!: number;
 
-        @Prop
-        readonly classes?: string;
+    @Prop
+    readonly classes?: string;
 
-        @Prop
-        readonly value?: string | undefined = undefined;
+    @Prop
+    readonly value?: string | undefined = undefined;
 
-        @Prop
-        readonly disabled?: boolean;
+    @Prop
+    readonly disabled?: boolean;
 
-        @Prop
-        readonly placeholder?: string;
+    @Prop
+    readonly placeholder?: string;
 
-        @Prop({default: true})
-        readonly hasToolbar!: boolean;
+    @Prop({default: true})
+    readonly hasToolbar!: boolean;
 
-        @Prop({default: false, type: Boolean})
-        readonly invalid!: boolean;
+    @Prop({default: false, type: Boolean})
+    readonly invalid!: boolean;
 
-        @Prop({default: null})
-        readonly characterName: string | null = null;
+    @Prop({default: null})
+    readonly characterName: string | null = null;
 
-        @Prop({default: 'normal'})
-        readonly type: 'normal' | 'big' = 'normal';
+    @Prop({default: 'normal'})
+    readonly type: 'normal' | 'big' = 'normal';
 
-        buttonColors = ['red', 'orange', 'yellow', 'green', 'cyan', 'purple', 'blue', 'pink', 'black', 'brown', 'white', 'gray'];
-        colorPopupVisible = false;
+    buttonColors = [
+        'red',
+        'orange',
+        'yellow',
+        'green',
+        'cyan',
+        'purple',
+        'blue',
+        'pink',
+        'black',
+        'brown',
+        'white',
+        'gray',
+    ];
+    colorPopupVisible = false;
 
-        preview = false;
-        previewWarnings: ReadonlyArray<string> = [];
-        previewResult = '';
-        text = this.value ?? '';
-        element!: HTMLTextAreaElement;
-        sizer!: HTMLTextAreaElement;
-        maxHeight!: number;
-        minHeight!: number;
-        showToolbar = false;
+    preview = false;
+    previewWarnings: ReadonlyArray<string> = [];
+    previewResult = '';
+    text = this.value ?? '';
+    element!:        HTMLTextAreaElement;
+    sizer!:          HTMLTextAreaElement;
+    maxHeight!:      number;
+    minHeight!:      number;
+    showToolbar = false;
 
-        protected parser!: BBCodeParser;
-        protected defaultButtons = defaultButtons;
+    protected parser!: BBCodeParser;
+    protected defaultButtons = defaultButtons;
 
-        private isShiftPressed = false;
-        private undoStack: string[] = [];
-        private undoIndex = 0;
-        private lastInput = 0;
-        private resizeListener!: () => void;
+    private isShiftPressed = false;
+    private undoStack:       string[] = [];
+    private undoIndex = 0;
+    private lastInput = 0;
+    private resizeListener!: () => void;
 
-        @Hook('created')
-        created(): void {
-            // console.log('EDITOR', 'created');
-            this.parser = new CoreBBCodeParser();
-            this.resizeListener = () => {
-                const styles = getComputedStyle(this.element);
-                this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
-                this.minHeight = parseInt(styles.minHeight, 10) || 60;
-            };
-        }
-
-        @Hook('mounted')
-        mounted(): void {
-            // console.log('EDITOR', 'mounted');
-            this.element = <HTMLTextAreaElement>this.$refs['input'];
-            const styles = getComputedStyle(this.element);
+    @Hook('created')
+    created(): void {
+        // console.log('EDITOR', 'created');
+        this.parser = new CoreBBCodeParser();
+        this.resizeListener = () => {
+            const styles = window.getComputedStyle(this.element);
             this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
             this.minHeight = parseInt(styles.minHeight, 10) || 60;
-            setInterval(() => {
-                if(Date.now() - this.lastInput >= 500 && this.text !== this.undoStack[0] && this.undoIndex === 0) {
-                    if(this.undoStack.length >= 30) this.undoStack.pop();
-                    this.undoStack.unshift(this.text);
-                }
-            }, 500);
-            this.sizer = <HTMLTextAreaElement>this.$refs['sizer'];
-            this.sizer.style.cssText = styles.cssText;
-            this.sizer.style.height = '0';
-            this.sizer.style.minHeight = '0';
-            this.sizer.style.overflow = 'hidden';
-            this.sizer.style.position = 'absolute';
-            this.sizer.style.top = '0';
-            this.sizer.style.visibility = 'hidden';
-            this.resize();
-            window.addEventListener('resize', this.resizeListener);
-        }
+        };
+    }
 
-        @Hook('destroyed')
-        destroyed(): void {
-            // console.log('EDITOR', 'destroyed');
-            window.removeEventListener('resize', this.resizeListener);
-        }
-
-        get finalClasses(): string | undefined {
-            let classes = this.classes;
-            if(this.invalid)
-                classes += ' is-invalid';
-            return classes;
-        }
-
-        get buttons(): EditorButton[] {
-            const buttons = this.defaultButtons.slice();
-
-            if(this.extras !== undefined) {
-                for(let i = 0, l = this.extras.length; i < l; i++) {
-                    const e = this.extras[i]
-                    if (e)
-                        buttons.push(e);
-                }
+    @Hook('mounted')
+    mounted(): void {
+        // console.log('EDITOR', 'mounted');
+        this.element = this.$refs['input'] as HTMLTextAreaElement;
+        const styles = window.getComputedStyle(this.element);
+        this.maxHeight = parseInt(styles.maxHeight, 10) || 250;
+        this.minHeight = parseInt(styles.minHeight, 10) || 60;
+        window.setInterval(() => {
+            if (Date.now() - this.lastInput >= 500 && this.text !== this.undoStack[0] && this.undoIndex === 0) {
+                if (this.undoStack.length >= 30)
+                    this.undoStack.pop();
+                this.undoStack.unshift(this.text);
             }
+        }, 500);
+        this.sizer = this.$refs['sizer'] as HTMLTextAreaElement;
+        this.sizer.style.cssText = styles.cssText;
+        this.sizer.style.height = '0';
+        this.sizer.style.minHeight = '0';
+        this.sizer.style.overflow = 'hidden';
+        this.sizer.style.position = 'absolute';
+        this.sizer.style.top = '0';
+        this.sizer.style.visibility = 'hidden';
+        this.resize();
+        window.addEventListener('resize', this.resizeListener);
+    }
 
-            const colorButton = buttons.find(b => b.tag === 'color');
+    @Hook('destroyed')
+    destroyed(): void {
+        // console.log('EDITOR', 'destroyed');
+        window.removeEventListener('resize', this.resizeListener);
+    }
 
-            if (colorButton) {
-                colorButton.outerClass = this.colorPopupVisible
-                    ? 'toggled'
-                    : '';
+    get finalClasses(): string | undefined {
+        let classes = this.classes ?? '';
+        if (this.invalid)
+            classes += ' is-invalid';
+        return classes;
+    }
+
+    get buttons(): EditorButton[] {
+        const buttons = this.defaultButtons.slice();
+
+        if (this.extras) {
+            for (let i = 0, l = this.extras.length; i < l; i++) {
+                const e = this.extras[i];
+                if (e)
+                    buttons.push(e);
             }
-
-            return buttons;
         }
 
-        getButtonByTag(tag: string): EditorButton {
-          const btn = this.buttons.find(b => b.tag === tag);
+        const color_btn = buttons.find(b => b.tag === 'color');
 
-          if (!btn) {
+        if (color_btn) {
+            color_btn.outerClass = this.colorPopupVisible
+                ? 'toggled'
+                : '';
+        }
+
+        return buttons;
+    }
+
+    getButtonByTag(tag: string): EditorButton {
+        const btn = this.buttons.find(b => b.tag === tag);
+
+        if (!btn)
             throw new Error('Unknown button');
-          }
 
-          return btn;
+
+        return btn;
+    }
+
+    @Watch('value')
+    watchValue(newValue: string): void {
+        this.$nextTick(() => this.resize());
+        if (this.text === newValue)
+            return;
+        this.text = newValue;
+        this.lastInput = 0;
+        this.undoIndex = 0;
+        this.undoStack = [];
+    }
+
+    getSelection(): EditorSelection {
+        return {
+            start:  this.element.selectionStart,
+            end:    this.element.selectionEnd,
+            length: this.element.selectionEnd - this.element.selectionStart,
+            text:   this.element.value.substring(this.element.selectionStart, this.element.selectionEnd),
+        };
+    }
+
+    replaceSelection(replacement: string): string {
+        const selection = this.getSelection();
+        const start = this.element.value.substring(0, selection.start) + replacement;
+        const end = this.element.value.substring(selection.end);
+        this.element.value = start + end;
+        this.element.dispatchEvent(new Event('input'));
+        return start + end;
+    }
+
+    setSelection(start: number, end?: number): void {
+        if (end === undefined)
+            end = start;
+        this.element.focus();
+        this.element.setSelectionRange(start, end);
+    }
+
+    applyText(startText: string, endText: string, withInject?: string): void {
+        const selection = this.getSelection();
+        if (selection.length > 0) {
+            const replacement = startText + (withInject || selection.text) + endText;
+            this.text = this.replaceSelection(replacement);
+            this.setSelection(selection.start, selection.start + replacement.length);
         }
+        else {
+            const start = this.text.substring(0, selection.start) + startText;
+            const end = endText + this.text.substring(selection.start);
+            this.text = start + (withInject || '') + end;
 
-        @Watch('value')
-        watchValue(newValue: string): void {
-            this.$nextTick(() => this.resize());
-            if(this.text === newValue) return;
-            this.text = newValue;
-            this.lastInput = 0;
-            this.undoIndex = 0;
-            this.undoStack = [];
+            const point = withInject ? start.length + withInject.length + endText.length : start.length;
+
+            this.$nextTick(() => this.setSelection(point));
         }
+        this.$emit('input', this.text);
+    }
 
-        getSelection(): EditorSelection {
-            return {
-                start: this.element.selectionStart,
-                end: this.element.selectionEnd,
-                length: this.element.selectionEnd - this.element.selectionStart,
-                text: this.element.value.substring(this.element.selectionStart, this.element.selectionEnd)
-            };
-        }
+    dismissColorSelector(): void {
+        this.colorPopupVisible = false;
+    }
 
-        replaceSelection(replacement: string): string {
-            const selection = this.getSelection();
-            const start = this.element.value.substring(0, selection.start) + replacement;
-            const end = this.element.value.substring(selection.end);
-            this.element.value = start + end;
-            this.element.dispatchEvent(new Event('input'));
-            return start + end;
-        }
+    colorApply(btnColor: string): void {
+        const button = this.getButtonByTag('color');
 
-        setSelection(start: number, end?: number): void {
-            if(end === undefined)
-                end = start;
-            this.element.focus();
-            this.element.setSelectionRange(start, end);
-        }
+        this.applyButtonEffect(button, btnColor);
 
-        applyText(startText: string, endText: string, withInject?: string): void {
-            const selection = this.getSelection();
-            if(selection.length > 0) {
-                const replacement = startText + (withInject || selection.text) + endText;
-                this.text = this.replaceSelection(replacement);
-                this.setSelection(selection.start, selection.start + replacement.length);
-            } else {
-                const start = this.text.substring(0, selection.start) + startText;
-                const end = endText + this.text.substring(selection.start);
-                this.text = start + (withInject || '') + end;
+        this.dismissColorSelector();
+    }
 
-                const selectionPoint = withInject ? start.length + withInject.length + endText.length : start.length;
+    dismissEIconSelector(): void {
+        this.eiconSelector?.hide();
+    }
 
-                this.$nextTick(() => this.setSelection(selectionPoint));
-            }
-            this.$emit('input', this.text);
-        }
+    showEIconSelector(): void {
+        this.eiconSelector?.engage(this.onSelectEIcon);
 
-        dismissColorSelector(): void {
-          this.colorPopupVisible = false;
-        }
+        this.$nextTick(() => this.eiconSelector?.setFocus());
+    }
 
-        colorApply(btnColor: string): void {
-          const button = this.getButtonByTag('color');
+    onSelectEIcon = (eiconId: string, shift: boolean) => {
+        this.eiconApply(eiconId, shift);
+    };
 
-          this.applyButtonEffect(button, btnColor);
+    eiconApply(eiconId: string, shift: boolean): void {
+        const button = this.getButtonByTag('eicon');
 
-          this.dismissColorSelector();
-        }
+        this.applyButtonEffect(button, undefined, eiconId);
 
-        dismissEIconSelector(): void {
-          this.eiconSelector?.hide();
-        }
-
-        showEIconSelector(): void {
-          this.eiconSelector?.engage(this.onSelectEIcon);
-          this.$nextTick(() => this.eiconSelector?.setFocus());
-        }
-
-        onSelectEIcon = (eiconId: string, shift: boolean) => {
-          this.eiconApply(eiconId, shift);
-        }
-
-        eiconApply(eiconId: string, shift: boolean): void {
-          const button = this.getButtonByTag('eicon');
-
-          this.applyButtonEffect(button, undefined, eiconId);
-
-          if (!shift) {
+        if (!shift)
             this.dismissEIconSelector();
-          }
+
+    }
+
+    apply(button: EditorButton): void {
+        if (button.tag === 'color') {
+            this.colorPopupVisible = !this.colorPopupVisible;
+            return;
+        }
+        else if (button.tag === 'eicon') {
+            this.showEIconSelector();
+            this.colorPopupVisible = false;
+            return;
+        }
+        else {
+            this.colorPopupVisible = false;
         }
 
-        apply(button: EditorButton): void {
-            if (button.tag === 'color') {
-              this.colorPopupVisible = !this.colorPopupVisible;
-              return;
-            } else if (button.tag === 'eicon') {
-              this.showEIconSelector();
-              this.colorPopupVisible = false;
-              return;
-            } else {
-              this.colorPopupVisible = false;
-            }
+        this.applyButtonEffect(button);
+    }
 
-            this.applyButtonEffect(button);
+    applyButtonEffect(button: EditorButton, withArgument?: string, withInject?: string): void {
+        // Allow emitted variations for custom buttons.
+        this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
+
+        if (button.handler)
+            return button.handler.call(this, this);
+
+        if (button.startText === undefined || withArgument)
+            button.startText = `[${button.tag}${withArgument ? '=' + withArgument : ''}]`;
+        if (button.endText === undefined)
+            button.endText = `[/${button.tag}]`;
+
+        const ebl = button.endText ? button.endText.length : 0;
+        const sbl = button.startText ? button.startText.length : 0;
+
+        if (this.text.length + sbl + ebl > this.maxlength)
+            return;
+
+        this.applyText(button.startText || '', button.endText || '', withInject);
+        this.lastInput = Date.now();
+    }
+
+    onInput(): void {
+        if (this.undoIndex > 0) {
+            this.undoStack = this.undoStack.slice(this.undoIndex);
+            this.undoIndex = 0;
         }
+        this.$emit('input', this.text);
+        this.lastInput = Date.now();
+    }
 
-        applyButtonEffect(button: EditorButton, withArgument?: string, withInject?: string): void {
-            // Allow emitted variations for custom buttons.
-            this.$once('insert', (startText: string, endText: string) => this.applyText(startText, endText));
-            // noinspection TypeScriptValidateTypes
-            if(button.handler) {
-                return button.handler.call(this as any, this);
-            }
-            if(button.startText === undefined || withArgument)
-                button.startText = `[${button.tag}${withArgument ? '=' + withArgument : ''}]`;
-            if(button.endText === undefined)
-                button.endText = `[/${button.tag}]`;
+    onKeyDown(e: KeyboardEvent): void {
+        const key = getKey(e);
+        if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
+            if (key === Keys.KeyZ) {
+                e.preventDefault();
+                if (this.undoIndex === 0 && this.undoStack[0] !== this.text)
+                    this.undoStack.unshift(this.text);
 
-            const ebl = button.endText ? button.endText.length : 0;
-            const sbl = button.startText ? button.startText.length : 0;
-
-            if(this.text.length + sbl + ebl > this.maxlength) return;
-            this.applyText(button.startText || '', button.endText || '', withInject);
-            this.lastInput = Date.now();
-        }
-
-        onInput(): void {
-            if(this.undoIndex > 0) {
-                this.undoStack = this.undoStack.slice(this.undoIndex);
-                this.undoIndex = 0;
-            }
-            this.$emit('input', this.text);
-            this.lastInput = Date.now();
-        }
-
-        onKeyDown(e: KeyboardEvent): void {
-            const key = getKey(e);
-            if((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
-                if(key === Keys.KeyZ) {
-                    e.preventDefault();
-                    if(this.undoIndex === 0 && this.undoStack[0] !== this.text) this.undoStack.unshift(this.text);
-
-                    const next = this.undoStack[this.undoIndex + 1];
-                    if(next !== undefined) {
-                        this.text = next;
-                        this.undoIndex++;
-                        this.$emit('input', this.text);
-                        this.lastInput = Date.now();
-                    }
-                } else if(key === Keys.KeyY) {
-                    e.preventDefault();
-                    const prev = this.undoIndex - 1 >= 0
-                        ? this.undoStack[this.undoIndex - 1]
-                        : undefined;
-                    if(prev !== undefined) {
-                        this.text = prev;
-                        this.undoIndex--;
-                        this.$emit('input', this.text);
-                        this.lastInput = Date.now();
-                    }
+                const next = this.undoStack[this.undoIndex + 1];
+                if (next !== undefined) {
+                    this.text = next;
+                    this.undoIndex++;
+                    this.$emit('input', this.text);
+                    this.lastInput = Date.now();
                 }
-                for(const button of this.buttons)
-                    if(button.key === key) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        this.applyButtonEffect(button);
-                        break;
-                    }
-            } else if(e.shiftKey) this.isShiftPressed = true;
-            this.$emit('keydown', e);
+            }
+            else if (key === Keys.KeyY) {
+                e.preventDefault();
+                const prev = this.undoIndex - 1 >= 0
+                    ? this.undoStack[this.undoIndex - 1]
+                    : undefined;
+                if (prev !== undefined) {
+                    this.text = prev;
+                    this.undoIndex--;
+                    this.$emit('input', this.text);
+                    this.lastInput = Date.now();
+                }
+            }
+            for (const button of this.buttons) {
+                if (button.key === key) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.applyButtonEffect(button);
+                    break;
+                }
+            }
         }
-
-        onKeyUp(e: KeyboardEvent): void {
-            if(!e.shiftKey) this.isShiftPressed = false;
-            this.$emit('keyup', e);
+        else if (e.shiftKey) {
+            this.isShiftPressed = true;
         }
+        this.$emit('keydown', e);
+    }
 
-        /** All this just to set the height of the editor box...
+    onKeyUp(e: KeyboardEvent): void {
+        if (!e.shiftKey)
+            this.isShiftPressed = false;
+        this.$emit('keyup', e);
+    }
+
+    /** All this just to set the height of the editor box...
          *
          * `getComputedStyle()` will always return pixel values,
          * so they're safe to fuck around with.
         */
-        resize(): void {
-            const computed = getComputedStyle(this.element);
-            const paddingLeft = parseFloat(computed.paddingLeft) || 0;
-            const paddingRight = parseFloat(computed.paddingRight) || 0;
-            const contentWidth = this.element.clientWidth - paddingLeft - paddingRight;
+    resize(): void {
+        const computed = window.getComputedStyle(this.element);
+        const pad_left = parseFloat(computed.paddingLeft) || 0;
+        const pad_right = parseFloat(computed.paddingRight) || 0;
+        const content_width = this.element.clientWidth - pad_left - pad_right;
 
-            this.sizer.style.fontSize = this.element.style.fontSize;
-            this.sizer.style.lineHeight = this.element.style.lineHeight;
+        this.sizer.style.fontSize = this.element.style.fontSize;
+        this.sizer.style.lineHeight = this.element.style.lineHeight;
 
-            // I wonder if clientWidth would work.
-            this.sizer.style.width = `${contentWidth}px`;
-            this.sizer.value = this.element.value;
+        // I wonder if clientWidth would work.
+        this.sizer.style.width = `${content_width}px`;
+        this.sizer.value = this.element.value;
 
-            const paddingBotPx = parseFloat(computed.paddingBottom) || 0;
+        const pad_bot = parseFloat(computed.paddingBottom) || 0;
 
-            // + 2 is heuristics. Spooky! 👻 (Is it the 1px border?)
-            this.element.style.height = `${Math.max(Math.min(this.sizer.scrollHeight + paddingBotPx + 2, this.maxHeight), this.minHeight)}px`;
-            this.sizer.style.width = '0';
-        }
+        // + 2 is heuristics. Spooky! 👻 (Is it the 1px border?)
+        this.element.style.height = `${Math.max(Math.min(this.sizer.scrollHeight + pad_bot + 2, this.maxHeight), this.minHeight)}px`;
+        this.sizer.style.width = '0';
+    }
 
-        onPaste(e: ClipboardEvent): void {
-            const data = e.clipboardData!.getData('text/plain');
-            if(!this.isShiftPressed && urlRegex.test(data)) {
+    onPaste(e: ClipboardEvent): void {
+        const data = e.clipboardData?.getData('text/plain');
+        if (data) {
+            if (!this.isShiftPressed && urlRegex.test(data)) {
                 e.preventDefault();
                 this.applyText(`[url=${data}]`, '[/url]');
             }
         }
+    }
 
-        focus(): void {
-            this.element.focus();
+    focus(): void {
+        this.element.focus();
+    }
+
+    isFocused(): boolean {
+        return this.element === document.activeElement;
+    }
+
+    previewBBCode(): void {
+        this.doPreview();
+    }
+
+    protected doPreview(): void {
+        const target = this.$refs['preview-element'] as HTMLElement;
+        if (this.preview) {
+            this.preview = false;
+            this.previewWarnings = [];
+            this.previewResult = '';
+            const preview = target.firstChild as BBCodeElement;
+            // noinspection TypeScriptValidateTypes
+            if (preview.cleanup !== undefined)
+                preview.cleanup();
+            if (target.firstChild !== null)
+                target.removeChild(target.firstChild);
         }
-
-        isFocused(): boolean {
-            return this.element === document.activeElement;
-        }
-
-        previewBBCode(): void {
-            this.doPreview();
-        }
-
-        protected doPreview(): void {
-            const targetElement = <HTMLElement>this.$refs['preview-element'];
-            if(this.preview) {
-                this.preview = false;
-                this.previewWarnings = [];
-                this.previewResult = '';
-                const previewElement = (<BBCodeElement>targetElement.firstChild);
-                // noinspection TypeScriptValidateTypes
-                if(previewElement.cleanup !== undefined) previewElement.cleanup();
-                if(targetElement.firstChild !== null) targetElement.removeChild(targetElement.firstChild);
-            } else {
-                this.preview = true;
-                this.parser.storeWarnings = true;
-                targetElement.appendChild(this.parser.parseEverything(this.text));
-                this.previewWarnings = this.parser.warnings;
-                this.parser.storeWarnings = false;
-            }
+        else {
+            this.preview = true;
+            this.parser.storeWarnings = true;
+            target.appendChild(this.parser.parseEverything(this.text));
+            this.previewWarnings = this.parser.warnings;
+            this.parser.storeWarnings = false;
         }
     }
+}
 </script>
 <style lang="scss">
   .bbcode-toolbar .character-btn {
