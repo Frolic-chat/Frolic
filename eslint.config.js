@@ -26,13 +26,44 @@ export default [
                 extraFileExtensions: ['.vue'],
                 sourceType: 'module',
             },
+            globals: {
+                window: "readonly",
+                document: "readonly",
+            }
         },
     },
     {   // Vue rules
         rules: {
+            'vue/html-indent': [
+                'warn',
+                2, {
+                    baseIndent: 0,
+                    attribute: 2,
+                }
+            ],
             'vue/max-attributes-per-line': 'off',
             'vue/html-self-closing': 'off',
+            'vue/max-len': 'off',
+            'vue/first-attribute-linebreak': 'off',
+            'vue/html-closing-bracket-newline': [
+                'warn', {
+                    singleline: 'never',
+                    multiline: 'always',
+                    selfClosingTag: {
+                        singleline: 'never',
+                        multiline: 'always',
+                    },
+                },
+            ],
         },
+        overrides: [
+            {
+                files: [ '*.vue' ],
+                rules: {
+                    '@typescript-eslint/no-unsafe-call': 'off',
+                },
+            },
+        ],
     },
     {
         //files: [ '*.ts', '*.tsx', '*.js', '*.jsx', '*.vue' ],
@@ -138,6 +169,10 @@ export default [
                 'multi-or-nest',
                 'consistent',
             ],
+            '@stylistic/nonblock-statement-body-position': [
+                'warn',
+                'below',
+            ],
             '@stylistic/array-element-newline': [
                 'warn', {
                     multiline: true,
@@ -207,6 +242,20 @@ export default [
                 "warn", {
                     before: true,
                     after: true,
+                },
+            ],
+
+            // Type checking stuff
+            "@typescript-eslint/no-unsafe-member-access": [
+                'warn', {
+                    allowOptionalChaining: true,
+                },
+            ],
+            "@typescript-eslint/consistent-type-imports": [
+                'error', {
+                    disallowTypeAnnotations: true,
+                    fixStyle: 'separate-type-imports',
+                    prefer: 'type-imports',
                 },
             ],
 
