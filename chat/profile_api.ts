@@ -9,7 +9,7 @@ import CharacterSelect from '../components/character_select.vue';
 import DateDisplay from '../components/date_display.vue';
 import SimplePager from '../components/simple_pager.vue';
 
-import {
+import type {
     Character as CharacterInfo, SimpleCharacter,
     CharacterSettings, Settings,
     CharacterImage, CharacterImageOld,
@@ -18,7 +18,7 @@ import {
     ListItem, InfotagType,
 } from '../interfaces';
 import {registerMethod, Store} from '../site/character_page/data_store';
-import {
+import type {
     Character,
     Friend, FriendRequest, FriendsByCharacter,
     Guestbook, GuestbookPost,
@@ -59,8 +59,8 @@ interface FieldMapInfotag {
 }
 
 interface FieldMapInfotagGroup {
-    id:          string // to num
-    name:        string
+    id:   string // to num
+    name: string
 }
 
 type ApiFields = {
@@ -69,20 +69,20 @@ type ApiFields = {
     kinkGroups:    Record<string, KinkGroup>;
     infotags:      Record<string, Infotag>;
     infotagGroups: Record<string, InfotagGroup>;
-}
+};
 
-const parserSettings = {
+const parser_settings = {
     siteDomain:         FLIST.Domain,
     staticDomain:       FLIST.StaticDomain,
     animatedIcons:      true,
-    inlineDisplayMode:  InlineDisplayMode.DISPLAY_ALL
+    inlineDisplayMode:  InlineDisplayMode.DISPLAY_ALL,
 };
 
 
-import throat from 'throat';
+import Throat from 'throat';
 
 // Throttle queries so that only two profile requests can run at any given time
-const characterDataThroat = throat(2);
+const throat = Throat(2);
 
 
 /**
@@ -96,14 +96,14 @@ const characterDataThroat = throat(2);
  */
 async function characterData(name: string | undefined, id: number = -1, skipEvent: boolean = false): Promise<Character> {
     // console.log('CharacterDataquery', name);
-    return characterDataThroat(async() => executeCharacterData(name, id, skipEvent));
+    return throat(async() => executeCharacterData(name, id, skipEvent));
 }
 
 async function executeCharacterData(name: string | undefined, _id: number = -1, skipEvent: boolean = false): Promise<Character> {
     const data = await core.connection.queryApi<CharacterInfo & {
-        is_self: boolean,
-        badges: string[],
-        customs_first: boolean,
+        is_self:        boolean,
+        badges:         string[],
+        customs_first:  boolean,
         character_list: { id: number, name: string }[],
         current_user: {
             inline_mode:    number,
@@ -112,7 +112,7 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
         custom_kinks: {
             [key: number]: {
                 id:          number,
-                choice:     'favorite' | 'yes' | 'maybe' | 'no',
+                choice:      'favorite' | 'yes' | 'maybe' | 'no',
                 name:        string,
                 description: string,
                 children:    number[],
@@ -127,42 +127,44 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
         timezone:     number | null,
     }>('character-data.php', { name });
 
-    const newKinks: {[key: string]: KinkChoiceFull} = {};
+    const new_kinks: {[key: string]: KinkChoiceFull} = {};
 
     for (const key in data.kinks)
-        newKinks[key] = <KinkChoiceFull>(data.kinks[key] === 'fave' ? 'favorite' : data.kinks[key]);
+        new_kinks[key] = <KinkChoiceFull>(data.kinks[key] === 'fave' ? 'favorite' : data.kinks[key]);
 
     for (const key in data.custom_kinks) {
         const custom = data.custom_kinks[key];
         if (!custom)
             continue;
 
-        if (<'fave'>custom.choice === 'fave') custom.choice = 'favorite';
+        // Also sign of !@#$ed code
+        if (<'fave'>custom.choice === 'fave')
+            custom.choice = 'favorite';
 
         custom.id = parseInt(key, 10);
 
         for (const childId of custom.children)
-            newKinks[childId] = custom.id;
+            new_kinks[childId] = custom.id;
     }
 
-    (<any>data.settings).block_bookmarks = (<any>data.settings).prevent_bookmarks;
+    data.settings.block_bookmarks = data.settings.prevent_bookmarks;
 
-    const newInfotags: {[key: string]: CharacterInfotag} = {};
+    const new_tags: {[key: string]: CharacterInfotag} = {};
 
-    for(const key in data.infotags) {
-        const characterInfotag = data.infotags[key];
+    for (const key in data.infotags) {
+        const char_infotag = data.infotags[key];
         const infotag = Store.shared.infotags[key];
-        if (!characterInfotag || !infotag)
+        if (!char_infotag || !infotag)
             continue;
 
-        newInfotags[key] = infotag.type === 'list' ? {list: parseInt(characterInfotag, 10)} : {string: characterInfotag};
+        new_tags[key] = infotag.type === 'list' ? {list: parseInt(char_infotag, 10)} : {string: char_infotag};
     }
 
     Utils.settings.inlineDisplayMode = data.current_user.inline_mode;
     Utils.settings.animateEicons = core.state.settings.animatedEicons;
 
-    const charData = {
-        is_self: false,
+    const char_data = {
+        is_self:   false,
         character: {
             id:          data.id,
             name:        data.name,
@@ -173,25 +175,25 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
             views:       data.views,
             image_count: data.images.length,
             inlines:     data.inlines,
-            kinks:       newKinks,
+            kinks:       new_kinks,
             customs:     data.custom_kinks,
-            infotags:    newInfotags,
+            infotags:    new_tags,
             online_chat: false,
             timezone:    data.timezone,
-            deleted:     false
+            deleted:     false,
         },
         settings:       data.settings,
         badges:         data.badges,
         memo:           data.memo,
         character_list: data.character_list,
         bookmarked:     core.characters.get(data.name).isBookmarked,
-        self_staff:     false
+        self_staff:     false,
     };
 
     if (!skipEvent)
-        EventBus.$emit('character-data', { profile: charData });
+        EventBus.$emit('character-data', { profile: char_data });
 
-    return charData;
+    return char_data;
 }
 
 function contactMethodIconUrl(name: string): string {
@@ -199,7 +201,9 @@ function contactMethodIconUrl(name: string): string {
 }
 
 async function fieldsGet(): Promise<void> {
-    if (Store.shared !== undefined) return;
+    // Indication of completely !@#$ed code
+    if (Store.shared !== undefined)
+        return;
 
     try {
         const response = (await (Axios.get(`${Utils.siteDomain}json/api/mapping-list.php`))).data as {
@@ -229,7 +233,7 @@ async function fieldsGet(): Promise<void> {
                 name:        k.name,
                 description: k.description,
                 kink_group:  Number(k.group_id),
-            }
+            };
         });
 
         response.kink_groups.forEach(kg => {
@@ -250,7 +254,7 @@ async function fieldsGet(): Promise<void> {
                 search_field:  '',
                 allow_legacy:  true,
                 infotag_group: Number(it.group_id),
-            }
+            };
         });
 
         response.listitems.forEach(li => {
@@ -298,7 +302,7 @@ type GuestbookResponse = {
     nextPage: boolean;
     page:     number;
     posts:    GuestbookPost[];
-}
+};
 
 async function guestbookGet(id: number, offset: number): Promise<Guestbook> {
     const data = await core.connection.queryApi<GuestbookResponse>('character-guestbook.php', { id, page: Math.floor(offset / 10) });
@@ -310,16 +314,15 @@ async function kinksGet(id: number): Promise<CharacterKink[]> {
     const data = await core.connection.queryApi('character-data.php', { id });
 
     return Object.keys(data.kinks)
-            .map(key => {
-                const choice = data.kinks[key];
-                return {id: parseInt(key, 10), choice: <KinkChoice>(choice === 'fave' ? 'favorite' : choice)};
-            }
-    );
+        .map(key => {
+            const choice = data.kinks[key];
+            return {id: parseInt(key, 10), choice: <KinkChoice>(choice === 'fave' ? 'favorite' : choice)};
+        });
 }
 
 
 export function init(settings: Settings, characters: SimpleCharacter[]): void {
-    Utils.setDomains(parserSettings.siteDomain, parserSettings.staticDomain);
+    Utils.setDomains(parser_settings.siteDomain, parser_settings.staticDomain);
 
     Vue.component('character-select', CharacterSelect);
     Vue.component('character-link', CharacterLink);
@@ -350,20 +353,20 @@ export function init(settings: Settings, characters: SimpleCharacter[]): void {
     registerMethod('characterFriends', async (id: number) =>
         core.connection.queryApi<FriendsByCharacter>('character-friend-list.php', {id})
     );
-    registerMethod('friendRequest', async (target_id: number, source_id: number) =>
-        (await core.connection.queryApi<{request: FriendRequest}>('request-send2.php', {source_id, target_id})).request
+    registerMethod('friendRequest', async (targetId: number, sourceId: number) =>
+        (await core.connection.queryApi<{request: FriendRequest}>('request-send2.php', {sourceId, targetId})).request
     );
     registerMethod('friendDissolve', async (friend: Friend) =>
-        core.connection.queryApi<void>('friend-remove.php', {source_id: friend.source.id, dest_id: friend.target.id})
+        core.connection.queryApi('friend-remove.php', {source_id: friend.source.id, dest_id: friend.target.id})
     );
     registerMethod('friendRequestAccept', async (req: FriendRequest) => {
         await core.connection.queryApi('request-accept.php', {request_id: req.id});
         return {id: undefined!, source: req.target, target: req.source, createdAt: Date.now() / 1000};
     });
     registerMethod('friendRequestCancel', async (req: FriendRequest) =>
-        core.connection.queryApi<void>('request-cancel.php', {request_id: req.id})
+        core.connection.queryApi('request-cancel.php', {request_id: req.id})
     );
     registerMethod('friendRequestIgnore', async (req: FriendRequest) =>
-        core.connection.queryApi<void>('request-deny.php', {request_id: req.id})
+        core.connection.queryApi('request-deny.php', {request_id: req.id})
     );
 }

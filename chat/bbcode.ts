@@ -1,5 +1,6 @@
-import Vue from 'vue';
-import { BBCodeElement, CoreBBCodeParser, analyzeUrlTag } from '../bbcode/core';
+import type Vue from 'vue';
+import type { BBCodeElement} from '../bbcode/core';
+import { CoreBBCodeParser, analyzeUrlTag } from '../bbcode/core';
 import BaseEditor from '../bbcode/Editor.vue';
 import { BBCodeTextTag } from '../bbcode/parser';
 import ChannelView from './ChannelTagView.vue';
@@ -20,28 +21,43 @@ export default class BBCodeParser extends CoreBBCodeParser {
     constructor() {
         super();
         this.addTag(new BBCodeTextTag('user', (parser, parent, param, content) => {
-            if(param.length > 0)
+            if (param.length > 0)
                 parser.warning('Unexpected parameter on user tag.');
+
             const uregex = /^[a-zA-Z0-9_\-\s]+$/;
-            if(!uregex.test(content)) return;
+            if (!uregex.test(content))
+                return;
+
             const el = parser.createElement('span');
             parent.appendChild(el);
-            const view = new UserView({el, propsData: {character: core.characters.get(content)}});
+
+            const view = new UserView({
+                el,
+                propsData: { character: core.characters.get(content) },
+            });
+
             this.cleanup.push(view);
+
             return el;
         }));
         this.addTag(new BBCodeTextTag('icon', (parser, parent, param, content) => {
-            if(param.length > 0)
+            if (param.length > 0)
                 parser.warning('Unexpected parameter on icon tag.');
+
             const uregex = /^[a-zA-Z0-9_\-\s]+$/;
-            if(!uregex.test(content))
+            if (!uregex.test(content))
                 return;
 
             const root = parser.createElement('span');
             const el = parser.createElement('span');
+
             parent.appendChild(root);
             root.appendChild(el);
-            const view = new IconView({ el, propsData: { character: content }});
+
+            const view = new IconView({
+                el,
+                propsData: { character: content },
+            });
 
             this.cleanup.push(view);
             return root;
@@ -56,18 +72,20 @@ export default class BBCodeParser extends CoreBBCodeParser {
             return img; */
         }));
         this.addTag(new BBCodeTextTag('eicon', (parser, parent, param, content) => {
-            if(param.length > 0)
+            if (param.length > 0)
                 parser.warning('Unexpected parameter on eicon tag.');
+
             const uregex = /^[a-zA-Z0-9_\-\s]+$/;
-            if(!uregex.test(content))
+            if (!uregex.test(content))
                 return;
+
             const extension = core.connection.isOpen && !core.state.settings.animatedEicons ? 'png' : 'gif';
             const img = parser.createElement('img');
             img.src = `https://static.f-list.net/images/eicon/${content.toLowerCase()}.${extension}`;
             img.title = img.alt = content;
 
-            // Property for right click menu.
-            (img as any).eicon = content;
+            // Property for right click menu. Should move type into interfaces.
+            (img as HTMLImageElement & { eicon: string }).eicon = content;
 
             img.className = 'character-avatar icon';
             parent.appendChild(img);
@@ -76,38 +94,61 @@ export default class BBCodeParser extends CoreBBCodeParser {
         this.addTag(new BBCodeTextTag('session', (parser, parent, param, content) => {
             const root = parser.createElement('span');
             const el = parser.createElement('span');
+
             parent.appendChild(root);
             root.appendChild(el);
-            const view = new ChannelView({el, propsData: {id: content, text: param}});
+
+            const view = new ChannelView({
+                el,
+                propsData: {id: content, text: param}
+            });
+
             this.cleanup.push(view);
+
             return root;
         }));
         this.addTag(new BBCodeTextTag('channel', (parser, parent, _, content) => {
             const root = parser.createElement('span');
             const el = parser.createElement('span');
+
             parent.appendChild(root);
             root.appendChild(el);
-            const view = new ChannelView({el, propsData: {id: content, text: content}});
+
+            const view = new ChannelView({
+                el,
+                propsData: {id: content, text: content}
+            });
+
             this.cleanup.push(view);
+
             return root;
         }));
 
         this.addTag(new BBCodeTextTag(
             'url',
             (parser, parent, _, content) => {
-                const tagData = analyzeUrlTag(parser, _, content);
+                const tag_data = analyzeUrlTag(parser, _, content);
 
                 const root = parser.createElement('span');
                 // const el = parser.createElement('span');
+
                 parent.appendChild(root);
                 // root.appendChild(el);
 
-                if (!tagData.success) {
-                    root.textContent = tagData.textContent;
+                if (!tag_data.success) {
+                    root.textContent = tag_data.textContent;
                     return;
                 }
 
-                const view = new UrlTagView({el: root, propsData: {url: tagData.url, text: tagData.textContent, domain: tagData.domain}});
+                const view = new UrlTagView({
+                    el: root,
+                    propsData: {
+                        url: tag_data.url,
+                        text: tag_data.textContent,
+                        domain: tag_data.domain,
+                    },
+                });
+
                 this.cleanup.push(view);
 
                 return root;
@@ -115,12 +156,17 @@ export default class BBCodeParser extends CoreBBCodeParser {
     }
 
     parseEverything(input: string): BBCodeElement {
-        const elm = <BBCodeElement>super.parseEverything(input);
-        if(this.cleanup.length > 0)
-            elm.cleanup = ((cleanup: Vue[]) => () => {
-                for(const component of cleanup) component.$destroy();
+        const elm = super.parseEverything(input);
+
+        if (this.cleanup.length > 0) {
+            (elm as BBCodeElement).cleanup = ((cleanup: Vue[]) => () => {
+                for (const component of cleanup)
+                    component.$destroy();
             })(this.cleanup);
+        }
+
         this.cleanup = [];
+
         return elm;
     }
 }

@@ -1,12 +1,12 @@
-import {
-    Character as CharacterInfo, CharacterImage, CharacterSettings, KinkChoice, SharedDefinitions, SimpleCharacter
+import type {
+    Character as CharacterInfo, CharacterImage, CharacterSettings, KinkChoice, SharedDefinitions, SimpleCharacter,
 } from '../../interfaces';
 
 /**
  * Contains the kink/infotag translations.
  */
 export interface SharedStore {
-    shared: SharedDefinitions
+    shared:        SharedDefinitions
     authenticated: boolean
 }
 
@@ -69,47 +69,47 @@ export type KinkChoiceFull = KinkChoice | number;
 export const CONTACT_GROUP_ID = 1;
 
 export interface DisplayKink {
-    id: number
-    name: string
+    id:          number
+    name:        string
     description: string
-    choice?: KinkChoice
-    group: number
-    isCustom: boolean
+    choice?:     KinkChoice
+    group:       number
+    isCustom:    boolean
     hasSubkinks: boolean
-    subkinks: DisplayKink[]
-    ignore: boolean
-    key: string
+    subkinks:    DisplayKink[]
+    ignore:      boolean
+    key:         string
 }
 
 export interface CharacterKink {
-    id: number
+    id:     number
     choice: KinkChoice
 }
 
 export type ThreadOrderMode = 'post' | 'explicit';
 
 export interface GroupPermissions {
-    view: boolean
-    edit: boolean
-    threads: boolean
+    view:        boolean
+    edit:        boolean
+    threads:     boolean
     permissions: boolean
 }
 
 export interface CharacterGroup {
-    id: number
-    title: string
-    public: boolean
-    description: string
-    threadCount: number
-    orderMode: ThreadOrderMode
-    createdAt: SiteDate
+    id:            number
+    title:         string
+    public:        boolean
+    description:   string
+    threadCount:   number
+    orderMode:     ThreadOrderMode
+    createdAt:     SiteDate
     myPermissions: GroupPermissions
-    character: SimpleCharacter
-    owner: boolean
+    character:     SimpleCharacter
+    owner:         boolean
 }
 
 export interface CharacterMemo {
-    id: number;
+    id:   number;
     memo: string | null;
 }
 
@@ -117,34 +117,34 @@ export interface CharacterMemo {
  * Character page API response, formatted bizarrely.
  */
 export interface Character {
-    readonly is_self: boolean
-    character: CharacterInfo
-    readonly settings: CharacterSettings
-    readonly badges?: string[]
-    memo?: CharacterMemo;
+    readonly is_self:         boolean
+    character:                CharacterInfo
+    readonly settings:        CharacterSettings
+    readonly badges?:         string[]
+    memo?:                    CharacterMemo;
     readonly character_list?: {
-        id: number
+        id:   number
         name: string
     }[]
-    bookmarked?: boolean
-    readonly self_staff: boolean
-    readonly ban?: string
-    readonly ban_reason?: string
-    readonly timeout?: number
+    bookmarked?:            boolean
+    readonly self_staff:    boolean
+    readonly ban?:          string
+    readonly ban_reason?:   string
+    readonly timeout?:      number
     readonly block_reason?: string
 }
 
 export interface GuestbookPost {
-    readonly id: number
+    readonly id:        number
     readonly character: SimpleCharacter
-    approved: boolean
-    readonly private: boolean
-    postedAt: SiteDate
-    message: string
-    reply: string | null
-    repliedAt: SiteDate
-    canEdit: boolean
-    deleted?: boolean
+    approved:           boolean
+    readonly private:   boolean
+    postedAt:           SiteDate
+    message:            string
+    reply:              string | null
+    repliedAt:          SiteDate
+    canEdit:            boolean
+    deleted?:           boolean
 }
 
 export interface Guestbook {
@@ -153,18 +153,18 @@ export interface Guestbook {
 }
 
 export interface CharacterReportData {
-    subject: string
-    message: string
-    character: number | null
-    type: string
-    url: string
+    subject:            string
+    message:            string
+    character:          number | null
+    type:               string
+    url:                string
     reported_character: number
 }
 
 export interface Friend {
-    id: number
-    source: SimpleCharacter
-    target: SimpleCharacter
+    id:        number
+    source:    SimpleCharacter
+    target:    SimpleCharacter
     createdAt: SiteDate
 }
 
@@ -172,7 +172,7 @@ export type FriendRequest = Friend;
 
 export interface FriendsByCharacter {
     existing: Friend[]
-    pending: FriendRequest[]
+    pending:  FriendRequest[]
     incoming: FriendRequest[]
-    name: string
+    name:     string
 }
