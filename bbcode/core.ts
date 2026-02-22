@@ -1,47 +1,54 @@
 import {BBCodeCustomTag, BBCodeParser, BBCodeSimpleTag, BBCodeTextTag} from './parser';
 
-const urlFormat = '((?:https?|ftps?|irc)://[^\\s/$.?#"\']+\\.[^\\s"]+)';
-export const findUrlRegex = new RegExp(`(\\[url[=\\]]\\s*)?${urlFormat}`, 'gi');
-export const urlRegex = new RegExp(`^${urlFormat}$`);
+const url_format = '((?:https?|ftps?|irc)://[^\\s/$.?#"\']+\\.[^\\s"]+)';
+export const findUrlRegex = new RegExp(`(\\[url[=\\]]\\s*)?${url_format}`, 'gi');
+export const urlRegex = new RegExp(`^${url_format}$`);
 
 export type BBCodeElement = HTMLElement & {cleanup?(): void};
 
 export function domain(url: string): string | undefined {
     const pieces = urlRegex.exec(url);
-    if(pieces === null) return;
-    const match = pieces[1].match(/(?:(https?|ftps?|irc):)?\/\/(?:www\.)?([^\/]+)/);
-    return match !== null ? match[2] : undefined;
+    if (pieces === null)
+        return;
+
+    const match = pieces[1].match(/(?:(https?|ftps?|irc):)?\/\/(?:www\.)?([^/]+)/);
+    return match !== null
+        ? match[2]
+        : undefined;
 }
 
 function fixURL(url: string): string {
-    if(/^www\./.test(url))
+    if (/^www\./.test(url))
         url = `https://${url}`;
     return url.replace(/ /g, '%20');
 }
 
 export function analyzeUrlTag(parser: BBCodeParser, param: string, content: string): {success: boolean, url?: string, domain?: string, textContent: string} {
-    let url: string | undefined, textContent: string = content;
+    let url: string | undefined, text: string = content;
     let success = true;
 
-    if(param.length > 0) {
+    if (param.length > 0) {
         url = param.trim();
-        if(content.length === 0) textContent = param;
-    } else if(content.length > 0) {
+        if (content.length === 0)
+            text = param;
+    }
+    else if (content.length > 0) {
         const m = content.match(/^\[url=?](.+)\[\/url]$/i);
 
         url = m ? m[1] : content;
-    } else {
+    }
+    else {
         parser.warning('url tag contains no url.');
-        textContent = '';
+        text = '';
         success = false;
     }
 
-    if((success) && (url)) {
+    if ((success) && (url)) {
         // This fixes problems where content based urls are marked as invalid if they contain spaces.
         url = fixURL(url);
 
         if (!urlRegex.test(url)) {
-            textContent = `[BAD URL] ${url}`;
+            text = `[BAD URL] ${url}`;
             success = false;
         }
     }
@@ -49,8 +56,8 @@ export function analyzeUrlTag(parser: BBCodeParser, param: string, content: stri
     return {
         success,
         url,
-        textContent,
-        domain: url ? domain(url) : undefined
+        textContent: text,
+        domain:      url ? domain(url) : undefined,
     };
 }
 
@@ -63,12 +70,27 @@ export class CoreBBCodeParser extends BBCodeParser {
         this.addTag(new BBCodeSimpleTag('u', 'u'));
         this.addTag(new BBCodeSimpleTag('s', 'del'));
         this.addTag(new BBCodeSimpleTag('noparse', 'span', [], []));
-        this.addTag(new BBCodeSimpleTag('sub', 'sub', [], ['b', 'i', 'u', 's', 'color']));
-        this.addTag(new BBCodeSimpleTag('big', 'span', ['bigText'], ['b', 'i', 'u', 's', 'color']));
-        this.addTag(new BBCodeSimpleTag('sup', 'sup', [], ['b', 'i', 'u', 's', 'color']));
+        this.addTag(new BBCodeSimpleTag(
+            'sub',
+            'sub',
+            [],
+            [ 'b', 'i', 'u', 's', 'color' ]
+        ));
+        this.addTag(new BBCodeSimpleTag(
+            'big',
+            'span',
+            [ 'bigText' ],
+            [ 'b', 'i', 'u', 's', 'color' ]
+        ));
+        this.addTag(new BBCodeSimpleTag(
+            'sup',
+            'sup',
+            [],
+            [ 'b', 'i', 'u', 's', 'color' ]
+        ));
         this.addTag(new BBCodeCustomTag('color', (parser, parent, param) => {
             const cregex = /^(red|blue|white|yellow|pink|gray|green|orange|purple|black|brown|cyan)$/;
-            if(!cregex.test(param)) {
+            if (!cregex.test(param)) {
                 parser.warning('Invalid color parameter provided.');
                 return undefined;
             }
@@ -79,13 +101,13 @@ export class CoreBBCodeParser extends BBCodeParser {
         }));
 
         this.addTag(new BBCodeTextTag('url', (parser, parent, param, content) => {
-            const tagData = analyzeUrlTag(parser, param, content);
+            const tag_data = analyzeUrlTag(parser, param, content);
             const element = parser.createElement('span');
 
             parent.appendChild(element);
 
-            if (!tagData.success) {
-                element.textContent = tagData.textContent;
+            if (!tag_data.success) {
+                element.textContent = tag_data.textContent;
                 return;
             }
 
@@ -93,16 +115,16 @@ export class CoreBBCodeParser extends BBCodeParser {
             fa.className = 'fa fa-link';
             element.appendChild(fa);
             const a = parser.createElement('a');
-            a.href = tagData.url as string;
+            a.href = tag_data.url as string;
             a.rel = 'nofollow noreferrer noopener';
             a.target = '_blank';
             a.className = 'user-link';
-            a.title = tagData.url as string;
-            a.textContent = tagData.textContent;
+            a.title = tag_data.url as string;
+            a.textContent = tag_data.textContent;
             element.appendChild(a);
             const span = document.createElement('span');
             span.className = 'link-domain bbcode-pseudo';
-            span.textContent = ` [${tagData.domain}]`;
+            span.textContent = ` [${tag_data.domain}]`;
             element.appendChild(span);
 
             return element;
@@ -111,12 +133,14 @@ export class CoreBBCodeParser extends BBCodeParser {
             const link = parser.createElement('a');
             const content = parser.createElement('span');
             link.href = '#';
-            link.onclick = (e) => {
+            link.onclick = e => {
                 e.preventDefault();
                 e.stopPropagation();
 
                 const target = e.target as HTMLElement;
-                target.parentElement!.replaceChild(content, target);
+                if (target.parentElement)
+                    target.parentElement.replaceChild(content, target);
+
                 return false;
             };
             link.appendChild(document.createTextNode('[click to show spoiler]'));
@@ -126,7 +150,7 @@ export class CoreBBCodeParser extends BBCodeParser {
     }
 
     parseEverything(input: string): HTMLElement {
-        if(this.makeLinksClickable && input.length > 0)
+        if (this.makeLinksClickable && input.length > 0)
             input = input.replace(findUrlRegex, (match, tag) => tag === undefined ? `[url]${match}[/url]` : match);
         return super.parseEverything(input);
     }

@@ -60,30 +60,30 @@ import {
 } from './matcher-types';
 
 export interface MatchReport {
-    _isVue: true;
-    you: MatchResult;
-    them: MatchResult;
-    youMultiSpecies: boolean;
+    _isVue:           true;
+    you:              MatchResult;
+    them:             MatchResult;
+    youMultiSpecies:  boolean;
     themMultiSpecies: boolean;
-    merged: MatchResultScores;
-    score: Scoring | null;
-    details: MatchScoreDetails;
+    merged:           MatchResultScores;
+    score:            Scoring | null;
+    details:          MatchScoreDetails;
 }
 
 export interface MatchResultCharacterInfo {
-    species: Species | null;
-    gender: Gender | null;
+    species:     Species | null;
+    gender:      Gender | null;
     orientation: Orientation | null;
 }
 
 export interface MatchResultScores {
     // String keys fix Object.entries() broken inference
     readonly [key: string]: Score;
-    [key: number]: Score;
-    [TagId.Gender]: Score;
-    [TagId.Age]: Score;
-    [TagId.Species]: Score;
-    [TagId.Kinks]: Score;
+    [key: number]:          Score;
+    [TagId.Gender]:         Score;
+    [TagId.Age]:            Score;
+    [TagId.Species]:        Score;
+    [TagId.Kinks]:          Score;
 }
 
 export type OmittedScores = TagId[];
@@ -94,18 +94,18 @@ export type OmittedScores = TagId[];
  * There's also an "above level score" used in the search results matcher (which applies additional penalties to generate your search-matching score)
  */
 export interface MatchScoreDetails {
-    totalScoreDimensions: number;
+    totalScoreDimensions:   number;
     dimensionsAtScoreLevel: number;
 }
 
 export interface MatchResult {
-    you: Character,
-    them: Character,
+    you:    Character,
+    them:   Character,
     scores: MatchResultScores;
-    info: MatchResultCharacterInfo;
-    total: number;
+    info:   MatchResultCharacterInfo;
+    total:  number;
 
-    yourAnalysis: CharacterAnalysis;
+    yourAnalysis:  CharacterAnalysis;
     theirAnalysis: CharacterAnalysis;
 }
 
@@ -139,9 +139,9 @@ const scoreIconsLite: ScoreClassMap = {
 };
 
 export class Score {
-    readonly score: Scoring;
+    readonly score:       Scoring;
     readonly description: string;
-    readonly shortDesc: string;
+    readonly shortDesc:   string;
 
     constructor(score: Scoring, description: string = '', shortDesc: string = '') {
         if (score !== Scoring.NEUTRAL && description === '')
@@ -175,29 +175,29 @@ export class Score {
 
 export interface CharacterAnalysisVariation {
     readonly character: Character;
-    readonly analysis: CharacterAnalysis;
+    readonly analysis:  CharacterAnalysis;
 }
 
 export class CharacterAnalysis {
     readonly character: Character;
 
-    readonly gender: Gender[] | null;
-    readonly orientation: Orientation | null;
-    readonly species: Species | null;
-    readonly furryPreference: FurryPreference | null;
-    readonly age: number | null;
-    readonly subDomRole: SubDomRole | null;
-    readonly position: Position | null;
+    readonly gender:               Gender[] | null;
+    readonly orientation:          Orientation | null;
+    readonly species:              Species | null;
+    readonly furryPreference:      FurryPreference | null;
+    readonly age:                  number | null;
+    readonly subDomRole:           SubDomRole | null;
+    readonly position:             Position | null;
     readonly postLengthPreference: PostLengthPreference | null;
-    readonly bodyType: BodyType | null;
+    readonly bodyType:             BodyType | null;
 
     /** In addition to use in the matcher, `isAnthro` is also used by smartfilters to filter anthros. */
-    readonly isAnthro: boolean;
+    readonly isAnthro:     boolean;
     /** In addition to use in the matcher, `isHuman` is also used by smartfilters to filter anthros. */
-    readonly isHuman: boolean;
+    readonly isHuman:      boolean;
     /** In addition to use in the matcher, `isKemonomimi` is also used by smartfilters to filter anthros, as well as in the character preview to display species. */
     readonly isKemonomimi: boolean;
-    readonly isMammal: boolean;
+    readonly isMammal:     boolean;
 
     /**
      * Checks both species and body type to determine if you qualify as both (Kemonomimi). It is used by species in the likelyHuman SpeciesMap, and in smart filters to test human/anthro filters against kemonomimi.
@@ -279,15 +279,15 @@ export class Matcher {
         const themYouMatch = themYou.match('your');
 
         const report: MatchReport = {
-            _isVue: true,
-            you:  youThemMatch,
-            them: themYouMatch,
+            _isVue:           true,
+            you:              youThemMatch,
+            them:             themYouMatch,
             youMultiSpecies:  false,
             themMultiSpecies: false,
-            merged: Matcher.mergeResults(youThemMatch, themYouMatch),
-            score: null,
-            details: {
-                totalScoreDimensions: 0,
+            merged:           Matcher.mergeResults(youThemMatch, themYouMatch),
+            score:            null,
+            details:          {
+                totalScoreDimensions:   0,
                 dimensionsAtScoreLevel: 0,
             },
         };
@@ -325,15 +325,15 @@ export class Matcher {
                 const themYouMatch = themYou.match('your');
 
                 const report: MatchReport = {
-                    _isVue: true,
-                    you: youThemMatch,
-                    them: themYouMatch,
-                    youMultiSpecies: yourCharacterAnalyses.length > 1,
+                    _isVue:           true,
+                    you:              youThemMatch,
+                    them:             themYouMatch,
+                    youMultiSpecies:  yourCharacterAnalyses.length > 1,
                     themMultiSpecies: theirCharacterAnalyses.length > 1,
-                    merged: Matcher.mergeResults(youThemMatch, themYouMatch),
-                    score: null,
-                    details: {
-                        totalScoreDimensions: 0,
+                    merged:           Matcher.mergeResults(youThemMatch, themYouMatch),
+                    score:            null,
+                    details:          {
+                        totalScoreDimensions:   0,
                         dimensionsAtScoreLevel: 0,
                     },
                 };
@@ -439,10 +439,10 @@ export class Matcher {
 
         log.silly('matcher.score.final', {
             finalscore: finalScore,
-            you: m.you.total,
-            them: m.them.total,
-            combined: m.you.total + m.them.total,
-            mult: m.you.total * m.them.total,
+            you:        m.you.total,
+            them:       m.them.total,
+            combined:   m.you.total + m.them.total,
+            mult:       m.you.total * m.them.total,
         });
 
         return finalScore === null ? Scoring.NEUTRAL : finalScore;
@@ -500,7 +500,7 @@ export class Matcher {
             gender:      this.yourAnalysis.gender,
             orientation: this.yourAnalysis.orientation,
         }, {
-            gender: this.theirAnalysis.gender,
+            gender:    this.theirAnalysis.gender,
             nonbinary: rating ? rating > 0 : false,
         });
     }
@@ -1194,16 +1194,16 @@ export class Matcher {
                 if (isBucketMatch && !isExcluded)
                     accum.total += 1;
 
-                if (!(theirKinkId in theirKinks) || isExcluded)
+                if (!(theirKinkId && theirKinkId in theirKinks) || isExcluded)
                     return accum;
 
                 const theirKinkValue = theirKinks[theirKinkId];
 
                 if (isBucketMatch) {
                     return {
-                        score: accum.score + this.getKinkMatchScore(yourKinkValue, theirKinkValue),
-                        count: accum.count + 1,
-                        total: accum.total,
+                        score:    accum.score + this.getKinkMatchScore(yourKinkValue, theirKinkValue),
+                        count:    accum.count + 1,
+                        total:    accum.total,
                         weighted: 0,
                     };
                 }
@@ -1264,7 +1264,7 @@ export class Matcher {
 
 
     private getKinkMatchScore(aValue: KinkChoice, bValue: KinkChoice): number {
-        return (kinkMatchScoreMap[aValue]?.[bValue] ?? 0) * 7; // forces range above 1.0
+        return (kinkMatchScoreMap[aValue][bValue]) * 7; // forces range above 1.0
     }
 
 
@@ -1491,7 +1491,7 @@ export class Matcher {
         const dislikesFurries = f === KinkPreference.Maybe
                              || f === KinkPreference.No;
 
-        log.debug('tilthuman.preference', { character: c.name, humanpref:  h, anthropref: f });
+        log.debug('tilthuman.preference', { character: c.name, humanpref: h, anthropref: f });
 
         if (likesHumans && !likesFurries || dislikesFurries && !dislikesHumans)
             return true;
@@ -1798,8 +1798,8 @@ export class Matcher {
             match.you.you.name,
             match.them.you.name,
             {
-                you: match.you.you.name,
-                them: match.them.you.name,
+                you:         match.you.you.name,
+                them:        match.them.you.name,
                 searchScore: atLevelScore + aboveLevelScore,
                 atLevelScore,
                 aboveLevelScore,

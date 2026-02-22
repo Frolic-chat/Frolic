@@ -357,6 +357,7 @@ export default class Editor extends Vue {
         if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
             if (key === Keys.KeyZ) {
                 e.preventDefault();
+
                 if (this.undoIndex === 0 && this.undoStack[0] !== this.text)
                     this.undoStack.unshift(this.text);
 

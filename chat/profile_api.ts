@@ -129,7 +129,7 @@ async function characterData(name: string | undefined, id: number = -1, skipEven
 async function executeCharacterData(name: string | undefined, _id: number = -1, skipEvent: boolean = false): Promise<Character> {
     const data = await core.connection.queryApi<JankAPIResponse>('character-data.php', { name });
 
-    const new_kinks: {[key: string]: KinkChoiceFull} = {};
+    const new_kinks: { [key: string]: KinkChoiceFull } = {};
 
     for (const key in data.kinks) {
         if (data.kinks[key])
@@ -143,8 +143,8 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
 
         custom.id = parseInt(key, 10);
 
-        for (const childId of custom.children)
-            new_kinks[childId] = custom.id;
+        for (const child_id of custom.children)
+            new_kinks[child_id] = custom.id;
     }
 
     const new_tags: {[key: string]: CharacterInfotag} = {};

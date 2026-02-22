@@ -83,8 +83,7 @@ export interface Character extends SimpleCharacter {
 }
 
 /**
- * Be careful when comparing this to some API response data;
- * 'fave' is used in some instances.
+ * "Fave" is the canonical "favorite", but some API responses may throw us for a loop. You have been warned.
  */
 export type KinkChoice = 'fave' | 'yes' | 'maybe' | 'no';
 
