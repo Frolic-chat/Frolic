@@ -97,7 +97,7 @@ export interface CharacterSettings {
     readonly show_friends:         boolean
     readonly show_badges:          boolean
     readonly guestbook:            boolean
-    readonly block_bookmarks:      boolean
+    readonly prevent_bookmarks:    boolean
     readonly public:               boolean
     readonly moderate_guestbook:   boolean
     readonly hide_timezone:        boolean

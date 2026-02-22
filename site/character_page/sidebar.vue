@@ -13,11 +13,11 @@
                     <a @click="showDuplicate()" class="duplicate-link"><i class="fa fa-fw fa-copy"></i>{{ l('profile.duplicate') }}</a>
                 </template>
                 <template v-else>
-                    <span v-if="character.self_staff || character.settings.block_bookmarks !== true">
+                    <span v-if="character.self_staff || character.settings.prevent_bookmarks !== true">
                         <a @click.prevent="toggleBookmark()" href="#" class="btn"
                             :class="{bookmarked: character.bookmarked, unbookmarked: !character.bookmarked}">
                             <i class="fa fa-fw" :class="{'fa-minus': character.bookmarked, 'fa-plus': !character.bookmarked}"></i>{{ l(character.bookmarked ? 'user.unbookmark' : 'user.bookmark') }}</a>
-                        <span v-if="character.settings.block_bookmarks" class="prevents-bookmarks">!</span>
+                        <span v-if="character.settings.prevent_bookmarks" class="prevents-bookmarks">!</span>
                     </span>
                     <a href="#" @click.prevent="showFriends()" class="friend-link btn"><i class="fa fa-fw fa-user"></i>{{ l('profile.addFriend') }}</a>
                     <a href="#" v-if="!oldApi" @click.prevent="showReport()" class="report-link btn">

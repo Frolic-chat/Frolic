@@ -147,8 +147,6 @@ async function executeCharacterData(name: string | undefined, _id: number = -1, 
             new_kinks[childId] = custom.id;
     }
 
-    data.settings.block_bookmarks = data.settings.prevent_bookmarks;
-
     const new_tags: {[key: string]: CharacterInfotag} = {};
 
     for (const key in data.infotags) {
