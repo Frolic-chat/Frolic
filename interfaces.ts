@@ -10,11 +10,11 @@ export interface SimpleCharacter {
 }
 
 export interface InlineImage {
-    id:         number
-    name:       string
-    hash:       string
-    extension:  string
-    nsfw:       boolean
+    id:        number
+    name:      string
+    hash:      string
+    extension: string
+    nsfw:      boolean
 }
 
 export type CharacterImage = CharacterImageOld | CharacterImageNew;
@@ -50,13 +50,13 @@ export interface CharacterInfotag {
 }
 
 export interface Infotag {
-    id:             number
-    name:           string
-    type:           InfotagType
-    search_field:   string
-    validator?:     string
-    allow_legacy:   boolean
-    infotag_group:  number
+    id:            number
+    name:          string
+    type:          InfotagType
+    search_field:  string
+    validator?:    string
+    allow_legacy:  boolean
+    infotag_group: number
 }
 
 /**
@@ -93,15 +93,15 @@ export type KinkChoice = 'favorite' | 'yes' | 'maybe' | 'no';
  * Many of these may be absent from the API response.
  */
 export interface CharacterSettings {
-    readonly customs_first:         boolean
-    readonly show_friends:          boolean
-    readonly show_badges:           boolean
-    readonly guestbook:             boolean
-    readonly block_bookmarks:       boolean
-    readonly public:                boolean
-    readonly moderate_guestbook:    boolean
-    readonly hide_timezone:         boolean
-    readonly hide_contact_details:  boolean
+    readonly customs_first:        boolean
+    readonly show_friends:         boolean
+    readonly show_badges:          boolean
+    readonly guestbook:            boolean
+    readonly block_bookmarks:      boolean
+    readonly public:               boolean
+    readonly moderate_guestbook:   boolean
+    readonly hide_timezone:        boolean
+    readonly hide_contact_details: boolean
 }
 
 export interface Kink {
@@ -140,13 +140,17 @@ export interface ListItem {
     sort_order: number
 }
 
-export const enum InlineDisplayMode {DISPLAY_ALL, DISPLAY_SFW, DISPLAY_NONE}
+export const enum InlineDisplayMode {
+    DISPLAY_ALL,
+    DISPLAY_SFW,
+    DISPLAY_NONE
+}
 
 export interface Settings {
-    animateEicons:      boolean
-    inlineDisplayMode:  InlineDisplayMode
-    defaultCharacter:   number
-    fuzzyDates:         boolean
+    animateEicons:     boolean
+    inlineDisplayMode: InlineDisplayMode
+    defaultCharacter:  number
+    fuzzyDates:        boolean
 }
 
 export interface SharedDefinitions {
