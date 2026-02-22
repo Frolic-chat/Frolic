@@ -111,7 +111,7 @@ export let staticDomain = '';
 
 export let settings: Settings = {
     animateEicons: true,
-    inlineDisplayMode: InlineDisplayMode.DISPLAY_ALL,
+    inlineDisplayMode: InlineDisplayMode.All,
     defaultCharacter: -1,
     fuzzyDates: true
 };

@@ -141,9 +141,9 @@ export interface ListItem {
 }
 
 export const enum InlineDisplayMode {
-    DISPLAY_ALL,
-    DISPLAY_SFW,
-    DISPLAY_NONE
+    All,
+    Sfw,
+    None,
 }
 
 export interface Settings {

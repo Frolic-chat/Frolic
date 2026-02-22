@@ -184,7 +184,7 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
             }
             inline.name = content;
             let element: HTMLElement;
-            if(displayMode === InlineDisplayMode.DISPLAY_NONE || (displayMode === InlineDisplayMode.DISPLAY_SFW && inline.nsfw)) {
+            if (displayMode === InlineDisplayMode.None || (displayMode === InlineDisplayMode.Sfw && inline.nsfw)) {
                 const el = element = parser.createElement('a');
                 el.className = 'unloadedInline';
                 el.href = '#';

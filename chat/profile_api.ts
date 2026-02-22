@@ -102,7 +102,7 @@ const parser_settings = {
     siteDomain:         FLIST.Domain,
     staticDomain:       FLIST.StaticDomain,
     animatedIcons:      true,
-    inlineDisplayMode:  InlineDisplayMode.DISPLAY_ALL,
+    inlineDisplayMode:  InlineDisplayMode.All,
 };
 
 

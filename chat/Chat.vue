@@ -203,7 +203,7 @@ export default class Chat extends Vue {
                     defaultCharacter:  this.defaultCharacter,
                     animateEicons:     core.state.settings.animatedEicons,
                     fuzzyDates:        true,
-                    inlineDisplayMode: InlineDisplayMode.DISPLAY_ALL,
+                    inlineDisplayMode: InlineDisplayMode.All,
                 },
                 this.ownCharacters
             );
