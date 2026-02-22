@@ -138,10 +138,10 @@ export class ProfileRecommendationAnalyzer {
 
             return accum;
         },
-        { favorite: 0, yes: 0, maybe: 0, no: 0 });
+        { fave: 0, yes: 0, maybe: 0, no: 0 });
 
         const minCountPerType = 5;
-        const totalCount = counts.favorite + counts.yes + counts.maybe + counts.no;
+        const totalCount = counts.fave + counts.yes + counts.maybe + counts.no;
 
         if (totalCount < 10) {
                 this.add(`ADD_MORE_KINKS`, ProfileRecommendationLevel.CRITICAL, l('phelper.addKinks1'), l('phelper.addKinks2'), 'https://wiki.f-list.net/Guide:_Character_Profiles#Kinks');

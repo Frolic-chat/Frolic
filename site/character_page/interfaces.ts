@@ -65,6 +65,7 @@ export interface StoreMethods {
 }
 
 export type SiteDate = number | string | null;
+// Used for janky pairing of kinkid: customId
 export type KinkChoiceFull = KinkChoice | number;
 export const CONTACT_GROUP_ID = 1;
 

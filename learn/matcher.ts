@@ -593,7 +593,7 @@ export class Matcher {
         if (score === KinkPreference.Yes)
             return new Score(Scoring.WEAK_MATCH,    `Likes <span>${description}</span>`);
 
-        if (score === KinkPreference.Favorite)
+        if (score === KinkPreference.Fave)
             return new Score(Scoring.MATCH,         `Loves <span>${description}</span>`);
 
         return new Score(Scoring.NEUTRAL);
@@ -795,17 +795,17 @@ export class Matcher {
         // const kinkScore = this.resolveKinkBucketScore('all');
 
         const scores = {
-            favorite: this.resolveKinkBucketScore('favorite'),
-            yes: this.resolveKinkBucketScore('yes'),
+            fave:  this.resolveKinkBucketScore('fave'),
+            yes:   this.resolveKinkBucketScore('yes'),
             maybe: this.resolveKinkBucketScore('maybe'),
-            no: this.resolveKinkBucketScore('no'),
+            no:    this.resolveKinkBucketScore('no'),
         };
 
-        const weighted = scores.favorite.weighted + scores.yes.weighted + scores.maybe.weighted + scores.no.weighted;
+        const weighted = scores.fave.weighted + scores.yes.weighted + scores.maybe.weighted + scores.no.weighted;
 
         // log.debug('report.score.kink', { them: this.them.name, you: this.you.name, scores, weight: weighted });
 
-        if (scores.favorite.count + scores.yes.count + scores.maybe.count + scores.no.count < 10) {
+        if (scores.fave.count + scores.yes.count + scores.maybe.count + scores.no.count < 10) {
             return new Score(Scoring.NEUTRAL);
         }
 
@@ -1015,7 +1015,7 @@ export class Matcher {
             if (theirSubDomRole === SubDomRole.AlwaysSubmissive || theirSubDomRole === SubDomRole.UsuallySubmissive)
                 return new Score(Scoring.MATCH, 'Loves <span>submissives</span>');
 
-            if (yourRoleReversalPreference === KinkPreference.Favorite)
+            if (yourRoleReversalPreference === KinkPreference.Fave)
                 return new Score(Scoring.MATCH, 'Loves <span>role reversal</span>');
 
             if (yourRoleReversalPreference === KinkPreference.Yes)
@@ -1031,7 +1031,7 @@ export class Matcher {
             if (theirSubDomRole === SubDomRole.AlwaysSubmissive || theirSubDomRole === SubDomRole.UsuallySubmissive)
                 return new Score(Scoring.MATCH, 'Loves <span>submissives</span>');
 
-            if (yourRoleReversalPreference === KinkPreference.Favorite)
+            if (yourRoleReversalPreference === KinkPreference.Fave)
                 return new Score(Scoring.MATCH, 'Loves <span>role reversal</span>');
 
             if (yourRoleReversalPreference === KinkPreference.Yes)
@@ -1050,7 +1050,7 @@ export class Matcher {
             if (theirSubDomRole === SubDomRole.AlwaysDominant || theirSubDomRole === SubDomRole.UsuallyDominant)
                 return new Score(Scoring.MATCH, 'Loves <span>dominants</span>');
 
-            if (yourRoleReversalPreference === KinkPreference.Favorite)
+            if (yourRoleReversalPreference === KinkPreference.Fave)
                 return new Score(Scoring.MATCH, 'Loves <span>role reversal</span>');
 
             if (yourRoleReversalPreference === KinkPreference.Yes)
@@ -1066,7 +1066,7 @@ export class Matcher {
             if (theirSubDomRole === SubDomRole.AlwaysDominant || theirSubDomRole === SubDomRole.UsuallyDominant)
                 return new Score(Scoring.MATCH, 'Loves <span>dominants</span>');
 
-            if (yourRoleReversalPreference === KinkPreference.Favorite)
+            if (yourRoleReversalPreference === KinkPreference.Fave)
                 return new Score(Scoring.MATCH, 'Loves <span>role reversal</span>');
 
             if (yourRoleReversalPreference === KinkPreference.Yes)
@@ -1082,7 +1082,7 @@ export class Matcher {
         if (theirSubDomRole === SubDomRole.Switch)
             return new Score(Scoring.MATCH, 'Loves <span>switches</span> (role)');
 
-        // if (yourRoleReversalPreference === KinkPreference.Favorite)
+        // if (yourRoleReversalPreference === KinkPreference.Fave)
         //     return new Score(Scoring.MATCH, `Loves <span>role reversal</span>`);
         //
         // if (yourRoleReversalPreference === KinkPreference.Yes)
@@ -1154,7 +1154,7 @@ export class Matcher {
         if (theirPosition === Position.Switch)
             return new Score(Scoring.MATCH, 'Loves <span>switches</span> (position)');
 
-        // if (yourRoleReversalPreference === KinkPreference.Favorite)
+        // if (yourRoleReversalPreference === KinkPreference.Fave)
         //     return new Score(Scoring.MATCH, `Loves <span>role reversal</span>`);
         //
         // if (yourRoleReversalPreference === KinkPreference.Yes)
@@ -1170,7 +1170,7 @@ export class Matcher {
     }
 
 
-    private resolveKinkBucketScore(bucket: 'all' | 'favorite' | 'yes' | 'maybe' | 'no' | 'positive' | 'negative'): KinkBucketScore {
+    private resolveKinkBucketScore(bucket: 'all' | 'fave' | 'yes' | 'maybe' | 'no' | 'positive' | 'negative'): KinkBucketScore {
         const yourKinks = Matcher.getAllStandardKinks(this.you);
         const theirKinks = Matcher.getAllStandardKinks(this.them);
 
@@ -1189,7 +1189,7 @@ export class Matcher {
                 const isBucketMatch = yourKinkValue === bucket
                     || bucket === 'all'
                     || bucket === 'negative' && (yourKinkValue === 'no' || yourKinkValue === 'maybe')
-                    || bucket === 'positive' && (yourKinkValue === 'favorite' || yourKinkValue === 'yes');
+                    || bucket === 'positive' && (yourKinkValue === 'fave' || yourKinkValue === 'yes');
 
                 if (isBucketMatch && !isExcluded)
                     accum.total += 1;
@@ -1223,7 +1223,7 @@ export class Matcher {
         return result;
     }
 
-    // private countKinksByBucket(kinks: { [key: number]: KinkChoice }): { favorite: number, yes: number, maybe: number, no: number } {
+    // private countKinksByBucket(kinks: { [key: number]: KinkChoice }): { fave: number, yes: number, maybe: number, no: number } {
     //     return _.reduce(
     //       kinks,
     //       (accum, kinkValue) => {
@@ -1231,7 +1231,7 @@ export class Matcher {
     //         return accum;
     //       },
     //       {
-    //         favorite: 0,
+    //         fave: 0,
     //         yes: 0,
     //         maybe: 0,
     //         no: 0
@@ -1482,11 +1482,11 @@ export class Matcher {
         // You are what you clearly demonstrate a liking for.
         const h = Matcher.getKinkSpeciesPreference(c, Species.Human);
         const f = Matcher.getKinkSpeciesPreference(c, Species.Anthro);
-        const likesHumans     = h === KinkPreference.Favorite
+        const likesHumans     = h === KinkPreference.Fave
                              || h === KinkPreference.Yes;
         const dislikesHumans  = h === KinkPreference.Maybe
                              || h === KinkPreference.No;
-        const likesFurries    = f === KinkPreference.Favorite
+        const likesFurries    = f === KinkPreference.Fave
                              || f === KinkPreference.Yes;
         const dislikesFurries = f === KinkPreference.Maybe
                              || f === KinkPreference.No;

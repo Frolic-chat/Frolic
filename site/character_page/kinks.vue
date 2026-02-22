@@ -26,7 +26,7 @@
                         <h4>Favorites</h4>
                     </div>
                     <div class="card-body">
-                        <kink v-for="kink in groupedKinks['favorite']" :kink="kink" :key="kink.key" :highlights="highlighting" :expandedCustom="expandedCustoms"
+                        <kink v-for="kink in groupedKinks['fave']" :kink="kink" :key="kink.key" :highlights="highlighting" :expandedCustom="expandedCustoms"
                             :comparisons="comparison"></kink>
                     </div>
                 </div>
@@ -223,7 +223,7 @@
             const characterKinks = this.character.character.kinks;
             const characterCustoms = this.character.character.customs;
             const displayCustoms: {[key: string]: DisplayKink | undefined} = {};
-            const outputKinks: {[key: string]: DisplayKink[]} = {favorite: [], yes: [], maybe: [], no: []};
+            const outputKinks: {[key: string]: DisplayKink[]} = {fave: [], yes: [], maybe: [], no: []};
             const makeKink = (kink: Kink): DisplayKink => ({
                 id: kink.id,
                 name: kink.name,

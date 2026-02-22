@@ -27,50 +27,14 @@ export class IndexedStore implements PermanentIndexedStore {
         this.db = db;
     }
 
-    /**
-     * Migrating old rising db to already opened new frolic db
-     * @param new_db frolic db; already opened.
-     */
-    static async migrate(new_db: IDBDatabase) {
-        // v3 = last Rising version, older = useless
-        const old_db = await promisifyRequest<IDBDatabase>(
-            indexedDB.open(IndexedStore.LEGACY_DB_NAME, 3)
-        );
-
-        const old_tx = old_db.transaction(IndexedStore.STORE_NAME, 'readonly');
-
-        const old_store = old_tx.objectStore(IndexedStore.STORE_NAME);
-
-        // Modern getAll way. But whole db is a memory concern.
-        // const records = await promisifyRequest<any[]>(
-        //     old_store.getAll()
-        // );
-        // records.forEach(r => new_store.put(r));
-
-        // Legacy cursor way. Useful for memory constraint.
-        const cursor_request = old_store.openCursor();
-        cursor_request.onsuccess = () => {
-            const r = cursor_request.result
-            if (r) {
-                const tx = new_db.transaction(IndexedStore.STORE_NAME, 'readwrite');
-                tx.objectStore(IndexedStore.STORE_NAME).put(r.value);
-
-                // await new Promise<void>(r => tx.oncomplete = () => r());
-                r.continue();
-            }
-        };
-
-        new Promise<void>(r => old_tx.oncomplete = () => r()),
-
-        old_db.close();
-    };
-
     static async open(dbName: string = this.DB_NAME): Promise<IndexedStore> {
-        const request = indexedDB.open(dbName, 1);
+        const request = indexedDB.open(dbName, 2);
 
-        let upgradeNeeded = false;
+        let clearNeeded   = false;
 
         request.onupgradeneeded = e => {
+            console.log(`Upgrading idb from ${e.oldVersion} to ${e.newVersion}`);
+
             const db = request.result;
 
             if (!db.objectStoreNames.contains(IndexedStore.STORE_NAME)) {
@@ -87,19 +51,21 @@ export class IndexedStore implements PermanentIndexedStore {
                       aux_store.createIndex(IndexedStore.LAST_FETCHED_INDEX_NAME, 'lastFetched');
             }
 
-            // I want to call migrate here if we have an old db and our new db is brand new.
-            if (e.oldVersion === 0)
-                upgradeNeeded = true;
+            // Clear out profiles that use "favorite" instead of "fave"
+            if (e.oldVersion < 2) {
+                clearNeeded = true;
+            }
         };
+
+        request.onblocked = () => console.warn('idb blocked from upgrade for unknown reason.');
 
         // "onsuccess" success.
         const db = await promisifyRequest<IDBDatabase>(request);
 
-        if (upgradeNeeded) {
-            try {
-                await IndexedStore.migrate(db);
-            }
-            catch {} // ¯\_(ツ)_/¯
+        if (clearNeeded) {
+            db.transaction(IndexedStore.STORE_NAME, 'readwrite')
+                .objectStore(IndexedStore.STORE_NAME)
+                .clear()
         }
 
         return new IndexedStore(db, dbName);

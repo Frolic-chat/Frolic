@@ -86,7 +86,7 @@ export interface Character extends SimpleCharacter {
  * Be careful when comparing this to some API response data;
  * 'fave' is used in some instances.
  */
-export type KinkChoice = 'favorite' | 'yes' | 'maybe' | 'no';
+export type KinkChoice = 'fave' | 'yes' | 'maybe' | 'no';
 
 /**
  * A user's display settings for their character page.

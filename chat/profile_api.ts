@@ -71,6 +71,33 @@ type ApiFields = {
     infotagGroups: Record<string, InfotagGroup>;
 };
 
+type JankAPIResponse = CharacterInfo & {
+    is_self:        boolean,
+    badges:         string[],
+    customs_first:  boolean,
+    character_list: { id: number, name: string }[],
+    current_user: {
+        inline_mode:    number,
+        animated_icons: boolean,
+    },
+    custom_kinks: {
+        [key: number]: {
+            id:          number,
+            choice:      KinkChoice,
+            name:        string,
+            description: string,
+            children:    number[],
+        }
+    },
+    custom_title: string,
+    images:       CharacterImage[],
+    kinks:        { [key: string]: KinkChoice },
+    infotags:     { [key: string]: string },
+    memo?:        { id: number, memo: string },
+    settings:     CharacterSettings,
+    timezone:     number | null,
+};
+
 const parser_settings = {
     siteDomain:         FLIST.Domain,
     staticDomain:       FLIST.StaticDomain,
@@ -100,46 +127,19 @@ async function characterData(name: string | undefined, id: number = -1, skipEven
 }
 
 async function executeCharacterData(name: string | undefined, _id: number = -1, skipEvent: boolean = false): Promise<Character> {
-    const data = await core.connection.queryApi<CharacterInfo & {
-        is_self:        boolean,
-        badges:         string[],
-        customs_first:  boolean,
-        character_list: { id: number, name: string }[],
-        current_user: {
-            inline_mode:    number,
-            animated_icons: boolean,
-        },
-        custom_kinks: {
-            [key: number]: {
-                id:          number,
-                choice:      'favorite' | 'yes' | 'maybe' | 'no',
-                name:        string,
-                description: string,
-                children:    number[],
-            }
-        },
-        custom_title: string,
-        images:       CharacterImage[],
-        kinks:        {[key: string]: string},
-        infotags:     {[key: string]: string},
-        memo?:        {id: number, memo: string},
-        settings:     CharacterSettings,
-        timezone:     number | null,
-    }>('character-data.php', { name });
+    const data = await core.connection.queryApi<JankAPIResponse>('character-data.php', { name });
 
     const new_kinks: {[key: string]: KinkChoiceFull} = {};
 
-    for (const key in data.kinks)
-        new_kinks[key] = <KinkChoiceFull>(data.kinks[key] === 'fave' ? 'favorite' : data.kinks[key]);
+    for (const key in data.kinks) {
+        if (data.kinks[key])
+            new_kinks[key] = data.kinks[key];
+    }
 
     for (const key in data.custom_kinks) {
         const custom = data.custom_kinks[key];
         if (!custom)
             continue;
-
-        // Also sign of !@#$ed code
-        if (<'fave'>custom.choice === 'fave')
-            custom.choice = 'favorite';
 
         custom.id = parseInt(key, 10);
 
@@ -314,7 +314,7 @@ async function kinksGet(id: number): Promise<CharacterKink[]> {
     return Object.keys(data.kinks)
         .map(key => {
             const choice = data.kinks[key];
-            return {id: parseInt(key, 10), choice: <KinkChoice>(choice === 'fave' ? 'favorite' : choice)};
+            return {id: parseInt(key, 10), choice: (choice as KinkChoice)};
         });
 }
 

@@ -16,4 +16,5 @@ export function registerMethod<K extends keyof StoreMethods>(name: K, func: Stor
     methods[name] = func;
 }
 
+// This should NOT be exported empty.
 export const methods: StoreMethods = <StoreMethods>{};

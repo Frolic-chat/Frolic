@@ -26,7 +26,7 @@ const UserListSorter = {
             pref: pref,
         });
 
-        if      (pref === KinkPreference.Favorite)
+        if      (pref === KinkPreference.Fave)
             return Scoring.MATCH;
         else if (pref === KinkPreference.Yes)
             return Scoring.WEAK_MATCH;

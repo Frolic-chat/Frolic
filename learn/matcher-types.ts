@@ -144,7 +144,7 @@ export enum Build {
 }
 
 export enum KinkPreference {
-    Favorite = 1,
+    Fave = 1,
     Yes = 0.5,
     Maybe = -0.5,
     No = -1
@@ -1249,7 +1249,7 @@ export interface KinkPreferenceMap {
 }
 
 export const kinkMapping: KinkPreferenceMap = {
-    favorite: KinkPreference.Favorite,
+    fave:     KinkPreference.Fave,
     yes:      KinkPreference.Yes,
     maybe:    KinkPreference.Maybe,
     no:       KinkPreference.No
@@ -1273,29 +1273,29 @@ export const kinkMatchWeights = {
 };
 
 export const kinkMatchScoreMap = {
-    favorite: {
-        favorite: 1,
+    fave: {
+        fave:     1,
         yes:      0.35,
         maybe:   -0.5,
         no:      -1.5,
     },
 
     yes: {
-        favorite: 0.35,
+        fave:     0.35,
         yes:      0.35,
         maybe:   -0.125,
         no:      -0.35,
     },
 
     maybe: {
-        favorite: -0.35,
+        fave:     -0.35,
         yes:      -0.125,
         maybe:     0,
         no:        0,
     },
 
     no: {
-        favorite: -1.5,
+        fave:     -1.5,
         yes:      -0.5,
         maybe:     0,
         no:        0,

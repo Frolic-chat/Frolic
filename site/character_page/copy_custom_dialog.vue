@@ -10,7 +10,7 @@
         </form-group>
         <form-group field="choice" :errors="formErrors" label="Choice" id="copyCustomChoice">
             <select v-model="choice" class="form-control" slot-scope="props" :class="props.cls" id="copyCustomChoice">
-                <option value="favorite">Favorite</option>
+                <option value="fave">Fave</option>
                 <option value="yes">Yes</option>
                 <option value="maybe">Maybe</option>
                 <option value="no">No</option>
@@ -27,7 +27,7 @@
     import CustomDialog from '../../components/custom_dialog';
     import FormGroup from '../../components/form_group.vue';
     import Modal from '../../components/Modal.vue';
-    import {KinkChoice} from '../../interfaces';
+    import type { KinkChoice } from '../../interfaces';
     import * as Utils from '../utils';
     import {methods} from './data_store';
 
@@ -37,7 +37,7 @@
     export default class CopyCustomDialog extends CustomDialog {
         name = '';
         description = '';
-        choice: KinkChoice = 'favorite';
+        choice: KinkChoice = 'fave';
         target = Utils.settings.defaultCharacter;
         formErrors = {};
         submitting = false;
