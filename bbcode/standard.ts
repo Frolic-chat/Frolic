@@ -1,17 +1,17 @@
 import type Vue from 'vue';
 import type { BBCodeElement } from './core';
-import type { InlineImage} from '../interfaces';
-import {InlineDisplayMode} from '../interfaces';
+import type { InlineImage } from '../interfaces';
+import { InlineDisplayMode } from '../interfaces';
 import * as Utils from '../site/utils';
-import {analyzeUrlTag, CoreBBCodeParser} from './core';
-import {BBCodeCustomTag, BBCodeSimpleTag, BBCodeTextTag} from './parser';
+import { analyzeUrlTag, CoreBBCodeParser } from './core';
+import { BBCodeCustomTag, BBCodeSimpleTag, BBCodeTextTag } from './parser';
 import UrlTagView from './UrlTagView.vue';
 import IconView from '../bbcode/IconView.vue';
 
 const username_regex = /^[a-zA-Z0-9_\-\s]+$/;
 
 export class StandardBBCodeParser extends CoreBBCodeParser {
-    inlines: {[key: string]: InlineImage | undefined} | undefined;
+    inlines: { [key: string]: InlineImage | undefined } | undefined;
 
     cleanup: Vue[] = [];
 

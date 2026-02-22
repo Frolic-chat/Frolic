@@ -70,9 +70,9 @@ export interface Character extends SimpleCharacter {
     title:           string
     description:     string
     kinks:           Record<number, KinkChoice | number | undefined>
-    inlines:         {[key: string]: InlineImage}
-    customs:         {[key: string]: CustomKink | undefined}
-    infotags:        {[key: number]: CharacterInfotag | undefined}
+    inlines:         { [key: string]: InlineImage }
+    customs:         { [key: string]: CustomKink | undefined }
+    infotags:        { [key: number]: CharacterInfotag | undefined }
     created_at:      number
     updated_at:      number
     views:           number
@@ -153,9 +153,9 @@ export interface Settings {
 }
 
 export interface SharedDefinitions {
-    readonly listItems:     {readonly [key: string]: Readonly<ListItem>}
-    readonly kinks:         {readonly [key: string]: Readonly<Kink>}
-    readonly kinkGroups:    {readonly [key: string]: Readonly<KinkGroup>}
-    readonly infotags:      {readonly [key: string]: Readonly<Infotag>}
-    readonly infotagGroups: {readonly [key: string]: Readonly<InfotagGroup>}
+    readonly listItems:     { readonly [key: string]: Readonly<ListItem> }
+    readonly kinks:         { readonly [key: string]: Readonly<Kink> }
+    readonly kinkGroups:    { readonly [key: string]: Readonly<KinkGroup> }
+    readonly infotags:      { readonly [key: string]: Readonly<Infotag> }
+    readonly infotagGroups: { readonly [key: string]: Readonly<InfotagGroup> }
 }
