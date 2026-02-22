@@ -33,12 +33,31 @@ export default [
         },
     },
     {   // Vue rules
+        files: ['**/*.vue'],
+        languageOptions: {
+            parserOptions: {
+                parser: tseslint.parser,
+                tsconfigRootDir: import.meta.dirname,
+                sourceType: 'module',
+            },
+            globals: {
+                window: "readonly",
+                document: "readonly",
+            }
+        },
         rules: {
+            // Typescript bad at vue
+            '@typescript-eslint/no-unsafe-call': 'off',
+            '@typescript-eslint/no-unsafe-member-access': 'off',
+            '@typescript-eslint/no-unsafe-return': 'off',
+            '@typescript-eslint/no-unsafe-assignment': 'off',
+
             'vue/html-indent': [
                 'warn',
                 2, {
                     baseIndent: 0,
                     attribute: 2,
+                    alignAttributesVertically: false,
                 }
             ],
             'vue/max-attributes-per-line': 'off',
@@ -56,14 +75,6 @@ export default [
                 },
             ],
         },
-        overrides: [
-            {
-                files: [ '*.vue' ],
-                rules: {
-                    '@typescript-eslint/no-unsafe-call': 'off',
-                },
-            },
-        ],
     },
     {
         //files: [ '*.ts', '*.tsx', '*.js', '*.jsx', '*.vue' ],
@@ -88,6 +99,7 @@ export default [
                         parameters: "first",
                         returnType: 0,
                     },
+                    SwitchCase: 0,
                 },
             ],
             '@typescript-eslint/naming-convention': [
@@ -121,7 +133,7 @@ export default [
                     selector: 'objectLiteralProperty',
                     format: [ 'camelCase', 'snake_case' ],
                 },
-                { selector: 'parameter', format: [ 'camelCase' ] },
+                { selector: 'parameter', format: [ 'camelCase' ], leadingUnderscore: 'allow' },
                 { selector: 'parameter', format: [ 'camelCase' ], modifiers: [ 'unused' ], leadingUnderscore: 'require' },
                 { selector: 'parameterProperty', format: [ 'camelCase' ] },
                 { selector: 'typeAlias', format: [ 'PascalCase' ] },
@@ -197,8 +209,11 @@ export default [
             ],
             '@stylistic/comma-dangle': [
                 'warn', {
-                    arrays: 'always-multiline',
+                    arrays:  'always-multiline',
                     objects: 'always-multiline',
+                    imports: 'always-multiline',
+                    exports: 'always-multiline',
+                    enums:   'always-multiline',
                 }
             ],
             '@stylistic/key-spacing': [
@@ -224,6 +239,14 @@ export default [
                     objectsInArrays: false,
                 }
             ],
+            '@stylistic/object-curly-spacing': [
+                'warn',
+                'always', {
+                    // Matches [key: string] :<
+                    // arraysInObjects:  false,
+                    objectsInObjects: false,
+                }
+            ],
             // 'arrow-spacing': [
             //     'warn', {
             //         before: true,
@@ -246,11 +269,11 @@ export default [
             ],
 
             // Type checking stuff
-            "@typescript-eslint/no-unsafe-member-access": [
-                'warn', {
-                    allowOptionalChaining: true,
-                },
-            ],
+            // "@typescript-eslint/no-unsafe-member-access": [
+            //     'warn', {
+            //         allowOptionalChaining: true,
+            //     },
+            // ],
             "@typescript-eslint/consistent-type-imports": [
                 'error', {
                     disallowTypeAnnotations: true,
@@ -292,6 +315,13 @@ export default [
                     allowRegExp:    true,
                 }
             ],
+
+            // Pointless - TS overlap.
+            "@typescript-eslint/no-unnecessary-condition": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+
+            // Cruft because legacy codebase
+            "@typescript-eslint/no-namespace": "off",
         },
     },
 ]
