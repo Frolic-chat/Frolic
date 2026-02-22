@@ -361,8 +361,10 @@ export default class Editor extends Vue {
                 if (this.undoIndex === 0 && this.undoStack[0] !== this.text)
                     this.undoStack.unshift(this.text);
 
-                const next = this.undoStack[this.undoIndex + 1];
-                if (next !== undefined) {
+                const last_index = this.undoStack.length - 1;
+                if (this.undoIndex < last_index) {
+                    const next = this.undoStack[this.undoIndex + 1];
+
                     this.text = next;
                     this.undoIndex++;
                     this.$emit('input', this.text);
