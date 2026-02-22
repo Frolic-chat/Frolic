@@ -65,8 +65,29 @@ export interface StoreMethods {
 }
 
 export type SiteDate = number | string | null;
-// Used for janky pairing of kinkid: customId
-export type KinkChoiceFull = KinkChoice | number;
+
+// type Opaque<T, K> = T & { readonly __opaque__: K };
+// type Int = Opaque<number, 'Int'>;
+export type CustomKinkId = number & {};
+
+/**
+ * When some site-defined kinks are nested in a custom, we store kinks as:
+ * @example
+ * kinks: {
+ *      2: 67551397,
+ *      87: "maybe",
+ *      650: 70012853,
+ *      717: "fave",
+ *      ...
+ * }
+ * customs: {
+ *      67551397: {
+ *          children: [ Array of KinkIds (seeminly unsorted) ],
+ *          choice: KinkChoice
+ *      }
+ * }
+ */
+export type KinkChoiceFull = KinkChoice | CustomKinkId;
 export const CONTACT_GROUP_ID = 1;
 
 export interface DisplayKink {
