@@ -227,7 +227,7 @@ export default class Chat extends Vue {
             core.cache.start()
                 .then(success => {
                     if (!success) {
-                        const log_out = window.confirm("Profile cache failed to open. You will experience odd behavior.\n\nThis is usually caused by running multiple instances of Frolic.\nIt's recommended you exit the app completely, ensure all copies of Frolic have been closed, and relaunch the app.\n\nLog out now?");
+                        const log_out = window.confirm("Profile cache failed to open. You will experience odd behavior.\n\nThis is usually caused by running multiple instances of Frolic.\nIt may also be caused by trying to use older versions of Frolic.\nIt's recommended you exit the app completely, ensure all copies of Frolic have been closed, and relaunch the latest version.\n\nLog out now?");
 
                         if (log_out)
                             core.connection.close();
@@ -243,7 +243,7 @@ export default class Chat extends Vue {
                             message = reason.message.substring(0, 255);
                     }
 
-                    const log_out = window.confirm(`ERROR opening profile cache. You will experience odd behavior.\nThis may be caused by running multiple instances of Frolic.\nIt's recommended you exit the app completely, ensure all copies of Frolic have been closed, and relaunch the app.\nError: ${message}\n\nLog out now?`);
+                    const log_out = window.confirm(`ERROR opening profile cache. You will experience odd behavior.\nThis may be caused by running multiple instances of Frolic or trying to run an older version of Frolic.\nIt's recommended you exit the app completely, ensure all copies of Frolic have been closed, and relaunch the latest version.\nError: ${message}\n\nLog out now?`);
 
                     if (log_out)
                         core.connection.close();
