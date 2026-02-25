@@ -11,7 +11,8 @@ import type { Character as ComplexCharacter, CharacterGroup, Guestbook } from '.
 import type { Character as CharacterPage, CharacterImage, SimpleCharacter } from '../interfaces';
 import type { Character } from '../fchat/interfaces';
 import { Conversation } from '../chat/interfaces';
-import { Matcher, MatchReport } from './matcher';
+import type { MatchReport } from './matcher';
+import { Matcher } from './matcher';
 import { Scoring, CustomGender } from './matcher-types';
 
 import { matchesSmartFilters } from './filter/smart-filter';
@@ -25,27 +26,27 @@ const logPhelper = NewLogger('profile-helper', () => core.state.generalSettings.
 
 
 export interface MetaRecord {
-    images: CharacterImage[] | null;
-    groups: CharacterGroup[] | null;
-    friends: SimpleCharacter[] | null;
-    guestbook: Guestbook | null;
+    images:          CharacterImage[] | null;
+    groups:          CharacterGroup[] | null;
+    friends:         SimpleCharacter[] | null;
+    guestbook:       Guestbook | null;
     lastMetaFetched: Date | null;
 }
 
 export interface CountRecord {
-    groupCount: number | null;
-    friendCount: number | null;
+    groupCount:     number | null;
+    friendCount:    number | null;
     guestbookCount: number | null;
-    lastCounted: number | null;
+    lastCounted:    number | null;
 }
 
 export interface CharacterMatchSummary {
-    matchScore: number;
+    matchScore:     number; // Should this be a scoring enum?
     // dimensionsAtScoreLevel: number;
     // dimensionsAboveScoreLevel: number;
     // totalScoreDimensions: number;
-    searchScore: number;
-    isFiltered: boolean;
+    searchScore:    number;
+    isFiltered:     boolean;
     autoResponded?: boolean;
 }
 
@@ -53,19 +54,19 @@ export interface CharacterMatchSummary {
  * The "cache record" holds information about when the character was added to the cache. This information can be useful for deciding when to refresh a character profile or to remove them entirely.
  */
 export interface CharacterCacheRecord {
-    character: ComplexCharacter;
+    character:   ComplexCharacter;
     lastFetched: Date;
-    added: Date;
+    added:       Date;
     // counts?: CountRecord;
-    match: CharacterMatchSummary;
-    meta?: MetaRecord;
+    match:       CharacterMatchSummary;
+    meta?:       MetaRecord;
 }
 
 const validInlineTags = [ 'hqp', 'fcg' ] as const;
 export type InlineTagProtocol = typeof validInlineTags[number];
 
 export interface InlineTag {
-    type: InlineTagProtocol;
+    type:  InlineTagProtocol;
     value: string;
 }
 
@@ -150,7 +151,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
     onEachInMemory(cb: (c: CharacterCacheRecord, key: string) => void): void {
-        this.cache.entries().forEach(([k, v]) => cb(v, k));
+        this.cache.entries().forEach(([ k, v ]) => cb(v, k));
     }
 
     /**
@@ -185,27 +186,27 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         if (!profile_data)
             return null;
 
-        const cacheRecord = await this.register(profile_data.profileData, true);
+        const cache_record = await this.register(profile_data.profileData, true);
 
-        cacheRecord.lastFetched = new Date(profile_data.lastFetched * 1000);
-        cacheRecord.added = new Date(profile_data.firstSeen * 1000);
+        cache_record.lastFetched = new Date(profile_data.lastFetched * 1000);
+        cache_record.added = new Date(profile_data.firstSeen * 1000);
 
-        cacheRecord.meta = {
+        cache_record.meta = {
             lastMetaFetched: profile_data.lastMetaFetched ? new Date(profile_data.lastMetaFetched * 1000) : null,
-            groups: profile_data.groups,
-            friends: profile_data.friends,
-            images: profile_data.images,
-            guestbook: profile_data.guestbook
+            groups:          profile_data.groups,
+            friends:         profile_data.friends,
+            images:          profile_data.images,
+            guestbook:       profile_data.guestbook,
         };
 
-        /* cacheRecord.counts = {
+        /* cache_record.counts = {
             lastCounted: pd.lastCounted,
             groupCount: pd.groupCount,
             friendCount: pd.friendCount,
             guestbookCount: pd.guestbookCount
         }; */
 
-        return cacheRecord;
+        return cache_record;
     }
 
 
@@ -233,9 +234,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         record.meta = meta;
 
-        if (this.store) {
-            await this.store?.updateProfileMeta(name, meta.images, meta.guestbook, meta.friends, meta.groups);
-        }
+        if (this.store)
+            await this.store.updateProfileMeta(name, meta.images, meta.guestbook, meta.friends, meta.groups);
     }
 
     /**
@@ -257,7 +257,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
             if (r && value) {
                 results.push({
-                    type: r,
+                    type:  r,
                     value: value,
                 });
             }
@@ -269,11 +269,12 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         else {
             const match = description.match(/\[url=([^\]]+)]\s*?Rising\s*?Portrait\s*?\[\/url]/i);
 
-            if (match?.[1]?.trim())
+            if (match?.[1]?.trim()) {
                 results.push({
                     type:  'hqp',
                     value: match[1],
                 });
+            }
         }
 
         return results;
@@ -335,7 +336,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
                     .map(e => getAsNumber(e) ?? 0)
                     .filter(n => valid_genders.includes(n))
                         ?? [], // If no 'mismatch' provided
-            }
+            };
         }
         else {
             return null;
@@ -354,7 +355,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         const unparsed = ProfileCache.getOverridesFromDescription(c.description);
         const overrides: CharacterOverrides = {};
 
-        unparsed.forEach(({type, value }) => {
+        unparsed.forEach(({ type, value }) => {
             if (type === 'hqp') {
                 const url = ProfileCache.parsePortraitURL(value);
 
@@ -369,7 +370,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
                 else {
                     logCache.info('portrait.hq.invalid.domain', {
                         name: c.name,
-                        url: url,
+                        url:  url,
                     });
                 }
             }
@@ -453,7 +454,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         logPhelper.debug('dev.phelper.color.matches', matches);
 
         for (const match of matches) {
-            if (match?.[1] && !valid_colors.includes(match[1]) && !invalid.includes(match[1]))
+            if (match[1] && !valid_colors.includes(match[1]) && !invalid.includes(match[1]))
                 invalid.push(match[1]);
         }
 
@@ -474,30 +475,30 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         const [ myOverrides, theirOverrides ] = await Promise.all([
             core.characters.getAsync(core.characters.ownCharacter.name).then(c => c.overrides),
             core.characters.getAsync(c.character.name).then(c => c.overrides),
-        ])
+        ]);
 
         const match = ProfileCache.match(c, myOverrides, theirOverrides);
         let score = (!match || match.score === null) ? Scoring.NEUTRAL : match.score;
 
-        if (score === 0)
+        if (score === Scoring.NEUTRAL)
             logCache.verbose('cache.profile.store.zero.score', { name: c.character.name });
 
         // const totalScoreDimensions = match ? Matcher.countScoresTotal(match) : 0;
         // const dimensionsAtScoreLevel = match ? (Matcher.countScoresAtLevel(match, score) || 0) : 0;
         // const dimensionsAboveScoreLevel = match ? (Matcher.countScoresAboveLevel(match, Math.max(score, Scoring.WEAK_MATCH))) : 0;
-        const risingFilter = core.state.settings.risingFilter;
-        const isFiltered = matchesSmartFilters(c.character, risingFilter);
+        const filter = core.state.settings.risingFilter;
+        const is_filtered = matchesSmartFilters(c.character, filter);
 
-        const penalty = (isFiltered && risingFilter.penalizeMatches) ? -5 : (!isFiltered && risingFilter.rewardNonMatches) ? 2 : 0;
+        const penalty = (is_filtered && filter.penalizeMatches) ? -5 : (!is_filtered && filter.rewardNonMatches) ? 2 : 0;
 
-        if (isFiltered && risingFilter.penalizeMatches)
+        if (is_filtered && filter.penalizeMatches)
             score = Scoring.MISMATCH;
 
         const searchScore = match
             ? Matcher.calculateSearchScoreForMatch(score, match, penalty)
             : 0;
 
-        const matchDetails = { matchScore: score, searchScore, isFiltered };
+        const matchDetails = { matchScore: score, searchScore, isFiltered: is_filtered };
 
         if (this.store && !skipStore) {
             await this.store.storeProfile(c);
@@ -511,28 +512,33 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         const k = AsyncCache.nameKey(c.character.name);
 
         if (this.cache.has(k)) {
-            const rExisting = this.cache.get(k)!;
+            const existing = this.cache.get(k);
 
-            rExisting.character = c;
-            rExisting.lastFetched = new Date();
-            rExisting.match = matchDetails;
+            if (existing) {
+                existing.character = c;
+                existing.lastFetched = new Date();
+                existing.match = matchDetails;
 
-            return rExisting;
+                return existing;
+            }
         }
 
-        const rNew = {
-            character: c,
+        const new_record = {
+            character:   c,
             lastFetched: new Date(),
-            added: new Date(),
-            match: matchDetails,
+            added:       new Date(),
+            match:       matchDetails,
         };
 
-        this.update(k, rNew);
-        this.evictOutdated({ chatChar: (name: string) => core.characters.get(name), privates: core.conversations.privateConversations });
+        this.update(k, new_record);
+        void this.evictOutdated({
+            chatChar: (name: string) => core.characters.get(name),
+            privates: core.conversations.privateConversations
+        });
 
-        EventBus.$emit('character-score', { profile: c, score, isFiltered });
+        EventBus.$emit('character-score', { profile: c, score, is_filtered });
 
-        return rNew;
+        return new_record;
     }
 
     static match(subject: ComplexCharacter, sourceOverrides: CharacterOverrides, subjectOverrides: CharacterOverrides): MatchReport | null {
@@ -553,8 +559,8 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         /**
          * Disable for now.
          */
-        // const exceeded = !!this.MAX_CACHE_SIZE && this.cache.size > this.MAX_CACHE_SIZE;
-        const exceeded = false;
+        const exceeded = !!this.MAX_CACHE_SIZE && this.cache.size > this.MAX_CACHE_SIZE;
+        // const exceeded = false;
 
         if (exceeded) {
             const i = this.cache.keys();

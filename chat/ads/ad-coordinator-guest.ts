@@ -1,4 +1,5 @@
-import { ipcRenderer, IpcRendererEvent } from 'electron';
+import type { IpcRendererEvent } from 'electron';
+import { ipcRenderer } from 'electron';
 
 import NewLogger from '../../helpers/log';
 const log = NewLogger('ads');
@@ -22,11 +23,11 @@ export class AdCoordinatorGuest {
 
     processPendingAd(adId: string): void {
         if (!(adId in this.pendingAds)) {
-            log.debug('adid.pending.miss', {adId, character: core.characters.ownCharacter?.name});
+            log.debug('adid.pending.miss', { adId, character: core.characters.ownCharacter.name });
             return;
         }
 
-        log.debug('adid.pending.process', {adId, character: core.characters.ownCharacter?.name});
+        log.debug('adid.pending.process', { adId, character: core.characters.ownCharacter.name });
 
         this.pendingAds[adId].resolve();
 
@@ -36,24 +37,24 @@ export class AdCoordinatorGuest {
 
     async requestTurnToPostAd(): Promise<void> {
         return new Promise(
-          (resolve, reject) => {
-            const adId = `${Math.round(Math.random() * 1000000)}-${this.adCounter++}-${Date.now()}`;
+            (resolve, reject) => {
+                const adId = `${Math.round(Math.random() * 1000000)}-${this.adCounter++}-${Date.now()}`;
 
-            this.pendingAds[adId] = { resolve, reject, from: Date.now() };
+                this.pendingAds[adId] = { resolve, reject, from: Date.now() };
 
-            log.debug('adid.request', {adId, character: core.characters.ownCharacter?.name});
+                log.debug('adid.request', { adId, character: core.characters.ownCharacter.name });
 
-            ipcRenderer.send('request-send-ad', adId);
-          }
+                ipcRenderer.send('request-send-ad', adId);
+            }
         );
     }
 
 
     clear(): void {
-      Object.values(this.pendingAds).forEach(pa => (pa.reject(new Error('Pending ad cleared'))));
+        Object.values(this.pendingAds).forEach(pa => (pa.reject(new Error('Pending ad cleared'))));
 
-      log.debug('adid.clear', Object.keys(this.pendingAds), core.characters.ownCharacter?.name);
+        log.debug('adid.clear', Object.keys(this.pendingAds), core.characters.ownCharacter.name);
 
-      this.pendingAds = {};
+        this.pendingAds = {};
     }
 }

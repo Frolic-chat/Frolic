@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import Vue, {WatchHandler} from 'vue';
+import type { WatchHandler } from 'vue';
+import Vue from 'vue';
 import * as Electron from 'electron';
-import * as qs from 'querystring';
+import * as QS from 'querystring';
 import { deepEqual, ExtractReferences, ComparePrimitives, SettingsMerge } from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
-import {Channels, Characters} from '../fchat';
+import { Channels, Characters } from '../fchat';
 import BBCodeParser from './bbcode';
 import { Settings as SettingsClass } from './common';
 import Conversations from './conversations';
-import { Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface, Runtime } from './interfaces';
+import type { Channel, Character, Connection, Conversation, Logs, Notifications, Settings, State as StateInterface, Runtime } from './interfaces';
 import { AdCoordinatorGuest } from './ads/ad-coordinator-guest';
 import { AdCenter } from './ads/ad-center';
-import { GeneralSettings, GeneralSettingsUpdate } from '../electron/common';
+import { GeneralSettings } from '../electron/common';
+import type { GeneralSettingsUpdate } from '../electron/common';
 import { SiteSession } from '../site/site-session';
 
 import EventBus from './preview/event-bus';
@@ -21,20 +23,22 @@ const logS = NewLogger('settings', () => core.state.generalSettings.argv.include
 
 function createBBCodeParser(): BBCodeParser {
     const parser = new BBCodeParser();
-    for(const tag of state.settings.disallowedTags)
+    for (const tag of state.settings.disallowedTags)
         parser.removeTag(tag);
     return parser;
 }
 
-const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
+const params = <{ [key: string]: string | undefined }>QS.parse(window.location.search.substring(1));
 /**
  * The state operates as an event-bus, allowing global-reaching updates.
  */
 class State implements StateInterface {
     _settings = new SettingsClass();
     // This is still bad. The real general settings object (with loading saved) is imported from main.
-    generalSettings: GeneralSettings = JSON.parse(params['settings']!) as GeneralSettings;
-    hiddenUsers: string[] = [];
+    generalSettings: GeneralSettings = params['settings']
+        ? JSON.parse(params['settings']) as GeneralSettings
+        : new GeneralSettings();
+    hiddenUsers:    string[] = [];
     favoriteEIcons: Record<string, boolean> = {};
 
     get settings(): Settings {
@@ -49,48 +53,47 @@ class State implements StateInterface {
     set settings(value: Settings) {
         this._settings = value;
 
-        if (data.settingsStore !== undefined) {
+        if (data.settingsStore !== undefined)
             log.warn('set settings will not be saving core, the other saver should have picked it up.');
-        }
 
         data.bbCodeParser = createBBCodeParser();
     }
 }
 
 interface VueState {
-    readonly channels: Channel.State
-    readonly characters: Character.State
+    readonly channels:      Channel.State
+    readonly characters:    Character.State
     readonly conversations: Conversation.State
-    readonly state: StateInterface
+    readonly state:         StateInterface
 }
 
 const state = new State();
 
-const vue = <Vue & VueState>new Vue({
+const vue = <Vue & VueState> new Vue({
     data: {
         channels:      undefined,
         characters:    undefined,
         conversations: undefined,
-        state
-    }
+        state,
+    },
 });
 
 const data = {
-    connection: <Connection | undefined>undefined,
-    logs: <Logs | undefined>undefined,
+    connection:    <Connection | undefined>undefined,
+    logs:          <Logs | undefined>undefined,
     settingsStore: <Settings.Store | undefined>undefined,
-    state: vue.state,
-    bbCodeParser: new BBCodeParser(),
+    state:         vue.state,
+    bbCodeParser:  new BBCodeParser(),
     conversations: <Conversation.State | undefined>undefined,
-    channels: <Channel.State | undefined>undefined,
-    characters: <Character.State | undefined>undefined,
+    channels:      <Channel.State | undefined>undefined,
+    characters:    <Character.State | undefined>undefined,
     notifications: <Notifications | undefined>undefined,
-    cache: <CacheManager | undefined>undefined,
+    cache:         <CacheManager | undefined>undefined,
     adCoordinator: <AdCoordinatorGuest | undefined>undefined,
-    adCenter: <AdCenter | undefined>undefined,
-    siteSession: <SiteSession | undefined>undefined,
-    runtime: <Runtime>{
-        dialogStack: [],
+    adCenter:      <AdCenter | undefined>undefined,
+    siteSession:   <SiteSession | undefined>undefined,
+    runtime:       <Runtime>{
+        dialogStack:  [],
         primaryInput: null,
         registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement) {
             this.primaryInput = e;
@@ -113,13 +116,13 @@ const data = {
         state._settings = SettingsMerge(new SettingsClass(), s);
 
         // Technically should be in settingsStore as we always want it for get();
-        VueUpdate.Cache = {};
+        VueUpdate.cache = {};
 
-        const hiddenUsers = await core.settingsStore.get('hiddenUsers');
-        state.hiddenUsers = hiddenUsers ?? [];
+        const hidden = await core.settingsStore.get('hiddenUsers');
+        state.hiddenUsers = hidden ?? [];
 
-        const favoriteEIcons = await core.settingsStore.get('favoriteEIcons');
-        state.favoriteEIcons = favoriteEIcons ?? {};
+        const fave_eicons = await core.settingsStore.get('favoriteEIcons');
+        state.favoriteEIcons = fave_eicons ?? {};
     },
 
     updateMain(channel: 'settings'): void {
@@ -127,7 +130,7 @@ const data = {
 
         if (channel === 'settings') {
             Electron.ipcRenderer.send(channel, {
-                settings: state.generalSettings,
+                settings:  state.generalSettings,
                 timestamp: MainUpdateCache.timestamp,
                 character: data.connection?.character,
             });
@@ -135,23 +138,25 @@ const data = {
     },
 };
 
-// Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them.
+// Store old versions of smartfilters. As a sub objects, new.filters and old.filters point to the same object, so you can't diff them. These are effectively file-scope globals
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const MainUpdateCache: {
-    timestamp:   number;
-    skipWatch:   boolean;
+    timestamp: number;
+    skipWatch: boolean;
 } = {
     timestamp:   0,
     skipWatch:   false,
 };
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const VueUpdate: {
-    Cache: Partial<SettingsClass>;
+    cache:     Partial<SettingsClass>;
     skipWatch: boolean;
 } = {
-    Cache: {},
+    cache:     {},
     skipWatch: false,
-}
+};
 
-export function init(this: any,
+export function init(this: unknown,
                      connection: Connection,
                      settings: GeneralSettings,
                      logsClass: new() => Logs,
@@ -173,10 +178,12 @@ export function init(this: any,
     data.register('channels', Channels(connection, core.characters));
     data.register('conversations', Conversations());
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     data.watch(() => state.hiddenUsers, async (newValue) => {
         await data.settingsStore?.set('hiddenUsers', newValue);
-    }, /* { deep: true } */);
+    } /*, { deep: true } */);
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     data.watch(() => state._settings, async (newValue) => {
         if (VueUpdate.skipWatch) {
             logS.debug('core.data.watch.state._settings.skipWatch');
@@ -195,44 +202,41 @@ export function init(this: any,
             let references_changed = false;
             let first_time = false; // Proxy undefined cache as first load
 
-            if (VueUpdate.Cache.notifications !== newValue.notifications)
-                EventBus.$emit('notification-setting', { old: VueUpdate.Cache.notifications ?? false, new: newValue.notifications });
+            if (VueUpdate.cache.notifications !== newValue.notifications)
+                EventBus.$emit('notification-setting', { old: VueUpdate.cache.notifications ?? false, new: newValue.notifications });
 
-            ExtractReferences(newValue).forEach(([k, v]) => {
-                if (!deepEqual(VueUpdate.Cache[k], v)) {
-                    if (k === 'disallowedTags') {
+            ExtractReferences(newValue).forEach(([ k, v ]) => {
+                if (!deepEqual(VueUpdate.cache[k], v)) {
+                    if (k === 'disallowedTags')
                         data.bbCodeParser = createBBCodeParser();
-                    }
-                    else if (k === 'risingFilter') {
+                    else if (k === 'risingFilter')
                         EventBus.$emit('smartfilters-update', newValue.risingFilter);
-                    }
 
-                    if (!VueUpdate.Cache[k]) { // We haven't observed assignment
+                    if (!VueUpdate.cache[k]) { // We haven't observed assignment
                         logS.debug(`core.data.watch.state._settings.${k}.firsttime`);
 
                         first_time = true;
                         references_changed = true;
                     }
                     else {
-                        logS.debug(`core.data.watch.state._settings.${k}.changed`, { new: v, old: VueUpdate.Cache[k] });
+                        logS.debug(`core.data.watch.state._settings.${k}.changed`, { new: v, old: VueUpdate.cache[k] });
 
-                        VueUpdate.Cache[k] = v;
+                        VueUpdate.cache[k] = v;
                         references_changed = true;
                     }
                 }
             });
 
-            const changed = ComparePrimitives(VueUpdate.Cache, newValue);
+            const changed = ComparePrimitives(VueUpdate.cache, newValue);
             const changed_keys = Object.keys(changed) as (keyof Partial<SettingsClass>)[];
 
             if (changed_keys.length) {
                 logS.debug('core.data.watch.state._settings.primitives.changed', changed);
 
-                const assign_key = <T extends keyof Partial<SettingsClass>>(key: T, value: Partial<SettingsClass>[T]) => VueUpdate.Cache[key] = value;
+                const assign_key = <T extends keyof Partial<SettingsClass>>(key: T, value: Partial<SettingsClass>[T]) => VueUpdate.cache[key] = value;
 
-                if (!first_time) {
+                if (!first_time)
                     changed_keys.forEach(ck => assign_key(ck, changed[ck]?.[1]));
-                }
 
                 primitives_changed = true;
             }
@@ -242,7 +246,7 @@ export function init(this: any,
 
             if (primitives_changed || references_changed) {
                 if (first_time) { // settings reloaded
-                    VueUpdate.Cache = structuredClone(newValue);
+                    VueUpdate.cache = structuredClone(newValue);
                 }
                 else {
                     logS.debug('core.data.watch.state._settings.save', newValue);
@@ -258,6 +262,7 @@ export function init(this: any,
         }
     }, { deep: true });
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     data.watch(() => state.generalSettings, async () => {
         logS.debug(MainUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', MainUpdateCache.timestamp);
 
@@ -311,20 +316,20 @@ export function init(this: any,
 }
 
 export interface Core {
-    readonly connection: Connection
-    readonly logs: Logs
-    readonly state: StateInterface
+    readonly connection:    Connection
+    readonly logs:          Logs
+    readonly state:         StateInterface
     readonly settingsStore: Settings.Store
     readonly conversations: Conversation.State
-    readonly characters: Character.State
-    readonly channels: Channel.State
-    readonly bbCodeParser: BBCodeParser
+    readonly characters:    Character.State
+    readonly channels:      Channel.State
+    readonly bbCodeParser:  BBCodeParser
     readonly notifications: Notifications
-    readonly cache: CacheManager
+    readonly cache:         CacheManager
     readonly adCoordinator: AdCoordinatorGuest;
-    readonly adCenter: AdCenter;
-    readonly siteSession: SiteSession;
-    readonly runtime: Runtime;
+    readonly adCenter:      AdCenter;
+    readonly siteSession:   SiteSession;
+    readonly runtime:       Runtime;
 
     watch<T>(getter: (this: VueState) => T, callback: WatchHandler<T>, opts?: Vue.WatchOptions): void;
 

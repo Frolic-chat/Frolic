@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import core from '../chat/core';
 import { methods } from '../site/character_page/data_store';
-import {decodeHTML} from './common';
-import {Character as Interfaces, Connection} from './interfaces';
-import { Character as CharacterProfile } from '../site/character_page/interfaces';
+import { decodeHTML } from './common';
+import type { Character as Interfaces, Connection } from './interfaces';
+import type { Character as CharacterProfile } from '../site/character_page/interfaces';
 import { ProfileCache } from '../learn/profile-cache';
 import Vue from 'vue';
 import EventBus from '../chat/preview/event-bus';
@@ -17,9 +17,9 @@ class Character implements Interfaces.Character {
     /**
      * Name; if character is created using state.get(name), character is created with server-case name.
      */
-    name: string = '';
-    gender: Interfaces.Gender = 'None';
-    status: Interfaces.Status = 'offline';
+    name:      string = '';
+    gender:    Interfaces.Gender = 'None';
+    status:    Interfaces.Status = 'offline';
     statusText = '';
     isFriend = false;
     isBookmarked = false;
@@ -34,8 +34,8 @@ class Character implements Interfaces.Character {
 
 export interface CharacterOverrides {
     avatarUrl?: string;
-    gender?: Interfaces.CustomGender;
-    status?: Interfaces.Status;
+    gender?:    Interfaces.CustomGender;
+    status?:    Interfaces.Status;
 }
 
 class State implements Interfaces.State {
@@ -43,10 +43,10 @@ class State implements Interfaces.State {
      * Collection of all logged in characters, plus once-logged in characters.
      * Theoretically can grow infinite.
      */
-    characters: {[key: string]: Character | undefined} = {};
+    characters: { [key: string]: Character | undefined } = {};
 
     ownCharacter: Character = new Character('');
-    ownProfile?: CharacterProfile;
+    ownProfile?:  CharacterProfile;
 
     /**
      * Your online friends.
@@ -92,11 +92,11 @@ class State implements Interfaces.State {
 
         // If the character is online it doesn't matter how badly their name violatees the site's rules - they somehow managed to log in with it.
         const c = this.get(name);
-        if (c.status !== "offline") {
+        if (c.status !== 'offline') {
             return {
                 char: c,
                 in:   name,
-                out:  name
+                out:  name,
             };
         }
 
@@ -121,8 +121,9 @@ class State implements Interfaces.State {
      */
     private sanitize(name: string): string {
         return name
-                .replace(/([^\x00-\x7F]|[{}\[\]<>\(\);\\"'`&\|$@%*])/g, '')
-                .trim().substring(0, 20).trim();
+        // eslint-disable-next-line no-control-regex
+            .replace(/([^\x00-\x7F]|[{}[\]<>();\\"'`&|$@%*])/g, '')
+            .trim().substring(0, 20).trim();
         /** Sanitizes:
          * Non-ASCII characters
          * Common code blocks   {} [] <> ()
@@ -142,7 +143,8 @@ class State implements Interfaces.State {
      */
     get(name: string, useStore = true): Character {
         // Avoid the complexity of converting to `Character | null`
-        if (!name.trim()) name = 'Frolic';
+        if (!name.trim())
+            name = 'Frolic';
         //else       name = this.sanitize(name);
 
         const key = name.toLowerCase();
@@ -181,7 +183,7 @@ class State implements Interfaces.State {
 
         if (useStore && !Object.keys(char.overrides).length && core.cache.profileCache) {
             await core.cache.profileCache.getCachedOverrides(name)
-                .then(o => { if (o) ProfileCache.applyOverrides(name, o) });
+                .then(o => o && ProfileCache.applyOverrides(name, o));
         }
 
         return char;
@@ -195,10 +197,10 @@ class State implements Interfaces.State {
                 return '#';
 
             const c = this.get(character);
-            return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`
+            return c.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.toLowerCase()}.png`;
         }
         else {
-            return character.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.name.toLowerCase()}.png`
+            return character.overrides.avatarUrl || `https://static.f-list.net/images/avatar/${character.name.toLowerCase()}.png`;
         }
     }
 
@@ -280,14 +282,16 @@ class State implements Interfaces.State {
      * @param text new status message; `character.statusText` is the old status message.
      * @param date date if received from date-based event (server message, for example)
      */
-    setStatus(character: Character,
-              newStatus: Interfaces.Status,
-              text: string,
-              options?: {
-                  isReconnect?: boolean,
-                  date?: Date,
-                  emitEvents?: boolean,
-             }): void {
+    setStatus(
+        character: Character,
+        newStatus: Interfaces.Status,
+        text: string,
+        options?: {
+            isReconnect?: boolean,
+            date?:        Date,
+            emitEvents?:  boolean,
+        }
+    ): void {
         const emit = options?.emitEvents ?? true;
 
         if (character.isFriend) {
@@ -352,7 +356,7 @@ class State implements Interfaces.State {
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
         const char = this.get(name, false);
 
-        if (['avatarUrl', 'gender', 'status'].includes(type)) // runtime safety
+        if ([ 'avatarUrl', 'gender', 'status' ].includes(type)) // runtime safety
             Vue.set(char.overrides, type, value);
     }
 
@@ -365,10 +369,10 @@ class State implements Interfaces.State {
 
 let state: State;
 
-export default function(this: void, connection: Connection): Interfaces.State {
+export default function(this: unknown, connection: Connection): Interfaces.State {
     state = new State();
 
-    let reconnectStatus: Connection.ClientCommands['STA'] | undefined = undefined;
+    let reconnect_status: Connection.ClientCommands['STA'] | undefined = undefined;
 
     connection.onEvent('connecting', async (isReconnect) => {
         logConnecting.debug('characters.connecting', { isReconnect });
@@ -377,7 +381,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
         state.bookmarks = [];
 
         const bm_list = await connection.queryApi<{ characters: string[] }>('bookmark-list.php');
-        const fr_list = await connection.queryApi<{ friends: {source: string, dest: string, last_online: number}[] }>('friend-list.php');
+        const fr_list = await connection.queryApi<{ friends: { source: string, dest: string, last_online: number }[] }>('friend-list.php');
 
         state.bookmarkList = new Set(bm_list.characters.map(x => x.toLowerCase()));
         state.friendList   = new Set(fr_list.friends.map(x => x.dest.toLowerCase()));
@@ -386,8 +390,8 @@ export default function(this: void, connection: Connection): Interfaces.State {
         EventBus.$emit('friend-list',   state.friends);
 
         if (isReconnect && state.ownCharacter.name !== '') {
-            reconnectStatus = {
-                status: state.ownCharacter.status,
+            reconnect_status = {
+                status:    state.ownCharacter.status,
                 statusmsg: state.ownCharacter.statusText,
             };
         }
@@ -412,8 +416,8 @@ export default function(this: void, connection: Connection): Interfaces.State {
         if (!isReconnect)
             return;
 
-        if (reconnectStatus)
-            connection.send('STA', reconnectStatus);
+        if (reconnect_status)
+            connection.send('STA', reconnect_status);
 
         for (const key in state.characters) {
             const character = state.characters[key];
@@ -425,7 +429,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
         }
     });
     connection.onMessage('IGN', (data) => {
-        switch(data.action) {
+        switch (data.action) {
         case 'init':
             state.ignoreList = new Set(data.characters.map(n => n.toLowerCase()));
             break;
@@ -453,7 +457,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
             state.setStatus(character, char[2], char[3]);
         }
 
-        core.cache.profileCache.getBatchOfOverrides(
+        void core.cache.profileCache.getBatchOfOverrides(
             data.characters.map(([ name ]) => name)
         ).then(everyonesOverrides => {
             const count = everyonesOverrides ? Object.keys(everyonesOverrides).length : 0;
@@ -463,7 +467,7 @@ export default function(this: void, connection: Connection): Interfaces.State {
                 Object.entries(everyonesOverrides).forEach(([ char, indexedOverride ]) => {
                     const c = state.characters[char];
                     if (c && !Object.keys(c.overrides).length) {
-                        for (const [i, v] of Object.entries(indexedOverride))
+                        for (const [ i, v ] of Object.entries(indexedOverride))
                             state.setOverride(char, i as keyof CharacterOverrides, v);
                     }
                 });
@@ -507,54 +511,53 @@ export default function(this: void, connection: Connection): Interfaces.State {
         char.isChatOp = false;
     });
     connection.onMessage('RTB', (data) => {
-        if (data.type !== 'trackadd' && data.type !== 'trackrem' && data.type !== 'friendadd' && data.type !== 'friendremove') {
+        if (data.type !== 'trackadd' && data.type !== 'trackrem' && data.type !== 'friendadd' && data.type !== 'friendremove')
             return;
-        }
 
         const character = state.get(data.name);
 
-        switch(data.type) {
-            case 'trackadd':
-                state.bookmarkList.add(data.name.toLowerCase());
-                character.isBookmarked = true;
+        switch (data.type) {
+        case 'trackadd':
+            state.bookmarkList.add(data.name.toLowerCase());
+            character.isBookmarked = true;
 
-                if (character.status !== 'offline')
-                    state.bookmarks.push(character);
+            if (character.status !== 'offline')
+                state.bookmarks.push(character);
 
-                EventBus.$emit('bookmark-list', state.bookmarks);
-                break;
-            case 'trackrem':
-                state.bookmarkList.delete(data.name.toLowerCase());
-                character.isBookmarked = false;
+            EventBus.$emit('bookmark-list', state.bookmarks);
+            break;
+        case 'trackrem':
+            state.bookmarkList.delete(data.name.toLowerCase());
+            character.isBookmarked = false;
 
-                if (character.status !== 'offline')
-                    state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
+            if (character.status !== 'offline')
+                state.bookmarks.splice(state.bookmarks.indexOf(character), 1);
 
-                EventBus.$emit('bookmark-list', state.bookmarks);
-                break;
-            case 'friendadd':
-                if (character.isFriend)
-                    return;
+            EventBus.$emit('bookmark-list', state.bookmarks);
+            break;
+        case 'friendadd':
+            if (character.isFriend)
+                return;
 
-                state.friendList.add(data.name.toLowerCase());
-                character.isFriend = true;
+            state.friendList.add(data.name.toLowerCase());
+            character.isFriend = true;
 
-                if (character.status !== 'offline') {
-                    state.friends.push(character);
-                    EventBus.$emit('friend-list',   state.friends);
-                }
+            if (character.status !== 'offline') {
+                state.friends.push(character);
+                EventBus.$emit('friend-list',   state.friends);
+            }
 
-                break;
-            case 'friendremove':
-                state.friendList.delete(data.name.toLowerCase());
-                character.isFriend = false;
+            break;
+        case 'friendremove':
+            state.friendList.delete(data.name.toLowerCase());
+            character.isFriend = false;
 
-                if (character.status !== 'offline') {
-                    state.friends.splice(state.friends.indexOf(character), 1);
-                    EventBus.$emit('friend-list', state.friends);
-                }
+            if (character.status !== 'offline') {
+                state.friends.splice(state.friends.indexOf(character), 1);
+                EventBus.$emit('friend-list', state.friends);
+            }
 
-                break;
+            break;
         }
     });
     return state;

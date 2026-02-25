@@ -1,80 +1,80 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <div class="character-preview">
-    <div v-if="match && character" class="row">
-      <div class="col-2">
-        <img :src="avatarUrl" class="character-avatar">
-      </div>
-
-      <div class="col-10">
-        <h1 class="user-view">
-          <span class="character-name" :class="(statusClasses || {}).userClass">{{ character.character.name }}</span>
-          <span v-if="((statusClasses) && (statusClasses.matchScore === 'unicorn'))" :class="(statusClasses || {}).matchClass">Unicorn</span>
-        </h1>
-        <h3>{{ status }}</h3>
-
-        <div class="summary">
-          <div class="info-text-block" v-if="age || species || kemonomimi">
-            <span class="uc" v-if="age">{{ l('characterPreview.yearsOld', age) }}</span>
-            <span class="divider" v-if="age && (species || kemonomimi)"> / </span>
-            <span class="uc">
-              <span v-if="species">{{ species }}</span>{{ (species && kemonomimi) ? ' ' : '' }}<span v-if="kemonomimi">{{ kemonomimi }}</span>
-            </span>
-            <span class="divider" v-if="species || kemonomimi"> / </span>
-          </div>
-
-          <div class="info-text-block" v-if="sexualOrientation || subDomRole || gender">
-            <span class="uc" v-if="gender">{{ gender }}</span>
-            <span class="divider" v-if="gender && subDomRole"> / </span>
-            <span class="uc" v-if="subDomRole">{{ subDomRole }}</span>
-            <span class="divider" v-if="(gender || subDomRole) && sexualOrientation"> / </span>
-            <span class="uc" v-if="sexualOrientation">{{ sexualOrientation }}</span>
-            <span class="divider" v-if="sexualOrientation"> / </span>
-          </div>
-        </div>
-
-        <match-tags v-if="match" :match="match"></match-tags>
-
-        <div class="filter-matches" v-if="isFiltered">
-          <span class="matched-tags">
-            <span v-for="filterName in filtersDetails" class="mismatch smart-filter-tag" :class="filterName">
-              <i class="fas fa-solid fa-filter"></i>
-              {{ (smartFilterLabels[filterName] || {}).name }}
-            </span>
-          </span>
-        </div>
-
-<!--        <div v-if="customs">-->
-<!--          <span v-for="c in customs" :class="Score.getClasses(c.score)">{{c.name}}</span>-->
-<!--        </div>-->
-
-        <div class="memo" v-if="memo">
-          <h4>{{ l('characterPreview.memo') }}</h4>
-          <div class="memo-body">{{ memo }}</div>
-        </div>
-
-        <div class="status-message" v-if="statusMessage">
-          <h4>{{ l('character.status') }} <span v-if="latestAd && statusMessage === latestAd.message">{{ l('characterPreview.status2') }}</span></h4>
-          <bbcode :text="statusMessage"></bbcode>
-        </div>
-
-        <div class="conversation" v-if="conversation && conversation.length > 0">
-          <h4>{{ l('characterPreview.messages') }}</h4>
-
-          <message-view v-for="message in conversation" :message="message" :key="message.id">
-          </message-view>
-        </div>
-
-        <div class="latest-ad-message" v-if="latestAd && latestAd.message !== statusMessage">
-          <h4>{{ l('characterPreview.ad') }} <span class="message-time">{{ formatTime(latestAd.datePosted) }}</span></h4>
-          <bbcode :text="latestAd.message"></bbcode>
-        </div>
-      </div>
+<div class="character-preview">
+  <div v-if="match && character" class="row">
+    <div class="col-2">
+      <img :src="avatarUrl" class="character-avatar">
     </div>
-    <div v-else>
-      {{ l('general.loading') }}
+
+    <div class="col-10">
+      <h1 class="user-view">
+        <span class="character-name" :class="(statusClasses || {}).userClass">{{ character.character.name }}</span>
+        <span v-if="((statusClasses) && (statusClasses.matchScore === 'unicorn'))" :class="(statusClasses || {}).matchClass">Unicorn</span>
+      </h1>
+      <h3>{{ status }}</h3>
+
+      <div class="summary">
+        <div v-if="age || species || kemonomimi" class="info-text-block">
+          <span v-if="age" class="uc">{{ l('characterPreview.yearsOld', age) }}</span>
+          <span v-if="age && (species || kemonomimi)" class="divider"> / </span>
+          <span class="uc">
+            <span v-if="species">{{ species }}</span>{{ (species && kemonomimi) ? ' ' : '' }}<span v-if="kemonomimi">{{ kemonomimi }}</span>
+          </span>
+          <span v-if="species || kemonomimi" class="divider"> / </span>
+        </div>
+
+        <div v-if="sexualOrientation || subDomRole || gender" class="info-text-block">
+          <span v-if="gender" class="uc">{{ gender }}</span>
+          <span v-if="gender && subDomRole" class="divider"> / </span>
+          <span v-if="subDomRole" class="uc">{{ subDomRole }}</span>
+          <span v-if="(gender || subDomRole) && sexualOrientation" class="divider"> / </span>
+          <span v-if="sexualOrientation" class="uc">{{ sexualOrientation }}</span>
+          <span v-if="sexualOrientation" class="divider"> / </span>
+        </div>
+      </div>
+
+      <match-tags v-if="match" :match="match"></match-tags>
+
+      <div v-if="isFiltered" class="filter-matches">
+        <span class="matched-tags">
+          <span v-for="filterName in filtersDetails" :key="filterName" class="mismatch smart-filter-tag" :class="filterName">
+            <i class="fas fa-solid fa-filter"></i>
+            {{ (smartFilterLabels[filterName] || {}).name }}
+          </span>
+        </span>
+      </div>
+
+      <!--        <div v-if="customs">-->
+      <!--          <span v-for="c in customs" :class="Score.getClasses(c.score)">{{c.name}}</span>-->
+      <!--        </div>-->
+
+      <div v-if="memo" class="memo">
+        <h4>{{ l('characterPreview.memo') }}</h4>
+        <div class="memo-body">{{ memo }}</div>
+      </div>
+
+      <div v-if="statusMessage" class="status-message">
+        <h4>{{ l('character.status') }} <span v-if="latestAd && statusMessage === latestAd.message">{{ l('characterPreview.status2') }}</span></h4>
+        <bbcode :text="statusMessage"></bbcode>
+      </div>
+
+      <div v-if="conversation && conversation.length > 0" class="conversation">
+        <h4>{{ l('characterPreview.messages') }}</h4>
+
+        <message-view v-for="message in conversation" :key="message.id" :message="message">
+        </message-view>
+      </div>
+
+      <div v-if="latestAd && latestAd.message !== statusMessage" class="latest-ad-message">
+        <h4>{{ l('characterPreview.ad') }} <span class="message-time">{{ formatTime(latestAd.datePosted) }}</span></h4>
+        <bbcode :text="latestAd.message"></bbcode>
+      </div>
     </div>
   </div>
+  <div v-else>
+    {{ l('general.loading') }}
+  </div>
+</div>
 </template>
 
 <script lang="ts">
@@ -82,23 +82,24 @@ import { Component, Hook, Watch } from '@frolic/vue-ts';
 import Vue from 'vue';
 import core from '../core';
 import { methods } from '../../site/character_page/data_store';
-import {Character as ComplexCharacter} from '../../site/character_page/interfaces';
-import { Matcher, MatchReport, Score } from '../../learn/matcher';
-import { Character as CharacterStatus } from '../../fchat';
+import type { Character as ComplexCharacter } from '../../site/character_page/interfaces';
+import type { MatchReport } from '../../learn/matcher';
+import { Matcher, Score } from '../../learn/matcher';
+import type { Character as CharacterStatus } from '../../fchat';
 import { getStatusIcon } from '../UserView.vue';
 import { kinkMatchWeights, Scoring, genderToKinkMap, genderKinkStringMap } from '../../learn/matcher-types';
-import { CharacterCacheRecord } from '../../learn/profile-cache';
+import type { CharacterCacheRecord } from '../../learn/profile-cache';
 
 import l from '../localize';
-import {formatTime} from '../common';
+import { formatTime } from '../common';
 import MatchTags from './MatchTags.vue';
 import {
-  furryPreferenceMapping,
-  Gender,
-  Orientation,
-  Species,
-  SubDomRole,
-  TagId
+    furryPreferenceMapping,
+    Gender,
+    Orientation,
+    Species,
+    SubDomRole,
+    TagId,
 } from '../../learn/matcher-types';
 import { BBCodeView } from '../../bbcode/view';
 import EventBus from './event-bus';
@@ -106,7 +107,7 @@ import type { CharacterScoreEvent } from './event-bus';
 // import { CustomKink } from '../../interfaces';
 import { testSmartFilters } from '../../learn/filter/smart-filter';
 import { smartFilterTypes } from '../../learn/filter/types';
-import { Conversation } from '../interfaces';
+import type { Conversation } from '../interfaces';
 import MessageView from '../message_view';
 import { lastElement } from '../../helpers/utils';
 
@@ -114,33 +115,32 @@ import NewLogger from '../../helpers/log';
 const logG = NewLogger('custom-gender');
 
 export interface StatusClasses {
-    rankIcon:         string          | null;
-    smartFilterIcon:  string          | null;
-    statusClass:      string          | null;
-    matchClass:       string          | null;
-    matchScore:       string | number | null;
-    userClass:        string;
-    isBookmark:       boolean;
+    rankIcon:        string          | null;
+    smartFilterIcon: string          | null;
+    statusClass:     string          | null;
+    matchClass:      string          | null;
+    matchScore:      string | number | null;
+    userClass:       string;
+    isBookmark:      boolean;
 }
 
-export function getStatusClasses(character:    CharacterStatus.Character,
-                                 showStatus:   boolean,
-                                 showBookmark: boolean,
-                                 showMatch:    boolean
-                                ): StatusClasses {
-
+export function getStatusClasses(
+    character:    CharacterStatus.Character,
+    showStatus:   boolean,
+    showBookmark: boolean,
+    showMatch:    boolean
+): StatusClasses {
     let rankIcon:        StatusClasses['rankIcon']        = null;
     let statusClass:     StatusClasses['statusClass']     = null;
     let matchClass:      StatusClasses['matchClass']      = null;
     let matchScore:      StatusClasses['matchScore']      = null;
     let smartFilterIcon: StatusClasses['smartFilterIcon'] = null;
 
-    if (character.isChatOp) {
+    if (character.isChatOp)
         rankIcon = 'far fa-gem';
-    }
 
     if (showStatus || character.status === 'crown')
-        statusClass = `fa-fw ${getStatusIcon(character.status)}`;
+        statusClass = `fa-fw ${ getStatusIcon(character.status) }`;
 
     let cache: CharacterCacheRecord | null | undefined = undefined;
     try {
@@ -158,7 +158,7 @@ export function getStatusClasses(character:    CharacterStatus.Character,
             cache = core.cache.profileCache.getSync(character.name);
         }
     }
-    catch {}
+    catch { /* :) */ }
 
     // undefined == not interested
     // null == no cache hit
@@ -176,30 +176,28 @@ export function getStatusClasses(character:    CharacterStatus.Character,
         }
     }
 
-    if (cache?.match.isFiltered && core.state.settings.risingFilter.showFilterIcon) {
+    if (cache?.match.isFiltered && core.state.settings.risingFilter.showFilterIcon)
         smartFilterIcon = 'user-filter fas fa-filter';
-    }
 
     const gender = character.gender.toLowerCase(); // for classes; skip custom
 
-    let isBookmark: boolean = false;
+    let bookmarked: boolean = false;
     try {
-        if (showBookmark && core.state.settings.colorBookmarks && (character.isFriend || character.isBookmarked)) {
-            isBookmark = true;
-        }
+        if (showBookmark && core.state.settings.colorBookmarks && (character.isFriend || character.isBookmarked))
+            bookmarked = true;
     }
-    catch {}
+    catch { /* :) */ }
 
-    const userClass = `user-view gender-${gender}${isBookmark ? ' user-bookmark' : ''}`;
+    const classes = `user-view gender-${gender}${bookmarked ? ' user-bookmark' : ''}`;
 
     return {
         rankIcon:    rankIcon    ? `user-rank   ${rankIcon}`    : null,
         statusClass: statusClass ? `user-status ${statusClass}` : null,
         matchClass,
         matchScore,
-        userClass,
+        userClass:   classes,
         smartFilterIcon,
-        isBookmark,
+        isBookmark:  bookmarked,
     };
 }
 
@@ -219,10 +217,10 @@ function readable(s: string): string {
 
 @Component({
     components: {
-        'match-tags': MatchTags,
-        bbcode: BBCodeView(core.bbCodeParser),
-        'message-view': MessageView
-    }
+        'match-tags':   MatchTags,
+        bbcode:         BBCodeView(core.bbCodeParser),
+        'message-view': MessageView,
+    },
 })
 export default class CharacterPreview extends Vue {
     l = l;
@@ -230,16 +228,16 @@ export default class CharacterPreview extends Vue {
     TagId = TagId;
     Score = Score;
 
-    characterName?: string;
-    character?: ComplexCharacter;
+    characterName?:   string;
+    character?:       ComplexCharacter;
     onlineCharacter?: CharacterStatus;
-    ownCharacter?: ComplexCharacter;
-    match?: MatchReport;
+    ownCharacter?:    ComplexCharacter;
+    match?:           MatchReport;
 
     smartFilterLabels: Record<string, { name: string }> = {
         ...smartFilterTypes,
         ageMin: { name: 'Min age' },
-        ageMax: { name: 'Max age' }
+        ageMax: { name: 'Max age' },
     };
 
     conversation?: Conversation.Message[];
@@ -247,12 +245,12 @@ export default class CharacterPreview extends Vue {
     scoreWatcher: ((e: CharacterScoreEvent) => Promise<void>) | null = null;
 
     get avatarUrl() {
-        this.recomputer;
+        void this.recomputer;
         return core.characters.getImage(this.characterName ?? this.character?.character.name ?? '');
     }
 
     get status() {
-        this.recomputer;
+        void this.recomputer;
         const s = this.onlineCharacter?.status;
         return s
             ? `${s.substring(0, 1).toUpperCase()}${s.substring(1)}`
@@ -260,19 +258,19 @@ export default class CharacterPreview extends Vue {
     }
 
     get statusClasses(): StatusClasses | undefined {
-        this.recomputer;
+        void this.recomputer;
         return this.onlineCharacter
             ? getStatusClasses(this.onlineCharacter, true, false, true)
             : undefined;
     }
 
     get statusMessage(): string | undefined {
-        this.recomputer;
+        void this.recomputer;
         return this.onlineCharacter?.statusText;
     }
 
     get age() {
-        this.recomputer;
+        void this.recomputer;
         if (!this.match)
             return undefined;
 
@@ -285,7 +283,7 @@ export default class CharacterPreview extends Vue {
     }
 
     get species() {
-        this.recomputer;
+        void this.recomputer;
         if (!this.match)
             return undefined;
 
@@ -300,21 +298,21 @@ export default class CharacterPreview extends Vue {
     }
 
     get kemonomimi() {
-        this.recomputer;
+        void this.recomputer;
         return this.match?.them.yourAnalysis.isKemonomimi && (!this.species || !this.species.endsWith('mimi'))
             ? readable('kemomimi')
             : undefined;
     }
 
     get sexualOrientation() {
-        this.recomputer;
+        void this.recomputer;
         return this.match?.them.yourAnalysis.orientation
             ? readable(Orientation[this.match.them.yourAnalysis.orientation])
             : undefined;
     }
 
     get subDomRole() {
-        this.recomputer;
+        void this.recomputer;
         const sdr = this.match?.them.yourAnalysis.subDomRole;
         return sdr && sdr !== SubDomRole.Switch
             ? readable(SubDomRole[sdr])
@@ -322,14 +320,14 @@ export default class CharacterPreview extends Vue {
     };
 
     get gender() {
-        this.recomputer;
-        const g = this.onlineCharacter?.overrides.gender?.string
+        void this.recomputer;
+        const g = this.onlineCharacter?.overrides.gender?.string;
         if (g)
             return readable(g);
 
         const kink_map = this.match?.them.yourAnalysis.gender
             ?.filter(g => g !== Gender.None)
-             .map(g => genderToKinkMap[g]);
+            .map(g => genderToKinkMap[g]);
 
         if (!kink_map?.length)
             return undefined;
@@ -339,18 +337,20 @@ export default class CharacterPreview extends Vue {
             logG.debug(`No custom gender, using: ${gender_string[0]}`);
             return readable(gender_string[0]);
         }
+
+        return undefined;
     }
 
     get memo() {
-        this.recomputer;
+        void this.recomputer;
         return this.character?.memo?.memo ?? null;
     }
 
     // Unused, but updated anyways.
     get furryPref() {
-        this.recomputer;
+        void this.recomputer;
         if (!this.match)
-            return;
+            return undefined;
 
         const pref = this.match.them.yourAnalysis.furryPreference;
 
@@ -363,20 +363,20 @@ export default class CharacterPreview extends Vue {
     mounted(): void {
         this.scoreWatcher = async ({ profile }): Promise<void> => {
             if (this.characterName && profile.character.name === this.characterName)
-                this.load(this.characterName, true);
+                void this.load(this.characterName, true);
         };
 
         EventBus.$on('character-score', this.scoreWatcher);
     }
 
 
-  @Hook('beforeDestroy')
-  beforeDestroy(): void {
-      if (this.scoreWatcher) {
-          EventBus.$off('character-score', this.scoreWatcher);
-          this.scoreWatcher = null;
-      }
-  }
+    @Hook('beforeDestroy')
+    beforeDestroy(): void {
+        if (this.scoreWatcher) {
+            EventBus.$off('character-score', this.scoreWatcher);
+            this.scoreWatcher = null;
+        }
+    }
 
     recomputer = false;
     async load(characterName: string, force: boolean = false): Promise<void> {
@@ -410,10 +410,10 @@ export default class CharacterPreview extends Vue {
         const ownOnlineCharacter = promises[2];
 
         if (this.ownCharacter && ownOnlineCharacter) { // && this.character) ...exists, errored if it didn't.
-            const theirOverrides = this.onlineCharacter.overrides;
-            const yourOverrides = ownOnlineCharacter.overrides;
+            const theirs = this.onlineCharacter.overrides;
+            const yours = ownOnlineCharacter.overrides;
 
-            this.match = Matcher.identifyBestMatchReport(this.ownCharacter.character, this.character.character, yourOverrides, theirOverrides);
+            this.match = Matcher.identifyBestMatchReport(this.ownCharacter.character, this.character.character, yours, theirs);
         }
 
         // Wait to set this until after the awaits so that computed getters don't update based on it.
@@ -425,7 +425,7 @@ export default class CharacterPreview extends Vue {
 
     // Only used for other getters.
     get filtersResults() {
-        this.recomputer;
+        void this.recomputer;
         return this.character
             ? testSmartFilters(this.character.character, core.state.settings.risingFilter)
             : undefined;
@@ -436,7 +436,7 @@ export default class CharacterPreview extends Vue {
             return false;
 
         const kink_filtered = Object.values(this.filtersResults.filters)
-                .some(r => r && r.isFiltered);
+            .some(r => r && r.isFiltered);
         const age_filtered = this.filtersResults.ageCheck.ageMax || this.filtersResults.ageCheck.ageMin;
 
         return kink_filtered || age_filtered;
@@ -453,11 +453,19 @@ export default class CharacterPreview extends Vue {
             ...Object.entries(this.filtersResults.filters)
                 .filter(v => v[1] && v[1].isFiltered)
                 .map(v => v[0]),
-        ]
+        ];
     }
 
-    @Watch('recomputer') onRecomputer() { this.characterName && void this.updateConversationStatus(this.characterName) }
-    @Watch('characterName') onName()    { this.characterName && void this.updateConversationStatus(this.characterName) }
+    @Watch('recomputer')
+    onRecomputer() {
+        if (this.characterName)
+            void this.updateConversationStatus(this.characterName);
+    }
+    @Watch('characterName')
+    onName() {
+        if (this.characterName)
+            void this.updateConversationStatus(this.characterName);
+    }
 
     async updateConversationStatus(name: string): Promise<void> {
         const ownName = core.characters.ownCharacter.name;
@@ -475,18 +483,18 @@ export default class CharacterPreview extends Vue {
             .slice(-3)
             .map(m => ({
                 ...m,
-                text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text
+                text: m.text.length > 512 ? m.text.substring(0, 512) + '…' : m.text,
             }));
     }
 
     get latestAd() {
         if (!this.characterName)
-            return;
+            return undefined;
 
         const cache = core.cache.adCache.getSync(this.characterName);
 
         if (!cache?.posts.length || Date.now() - cache.posts[cache.posts.length - 1].datePosted.getTime() > (45 * 60 * 1000))
-            return;
+            return undefined;
 
         return cache.posts[cache.posts.length - 1];
     }

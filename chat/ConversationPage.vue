@@ -473,7 +473,7 @@
         }
 
         updateOwnName(): void {
-            this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter?.name : undefined;
+            this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter.name : undefined;
         }
 
         get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {

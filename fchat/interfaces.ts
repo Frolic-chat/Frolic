@@ -1,96 +1,96 @@
-import { Character as CharacterProfile } from '../site/character_page/interfaces';
-import { CharacterOverrides } from './characters';
-import { Kink as MatcherKink } from '../learn/matcher-types';
+import type { Character as CharacterProfile } from '../site/character_page/interfaces';
+import type { CharacterOverrides } from './characters';
+import type { Kink as MatcherKink } from '../learn/matcher-types';
 
 export namespace Connection {
     export type ClientCommands = {
-        ACB: {character: string},
-        AOP: {character: string},
-        BRO: {message: string},
-        CBL: {channel: string},
-        CBU: {character: string, channel: string},
-        CCR: {channel: string},
-        CDS: {channel: string, description: string},
+        ACB: { character: string },
+        AOP: { character: string },
+        BRO: { message: string },
+        CBL: { channel: string },
+        CBU: { character: string, channel: string },
+        CCR: { channel: string },
+        CDS: { channel: string, description: string },
         CHA: undefined,
-        CIU: {channel: string, character: string},
-        CKU: {channel: string, character: string},
-        COA: {channel: string, character: string},
-        COL: {channel: string},
-        COR: {channel: string, character: string},
-        CRC: {channel: string},
-        CSO: {character: string, channel: string},
-        CTU: {channel: string, character: string, length: number},
-        CUB: {channel: string, character: string},
-        DOP: {character: string},
+        CIU: { channel: string, character: string },
+        CKU: { channel: string, character: string },
+        COA: { channel: string, character: string },
+        COL: { channel: string },
+        COR: { channel: string, character: string },
+        CRC: { channel: string },
+        CSO: { character: string, channel: string },
+        CTU: { channel: string, character: string, length: number },
+        CUB: { channel: string, character: string },
+        DOP: { character: string },
         FKS: {
             kinks: ReadonlyArray<number>, genders?: ReadonlyArray<string>, orientations?: ReadonlyArray<string>,
             languages?: ReadonlyArray<string>, furryprefs?: ReadonlyArray<string>, roles?: ReadonlyArray<string>
         },
         FRL: undefined
-        IDN: {method: 'ticket', account: string, ticket: string, character: string, cname: string, cversion: string},
-        IGN: {action: 'add' | 'delete' | 'notify', character: string} | {action: 'list'},
-        JCH: {channel: string},
-        KIC: {channel: string},
-        KIK: {character: string},
-        KIN: {character: string},
-        LCH: {channel: string},
-        LRP: {channel: string, message: string},
-        MSG: {channel: string, message: string},
+        IDN: { method: 'ticket', account: string, ticket: string, character: string, cname: string, cversion: string },
+        IGN: { action: 'add' | 'delete' | 'notify', character: string } | { action: 'list' },
+        JCH: { channel: string },
+        KIC: { channel: string },
+        KIK: { character: string },
+        KIN: { character: string },
+        LCH: { channel: string },
+        LRP: { channel: string, message: string },
+        MSG: { channel: string, message: string },
         ORS: undefined,
         PCR: undefined,
         PIN: undefined,
-        PRI: {recipient: string, message: string},
-        PRO: {character: string},
-        RLD: {save: string} | undefined,
-        RLL: {channel: string, dice: 'bottle' | string} | {recipient: string, dice: 'bottle' | string},
-        RMO: {channel: string, mode: Channel.Mode},
-        RST: {channel: string, status: 'public' | 'private'},
-        SCP: {action: 'add' | 'remove', character: string}
-        RWD: {character: string},
-        SFC: {action: 'report', report: string, tab?: string, logid: number} | {action: 'confirm', callid: number},
-        STA: {status: Character.Status, statusmsg: string},
-        TMO: {character: string, time: number, reason: string},
-        TPN: {character: string, status: Character.TypingStatus},
-        UNB: {character: string},
+        PRI: { recipient: string, message: string },
+        PRO: { character: string },
+        RLD: { save: string } | undefined,
+        RLL: { channel: string, dice: 'bottle' | string } | { recipient: string, dice: 'bottle' | string },
+        RMO: { channel: string, mode: Channel.Mode },
+        RST: { channel: string, status: 'public' | 'private' },
+        SCP: { action: 'add' | 'remove', character: string }
+        RWD: { character: string },
+        SFC: { action: 'report', report: string, tab?: string, logid: number } | { action: 'confirm', callid: number },
+        STA: { status: Character.Status, statusmsg: string },
+        TMO: { character: string, time: number, reason: string },
+        TPN: { character: string, status: Character.TypingStatus },
+        UNB: { character: string },
         UPT: undefined,
-        ZZZ: {command: string, arg: string}
+        ZZZ: { command: string, arg: string }
     };
 
     export type ServerCommands = {
-        ADL: {ops: ReadonlyArray<string>},
-        AOP: {character: string},
-        BRO: {message: string, character?: string},
-        CBU: {operator: string, channel: string, character: string},
-        CDS: {channel: string, description: string},
-        CHA: {channels: ReadonlyArray<{name: string, mode: Channel.Mode, characters: number}>},
-        CIU: {sender: string, title: string, name: string},
-        CKU: {operator: string, channel: string, character: string},
-        COA: {character: string, channel: string},
-        COL: {channel: string, oplist: ReadonlyArray<string>},
-        CON: {count: number},
-        COR: {character: string, channel: string},
-        CSO: {character: string, channel: string},
-        CTU: {operator: string, channel: string, length: number, character: string},
-        DOP: {character: string},
-        ERR: {number: number, message: string},
-        FKS: {characters: ReadonlyArray<string>, kinks: ReadonlyArray<number>},
-        FLN: {character: string},
-        FRL: {characters: ReadonlyArray<string>},
-        HLO: {message: string},
-        ICH: {users: ReadonlyArray<{identity: string}>, channel: string, mode: Channel.Mode},
-        IDN: {character: string},
-        IGN: {action: 'add' | 'delete', character: string} | {action: 'list' | 'init', characters: ReadonlyArray<string>}
-        JCH: {channel: string, character: {identity: string}, title: string},
-        KID: {type: 'start' | 'end', message: string} | {type: 'custom', key: number, value: number},
-        LCH: {channel: string, character: string},
-        LIS: {characters: ReadonlyArray<[string, Character.Gender, Character.Status, string]>},
-        LRP: {character: string, message: string, channel: string},
-        MSG: {character: string, message: string, channel: string},
-        NLN: {identity: string, gender: Character.Gender, status: 'online'},
-        ORS: {channels: ReadonlyArray<{name: string, title: string, characters: number}>},
+        ADL: { ops: ReadonlyArray<string> },
+        AOP: { character: string },
+        BRO: { message: string, character?: string },
+        CBU: { operator: string, channel: string, character: string },
+        CDS: { channel: string, description: string },
+        CHA: { channels: ReadonlyArray<{ name: string, mode: Channel.Mode, characters: number }> },
+        CIU: { sender: string, title: string, name: string },
+        CKU: { operator: string, channel: string, character: string },
+        COA: { character: string, channel: string },
+        COL: { channel: string, oplist: ReadonlyArray<string> },
+        CON: { count: number },
+        COR: { character: string, channel: string },
+        CSO: { character: string, channel: string },
+        CTU: { operator: string, channel: string, length: number, character: string },
+        DOP: { character: string },
+        ERR: { number: number, message: string },
+        FKS: { characters: ReadonlyArray<string>, kinks: ReadonlyArray<number> },
+        FLN: { character: string },
+        FRL: { characters: ReadonlyArray<string> },
+        HLO: { message: string },
+        ICH: { users: ReadonlyArray<{ identity: string }>, channel: string, mode: Channel.Mode },
+        IDN: { character: string },
+        IGN: { action: 'add' | 'delete', character: string } | { action: 'list' | 'init', characters: ReadonlyArray<string> }
+        JCH: { channel: string, character: { identity: string }, title: string },
+        KID: { type: 'start' | 'end', message: string } | { type: 'custom', key: number, value: number },
+        LCH: { channel: string, character: string },
+        LIS: { characters: ReadonlyArray<[string, Character.Gender, Character.Status, string]> },
+        LRP: { character: string, message: string, channel: string },
+        MSG: { character: string, message: string, channel: string },
+        NLN: { identity: string, gender: Character.Gender, status: 'online' },
+        ORS: { channels: ReadonlyArray<{ name: string, title: string, characters: number }> },
         PIN: undefined,
-        PRD: {type: 'start' | 'end', message: string} | {type: 'info' | 'select', key: string, value: string},
-        PRI: {character: string, message: string},
+        PRD: { type: 'start' | 'end', message: string } | { type: 'info' | 'select', key: string, value: string },
+        PRI: { character: string, message: string },
         RLL: {
             type: 'dice', results: ReadonlyArray<number>, message: string, rolls: ReadonlyArray<string>,
             character: string, endresult: number, channel: string
@@ -98,25 +98,25 @@ export namespace Connection {
             type: 'dice', results: ReadonlyArray<number>, message: string, rolls: ReadonlyArray<string>,
             character: string, endresult: number, recipient: string
         } |
-            {type: 'bottle', message: string, character: string, target: string, channel: string} |
-            {type: 'bottle', message: string, character: string, target: string, recipient: string},
-        RMO: {mode: Channel.Mode, channel: string},
+            { type: 'bottle', message: string, character: string, target: string, channel: string } |
+            { type: 'bottle', message: string, character: string, target: string, recipient: string },
+        RMO: { mode: Channel.Mode, channel: string },
         RTB: {
             type: 'comment', target_type: 'newspost' | 'bugreport' | 'changelog' | 'feature',
             id: number, target_id: number, parent_id: number, name: string, target: string
-        } | {type: 'note', sender: string, subject: string, id: number} | {
+        } | { type: 'note', sender: string, subject: string, id: number } | {
             type: 'grouprequest' | 'bugreport' | 'helpdeskticket' | 'helpdeskreply' | 'featurerequest',
             name: string, id: number, title?: string
-        } | {type: 'trackadd' | 'trackrem' | 'friendadd' | 'friendremove' | 'friendrequest', name: string},
-        SFC: {action: 'confirm', moderator: string, character: string, timestamp: string, tab: string, logid: number} | {
+        } | { type: 'trackadd' | 'trackrem' | 'friendadd' | 'friendremove' | 'friendrequest', name: string },
+        SFC: { action: 'confirm', moderator: string, character: string, timestamp: string, tab: string, logid: number } | {
             callid: number, action: 'report', report: string, timestamp: string, character: string, tab: string, logid: number, old?: true
         },
-        STA: {status: Character.Status, character: string, statusmsg: string},
-        SYS: {message: string, channel?: string},
-        TPN: {character: string, status: Character.TypingStatus},
-        UPT: {time: number, starttime: number, startstring: string, accepted: number, channels: number, users: number, maxusers: number},
-        VAR: {variable: string, value: number | ReadonlyArray<string>}
-        ZZZ: {message: string}
+        STA: { status: Character.Status, character: string, statusmsg: string },
+        SYS: { message: string, channel?: string },
+        TPN: { character: string, status: Character.TypingStatus },
+        UPT: { time: number, starttime: number, startstring: string, accepted: number, channels: number, users: number, maxusers: number },
+        VAR: { variable: string, value: number | ReadonlyArray<string> }
+        ZZZ: { message: string }
     };
 
     export type CommandHandler<T extends keyof ServerCommands> = (data: ServerCommands[T], date: Date) => Promise<void> | void;
@@ -125,24 +125,24 @@ export namespace Connection {
     export type EventHandler = (isReconnect: boolean) => Promise<void> | void;
 
     export interface Vars {
-        chat_max: number
-        priv_max: number
-        lfrp_max: number
-        cds_max: number
-        lfrp_flood: number
-        msg_flood: number
-        sta_flood: number
-        permissions: number
+        chat_max:       number
+        priv_max:       number
+        lfrp_max:       number
+        cds_max:        number
+        lfrp_flood:     number
+        msg_flood:      number
+        sta_flood:      number
+        permissions:    number
         icon_blacklist: ReadonlyArray<string>
     }
 
     export interface Connection {
-        readonly character: string
-        readonly vars: Readonly<Vars>
-        readonly _handleMessage: Function | undefined;
-        readonly isOpen: boolean
+        readonly character:      string
+        readonly vars:           Readonly<Vars>
+        readonly _handleMessage: ((...args: unknown[]) => unknown) | undefined;
+        readonly isOpen:         boolean
         setCredentials(account: string, ticketProvider: TicketProvider | string): void
-        connect(character: string): void
+        connect(character: string): void | Promise<void>
         close(keepState?: boolean): void
         onMessage<K extends keyof ServerCommands>(type: K, handler: CommandHandler<K>): void
         offMessage<K extends keyof ServerCommands>(type: K, handler: CommandHandler<K>): void
@@ -154,7 +154,7 @@ export namespace Connection {
 
         queryApi(endpoint: 'character-memo-get2.php', data: { target: string, account?: string, ticket?: string }): Promise<{ id: number, note: string | null }>;/* if no note, null */
         queryApi(endpoint: 'character-memo-save.php', data: { target: number, note: string | null, account?: string, ticket?: string }): Promise<{ note: string }>;/* if no note, empty string */
-        queryApi(endpoint: 'character-data.php', data: { id: number, account?: string, ticket?: string }): Promise<{ kinks: {[key: string]: string} }>;
+        queryApi(endpoint: 'character-data.php', data: { id: number, account?: string, ticket?: string }): Promise<{ kinks: { [key: string]: string }}>;
         queryApi(endpoint: 'report-submit.php', data: { character: string; reportText: string; log: string; channel: string; text: boolean; reportUser: string | undefined, account?: string, ticket?: string }): Promise<{ log_id?: number }>;
         queryApi<T>(endpoint: 'character-data.php', data: { name: string, account?: string, ticket?: string }): Promise<T>;
         queryApi(endpoint: 'bookmark-list.php', data?: { account?: string, ticket?: string }): Promise<{ characters: string[] }>;
@@ -174,14 +174,14 @@ export namespace Character {
      * and provide you with an error (if there is any).
      */
     export interface ValidationData {
-        in:  any;
-        out: any;
+        in:   unknown;
+        out:  unknown;
         err?: string;
     }
 
     export interface ValidatedCharacter extends ValidationData {
-        in:  string;
-        out: string;
+        in:    string;
+        out:   string;
         char?: Character;
     }
 
@@ -189,8 +189,8 @@ export namespace Character {
         string:   string,
         match:    MatcherKink[], // KinkIds
         mismatch: MatcherKink[], // KinkIds
-        colors?: Array<[ number, number, number ]>, // Store oklch colors(?) for custom coloration.
-        icon?: string,
+        colors?:  Array<[ number, number, number ]>, // Store oklch colors(?) for custom coloration.
+        icon?:    string,
         // flag?: string, // Does colors replace this?
         version:  number,
     }
@@ -205,32 +205,32 @@ export namespace Character {
          * this may be a pointless endeavor, or we can sanitize the list into something printable.
          * Alternatively, we could add the other lists back into the interface so you can modify them from the UI.
          */
-        readonly ignoreList:   Set<string>
+        readonly ignoreList: Set<string>
 
         readonly ownProfile?: CharacterProfile;
 
         validateCharacter(name: string): ValidatedCharacter;
         get(name: string, useStore?: boolean): Character;
         getAsync(name: string, useStore?: boolean): Promise<Character>;
-        getImage(this: any | never, character: string | Character): string;
-        getGender(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): CustomGender;
-        getGenderString(this: any | never, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): string;
-        setOverride(name: string, type: keyof CharacterOverrides, value: any): void;
+        getImage(this: unknown, character: string | Character): string;
+        getGender(this: unknown, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): CustomGender;
+        getGenderString(this: unknown, character: string | Character, parts?: Partial<Record<keyof CustomGender, boolean>>): string;
+        setOverride(name: string, type: keyof CharacterOverrides, value: unknown): void;
     }
 
     /**
      * Chat character: Name, gender, status, typing indicator, relationships, and overrides.
      */
     export interface Character {
-        readonly name: string
-        readonly gender: Gender
-        readonly status: Status
-        readonly statusText: string
-        readonly isFriend: boolean
+        readonly name:         string
+        readonly gender:       Gender
+        readonly status:       Status
+        readonly statusText:   string
+        readonly isFriend:     boolean
         readonly isBookmarked: boolean
-        readonly isChatOp: boolean
-        readonly isIgnored: boolean
-        readonly overrides: CharacterOverrides
+        readonly isChatOp:     boolean
+        readonly isIgnored:    boolean
+        readonly overrides:    CharacterOverrides
     }
 }
 
@@ -243,9 +243,9 @@ export namespace Channel {
     export type EventHandler = (type: 'join' | 'leave', channel: Channel, member?: Member) => Promise<void> | void;
 
     export interface State {
-        readonly officialChannels: {readonly [key: string]: (ListItem | undefined)};
-        readonly openRooms: {readonly [key: string]: (ListItem | undefined)};
-        readonly joinedChannels: ReadonlyArray<Channel>;
+        readonly officialChannels: { readonly [key: string]: (ListItem | undefined) };
+        readonly openRooms:        { readonly [key: string]: (ListItem | undefined) };
+        readonly joinedChannels:   ReadonlyArray<Channel>;
 
         join(name: string): void;
         leave(name: string): void;
@@ -265,25 +265,25 @@ export namespace Channel {
 
     export interface Member {
         readonly character: Character,
-        readonly rank: Rank
+        readonly rank:      Rank
     }
 
     export interface ListItem {
-        readonly id: string;
-        readonly name: string;
+        readonly id:          string;
+        readonly name:        string;
         readonly memberCount: number;
-        readonly isJoined: boolean;
+        readonly isJoined:    boolean;
     }
 
     export interface Channel {
-        readonly id: string;
-        readonly name: string;
-        readonly description: string;
-        readonly mode: Mode;
-        readonly members: {readonly [key: string]: Member | undefined};
+        readonly id:            string;
+        readonly name:          string;
+        readonly description:   string;
+        readonly mode:          Mode;
+        readonly members:       { readonly [key: string]: Member | undefined };
         readonly sortedMembers: ReadonlyArray<Member>;
-        readonly opList: ReadonlyArray<string>;
-        readonly owner: string;
+        readonly opList:        ReadonlyArray<string>;
+        readonly owner:         string;
     }
 }
 
@@ -296,9 +296,9 @@ export namespace WebSocketConnection {
 export interface WebSocketConnection {
     close(): void
     onMessage(handler: (message: string) => Promise<void>): void
-    onOpen(handler: () => void): void
-    onClose(handler: (e: CloseEvent) => void): void
-    onError(handler: (error: Error) => void): void
+    onOpen(handler: () => void | Promise<void>): void
+    onClose(handler: (e: CloseEvent) => void | Promise<void>): void
+    onError(handler: (error: Error) => void | Promise<void>): void
     send(message: string): void
     readyState: WebSocketConnection.ReadyState
 }

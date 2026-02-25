@@ -572,7 +572,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                 log.debug(
                 'conversation.sendAd',
                   {
-                    character: core.characters.ownCharacter?.name,
+                    character: core.characters.ownCharacter.name,
                     channel: this.channel.name,
                     throatDelta: throatTime - initTime,
                     delayDelta: delayTime - throatTime,

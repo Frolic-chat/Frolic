@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Character as CharacterApiResponse, CharacterMemo } from '../../site/character_page/interfaces';
-import { Message } from '../common';
+import type { Message } from '../common';
 import type { Settings } from '../interfaces';
 import type { SmartFilterSettings } from '../../learn/filter/types';
 import type { Conversation, Character as ChatCharacter } from '../interfaces';
 import type { Character as CharacterState } from '../../fchat/interfaces';
 import type { CharacterCacheRecord } from '../../learn/profile-cache';
-import { NoteCheckerCount } from '../../site/note-checker';
-import { GeneralSettings } from '../../electron/common';
+import type { NoteCheckerCount } from '../../site/note-checker';
+import type { GeneralSettings } from '../../electron/common';
 
-export interface EmptyEvent {}
+// export interface EmptyEvent {}
 
-export interface EventBusEvent { [key: string]: any }
+export interface EventBusEvent { [key: string]: unknown }
 
 /**
  * This was previously used in the ImagePreview but prevents typescript from
@@ -20,19 +20,19 @@ export interface EventBusEvent { [key: string]: any }
 // export interface LogDetailsEvent { [key: string]: any }
 
 export interface ImagePreviewEvent {
-    url: string;
+    url:    string;
     force?: boolean;
 }
 
 // Tried a Multiselect (to adapt url based on hide) but no bueno.
 export type ImageToggleEvent =
-    | { url?: string, force:  true  }
-    | { url:  string, force?: false };
+    | { url?: string, force: true  }
+    | { url: string, force?: false };
 
 export interface WordDefinitionEvent {
-     lookupWord: string;
-     x: number;
-     y: number;
+    lookupWord: string;
+    x:          number;
+    y:          number;
 }
 
 export interface ChannelAdEvent extends ChannelMessageEvent {
@@ -49,7 +49,7 @@ export interface PrivateMessageEvent {
 }
 
 export interface CharacterScoreEvent extends CharacterDataEvent {
-    score: number;
+    score:      number;
     isFiltered: boolean;
 }
 
@@ -77,7 +77,7 @@ export interface NoteCountsEvent extends NoteCheckerCount {}
 
 export interface MemoEvent {
     character: string;
-    memo: CharacterMemo;
+    memo:      CharacterMemo;
 }
 
 export interface SiteSessionEvent {
@@ -101,27 +101,24 @@ export interface NotificationChangeEvent {
 }
 
 export interface DownloadProgressEvent {
-    download?: boolean;
-    upload?:   boolean;
+    download?:  boolean;
+    upload?:    boolean;
     progress?:  number;
     estimated?: number;
     rate?:      number;
     total?:     number;
 }
 
-export type EventCallback = (data: any) => void | Promise<void>;
+export type EventCallback = (data: unknown) => void | Promise<void>;
 
 class EventBusManager {
     private callbacks: Record<string, EventCallback[]> = {};
 
     /**
-     * If you're propogating values that can change during runtime, you should look into 'configuration-update' as well.
+     * 'core-connected' and 'configuration-update' go hand-in-hand, you probably want to use one if you use the other.
      */
-    $on(event: 'core-connected',         callback: (e: Settings) => void | Promise<void>): void;
-    /**
-     * You probably also want to register 'core-connected' to detect the initial settings set, as well.
-     */
-    $on(event: 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
+    $on(event: 'core-connected'
+             | 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
     $on(event: 'smartfilters-update',    callback: (e: SmartFilterSettings) => void | Promise<void>): void;
     $on(event: 'notification-setting',   callback: (e: NotificationChangeEvent) => void | Promise<void>): void;
     $on(event: 'settings-from-main',     callback: (e: GeneralSettings) => void | Promise<void>): void;
@@ -138,7 +135,6 @@ class EventBusManager {
 
     $on(event: 'word-definition',        callback: (e: WordDefinitionEvent) => void | Promise<void>): void;
 
-    $on(event: 'own-profile-update',     callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'note-counts-update',     callback: () => void | Promise<void>): void;
 
     $on(event: 'activity-friend-login'
@@ -150,25 +146,26 @@ class EventBusManager {
     $on(event: 'bookmark-list'
              | 'friend-list',            callback: (e: CharacterState[]) => void | Promise<void>): void;
 
-    $on(event: 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
+    $on(event: 'own-profile-update'
+             | 'character-data',         callback: (e: CharacterDataEvent) => void | Promise<void>): void;
     $on(event: 'character-score',        callback: (e: CharacterScoreEvent) => void | Promise<void>): void;
     $on(event: 'character-memo',         callback: (e: MemoEvent) => void | Promise<void>): void;
 
     $on(event: 'channel-message',        callback: (e: ChannelMessageEvent) => void | Promise<void>): void;
     $on(event: 'channel-ad',             callback: (e: ChannelAdEvent) => void | Promise<void>): void;
     $on(event: 'private-message',        callback: (e: PrivateMessageEvent) => void | Promise<void>): void;
-    $on(event: 'select-conversation',    callback: (e: SelectConversationEvent) => void | Promise<void>): void;
-    $on(event: 'conversation-load-more', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
+    $on(event: 'select-conversation'
+             | 'conversation-load-more', callback: (e: SelectConversationEvent) => void | Promise<void>): void;
 
     $on(event: 'imagepreview-show'
             | 'imagepreview-dismiss',    callback: (e: ImagePreviewEvent) => void | Promise<void>): void;
     $on(event: 'imagepreview-toggle-sticky', callback: (e: ImageToggleEvent) => void | Promise<void>): void;
     $on(event: 'eicon-progress',         callback: (e: DownloadProgressEvent) => Promise<void>): void;
-    //$on(event: string, callback: EventCallback): void;
     $on(event: string, callback: EventCallback): void {
         this.$off(event, callback);
 
-        if (!(event in this.callbacks)) this.callbacks[event] = [];
+        if (!(event in this.callbacks))
+            this.callbacks[event] = [];
 
         this.callbacks[event].push(callback);
 
@@ -183,7 +180,8 @@ class EventBusManager {
 
     $off(event: string, callback: EventCallback): void {
         const r = this.callbacks[event];
-        if (r === undefined) return;
+        if (r === undefined)
+            return;
 
         const i = r.indexOf(callback);
         if (i < 0) {
@@ -212,7 +210,8 @@ class EventBusManager {
     // The fancy notes api has a way to lock these and `$on` signatures
     // together, so come back and do that once it's implemented.
     $once(event: string, callback: EventCallback): void {
-        if (!(event in this.callbacks)) this.callbacks[event] = [];
+        if (!(event in this.callbacks))
+            this.callbacks[event] = [];
 
         // const once: EventCallback = (data: any) => {
         //     callback(data); this.$off(event, once);
@@ -220,18 +219,18 @@ class EventBusManager {
 
         // this.callbacks[event].push(once);
 
-        const onceWrapper: EventCallback = (data: any) => {
+        const once_wrapper: EventCallback = (data: unknown) => {
             //log.debug('eventbus.once.resolving');
 
-            Promise.resolve(callback(data))
+            void Promise.resolve(callback(data))
                 .then(() => {
-                    this.$off(event, onceWrapper);
+                    this.$off(event, once_wrapper);
                     //log.debug('eventbus.once.resolved');
                 });
         };
 
         // @ts-expect-error No overload for generic string; there's a fancy way to implement $on/$once argument syncing that we can do later to fix this.
-        this.$on(event, onceWrapper);
+        this.$on(event, once_wrapper);
 
         // log.debug('eventbus.once', {
         //     event: event,
@@ -240,8 +239,8 @@ class EventBusManager {
     }
 
 
-    $emit(event: 'core-connected',         data: Settings): void;
-    $emit(event: 'configuration-update',   data: Settings): void;
+    $emit(event: 'core-connected'
+               | 'configuration-update',   data: Settings): void;
     $emit(event: 'smartfilters-update',    data: SmartFilterSettings): void;
     $emit(event: 'notification-setting',   data: NotificationChangeEvent): void;
     $emit(event: 'settings-from-main',     data: GeneralSettings): void;
@@ -253,7 +252,6 @@ class EventBusManager {
 
     $emit(event: 'word-definition',        data: WordDefinitionEvent): void;
 
-    $emit(event: 'own-profile-update',     data: CharacterDataEvent): void;
     $emit(event: 'note-counts-update',     data: NoteCountsEvent): void;
     $emit(event: 'activity-friend-login'
                | 'activity-friend-logout'
@@ -263,28 +261,33 @@ class EventBusManager {
                | 'activity-bookmark-status',  data: ActivityStatusEvent): void;
     $emit(event: 'bookmark-list'
                | 'friend-list',            data: CharacterState[]): void;
-    $emit(event: 'character-data',         data: CharacterDataEvent): void;
+
+    $emit(event: 'own-profile-update'
+               | 'character-data',         data: CharacterDataEvent): void;
     $emit(event: 'character-score',        data: CharacterScoreEvent): void;
     $emit(event: 'character-memo',         data: MemoEvent): void;
 
     $emit(event: 'channel-message',        data: ChannelMessageEvent): void;
     $emit(event: 'channel-ad',             data: ChannelAdEvent): void;
     $emit(event: 'private-message',        data: PrivateMessageEvent): void;
-    $emit(event: 'select-conversation',    data: SelectConversationEvent): void;
-    $emit(event: 'conversation-load-more', data: SelectConversationEvent): void;
+    $emit(event: 'select-conversation'
+               | 'conversation-load-more', data: SelectConversationEvent): void;
 
     $emit(event: 'imagepreview-show' | 'imagepreview-dismiss', data: ImagePreviewEvent): void;
     $emit(event: 'imagepreview-toggle-sticky', data: ImageToggleEvent): void;
     $emit(event: 'eicon-progress',         data: DownloadProgressEvent): void;
     $emit(event: string, data?: EventBusEvent): void {
-        if (event in this.callbacks) this.callbacks[event].forEach(cb => cb(data));
+        if (event in this.callbacks)
+            this.callbacks[event].forEach(cb => cb(data));
     }
 
 
     /**
      * This is used in one place in Chat.vue for connection closing.
      */
-    clear() { this.callbacks = {} }
+    clear() {
+        this.callbacks = {};
+    }
 }
 
 // This should be turned into a module; with the initialization in well-defined place.

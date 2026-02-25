@@ -20,7 +20,7 @@ export abstract class Cache<RecordType> {
         }
     };
 
-    abstract register(record: any): void;
+    abstract register(record: unknown): unknown;
 
     protected update(name: string, value: RecordType): void {
         const key = Cache.nameKey(name);
@@ -48,7 +48,8 @@ export abstract class Cache<RecordType> {
         if (exceeded) {
             while (this.cache.size > this.MAX_CACHE_SIZE) {
                 const k = this.cache.keys().next().value;
-                if (k !== undefined) this.cache.delete(k);
+                if (k !== undefined)
+                    this.cache.delete(k);
             }
         }
 

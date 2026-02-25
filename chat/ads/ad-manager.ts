@@ -75,7 +75,7 @@ export class AdManager {
                 log.debug(
                   'adManager.sendAdToChannel',
                   {
-                    character: core.characters.ownCharacter?.name,
+                    character: core.characters.ownCharacter.name,
                     channel: conv.channel.name,
                     throatDelta: throatTime - initTime,
                     delayDelta: delayTime - throatTime,
@@ -268,7 +268,7 @@ export class AdManager {
 
 
     static onConnectionClosed(): void {
-        AdManager.recoverableCharacter = core?.characters?.ownCharacter?.name ?? '';
+        AdManager.recoverableCharacter = core?.characters?.ownCharacter.name ?? '';
 
         const activeAdChannels = core.conversations.channelConversations
                     .filter(c => c.adManager && c.adManager.isActive())

@@ -158,619 +158,630 @@
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
-    import Vue from 'vue';
-    import {EditorButton, EditorSelection} from '../bbcode/editor';
-    import {BBCodeView} from '../bbcode/view';
-    import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
-    import {Keys} from '../keys';
-    import CharacterAdView from './character/CharacterAdView.vue';
+import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
+import Vue from 'vue';
+import {EditorButton, EditorSelection} from '../bbcode/editor';
+import {BBCodeView} from '../bbcode/view';
+import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
+import {Keys} from '../keys';
+import CharacterAdView from './character/CharacterAdView.vue';
 
-    import {Editor} from './bbcode';
-    import Tabs from '../components/tabs';
+import {Editor} from './bbcode';
+import Tabs from '../components/tabs';
 
-    import CommandHelp from './CommandHelp.vue';
-    import { errorToString, getByteLength, getKey } from './common';
-    import ConversationSettings from './ConversationSettings.vue';
-    import ConversationAdSettings from './ads/ConversationAdSettings.vue';
-    import core from './core';
-    import {Channel, channelModes, Character, Conversation, Settings} from './interfaces';
-    import l from './localize';
-    import Logs from './Logs.vue';
-    import ManageChannel from './ManageChannel.vue';
-    import MessageView from './message_view';
-    import ReportDialog from './ReportDialog.vue';
-    import {isCommand} from './slash_commands';
-    import UserView from './UserView.vue';
-    import CharacterChannelList from './character/CharacterChannelList.vue';
-    import Dropdown from '../components/Dropdown.vue';
-    import EventBus from './preview/event-bus';
-    import type { MemoEvent } from './preview/event-bus';
-    import { MemoManager } from './character/memo';
+import CommandHelp from './CommandHelp.vue';
+import { errorToString, getByteLength, getKey } from './common';
+import ConversationSettings from './ConversationSettings.vue';
+import ConversationAdSettings from './ads/ConversationAdSettings.vue';
+import core from './core';
+import {Channel, channelModes, Character, Conversation, Settings} from './interfaces';
+import l from './localize';
+import Logs from './Logs.vue';
+import ManageChannel from './ManageChannel.vue';
+import MessageView from './message_view';
+import ReportDialog from './ReportDialog.vue';
+import {isCommand} from './slash_commands';
+import UserView from './UserView.vue';
+import CharacterChannelList from './character/CharacterChannelList.vue';
+import Dropdown from '../components/Dropdown.vue';
+import EventBus from './preview/event-bus';
+import type { MemoEvent } from './preview/event-bus';
+import { MemoManager } from './character/memo';
 
-    @Component({
-        components: {
-            tabs: Tabs,
+@Component({
+    components: {
+        tabs: Tabs,
 
-            user: UserView,
-            'bbcode-editor': Editor,
-            'message-view': MessageView,
-            bbcode: BBCodeView(core.bbCodeParser),
+        user:            UserView,
+        'bbcode-editor': Editor,
+        'message-view':  MessageView,
+        bbcode:          BBCodeView(core.bbCodeParser),
 
-            settings: ConversationSettings,
+        settings: ConversationSettings,
 
-            dropdown: Dropdown,
-            channelAdSettings: ConversationAdSettings,
-            'command-help': CommandHelp,
+        dropdown:          Dropdown,
+        channelAdSettings: ConversationAdSettings,
+        'command-help':    CommandHelp,
 
-            modal: Modal,
+        modal: Modal,
 
-            'manage-channel': ManageChannel,
-            logs: Logs,
+        'manage-channel': ManageChannel,
+        logs:             Logs,
 
-            // TODO: Combine into recon
-            'ad-view': CharacterAdView,
-            'channel-list': CharacterChannelList,
-        }
-    })
-    export default class ConversationView extends Vue {
-        @Prop({ required: true })
-        readonly conversation!: Conversation;
+        // TODO: Combine into recon
+        'ad-view':      CharacterAdView,
+        'channel-list': CharacterChannelList,
+    }
+})
+export default class ConversationView extends Vue {
+    @Prop({ required: true })
+    readonly conversation!: Conversation;
 
-        @Prop({required: true})
-        readonly reportDialog!: ReportDialog;
+    @Prop({required: true})
+    readonly reportDialog!: ReportDialog;
 
-        modes = channelModes;
-        descriptionExpanded = false;
-        l = l;
-        extraButtons: EditorButton[] = [];
-        tabOptions: string[] | undefined;
-        tabOptionsIndex!: number;
-        tabOptionSelection!: EditorSelection;
-        showSearch = false;
-        searchInput = '';
-        search = '';
-        lastSearchInput = 0;
-        messageCount = 0;
-        searchTimer = 0;
-        messageView!: HTMLElement;
-        textBox!: Editor;
-        resizeHandler!: EventListener;
-        keydownHandler!: EventListener;
-        keypressHandler!: EventListener;
+    modes = channelModes;
+    descriptionExpanded = false;
+    l = l;
+    extraButtons:        EditorButton[] = [];
+    tabOptions:          string[] | undefined;
+    tabOptionsIndex!:    number;
+    tabOptionSelection!: EditorSelection;
+    showSearch = false;
+    searchInput = '';
+    search = '';
+    lastSearchInput = 0;
+    messageCount = 0;
+    searchTimer = 0;
+    messageView!:        HTMLElement;
+    textBox!:            Editor;
+    resizeHandler!:      EventListener;
+    keydownHandler!:     EventListener;
+    keypressHandler!:    EventListener;
 
-        /**
+    /**
          * True if the user is scrolled to the bottom of the page.
          * But how does this interact with this.scrolledUp?
          */
-        scrolledDown = true;
+    scrolledDown = true;
 
-        /**
+    /**
          * Set when you are scrolled up enough to load more messages.
          */
-        scrolledUp = false;
+    scrolledUp = false;
 
-        /**
+    /**
          * Used to prevent the automatic scroll handler from reacting to your deliberate scroll.
          * Toggle it on, and it will toggle it off when it "eats" the scroll event you caused.
          */
-        ignoreScroll = false;
+    ignoreScroll = false;
 
-        adCountdown = 0;
-        adsMode = l('channel.mode.ads');
-        autoPostingUpdater = 0;
-        adAutoPostUpdate: string | null = null;
-        adAutoPostNextAd: string | null = null;
-        adsRequireSetup = false;
-        showNonMatchingAds = true;
+    adCountdown = 0;
+    adsMode = l('channel.mode.ads');
+    autoPostingUpdater = 0;
+    adAutoPostUpdate: string | null = null;
+    adAutoPostNextAd: string | null = null;
+    adsRequireSetup = false;
+    showNonMatchingAds = true;
 
-        isChannel = Conversation.isChannel;
-        isPrivate = Conversation.isPrivate;
+    isChannel = Conversation.isChannel;
+    isPrivate = Conversation.isPrivate;
 
-        /**
+    /**
          * Group of info for the settings option "Require a second Enter to send your messages"
          */
-        waitingForSecondEnter = false;
-        waitingForSecondEnterClass: 'second-enter-send-allowed' | '' = '';
-        waitingForSecondEnterTimeout?: ReturnType<typeof setTimeout>;
+    waitingForSecondEnter = false;
+    waitingForSecondEnterClass:    'second-enter-send-allowed' | '' = '';
+    waitingForSecondEnterTimeout?: ReturnType<typeof setTimeout>;
 
-        userMemo: string | null = null;
-        editorMemo: string = '';
-        memoManager?: MemoManager;
+    userMemo:     string | null = null;
+    editorMemo:   string = '';
+    memoManager?: MemoManager;
 
-        ownName?: string;
+    ownName?: string;
 
-        get messageLength() { return getByteLength(this.conversation.enteredText) }
-        get memoLength()    { return getByteLength(this.editorMemo)               }
+    get messageLength() { return getByteLength(this.conversation.enteredText) }
+    get memoLength()    { return getByteLength(this.editorMemo)               }
 
-        @Hook('beforeMount')
-        async onBeforeMount(): Promise<void> {
-          this.updateOwnName();
+    @Hook('beforeMount')
+    async onBeforeMount(): Promise<void> {
+        this.updateOwnName();
 
-          this.showNonMatchingAds = !await core.settingsStore.get('hideNonMatchingAds');
-        }
+        this.showNonMatchingAds = !await core.settingsStore.get('hideNonMatchingAds');
+    }
 
 
-        @Hook('mounted')
-        mounted(): void {
-            this.updateOwnName();
+    @Hook('mounted')
+    mounted(): void {
+        this.updateOwnName();
 
-            this.messageView = <HTMLElement>this.$refs['messages'];
-            this.textBox     = <Editor>this.$refs['mainInput'];
+        this.messageView = <HTMLElement> this.$refs['messages'];
+        this.textBox     = <Editor> this.$refs['mainInput'];
 
-            this.extraButtons = [{
-                title: 'Help\n\nClick this button for a quick overview of slash commands.',
-                tag: '?',
-                icon: 'fa-question',
-                handler: () => (<CommandHelp>this.$refs['helpDialog']).show()
-            }];
-            window.addEventListener('resize', this.resizeHandler = () => this.keepScroll());
-            window.addEventListener('keypress', this.keypressHandler = () => {
-                const selection = document.getSelection();
-                if((selection === null || selection.isCollapsed) && !anyDialogsShown &&
+        this.extraButtons = [{
+            title:   'Help\n\nClick this button for a quick overview of slash commands.',
+            tag:     '?',
+            icon:    'fa-question',
+            handler: () => (<CommandHelp> this.$refs['helpDialog']).show()
+        }];
+        window.addEventListener('resize', this.resizeHandler = () => this.keepScroll());
+        window.addEventListener('keypress', this.keypressHandler = () => {
+            const selection = document.getSelection();
+            if ((selection === null || selection.isCollapsed) && !anyDialogsShown &&
                     (document.activeElement === document.body || document.activeElement === null || document.activeElement.tagName === 'A'))
-                    this.textBox.focus();
-            });
-            window.addEventListener('keydown', this.keydownHandler = ((e: KeyboardEvent) => {
-                if(getKey(e) === Keys.KeyF && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
-                    this.showSearch = true;
-                    this.$nextTick(() => (<HTMLElement>this.$refs['searchField']).focus());
-                }
-            }) as EventListener);
-            this.searchTimer = window.setInterval(() => {
-                if(Date.now() - this.lastSearchInput > 500 && this.search !== this.searchInput)
-                    this.search = this.searchInput;
-            }, 500);
-            this.$watch('conversation.nextAd', (value: number) => {
-                const setAdCountdown = () => {
-                    const diff = ((<Conversation.ChannelConversation>this.conversation).nextAd - Date.now()) / 1000;
-                    if(diff <= 0) {
-                        if(this.adCountdown !== 0) window.clearInterval(this.adCountdown);
-                        this.adCountdown = 0;
-                        this.adsMode = l('channel.mode.ads');
-                    } else this.adsMode = l('channel.mode.ads.countdown', Math.floor(diff / 60), Math.floor(diff % 60));
-                };
-                if(Date.now() < value && this.adCountdown === 0)
-                    this.adCountdown = window.setInterval(setAdCountdown, 1000);
-                setAdCountdown();
-            });
-
-            this.$watch(() => this.conversation.adManager.isActive(), () => (this.refreshAutoPostingTimer()));
-            this.refreshAutoPostingTimer();
-
-            this.configUpdateHook = () => this.updateOwnName();
-            EventBus.$on('configuration-update', this.configUpdateHook);
-
-            this.memoUpdateHook = e => this.refreshMemo(e);
-            EventBus.$on('character-memo', this.memoUpdateHook);
-        }
-
-        protected configUpdateHook?: () => void;
-        protected memoUpdateHook?: (e: MemoEvent) => void;
-
-        @Hook('destroyed')
-        destroyed(): void {
-            window.removeEventListener('resize', this.resizeHandler);
-            window.removeEventListener('keydown', this.keydownHandler);
-            window.removeEventListener('keypress', this.keypressHandler);
-            clearInterval(this.searchTimer);
-            clearInterval(this.autoPostingUpdater);
-            clearInterval(this.adCountdown);
-
-            if (this.configUpdateHook)
-                EventBus.$off('configuration-update', this.configUpdateHook);
-            if (this.memoUpdateHook)
-                EventBus.$off('character-memo', this.memoUpdateHook);
-        }
-
-        hideSearch(): void {
-            this.showSearch = false;
-            this.searchInput = '';
-            this.scrollMessageView();
-        }
-
-        updateOwnName(): void {
-            this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter?.name : undefined;
-        }
-
-        get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {
-            if(this.search === '') return this.conversation.messages;
-            const filter = new RegExp(this.search.replace(/[^\w]/gi, '\\$&'), 'i');
-            return this.conversation.messages
-                .filter(x => filter.test(x.text) || filter.test('sender' in x ? x.sender.name : ''));
-                // When will typescript just let me use x.sender?.name......
-        }
-
-        async sendButton(): Promise<void> {
-            return this.conversation.send();
-        }
-
-        @Watch('conversation')
-        async conversationChanged(): Promise<void> {
-            this.updateOwnName();
-
-            if (!anyDialogsShown) this.textBox.focus();
-            this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
-            this.scrolledDown = true;
-
-            this.refreshAutoPostingTimer();
-
-            this.userMemo = null;
-
-            if (this.isPrivate(this.conversation)) {
-                const c = await core.cache.profileCache.get(this.conversation.name);
-                this.userMemo = c?.character?.memo?.memo ?? null;
+                this.textBox.focus();
+        });
+        window.addEventListener('keydown', this.keydownHandler = ((e: KeyboardEvent) => {
+            if (getKey(e) === Keys.KeyF && (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+                this.showSearch = true;
+                this.$nextTick(() => (<HTMLElement> this.$refs['searchField']).focus());
             }
-        }
+        }) as EventListener);
+        this.searchTimer = window.setInterval(() => {
+            if (Date.now() - this.lastSearchInput > 500 && this.search !== this.searchInput)
+                this.search = this.searchInput;
+        }, 500);
+        this.$watch('conversation.nextAd', (value: number) => {
+            const setAdCountdown = () => {
+                const diff = ((<Conversation.ChannelConversation> this.conversation).nextAd - Date.now()) / 1000;
+                if (diff <= 0) {
+                    if (this.adCountdown !== 0) window.clearInterval(this.adCountdown);
+                    this.adCountdown = 0;
+                    this.adsMode = l('channel.mode.ads');
+                } else this.adsMode = l('channel.mode.ads.countdown', Math.floor(diff / 60), Math.floor(diff % 60));
+            };
+            if (Date.now() < value && this.adCountdown === 0)
+                this.adCountdown = window.setInterval(setAdCountdown, 1000);
+            setAdCountdown();
+        });
 
-        @Watch('conversation.messages')
-        messageAdded(newValue: Conversation.Message[]): void {
-            this.keepScroll();
-            if(!this.scrolledDown && newValue.length === this.messageCount)
-                this.messageView.scrollTop -= (this.messageView.firstElementChild!).clientHeight;
-            this.messageCount = newValue.length;
-        }
+        this.$watch(() => this.conversation.adManager.isActive(), () => (this.refreshAutoPostingTimer()));
+        this.refreshAutoPostingTimer();
 
-        /**
+        this.configUpdateHook = () => this.updateOwnName();
+        EventBus.$on('configuration-update', this.configUpdateHook);
+
+        this.memoUpdateHook = e => this.refreshMemo(e);
+        EventBus.$on('character-memo', this.memoUpdateHook);
+    }
+
+    protected configUpdateHook?: () => void;
+    protected memoUpdateHook?:   (e: MemoEvent) => void;
+
+    @Hook('destroyed')
+    destroyed(): void {
+        window.removeEventListener('resize', this.resizeHandler);
+        window.removeEventListener('keydown', this.keydownHandler);
+        window.removeEventListener('keypress', this.keypressHandler);
+        clearInterval(this.searchTimer);
+        clearInterval(this.autoPostingUpdater);
+        clearInterval(this.adCountdown);
+
+        if (this.configUpdateHook)
+            EventBus.$off('configuration-update', this.configUpdateHook);
+        if (this.memoUpdateHook)
+            EventBus.$off('character-memo', this.memoUpdateHook);
+    }
+
+    hideSearch(): void {
+        this.showSearch = false;
+        this.searchInput = '';
+        this.scrollMessageView();
+    }
+
+    updateOwnName(): void {
+        this.ownName = core.state.settings.risingShowPortraitNearInput ? core.characters.ownCharacter.name : undefined;
+    }
+
+    get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {
+        if (this.search === '') return this.conversation.messages;
+        const filter = new RegExp(this.search.replace(/[^\w]/gi, '\\$&'), 'i');
+        return this.conversation.messages
+            .filter(x => filter.test(x.text) || filter.test('sender' in x ? x.sender.name : ''));
+        // When will typescript just let me use x.sender?.name......
+    }
+
+    async sendButton(): Promise<void> {
+        return this.conversation.send();
+    }
+
+    @Watch('conversation')
+    async conversationChanged(): Promise<void> {
+        this.updateOwnName();
+
+        if (!anyDialogsShown)
+            this.textBox.focus();
+
+        this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
+        this.scrolledDown = true;
+
+        this.refreshAutoPostingTimer();
+
+        this.userMemo = null;
+
+        if (this.isPrivate(this.conversation)) {
+            const c = await core.cache.profileCache.get(this.conversation.name);
+            this.userMemo = c?.character?.memo?.memo ?? null;
+        }
+    }
+
+    @Watch('conversation.messages')
+    messageAdded(newValue: Conversation.Message[]): void {
+        this.keepScroll();
+        if (!this.scrolledDown && newValue.length === this.messageCount)
+            this.messageView.scrollTop -= (this.messageView.firstElementChild!).clientHeight;
+        this.messageCount = newValue.length;
+    }
+
+    /**
          * Keeps the current scroll level when elements might cause it to change. For example:
          * Resizing the window; the text input box growing larger; other player's typing indicator being shown or hidden; an error or info message appearing or hiding; receiving a new message.
          */
-        keepScroll(): void {
-            if(this.scrolledDown) {
-                this.ignoreScroll = true;
-                this.$nextTick(() => setTimeout(() => {
-                    this.ignoreScroll = true;
-                    this.messageView.scrollTop = this.messageView.scrollHeight;
-                }, 0));
-            }
-        }
-
-        scrollMessageView(e?: KeyboardEvent) {
+    keepScroll(): void {
+        if (this.scrolledDown) {
             this.ignoreScroll = true;
             this.$nextTick(() => setTimeout(() => {
                 this.ignoreScroll = true;
                 this.messageView.scrollTop = this.messageView.scrollHeight;
-                this.scrolledDown = true;
-            }));
-
-            if(e && !anyDialogsShown) this.textBox.focus();
+            }, 0));
         }
+    }
 
-        /**
+    scrollMessageView(e?: KeyboardEvent) {
+        this.ignoreScroll = true;
+        this.$nextTick(() => setTimeout(() => {
+            this.ignoreScroll = true;
+            this.messageView.scrollTop = this.messageView.scrollHeight;
+            this.scrolledDown = true;
+        }));
+
+        if (e && !anyDialogsShown)
+            this.textBox.focus();
+    }
+
+    /**
          * Tracks when the user scrolls. Because this triggers off of any scroll event, it will "correct" your own attempts to set the scroll distance. You should set `ignoreScroll` before attempting to modify the scroll. This function will `eat` the ignore, so set it every time you want to avoid the auto-correct.
          *
          * This will set `scrolledUp` if it detected you at the top of chat history - it also tries to load more messages. It will also set `scrolledDown` if your scrolled-by content is within 15 px of the loaded chat history. (It is possible that both are set at the same time.)
          */
-        onMessagesScroll(): void {
-            if (this.ignoreScroll) {
-                this.ignoreScroll = false;
-                return;
-            }
-            if(this.messageView.scrollTop < 20) {
-                if(!this.scrolledUp) {
-                    const firstMessage = this.messageView.firstElementChild;
-                    if(this.conversation.loadMore() && firstMessage !== null) {
-                        this.messageView.style.overflow = 'hidden';
-                        this.$nextTick(() => {
-                            this.messageView.scrollTop = (<HTMLElement>firstMessage).offsetTop;
-                            this.messageView.style.overflow = 'auto';
-                        });
-                    }
+    onMessagesScroll(): void {
+        if (this.ignoreScroll) {
+            this.ignoreScroll = false;
+            return;
+        }
+        if (this.messageView.scrollTop < 20) {
+            if (!this.scrolledUp) {
+                const firstMessage = this.messageView.firstElementChild;
+                if (this.conversation.loadMore() && firstMessage !== null) {
+                    this.messageView.style.overflow = 'hidden';
+                    this.$nextTick(() => {
+                        this.messageView.scrollTop = (<HTMLElement>firstMessage).offsetTop;
+                        this.messageView.style.overflow = 'auto';
+                    });
                 }
-                this.scrolledUp = true;
-            } else this.scrolledUp = false;
-            this.scrolledDown = this.messageView.scrollTop + this.messageView.offsetHeight >= this.messageView.scrollHeight - 15;
-        }
+            }
+            this.scrolledUp = true;
+        } else this.scrolledUp = false;
+        this.scrolledDown = this.messageView.scrollTop + this.messageView.offsetHeight >= this.messageView.scrollHeight - 15;
+    }
 
-        @Watch('conversation.errorText')
-        @Watch('conversation.infoText')
-        textChanged(newValue: string, oldValue: string): void {
-            if(oldValue.length === 0 && newValue.length > 0) this.keepScroll();
-        }
+    @Watch('conversation.errorText')
+    @Watch('conversation.infoText')
+    textChanged(newValue: string, oldValue: string): void {
+        if (oldValue.length === 0 && newValue.length > 0)
+            this.keepScroll();
+    }
 
-        @Watch('conversation.typingStatus')
-        typingStatusChanged(_str: string, oldValue: string): void {
-            if(oldValue === 'clear') this.keepScroll();
-        }
+    @Watch('conversation.typingStatus')
+    typingStatusChanged(_str: string, oldValue: string): void {
+        if (oldValue === 'clear')
+            this.keepScroll();
+    }
 
-        async onKeyDown(e: KeyboardEvent): Promise<void> {
-            if(getKey(e) === Keys.Tab) {
-                if(e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
-                e.preventDefault();
-                if(this.conversation.enteredText.length === 0 || this.isConsoleTab) return;
-                if(this.tabOptions === undefined) {
-                    const selection = this.textBox.getSelection();
-                    if(selection.text.length === 0) {
-                        const match = /\b[\w]+$/.exec(this.textBox.text.substring(0, selection.end));
-                        if(match === null) return;
-                        selection.start = match.index < 0 ? 0 : match.index;
-                        selection.text = this.textBox.text.substring(selection.start, selection.end);
-                        if(selection.text.length === 0) return;
-                    }
-                    const search = new RegExp(`^${selection.text.replace(/[^\w]/gi, '\\$&')}`, 'i');
-                    const c = (<Conversation.PrivateConversation>this.conversation);
-                    let options: ReadonlyArray<{character: Character}>;
-                    options = Conversation.isChannel(this.conversation) ? this.conversation.channel.sortedMembers :
-                        [{character: c.character}, {character: core.characters.ownCharacter}];
-                    this.tabOptions = options.filter((x) => search.test(x.character.name)).map((x) => x.character.name);
+    async onKeyDown(e: KeyboardEvent): Promise<void> {
+        if (getKey(e) === Keys.Tab) {
+            if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+            e.preventDefault();
+            if (this.conversation.enteredText.length === 0 || this.isConsoleTab) return;
+            if (this.tabOptions === undefined) {
+                const selection = this.textBox.getSelection();
+                if (selection.text.length === 0) {
+                    const match = /\b[\w]+$/.exec(this.textBox.text.substring(0, selection.end));
+                    if (match === null) return;
+                    selection.start = match.index < 0 ? 0 : match.index;
+                    selection.text = this.textBox.text.substring(selection.start, selection.end);
+                    if (selection.text.length === 0) return;
+                }
+                const search = new RegExp(`^${selection.text.replace(/[^\w]/gi, '\\$&')}`, 'i');
+                const c = (<Conversation.PrivateConversation> this.conversation);
+                let options: ReadonlyArray<{character: Character}>;
+                options = Conversation.isChannel(this.conversation) ? this.conversation.channel.sortedMembers :
+                    [{character: c.character}, {character: core.characters.ownCharacter}];
+                this.tabOptions = options.filter((x) => search.test(x.character.name)).map((x) => x.character.name);
+                this.tabOptionsIndex = 0;
+                this.tabOptionSelection = selection;
+            }
+
+            if (this.tabOptions.length > 0) {
+                const selection = this.textBox.getSelection();
+
+                if (selection.end !== this.tabOptionSelection.end)
+                    return;
+
+                if (this.tabOptionsIndex >= this.tabOptions.length)
                     this.tabOptionsIndex = 0;
-                    this.tabOptionSelection = selection;
-                }
-                if(this.tabOptions.length > 0) {
-                    const selection = this.textBox.getSelection();
-                    if(selection.end !== this.tabOptionSelection.end) return;
-                    if(this.tabOptionsIndex >= this.tabOptions.length) this.tabOptionsIndex = 0;
-                    const name = this.tabOptions[this.tabOptionsIndex];
-                    const userName = (isCommand(this.conversation.enteredText) ? name : `[user]${name}[/user]`);
-                    this.tabOptionSelection.end = this.tabOptionSelection.start + userName.length;
-                    this.conversation.enteredText = this.conversation.enteredText.substring(0, this.tabOptionSelection.start) + userName +
+
+                const name = this.tabOptions[this.tabOptionsIndex];
+                const userName = (isCommand(this.conversation.enteredText) ? name : `[user]${name}[/user]`);
+                this.tabOptionSelection.end = this.tabOptionSelection.start + userName.length;
+                this.conversation.enteredText = this.conversation.enteredText.substring(0, this.tabOptionSelection.start) + userName +
                         this.conversation.enteredText.substring(selection.end);
-                    ++this.tabOptionsIndex;
-                }
+                ++this.tabOptionsIndex;
             }
-            else {
-                if (this.tabOptions) this.tabOptions = undefined;
+        }
+        else {
+            if (this.tabOptions) this.tabOptions = undefined;
 
-                if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
+            if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-                    this.conversation.loadLastSent();
+                this.conversation.loadLastSent();
+            }
+            else if (getKey(e) === Keys.Escape) {
+                this.scrollMessageView();
+            }
+            else if (getKey(e) === Keys.Enter) {
+                // Handles the situations where you insert a newline:
+                // - Shift+Enter when "enter to send" is enabled
+                // - solo Enter when "enter to send" is disabled
+                if (e.shiftKey === this.settings.enterSend)
+                    return;
+
+                e.preventDefault();
+
+                // Block sending when no real content;
+                // Stops double-enter visual feedback and potential chat spam.
+                if (!this.conversation.enteredText.trim())
+                    return;
+
+                // Handles Shift+Enter when "enter to send" is disabled.
+                // Handles solo Enter when "enter to send" is enabled.
+                if (!this.settings.enterSend || !this.settings.secondEnterSend) {
+                    await this.conversation.send();
+                    return;
                 }
-                else if (getKey(e) === Keys.Escape) {
-                    this.scrollMessageView();
-                }
-                else if (getKey(e) === Keys.Enter) {
-                    // Handles the situations where you insert a newline:
-                    // - Shift+Enter when "enter to send" is enabled
-                    // - solo Enter when "enter to send" is disabled
-                    if (e.shiftKey === this.settings.enterSend)
-                        return;
+                // Below here is only solo Enter with "enter to send" + "second enter" enabled.
 
-                    e.preventDefault();
+                // Welcome to the "I flub a lot of messages so I require confirmation before sending one" zone.
+                if (this.waitingForSecondEnter) {
+                    await this.conversation.send();
+                    this.waitingForSecondEnter = false;
+                    this.waitingForSecondEnterClass = '';
 
-                    // Block sending when no real content;
-                    // Stops double-enter visual feedback and potential chat spam.
-                    if (!this.conversation.enteredText.trim())
-                        return;
-
-                    // Handles Shift+Enter when "enter to send" is disabled.
-                    // Handles solo Enter when "enter to send" is enabled.
-                    if (!this.settings.enterSend || !this.settings.secondEnterSend) {
-                        await this.conversation.send();
-                        return;
+                    if (this.waitingForSecondEnterTimeout) {
+                        clearTimeout(this.waitingForSecondEnterTimeout);
+                        this.waitingForSecondEnterTimeout = undefined;
                     }
-                    // Below here is only solo Enter with "enter to send" + "second enter" enabled.
-
-                    // Welcome to the "I flub a lot of messages so I require confirmation before sending one" zone.
-                    if (this.waitingForSecondEnter) {
-                        await this.conversation.send();
+                }
+                else {
+                    this.waitingForSecondEnter = true;
+                    this.waitingForSecondEnterClass = 'second-enter-send-allowed';
+                    this.waitingForSecondEnterTimeout = setTimeout(() => {
                         this.waitingForSecondEnter = false;
                         this.waitingForSecondEnterClass = '';
-
-                        if (this.waitingForSecondEnterTimeout) {
-                            clearTimeout(this.waitingForSecondEnterTimeout);
-                            this.waitingForSecondEnterTimeout = undefined;
-                        }
-                    }
-                    else {
-                        this.waitingForSecondEnter = true;
-                        this.waitingForSecondEnterClass = 'second-enter-send-allowed';
-                        this.waitingForSecondEnterTimeout = setTimeout(() => {
-                            this.waitingForSecondEnter = false;
-                            this.waitingForSecondEnterClass = '';
-                            this.waitingForSecondEnterTimeout = undefined;
-                        }, 3000);
-                    }
+                        this.waitingForSecondEnterTimeout = undefined;
+                    }, 3000);
                 }
             }
         }
+    }
 
-        setMode(mode: Channel.Mode): void {
-            const conv = (<Conversation.ChannelConversation>this.conversation);
-            if(conv.channel.mode === 'both') conv.mode = mode;
-        }
+    setMode(mode: Channel.Mode): void {
+        const conv = (<Conversation.ChannelConversation> this.conversation);
+        if (conv.channel.mode === 'both') conv.mode = mode;
+    }
 
 
-        async toggleNonMatchingAds(): Promise<void> {
-            this.showNonMatchingAds = !this.showNonMatchingAds;
+    async toggleNonMatchingAds(): Promise<void> {
+        this.showNonMatchingAds = !this.showNonMatchingAds;
 
-            await core.settingsStore.set('hideNonMatchingAds', !this.showNonMatchingAds);
-        }
+        await core.settingsStore.set('hideNonMatchingAds', !this.showNonMatchingAds);
+    }
 
-        messageViewExpanded(): void {
-            this.scrolledDown = false;
-        }
+    messageViewExpanded(): void {
+        this.scrolledDown = false;
+    }
 
-        getMessageWrapperClasses(): any {
-            const filter = core.state.settings.risingFilter;
-            const classes:any = {};
+    getMessageWrapperClasses(): any {
+        const filter = core.state.settings.risingFilter;
+        const classes:any = {};
 
-            if (this.isPrivate(this.conversation)) {
-              classes['filter-channel-messages'] = filter.hidePrivateMessages;
-              return classes;
-            }
-
-            if (!this.isChannel(this.conversation)) {
-                return {};
-            }
-
-            const conv = <Conversation.ChannelConversation>this.conversation;
-
-            classes['messages-' + conv.mode] = true;
-            classes['hide-non-matching'] = !this.showNonMatchingAds;
-
-            classes['filter-ads'] = filter.hideAds;
-            classes['filter-channel-messages'] = conv.channel.owner !== '' ? filter.hidePrivateChannelMessages : filter.hidePublicChannelMessages;
-
+        if (this.isPrivate(this.conversation)) {
+            classes['filter-channel-messages'] = filter.hidePrivateMessages;
             return classes;
         }
 
-        acceptReport(sfc: {callid: number}): void {
-            core.connection.send('SFC', {action: 'confirm', callid: sfc.callid});
+        if (!this.isChannel(this.conversation)) {
+            return {};
         }
 
-        setSendingAds(is: boolean): void {
-            const conv = (<Conversation.ChannelConversation>this.conversation);
-            if(conv.channel.mode === 'both') {
-                conv.isSendingAds = is;
-                this.textBox.focus();
-            }
+        const conv = <Conversation.ChannelConversation> this.conversation;
+
+        classes['messages-' + conv.mode] = true;
+        classes['hide-non-matching'] = !this.showNonMatchingAds;
+
+        classes['filter-ads'] = filter.hideAds;
+        classes['filter-channel-messages'] = conv.channel.owner !== '' ? filter.hidePrivateChannelMessages : filter.hidePublicChannelMessages;
+
+        return classes;
+    }
+
+    acceptReport(sfc: {callid: number}): void {
+        core.connection.send('SFC', {action: 'confirm', callid: sfc.callid});
+    }
+
+    setSendingAds(is: boolean): void {
+        const conv = (<Conversation.ChannelConversation> this.conversation);
+        if (conv.channel.mode === 'both') {
+            conv.isSendingAds = is;
+            this.textBox.focus();
+        }
+    }
+
+    showLogs(): void {
+        (<Logs> this.$refs['logsDialog']).show();
+    }
+
+    showAdSettings(): void {
+        (<ConversationAdSettings> this.$refs['channelAdSettingsDialog']).show();
+    }
+
+    showManage(): void {
+        (<ManageChannel> this.$refs['manageDialog']).show();
+    }
+
+    showAds(): void {
+        (<CharacterAdView> this.$refs['adViewer']).show();
+    }
+
+    showChannels(): void {
+        (<CharacterChannelList> this.$refs['channelList']).show();
+    }
+
+
+    isAutopostingAds(): boolean {
+        return this.conversation.adManager.isActive();
+    }
+
+
+    skipAd(): void {
+        this.conversation.adManager.skipAd();
+        this.updateAutoPostingState();
+    }
+
+
+    stopAutoPostAds(): void {
+        this.conversation.adManager.stop();
+    }
+
+
+    renewAutoPosting(): void {
+        this.conversation.adManager.renew();
+
+        this.refreshAutoPostingTimer();
+    }
+
+
+    toggleAutoPostAds(): void {
+        if (this.isAutopostingAds())
+            this.stopAutoPostAds();
+        else
+            this.conversation.adManager.start();
+
+        this.refreshAutoPostingTimer();
+    }
+
+
+    updateAutoPostingState() {
+        const adManager = this.conversation.adManager;
+
+        this.adAutoPostNextAd = adManager.getNextAd() || null;
+
+        if (this.adAutoPostNextAd) {
+            const diff = ((adManager.getNextPostDue() || new Date()).getTime() - Date.now()) / 1000;
+            const expDiff = ((adManager.getExpireDue() || new Date()).getTime() - Date.now()) / 1000;
+
+            const diffMins = Math.floor(diff / 60);
+            const diffSecs = Math.floor(diff % 60);
+            const expDiffMins = Math.floor(expDiff / 60);
+            const expDiffSecs = Math.floor(expDiff % 60);
+
+            this.adAutoPostUpdate = l(
+                ((adManager.getNextPostDue()) && (!adManager.getFirstPost())) ? 'admgr.postingBegins' : 'admgr.nextPostDue',
+                diffMins,
+                diffSecs
+            ) + l('admgr.expiresIn', expDiffMins, expDiffSecs);
+
+            this.adsRequireSetup = false;
+        } else {
+            this.adAutoPostNextAd = null;
+
+            this.adAutoPostUpdate = l('admgr.noAds');
+            this.adsRequireSetup = true;
+        }
+    };
+
+    refreshAutoPostingTimer(): void {
+        if (this.autoPostingUpdater)
+            window.clearInterval(this.autoPostingUpdater);
+
+        if (!this.isAutopostingAds()) {
+            this.adAutoPostUpdate = null;
+            this.adAutoPostNextAd = null;
+            return;
         }
 
-        showLogs(): void {
-            (<Logs>this.$refs['logsDialog']).show();
-        }
-
-        showAdSettings(): void {
-            (<ConversationAdSettings>this.$refs['channelAdSettingsDialog']).show();
-        }
-
-        showManage(): void {
-            (<ManageChannel>this.$refs['manageDialog']).show();
-        }
-
-        showAds(): void {
-            (<CharacterAdView>this.$refs['adViewer']).show();
-        }
-
-        showChannels(): void {
-            (<CharacterChannelList>this.$refs['channelList']).show();
-        }
+        this.autoPostingUpdater = window.setInterval(() => this.updateAutoPostingState(), 1000);
+        this.updateAutoPostingState();
+    }
 
 
-        isAutopostingAds(): boolean {
-            return this.conversation.adManager.isActive();
-        }
+    hasSFC(message: Conversation.Message): message is Conversation.SFCMessage {
+        // noinspection TypeScriptValidateTypes
+        return (<Partial<Conversation.SFCMessage>>message).sfc !== undefined;
+    }
 
+    updateMemo(): void {
+        this.memoManager?.set(this.editorMemo || null).catch((e: object) => alert(errorToString(e)))
+        this.userMemo = this.editorMemo ?? null;
+    }
 
-        skipAd(): void {
-          this.conversation.adManager.skipAd();
-          this.updateAutoPostingState();
-        }
+    refreshMemo(e: MemoEvent): void {
+        this.userMemo = e.memo.memo;
+    }
 
-
-        stopAutoPostAds(): void {
-            this.conversation.adManager.stop();
-        }
-
-
-        renewAutoPosting(): void {
-            this.conversation.adManager.renew();
-
-            this.refreshAutoPostingTimer();
-        }
-
-
-        toggleAutoPostAds(): void {
-            if(this.isAutopostingAds())
-                this.stopAutoPostAds();
-            else
-                this.conversation.adManager.start();
-
-            this.refreshAutoPostingTimer();
-        }
-
-
-        updateAutoPostingState() {
-            const adManager = this.conversation.adManager;
-
-            this.adAutoPostNextAd = adManager.getNextAd() || null;
-
-            if(this.adAutoPostNextAd) {
-                const diff = ((adManager.getNextPostDue() || new Date()).getTime() - Date.now()) / 1000;
-                const expDiff = ((adManager.getExpireDue() || new Date()).getTime() - Date.now()) / 1000;
-
-                const diffMins = Math.floor(diff / 60);
-                const diffSecs = Math.floor(diff % 60);
-                const expDiffMins = Math.floor(expDiff / 60);
-                const expDiffSecs = Math.floor(expDiff % 60);
-
-                this.adAutoPostUpdate = l(
-                    ((adManager.getNextPostDue()) && (!adManager.getFirstPost())) ? 'admgr.postingBegins' : 'admgr.nextPostDue',
-                    diffMins,
-                    diffSecs
-                ) + l('admgr.expiresIn', expDiffMins, expDiffSecs);
-
-                this.adsRequireSetup = false;
-            } else {
-                this.adAutoPostNextAd = null;
-
-                this.adAutoPostUpdate = l('admgr.noAds');
-                this.adsRequireSetup = true;
-            }
-        };
-
-        refreshAutoPostingTimer(): void {
-            if (this.autoPostingUpdater)
-                window.clearInterval(this.autoPostingUpdater);
-
-            if (!this.isAutopostingAds()) {
-                this.adAutoPostUpdate = null;
-                this.adAutoPostNextAd = null;
-                return;
-            }
-
-            this.autoPostingUpdater = window.setInterval(() => this.updateAutoPostingState(), 1000);
-            this.updateAutoPostingState();
-        }
-
-
-        hasSFC(message: Conversation.Message): message is Conversation.SFCMessage {
-            // noinspection TypeScriptValidateTypes
-            return (<Partial<Conversation.SFCMessage>>message).sfc !== undefined;
-        }
-
-        updateMemo(): void {
-          this.memoManager?.set(this.editorMemo || null).catch((e: object) => alert(errorToString(e)))
-          this.userMemo = this.editorMemo ?? null;
-        }
-
-        refreshMemo(e: MemoEvent): void {
-          this.userMemo = e.memo.memo;
-        }
-
-        async showMemo(): Promise<void> {
-          if (this.isPrivate(this.conversation)) {
+    async showMemo(): Promise<void> {
+        if (this.isPrivate(this.conversation)) {
             const c = this.conversation.character;
 
             this.editorMemo = '';
 
-            (<Modal>this.$refs['userMemoEditor']).show();
+            (<Modal> this.$refs['userMemoEditor']).show();
 
             try {
-              this.memoManager = new MemoManager(c.name);
-              await this.memoManager.load();
+                this.memoManager = new MemoManager(c.name);
+                await this.memoManager.load();
 
-              this.userMemo = (await this.memoManager.get()).memo;
-              this.editorMemo = this.userMemo ?? '';
+                this.userMemo = (await this.memoManager.get()).memo;
+                this.editorMemo = this.userMemo ?? '';
             } catch(e) {
                 alert(errorToString(e));
             }
-          }
-        }
-
-        get characterImage(): string {
-            return core.characters.getImage(this.conversation.name);
-        }
-
-        get settings(): Settings {
-            return core.state.settings;
-        }
-
-        get isConsoleTab(): boolean {
-            return this.conversation === core.conversations.consoleTab;
-        }
-
-        get isChannelMod(): boolean {
-            if (core.characters.ownCharacter.isChatOp)
-                return true;
-
-            if (!this.isChannel(this.conversation))
-                return false;
-
-            const member = this.conversation.channel.members[core.connection.character];
-            return member !== undefined && member.rank > Channel.Rank.Member;
         }
     }
+
+    get characterImage(): string {
+        return core.characters.getImage(this.conversation.name);
+    }
+
+    get settings(): Settings {
+        return core.state.settings;
+    }
+
+    get isConsoleTab(): boolean {
+        return this.conversation === core.conversations.consoleTab;
+    }
+
+    get isChannelMod(): boolean {
+        if (core.characters.ownCharacter.isChatOp)
+            return true;
+
+        if (!this.isChannel(this.conversation))
+            return false;
+
+        const member = this.conversation.channel.members[core.connection.character];
+        return member !== undefined && member.rank > Channel.Rank.Member;
+    }
+}
 </script>
 
 <style lang="scss">
