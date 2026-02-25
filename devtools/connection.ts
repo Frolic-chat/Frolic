@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Debugger as DebugIface } from './interfaces';
-import { ServerCommandKeys } from './api';
-import { Connection as Interfaces } from '../fchat/interfaces';
+import type { Debugger as DebugIface } from './interfaces';
+import type { ServerCommandKeys } from './api';
+import type { Connection as Interfaces } from '../fchat/interfaces';
 import core from '../chat/core';
 import NewLogger from '../helpers/log';
 const log = NewLogger('devtools', () => core.state.generalSettings.argv.includes('--debug-devtools'));
@@ -11,7 +11,9 @@ const log = NewLogger('devtools', () => core.state.generalSettings.argv.includes
  */
 export class Debugger implements DebugIface {
     client: Interfaces.Connection;
-    constructor(client: Interfaces.Connection) { this.client = client }
+    constructor(client: Interfaces.Connection) {
+        this.client = client;
+    }
 
     /**
      * Spoof a message to a chat interface.
@@ -21,8 +23,8 @@ export class Debugger implements DebugIface {
      * More information about server commands can be found on the f-list wiki:
      * https://wiki.f-list.net/F-Chat_Server_Commands
      */
-    public send(command: typeof ServerCommandKeys[number] | 'TST', data: any): void {
-        if (typeof this.client._handleMessage !== "function") {
+    public send(command: typeof ServerCommandKeys[number] | 'TST', data: unknown): void {
+        if (typeof this.client._handleMessage !== 'function') {
             log.verbose('devtools.send.connectionfailure');
             return;
         }

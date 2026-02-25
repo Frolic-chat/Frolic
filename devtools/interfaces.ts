@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { ServerCommandKeys } from './api';
-import { Connection as Interfaces } from '../fchat/interfaces';
+import type { ServerCommandKeys } from './api';
+import type { Connection as Interfaces } from '../fchat/interfaces';
 
 /**
  * An interface to allow spoofing incoming server commands.
@@ -11,5 +11,5 @@ import { Connection as Interfaces } from '../fchat/interfaces';
  */
 export interface Debugger {
     readonly client: Interfaces.Connection;
-    send(type: typeof ServerCommandKeys[number], data: any): void;
+    send(type: typeof ServerCommandKeys[number], data: unknown): void;
 }

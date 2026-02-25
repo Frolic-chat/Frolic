@@ -1,16 +1,16 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-    <modal :action="nameTheModal()" ref="dialog" dialogClass="w-100 modal-xl" @submit="handle" buttonText="Submit">
-        <tabs style="flex-shrink:0" :tabs="tabNames" v-model="tab"></tabs>
+<modal ref="dialog" :action="nameTheModal()" dialogClass="w-100 modal-xl" buttonText="Submit" @submit="handle">
+  <tabs v-model="tab" style="flex-shrink:0" :tabs="tabNames"></tabs>
 
-        <spoof  v-show="tab === '0'" ref="0" id="devtools-spoof"  ></spoof>
-        <logs   v-show="tab === '1'" ref="1" id="devtools-logs"   ></logs>
-        <div    v-show="tab === '2'" ref="2" id="devtools-outline">
-            <input type="checkbox" v-model="outlineDisplayToggle" class="form-input">
-            <label>Show outline</label>
-        </div>
-        <search v-show="tab === '3'" ref="3" id="devtools-search" ></search>
-    </modal>
+  <spoof v-show="tab === '0'" id="devtools-spoof" ref="0"></spoof>
+  <logs v-show="tab === '1'" id="devtools-logs" ref="1"></logs>
+  <div v-show="tab === '2'" id="devtools-outline" ref="2">
+    <input v-model="outlineDisplayToggle" type="checkbox" class="form-input">
+    <label>Show outline</label>
+  </div>
+  <search v-show="tab === '3'" id="devtools-search" ref="3"></search>
+</modal>
 </template>
 
 <script lang="ts">
@@ -18,7 +18,7 @@ import { Component, Watch } from '@frolic/vue-ts';
 import CustomDialog from '../components/custom_dialog';
 import Modal from '../components/Modal.vue';
 import Tabs from '../components/tabs';
-import Spoof from './CommandSpoof.vue'
+import Spoof from './CommandSpoof.vue';
 import LogViewer from './LogViewer.vue';
 import Search from './Search.vue';
 
@@ -29,13 +29,15 @@ import Search from './Search.vue';
         spoof:  Spoof,
         logs:   LogViewer,
         search: Search,
-    }
+    },
 })
 export default class DevTools extends CustomDialog {
     tabNames = [ 'Spoof!', 'Logs', 'UI Debug', 'Search' ];
     tab = '0';
 
-    handle() { (this.$refs[this.tab] as { handle?: () => void }).handle?.(); }
+    handle() {
+        (this.$refs[this.tab] as { handle?: () => void }).handle?.();
+    }
 
     nameTheModal(): string {
         return this.tabNames[Number(this.tab)] ?? '';
