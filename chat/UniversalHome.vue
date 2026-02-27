@@ -5,27 +5,33 @@
             listClasses="nav nav-tabs"
             itemClasses="nav-item"
             linkClasses="nav-link" -->
-  <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" linkClasses="btn">
+  <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" listClasses="btn-group" itemClasses="btn">
     <span><!-- Chat -->
-      <span :class="{
-        'fa-fw fa-solid fa-house-user':   isHome,
-        'fa-fw fa       fa-star':         isOfficialChannel,
-        'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
-        'fa-fw fa-solid fa-user':         isPrivate,
-      }"></span>
+      <span
+        :class="{
+          'fa-fw fa-solid fa-house-user':   isHome,
+          'fa-fw fa       fa-star':         isOfficialChannel,
+          'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
+          'fa-fw fa-solid fa-user':         isPrivate,
+        }"
+      ></span>
     </span>
     <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
-      <span v-if="isHome" :class="{
-        'fa-fw fa-solid fa-terminal':  isHome,
-        'fa-fw fa-solid fa-link':     !isHome,
-      }"></span>
+      <span v-if="isHome"
+        :class="{
+          'fa-fw fa-solid fa-terminal':  isHome,
+          'fa-fw fa-solid fa-link':     !isHome,
+        }"
+      ></span>
     </span>
     <span><!-- Personalize/Description/Recon -->
-      <span :class="{
-        'fa-fw fa-solid fa-user-pen':       isHome,
-        'fa-fw fa-solid fa-align-left':     isChannel,
-        'fa-fw fa-solid fa-satellite-dish': isPrivate,
-      }"></span>
+      <span
+        :class="{
+          'fa-fw fa-solid fa-user-pen':       isHome,
+          'fa-fw fa-solid fa-align-left':     isChannel,
+          'fa-fw fa-solid fa-satellite-dish': isPrivate,
+        }"
+      ></span>
     </span>
     <span><!-- Settings -->
       <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
@@ -36,15 +42,15 @@
   </tabs>
 
   <!-- home page -->
-  <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home" :logs="logs" :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation">
+  <home v-if="isHome" v-show="tab === '0'" id="home" role="tabpanel" class="page" :logs="logs" :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation">
     <template #title-end>
       <span>
-        <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
+        <button aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
           <span class="fa-solid fa-screwdriver-wrench"></span>
         </button>
       </span>
       <span>
-        <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+        <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
           <span class="fa fa-file-alt"></span>
         </button>
       </span>
@@ -54,22 +60,23 @@
     <!-- Drafts -->
   </home>
 
-  <convo v-show="tab === '0' && !isHome" ref="primaryView" :conversation="primaryConversation"
-      :navigationRequest="navRequestData.tab === '0' && navRequestData"
-      @navigate="handleNavigation"
-      :commandHelp="commandHelp" :eiconSelector="eiconSelector"
-      :class="isHome ? '' : 'page'"
-      :id="   isHome ? '' : 'home'"
-      :role=" isHome ? '' : 'tabpanel'"
+  <convo v-show="tab === '0' && !isHome"
+    ref="primaryView"
+    :id="   isHome ? '' : 'home'"
+    :conversation="primaryConversation"
+    :navigationRequest="navRequestData.tab === '0' && navRequestData"
+    :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+    :class="isHome ? '' : 'page'" :role=" isHome ? '' : 'tabpanel'"
+    @navigate="handleNavigation"
   >
     <template #title-end>
       <span>
-        <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+        <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
           <span class="fa fa-file-alt"></span>
         </button>
       </span>
       <span>
-        <button @click.prevent="report()" :aria-label="reportTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+        <button :aria-label="reportTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="report()">
           <span class="fa fa-exclamation-triangle"></span>
         </button>
       </span>
@@ -78,19 +85,23 @@
   </convo>
 
   <!-- console/secondary conversation -->
-  <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
-      class="page" role="tabpanel"
-      :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-      :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+  <convo v-if="secondaryConversation" v-show="tab === '1'"
+    ref="secondaryView"
+    id="linked-conversation"
+    :conversation="secondaryConversation"
+    class="page" role="tabpanel"
+    :navigationRequest="navRequestData.tab === '1' && navRequestData"
+    :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+    @navigate="handleNavigation"
   >
     <template #title-end>
       <span v-if="isHome">
-        <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
+        <button aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
           <span class="fa-solid fa-screwdriver-wrench"></span>
         </button>
       </span>
       <span>
-        <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+        <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
           <span class="fa fa-file-alt"></span>
         </button>
       </span>
@@ -98,8 +109,11 @@
     </template>
   </convo>
 
-  <page v-else v-show="tab === '1'" id="linked-conversation" role="tabpanel" class="page"
-      :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
+  <page v-else v-show="tab === '1'"
+    id="linked-conversation"
+    role="tabpanel" class="page"
+    :navigationRequest="navRequestData.tab === '1' && navRequestData"
+    @navigate="handleNavigation"
   >
     <template #prescroll>
       <div class="page-header d-flex align-items-center">
@@ -115,7 +129,7 @@
   <keep-alive>
     <!-- Personality -->
     <personality v-if="isHome" v-show="tab === '2'" id="comms" role="tabpanel" class="page"
-        :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+      :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
       <template #title-end>
         <div ref="tabsContainer2home" id="tabs-container-in-personality" style="display: contents;"></div>
@@ -124,7 +138,7 @@
 
     <!-- Channel description -->
     <page v-else-if="isChannel" v-show="tab === '2'"
-        :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+      :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
       <template #prescroll>
         <div class="page-header d-flex align-items-center">
@@ -150,7 +164,7 @@
 
     <!-- Comms -->
     <comms v-else-if="isPrivate" v-show="tab === '2'" ref="comms" :character="conversation.name"
-        :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+      :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
       <template #title-end>
         <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
@@ -159,16 +173,16 @@
   </keep-alive>
 
   <!-- Settings -->
-  <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"
-      :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
+  <char-settings v-if="isHome" v-show="tab === '3'" id="settings" role="tabpanel" class="page"
+    :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
   >
     <template #title-end>
       <div ref="tabsContainer3" id="tabs-container-in-charsettings" style="display: contents;"></div>
     </template>
   </char-settings>
 
-  <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings"
-      :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
+  <page v-else v-show="tab === '3'" id="settings" role="tabpanel" class="page"
+    :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
   >
     <template #prescroll>
       <div class="page-header d-flex align-items-center">
@@ -188,9 +202,7 @@
     </template>
   </page>
 
-  <data-page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data" :conversation="conversation"
-      :navigationRequest="navRequestData.tab === '4' && navRequestData" @navigate="handleNavigation"
-  >
+  <data-page v-show="tab === '4'" id="personal-data" role="tabpanel" class="page" :conversation="conversation" :navigationRequest="navRequestData.tab === '4' && navRequestData" @navigate="handleNavigation">
     <template #title>
       Data for {{ isHome ? 'Frolic' : conversation.name }}
     </template>
@@ -267,10 +279,12 @@ const logCo = NewLogger('collapse');
         logs:             Logs,
         'command-help':   CommandHelp,
         'widget-options': WidgetOptions,
-    }
+    },
 })
 export default class HomeScreen extends Vue {
-    get conversation() { return core.conversations.selectedConversation }
+    get conversation() {
+        return core.conversations.selectedConversation;
+    }
 
     get logsConversation() {
         return this.primaryConversation === this.activityTab
@@ -296,11 +310,13 @@ export default class HomeScreen extends Vue {
     commandHelp!: CommandHelp;
     logs!:        Logs;
 
+    /* eslint-disable @stylistic/brace-style */
     logsTitle = l('logs.title');
-    showLogs() { this.logs.show() }
+    showLogs() { this.logs.show(); }
 
     reportTitle = l('chat.report');
-    report() { this.reportDialog.report() }
+    report() { this.reportDialog.report(); }
+    /* eslint-enable @stylistic/brace-style */
 
     openWidgetOptions() {
         (this.$refs['widgetOptionsModal'] as WidgetOptions).show();
@@ -324,10 +340,12 @@ export default class HomeScreen extends Vue {
      */
     tabNum = 0;
 
+    /* eslint-disable @stylistic/brace-style */
     get isHome()    { return this.conversation === this.activityTab
-                          || this.conversation === this.consoleTab     }
-    get isPrivate() { return Conversation.isPrivate(this.conversation) }
-    get isChannel() { return Conversation.isChannel(this.conversation) }
+                          || this.conversation === this.consoleTab;     }
+    get isPrivate() { return Conversation.isPrivate(this.conversation); }
+    get isChannel() { return Conversation.isChannel(this.conversation); }
+    /* eslint-enable @stylistic/brace-style */
 
     get isOfficialChannel() {
         if (Conversation.isChannel(this.conversation)) {
@@ -340,8 +358,10 @@ export default class HomeScreen extends Vue {
         }
     }
 
+    /* eslint-disable @stylistic/brace-style */
     get primaryConversation()   { return this.isHome ? this.activityTab : this.conversation; }
     get secondaryConversation() { return this.isHome ? this.consoleTab  : this.linkedChannel; }
+    /* eslint-enable @stylistic/brace-style */
 
     get primaryDescription() {
         return Conversation.isChannel(this.primaryConversation)
@@ -355,6 +375,8 @@ export default class HomeScreen extends Vue {
             : undefined;
     }
 
+    /* eslint-disable @stylistic/nonblock-statement-body-position */
+    /* eslint-disable @stylistic/brace-style */
     get tab0Name() {
         if (this.isHome)    return l('home.tab.home');
         if (this.isPrivate) return this.conversation.name;
@@ -379,6 +401,8 @@ export default class HomeScreen extends Vue {
     get tab3Name() { return l('home.tab.settings'); }
 
     get tab4Name() { return l('home.tab.data'); }
+    /* eslint-enable @stylistic/brace-style */
+    /* eslint-enable @stylistic/nonblock-statement-body-position */
 
     get tabTooltips() {
         return [
@@ -482,8 +506,8 @@ export default class HomeScreen extends Vue {
      * @param e
      */
     handleNavigation(e: { tab?: unknown, conversation?: unknown, section?: unknown } | string | number | undefined | null) {
-        if (typeof e !== 'object') return;
-        if (!e)                    return;
+        if (!e || typeof e !== 'object')
+            return;
 
         const nrd = { tab: '-1', section: '' };
 
@@ -514,7 +538,8 @@ export default class HomeScreen extends Vue {
             this.$nextTick(() => {
                 this.$nextTick(() => {
                     const el = document.getElementById(s);
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    if (el)
+                        el.scrollIntoView({ behavior: 'smooth' });
                 });
             });
 
@@ -610,7 +635,7 @@ export default class HomeScreen extends Vue {
                 }
                 else { // Fallback; shouldn't happen.
                     this.tab = '0';
-                    console.warn('tried to swap to tab 1 without secondary conversation, changed tab to 0.');
+                    window.console.warn('tried to swap to tab 1 without secondary conversation, changed tab to 0.');
                 }
             }
         }
