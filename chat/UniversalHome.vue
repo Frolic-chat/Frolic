@@ -1,213 +1,211 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div id="home-screen" class="chat-panel">
-    <!-- navClasses="nav-tab-scroll"
+  <!-- navClasses="nav-tab-scroll"
             listClasses="nav nav-tabs"
             itemClasses="nav-item"
             linkClasses="nav-link" -->
-    <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" linkClasses="btn">
-        <span><!-- Chat -->
-            <span :class="{
-                'fa-fw fa-solid fa-house-user':   isHome,
-                'fa-fw fa       fa-star':         isOfficialChannel,
-                'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
-                'fa-fw fa-solid fa-user':         isPrivate,
-            }"></span>
-        </span>
-        <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
-            <span v-if="isHome" :class="{
-                'fa-fw fa-solid fa-terminal':  isHome,
-                'fa-fw fa-solid fa-link':     !isHome,
-            }"></span>
-        </span>
-        <span><!-- Personalize/Description/Recon -->
-            <span :class="{
-                'fa-fw fa-solid fa-user-pen':       isHome,
-                'fa-fw fa-solid fa-align-left':     isChannel,
-                'fa-fw fa-solid fa-satellite-dish': isPrivate,
-            }"></span>
-        </span>
-        <span><!-- Settings -->
-            <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
-        </span>
-        <span><!-- Data -->
-            <span class="fa-fw fa-solid fa-file-contract"></span>
-        </span>
-    </tabs>
+  <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" linkClasses="btn">
+    <span><!-- Chat -->
+      <span :class="{
+        'fa-fw fa-solid fa-house-user':   isHome,
+        'fa-fw fa       fa-star':         isOfficialChannel,
+        'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
+        'fa-fw fa-solid fa-user':         isPrivate,
+      }"></span>
+    </span>
+    <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
+      <span v-if="isHome" :class="{
+        'fa-fw fa-solid fa-terminal':  isHome,
+        'fa-fw fa-solid fa-link':     !isHome,
+      }"></span>
+    </span>
+    <span><!-- Personalize/Description/Recon -->
+      <span :class="{
+        'fa-fw fa-solid fa-user-pen':       isHome,
+        'fa-fw fa-solid fa-align-left':     isChannel,
+        'fa-fw fa-solid fa-satellite-dish': isPrivate,
+      }"></span>
+    </span>
+    <span><!-- Settings -->
+      <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
+    </span>
+    <span><!-- Data -->
+      <span class="fa-fw fa-solid fa-file-contract"></span>
+    </span>
+  </tabs>
 
-    <!-- home page -->
-    <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home"
-        :logs="logs"
-        :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
-    >
-        <template v-slot:title-end>
-            <span>
-                <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
-                    <span class="fa-solid fa-screwdriver-wrench"></span>
-                </button>
-            </span>
-            <span>
-                <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                    <span class="fa fa-file-alt"></span>
-                </button>
-            </span>
-            <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
-        </template>
+  <!-- home page -->
+  <home v-if="isHome" v-show="tab === '0'" role="tabpanel" class="page" id="home" :logs="logs" :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation">
+    <template #title-end>
+      <span>
+        <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
+          <span class="fa-solid fa-screwdriver-wrench"></span>
+        </button>
+      </span>
+      <span>
+        <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+          <span class="fa fa-file-alt"></span>
+        </button>
+      </span>
+      <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
+    </template>
 
-        <!-- Drafts -->
-    </home>
+    <!-- Drafts -->
+  </home>
 
-    <convo v-show="tab === '0' && !isHome" ref="primaryView" :conversation="primaryConversation"
-        :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation"
-        :commandHelp="commandHelp" :eiconSelector="eiconSelector"
-        :class="isHome ? '' : 'page'"
-           :id="isHome ? '' : 'home'"
-         :role="isHome ? '' : 'tabpanel'"
-    >
-        <template v-slot:title-end>
-            <span>
-                <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                    <span class="fa fa-file-alt"></span>
-                </button>
-            </span>
-            <span>
-                <button @click.prevent="report()" :aria-label="reportTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                    <span class="fa fa-exclamation-triangle"></span>
-                </button>
-            </span>
-            <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
-        </template>
-    </convo>
+  <convo v-show="tab === '0' && !isHome" ref="primaryView" :conversation="primaryConversation"
+      :navigationRequest="navRequestData.tab === '0' && navRequestData"
+      @navigate="handleNavigation"
+      :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+      :class="isHome ? '' : 'page'"
+      :id="   isHome ? '' : 'home'"
+      :role=" isHome ? '' : 'tabpanel'"
+  >
+    <template #title-end>
+      <span>
+        <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+          <span class="fa fa-file-alt"></span>
+        </button>
+      </span>
+      <span>
+        <button @click.prevent="report()" :aria-label="reportTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+          <span class="fa fa-exclamation-triangle"></span>
+        </button>
+      </span>
+      <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
+    </template>
+  </convo>
 
-    <!-- console/secondary conversation -->
-    <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
-        class="page" role="tabpanel"
-        :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-        :commandHelp="commandHelp" :eiconSelector="eiconSelector"
-    >
-        <template v-slot:title-end>
-            <span v-if="isHome">
-                <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
-                    <span class="fa-solid fa-screwdriver-wrench"></span>
-                </button>
-            </span>
-            <span>
-                <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
-                    <span class="fa fa-file-alt"></span>
-                </button>
-            </span>
-            <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>
-        </template>
-    </convo>
+  <!-- console/secondary conversation -->
+  <convo v-if="secondaryConversation" v-show="tab === '1'" id="linked-conversation" ref="secondaryView" :conversation="secondaryConversation"
+      class="page" role="tabpanel"
+      :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
+      :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+  >
+    <template #title-end>
+      <span v-if="isHome">
+        <button @click.prevent="openWidgetOptions()" aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary">
+          <span class="fa-solid fa-screwdriver-wrench"></span>
+        </button>
+      </span>
+      <span>
+        <button @click.prevent="showLogs()" :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary">
+          <span class="fa fa-file-alt"></span>
+        </button>
+      </span>
+      <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>
+    </template>
+  </convo>
 
-    <page v-else v-show="tab === '1'" id="linked-conversation" role="tabpanel" class="page"
-        :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
-    >
-        <template v-slot:prescroll>
-            <div class="page-header d-flex align-items-center">
-                <div class="mr-auto">
-                </div>
-                <div class="ml-auto flex-shrink-0">
-                    <div ref="tabsContainer1" id="tabs-container-in-linkconvdialog" style="display: contents;"></div>
-                </div>
-            </div>
-        </template>
-    </page>
+  <page v-else v-show="tab === '1'" id="linked-conversation" role="tabpanel" class="page"
+      :navigationRequest="navRequestData.tab === '1' && navRequestData" @navigate="handleNavigation"
+  >
+    <template #prescroll>
+      <div class="page-header d-flex align-items-center">
+        <div class="mr-auto">
+        </div>
+        <div class="ml-auto flex-shrink-0">
+          <div ref="tabsContainer1" id="tabs-container-in-linkconvdialog" style="display: contents;"></div>
+        </div>
+      </div>
+    </template>
+  </page>
 
-    <keep-alive>
+  <keep-alive>
     <!-- Personality -->
     <personality v-if="isHome" v-show="tab === '2'" id="comms" role="tabpanel" class="page"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
-        <template v-slot:title-end>
-            <div ref="tabsContainer2home" id="tabs-container-in-personality" style="display: contents;"></div>
-        </template>
+      <template #title-end>
+        <div ref="tabsContainer2home" id="tabs-container-in-personality" style="display: contents;"></div>
+      </template>
     </personality>
 
     <!-- Channel description -->
     <page v-else-if="isChannel" v-show="tab === '2'"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
-        <template v-slot:prescroll>
-            <div class="page-header d-flex align-items-center">
-                <div class="mr-auto">
-                </div>
-                <div class="ml-auto flex-shrink-0">
-                    <div ref="tabsContainer2channel" id="tabs-container-in-channeldesc" style="display: contents;"></div>
-                </div>
-            </div>
-        </template>
+      <template #prescroll>
+        <div class="page-header d-flex align-items-center">
+          <div class="mr-auto">
+          </div>
+          <div class="ml-auto flex-shrink-0">
+            <div ref="tabsContainer2channel" id="tabs-container-in-channeldesc" style="display: contents;"></div>
+          </div>
+        </div>
+      </template>
 
-        <template v-if="primaryDescription">
-            <bbcode :text="primaryDescription"></bbcode>
-        </template>
+      <template v-if="primaryDescription">
+        <bbcode :text="primaryDescription"></bbcode>
+      </template>
 
-        <hr v-if="primaryDescription && secondaryDescription">
+      <hr v-if="primaryDescription && secondaryDescription">
 
-        <template v-if="secondaryDescription">
-            {{ secondaryConversation ? secondaryConversation.name : '' }}
-            <bbcode :text="secondaryDescription"></bbcode>
-        </template>
+      <template v-if="secondaryDescription">
+        {{ secondaryConversation ? secondaryConversation.name : '' }}
+        <bbcode :text="secondaryDescription"></bbcode>
+      </template>
     </page>
 
     <!-- Comms -->
     <comms v-else-if="isPrivate" v-show="tab === '2'" ref="comms" :character="conversation.name"
         :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
-        <template v-slot:title-end>
-            <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
-        </template>
+      <template #title-end>
+        <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
+      </template>
     </comms>
-    </keep-alive>
+  </keep-alive>
 
-    <!-- Settings -->
-    <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"
-        :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
-    >
-        <template v-slot:title-end>
-            <div ref="tabsContainer3" id="tabs-container-in-charsettings" style="display: contents;"></div>
-        </template>
-    </char-settings>
+  <!-- Settings -->
+  <char-settings v-if="isHome" v-show="tab === '3'" role="tabpanel" class="page" id="settings"
+      :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
+  >
+    <template #title-end>
+      <div ref="tabsContainer3" id="tabs-container-in-charsettings" style="display: contents;"></div>
+    </template>
+  </char-settings>
 
-    <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings"
-        :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
-    >
-        <template v-slot:prescroll>
-            <div class="page-header d-flex align-items-center">
-                <div class="mr-auto">
-                </div>
-                <div class="ml-auto flex-shrink-0">
-                    <div ref="tabsContainer3" id="tabs-container-in-convosettings" style="display: contents;"></div>
-                </div>
-            </div>
-        </template>
-        <!-- header -->
+  <page v-else v-show="tab === '3'" role="tabpanel" class="page" id="settings"
+      :navigationRequest="navRequestData.tab === '3' && navRequestData" @navigate="handleNavigation"
+  >
+    <template #prescroll>
+      <div class="page-header d-flex align-items-center">
+        <div class="mr-auto">
+        </div>
+        <div class="ml-auto flex-shrink-0">
+          <div ref="tabsContainer3" id="tabs-container-in-convosettings" style="display: contents;"></div>
+        </div>
+      </div>
+    </template>
+    <!-- header -->
 
-        <convo-settings :conversation="primaryConversation"></convo-settings>
-        <template v-if="secondaryConversation">
-            <hr>
-            <convo-settings :conversation="secondaryConversation"></convo-settings>
-        </template>
-    </page>
+    <convo-settings :conversation="primaryConversation"></convo-settings>
+    <template v-if="secondaryConversation">
+      <hr>
+      <convo-settings :conversation="secondaryConversation"></convo-settings>
+    </template>
+  </page>
 
-    <data-page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data" :conversation="conversation"
-        :navigationRequest="navRequestData.tab === '4' && navRequestData" @navigate="handleNavigation"
-    >
-        <template v-slot:title>
-            Data for {{ isHome ? 'Frolic' : conversation.name }}
-        </template>
+  <data-page v-show="tab === '4'" role="tabpanel" class="page" id="personal-data" :conversation="conversation"
+      :navigationRequest="navRequestData.tab === '4' && navRequestData" @navigate="handleNavigation"
+  >
+    <template #title>
+      Data for {{ isHome ? 'Frolic' : conversation.name }}
+    </template>
 
-        <template v-slot:title-end>
-            <div ref="tabsContainer4" id="tabs-container-in-data" style="display: contents;"></div>
-        </template>
-    </data-page>
+    <template #title-end>
+      <div ref="tabsContainer4" id="tabs-container-in-data" style="display: contents;"></div>
+    </template>
+  </data-page>
 
-    <!-- Modals for the conversation: -->
-    <logs         ref="logsDialog" :conversation="logsConversation"></logs>
-    <command-help ref="commandHelpDialog"></command-help>
-    <widget-options ref="widgetOptionsModal"></widget-options>
-    <!-- + reportDialog -->
-    <!-- + eiconSelector -->
+  <!-- Modals for the conversation: -->
+  <logs         ref="logsDialog" :conversation="logsConversation"></logs>
+  <command-help ref="commandHelpDialog"></command-help>
+  <widget-options ref="widgetOptionsModal"></widget-options>
+  <!-- + reportDialog -->
+  <!-- + eiconSelector -->
 </div>
 </template>
 
@@ -266,8 +264,8 @@ const logCo = NewLogger('collapse');
         */
 
         // Modals:
-        logs: Logs,
-        'command-help': CommandHelp,
+        logs:             Logs,
+        'command-help':   CommandHelp,
         'widget-options': WidgetOptions,
     }
 })
@@ -296,7 +294,7 @@ export default class HomeScreen extends Vue {
     readonly eiconSelector!: EIconSelector;
 
     commandHelp!: CommandHelp;
-    logs!: Logs;
+    logs!:        Logs;
 
     logsTitle = l('logs.title');
     showLogs() { this.logs.show() }
@@ -342,8 +340,8 @@ export default class HomeScreen extends Vue {
         }
     }
 
-    get primaryConversation()   { return this.isHome ? this.activityTab : this.conversation  }
-    get secondaryConversation() { return this.isHome ? this.consoleTab  : this.linkedChannel }
+    get primaryConversation()   { return this.isHome ? this.activityTab : this.conversation; }
+    get secondaryConversation() { return this.isHome ? this.consoleTab  : this.linkedChannel; }
 
     get primaryDescription() {
         return Conversation.isChannel(this.primaryConversation)
@@ -361,26 +359,35 @@ export default class HomeScreen extends Vue {
         if (this.isHome)    return l('home.tab.home');
         if (this.isPrivate) return this.conversation.name;
         if (this.isChannel) return this.conversation.name;
+        return undefined;
     }
 
     get tab1Name() {
         if (this.isHome)    return core.conversations.consoleTab.name;
         if (this.isPrivate) return this.secondaryConversation?.name ?? ''; // When could you ever do this?
         if (this.isChannel) return this.secondaryConversation?.name ?? ''; // Linked channel name, probably
+        return undefined;
     }
 
     get tab2Name() {
         if (this.isHome)    return core.connection.character;
         if (this.isPrivate) return l('home.tab.comms');
         if (this.isChannel) return l('home.tab.description');
+        return undefined;
     }
 
-    get tab3Name() { return l('home.tab.settings') }
+    get tab3Name() { return l('home.tab.settings'); }
 
-    get tab4Name() { return l('home.tab.data') }
+    get tab4Name() { return l('home.tab.data'); }
 
     get tabTooltips() {
-        return [ this.tab0Name, this.tab1Name, this.tab2Name, this.tab3Name, this.tab4Name ];
+        return [
+            this.tab0Name,
+            this.tab1Name,
+            this.tab2Name,
+            this.tab3Name,
+            this.tab4Name,
+        ];
     };
 
     primaryView!:  ConversationView;
@@ -445,12 +452,12 @@ export default class HomeScreen extends Vue {
         }
 
         if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
-            if (e.key === "ArrowRight" && this.tabNum < 4) {
+            if (e.key === 'ArrowRight' && this.tabNum < 4) {
                 this.tab = this.tab === '0' && !this.secondaryConversation
                     ? (this.tabNum + 2).toString()
                     : (this.tabNum + 1).toString();
             }
-            else if (e.key === "ArrowLeft" && this.tabNum > 0) {
+            else if (e.key === 'ArrowLeft' && this.tabNum > 0) {
                 this.tab = this.tab === '2' && !this.secondaryConversation
                     ? (this.tabNum - 2).toString()
                     : (this.tabNum - 1).toString();
@@ -458,7 +465,7 @@ export default class HomeScreen extends Vue {
         }
     };
 
-    navRequestData: { tab: string, conversation?: any, section: any } = { tab: '-1', section: '' };
+    navRequestData: { tab: string, conversation?: unknown, section: unknown } = { tab: '-1', section: '' };
 
     /**
      * Home-page navigation expects this structure:
@@ -474,7 +481,7 @@ export default class HomeScreen extends Vue {
      * ```
      * @param e
      */
-    handleNavigation(e: { tab?: any, conversation?: any, section?: any } | string | number | undefined | null) {
+    handleNavigation(e: { tab?: unknown, conversation?: unknown, section?: unknown } | string | number | undefined | null) {
         if (typeof e !== 'object') return;
         if (!e)                    return;
 
@@ -487,7 +494,7 @@ export default class HomeScreen extends Vue {
         else if (typeof e.tab === 'string') {
             const n = getAsNumber(e.tab);
             if (n && n <= 4) {
-                this.tab = e.tab.toString();
+                this.tab = n.toString();
                 nrd.tab = this.tab;
             }
         }
@@ -497,9 +504,8 @@ export default class HomeScreen extends Vue {
                 const s = e.conversation as Conversation;
 
                 if (Conversation.isPrivate(s) || Conversation.isChannel(s)
-                ||  Conversation.isConsole(s) || Conversation.isActivity(s)) {
+                ||  Conversation.isConsole(s) || Conversation.isActivity(s))
                     this.$nextTick(() => s.show());
-                }
             }
         }
 
@@ -508,7 +514,7 @@ export default class HomeScreen extends Vue {
             this.$nextTick(() => {
                 this.$nextTick(() => {
                     const el = document.getElementById(s);
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
                 });
             });
 
@@ -531,13 +537,13 @@ export default class HomeScreen extends Vue {
         log.debug('Watch(conversation):', this.conversation.name, {
             isPrimary:   this.conversation === this.primaryConversation,
             isSecondary: this.conversation === this.secondaryConversation,
-            secondary: this.secondaryConversation !== undefined,
-            tab: this.tab,
+            secondary:   this.secondaryConversation !== undefined,
+            tab:         this.tab,
         });
 
         this.moveTabs();
 
-        logCo.debug('UniversalHome.onConversationChanged.collapse', ...Object.entries(core.runtime.userToggles))
+        logCo.debug('UniversalHome.onConversationChanged.collapse', () => Object.entries(core.runtime.userToggles));
 
         if (this.tab === '0') {
             if (n === this.primaryConversation) {
@@ -566,9 +572,9 @@ export default class HomeScreen extends Vue {
     @Watch('tab')
     onTabChanged() {
         log.debug('Watch(tab):', this.tab, {
-            isPrimary:   this.conversation === this.primaryConversation,
-            isSecondary: this.conversation === this.secondaryConversation,
-            secondary: this.secondaryConversation !== undefined,
+            isPrimary:    this.conversation === this.primaryConversation,
+            isSecondary:  this.conversation === this.secondaryConversation,
+            secondary:    this.secondaryConversation !== undefined,
             conversation: this.conversation.name,
         });
 
@@ -643,7 +649,7 @@ export default class HomeScreen extends Vue {
                 : '';
 
             const tabs      = (this.$refs['tabsBar'] as Vue | undefined)?.$el;
-            const container = (this.$refs['tabsContainer' + this.tab + extra] as HTMLDivElement | undefined);
+            const container = this.$refs['tabsContainer' + this.tab + (extra || '')] as HTMLDivElement | undefined;
 
             if (tabs && container && container !== tabs.parentNode)
                 container.appendChild(tabs);
