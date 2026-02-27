@@ -337,13 +337,19 @@ export function ComparePrimitives<
 
 export const lastElement = <T>(arr: readonly T[]) => arr[arr.length - 1];
 
-export function getAsNumber(input: string | null | undefined): number | null {
-    if (input === null || input === undefined || input === '')
+export function getAsNumber(input: unknown): number | null {
+    if (typeof input === 'object' || input === undefined || input === '')
         return null;
 
-    const n = parseInt(input, 10);
+    if (typeof input === 'number') {
+        return !Number.isNaN(input) && Number.isFinite(input) ? input : null;
+    }
+    else if (typeof input === 'string') {
+        const n = parseInt(input, 10);
+        return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
+    }
 
-    return !Number.isNaN(n) && Number.isFinite(n) ? n : null;
+    return null;
 }
 
 /**
