@@ -302,6 +302,12 @@ type GuestbookResponse = {
     posts:    GuestbookPost[];
 };
 
+type GenericKinksResponse = {
+    kinks: {
+        [key: string]: string,
+    },
+};
+
 async function guestbookGet(id: number, offset: number): Promise<Guestbook> {
     const data = await core.connection.queryApi<GuestbookResponse>('character-guestbook.php', { id, page: Math.floor(offset / 10) });
 
@@ -309,7 +315,7 @@ async function guestbookGet(id: number, offset: number): Promise<Guestbook> {
 }
 
 async function kinksGet(id: number): Promise<CharacterKink[]> {
-    const data = await core.connection.queryApi('character-data.php', { id });
+    const data = await core.connection.queryApi<GenericKinksResponse>('character-data.php', { id });
 
     return Object.keys(data.kinks)
         .map(key => {
