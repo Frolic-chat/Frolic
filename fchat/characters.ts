@@ -10,8 +10,8 @@ import EventBus from '../chat/preview/event-bus';
 import l from '../chat/localize';
 
 import NewLogger from '../helpers/log';
-const logCG = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
-const logConnecting = NewLogger('connection', () => core.state.generalSettings.argv.includes('--debug-connection'));
+const log_cg = NewLogger('custom-gender', () => core.state.generalSettings.argv.includes('--debug-custom-gender'));
+const log_connecting = NewLogger('connection', () => core.state.generalSettings.argv.includes('--debug-connection'));
 
 class Character implements Interfaces.Character {
     /**
@@ -298,15 +298,20 @@ class State implements Interfaces.State {
             if ((character.status === 'offline' || options?.isReconnect) && newStatus !== 'offline') {
                 this.friends.push(character);
 
-                if (emit)                   EventBus.$emit('friend-list', state.friends);
-                if (emit && options?.date)  EventBus.$emit('activity-friend-login', { character, date: options.date });
+                if (emit)
+                    EventBus.$emit('friend-list', state.friends);
+                if (emit && options?.date)
+                    EventBus.$emit('activity-friend-login', { character, date: options.date });
             }
             else if ((character.status !== 'offline' || options?.isReconnect) && newStatus === 'offline') {
                 const i = this.friends.indexOf(character);
-                if (i >= 0) this.friends.splice(i, 1);
+                if (i >= 0)
+                    this.friends.splice(i, 1);
 
-                if (emit)                   EventBus.$emit('friend-list', state.friends);
-                if (emit && options?.date)  EventBus.$emit('activity-friend-logout', { character, date: options.date });
+                if (emit)
+                    EventBus.$emit('friend-list', state.friends);
+                if (emit && options?.date)
+                    EventBus.$emit('activity-friend-logout', { character, date: options.date });
             }
             else if (options?.date) {
                 EventBus.$emit('activity-friend-status', {
@@ -323,15 +328,20 @@ class State implements Interfaces.State {
             if ((character.status === 'offline' || options?.isReconnect) && newStatus !== 'offline') {
                 this.bookmarks.push(character);
 
-                if (emit)                   EventBus.$emit('bookmark-list', state.bookmarks);
-                if (emit && options?.date)  EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
+                if (emit)
+                    EventBus.$emit('bookmark-list', state.bookmarks);
+                if (emit && options?.date)
+                    EventBus.$emit('activity-bookmark-login', { character, date: options?.date });
             }
             else if ((character.status !== 'offline' || options?.isReconnect) && newStatus === 'offline') {
                 const i = this.bookmarks.indexOf(character);
-                if (i >= 0) this.bookmarks.splice(i, 1);
+                if (i >= 0)
+                    this.bookmarks.splice(i, 1);
 
-                if (emit)                   EventBus.$emit('bookmark-list', state.bookmarks);
-                if (emit && options?.date)  EventBus.$emit('activity-bookmark-logout', { character, date: options?.date });
+                if (emit)
+                    EventBus.$emit('bookmark-list', state.bookmarks);
+                if (emit && options?.date)
+                    EventBus.$emit('activity-bookmark-logout', { character, date: options?.date });
             }
             else if (options?.date) {
                 EventBus.$emit('activity-bookmark-status', {
@@ -375,7 +385,7 @@ export default function(this: unknown, connection: Connection): Interfaces.State
     let reconnect_status: Connection.ClientCommands['STA'] | undefined = undefined;
 
     connection.onEvent('connecting', async (isReconnect) => {
-        logConnecting.debug('characters.connecting', { isReconnect });
+        log_connecting.debug('characters.connecting', { isReconnect });
 
         state.friends   = [];
         state.bookmarks = [];
@@ -408,11 +418,11 @@ export default function(this: unknown, connection: Connection): Interfaces.State
                 character.statusText = '';
             }
             else {
-                logConnecting.warn('characters.connecting.voiding.noCharacter', key);
+                log_connecting.warn('characters.connecting.voiding.noCharacter', key);
             }
         }
     });
-    connection.onEvent('connected', async (isReconnect) => {
+    connection.onEvent('connected', isReconnect => {
         if (!isReconnect)
             return;
 
@@ -446,10 +456,10 @@ export default function(this: unknown, connection: Connection): Interfaces.State
         state.opList = new Set(data.ops.map(c => c.toLowerCase()));
     });
     connection.onMessage('CON', (data) => {
-        logConnecting.silly(`characters.CON.${data.count}`);
+        log_connecting.silly(`characters.CON.${data.count}`);
     });
     connection.onMessage('LIS', (data) => {
-        logConnecting.silly('characters.LIS', data.characters.length);
+        log_connecting.silly('characters.LIS', data.characters.length);
 
         for (const char of data.characters) {
             const character = state.get(char[0], false);
@@ -461,13 +471,14 @@ export default function(this: unknown, connection: Connection): Interfaces.State
             data.characters.map(([ name ]) => name)
         ).then(everyonesOverrides => {
             const count = everyonesOverrides ? Object.keys(everyonesOverrides).length : 0;
-            logCG.debug(`On LIS, querying for ${data.characters.length} characters, for which only ${count} had entries in the db.`);
+            log_cg.debug(`On LIS, querying for ${data.characters.length} characters, for which only ${count} had entries in the db.`);
 
             if (everyonesOverrides) {
                 Object.entries(everyonesOverrides).forEach(([ char, indexedOverride ]) => {
                     const c = state.characters[char];
                     if (c && !Object.keys(c.overrides).length) {
                         for (const [ i, v ] of Object.entries(indexedOverride))
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             state.setOverride(char, i as keyof CharacterOverrides, v);
                     }
                 });
