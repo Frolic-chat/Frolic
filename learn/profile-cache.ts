@@ -78,6 +78,11 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         EventBus.$on('settings-from-main', s => this.setSettingsCount(s.profileCacheEntries));
         // Trigger on PM open/close, channel join/leave; remove from recalc when you do.
 
+        core.connection.onMessage('FLN', data => {
+            if (this.evict(data.character))
+                logCache.silly(() => `evicting for offline: ${data.character}`);
+        });
+
         logCache.debug('ProfileCache.constructor', this.MAX_CACHE_SIZE);
     }
     protected store?: PermanentIndexedStore;
@@ -554,11 +559,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     async evictOutdated(options?: { chatChar?: (name: string) => Character, privates?: Conversation.PrivateConversation[] | ReadonlyArray<Conversation.PrivateConversation> }): Promise<boolean> {
         await Promise.resolve(); // no-op await if necessary
 
-        /**
-         * Disable for now.
-         */
         const exceeded = !!this.MAX_CACHE_SIZE && this.cache.size > this.MAX_CACHE_SIZE;
-        // const exceeded = false;
 
         if (exceeded) {
             const i = this.cache.keys();
