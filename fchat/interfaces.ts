@@ -154,9 +154,8 @@ export namespace Connection {
 
         queryApi(endpoint: 'character-memo-get2.php', data: { target: string, account?: string, ticket?: string }): Promise<{ id: number, note: string | null }>;/* if no note, null */
         queryApi(endpoint: 'character-memo-save.php', data: { target: number, note: string | null, account?: string, ticket?: string }): Promise<{ note: string }>;/* if no note, empty string */
-        queryApi(endpoint: 'character-data.php', data: { id: number, account?: string, ticket?: string }): Promise<{ kinks: { [key: string]: string }}>;
         queryApi(endpoint: 'report-submit.php', data: { character: string; reportText: string; log: string; channel: string; text: boolean; reportUser: string | undefined, account?: string, ticket?: string }): Promise<{ log_id?: number }>;
-        queryApi<T>(endpoint: 'character-data.php', data: { name: string, account?: string, ticket?: string }): Promise<T>;
+        queryApi<T>(endpoint: 'character-data.php', data: ({ id: number } | { name: string }) & { account?: string, ticket?: string }): Promise<T>;
         queryApi(endpoint: 'bookmark-list.php', data?: { account?: string, ticket?: string }): Promise<{ characters: string[] }>;
         queryApi(endpoint: 'friend-list.php', data?: { account?: string, ticket?: string }): Promise<{ friends: { source: string, dest: string, last_online: number }[] }>;
         queryApi<T = object>(endpoint: string, data?: object): Promise<T>
