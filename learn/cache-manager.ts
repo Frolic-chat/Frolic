@@ -92,9 +92,8 @@ export class CacheManager {
      */
     async queueForFetching(name: string, skipCacheCheck: boolean = false, channelId?: string): Promise<void> {
         // This settings check is inappropriately placed. A method is a course of action; the settings should be checked before deciding which course of action you take.
-        if (!core.state.settings.risingAdScore) {
+        if (!core.state.settings.risingAdScore)
             return;
-        }
 
         log.debug('CacheManager.queue', { name, skipCacheCheck, channelId, from: core.characters.ownCharacter.name, current_queue: this.queue });
 
@@ -169,7 +168,8 @@ export class CacheManager {
             this.updateAdScoringForProfile(c, r.match.matchScore, r.match.isFiltered);
 
             return c;
-        } catch (err) {
+        }
+        catch (err) {
             console.error('Failed to fetch profile for cache', name, err);
 
             return null;
@@ -270,27 +270,27 @@ export class CacheManager {
         return this.characterProfiler ? this.characterProfiler.calculateInterestScore(e.name) : 0;
     }
 
-    private on_character_data = (data: CharacterDataEvent) => {
+    private _onCharacterData = (data: CharacterDataEvent) => {
         void this.onCharacterData(data);
     };
 
-    private on_channel_message = (data: ChannelMessageEvent) => {
+    private _onChannelMessage = (data: ChannelMessageEvent) => {
         this.onChannelMessage(data);
     };
 
-    private on_channel_ad = (data: ChannelAdEvent) => {
+    private _onChannelAd = (data: ChannelAdEvent) => {
         void this.onChannelAd(data);
     };
 
-    private on_select_conversation = (data: SelectConversationEvent) => {
+    private _onSelectConversation = (data: SelectConversationEvent) => {
         void this.onSelectConversation(data);
     };
 
-    private on_conversation_load_more = (data: SelectConversationEvent) => {
+    private _onConversationLoadMore = (data: SelectConversationEvent) => {
         void this.onLoadMoreConversation(data);
     };
 
-    private on_smartfilters_update = () => {
+    private _onSmartfiltersUpdate = () => {
         this.rebuildFilters();
     };
 
@@ -319,12 +319,12 @@ export class CacheManager {
 
         log.silly('CacheManager.start.EventBus.on');
 
-        EventBus.$on('character-data',          this.on_character_data);
-        EventBus.$on('channel-message',         this.on_channel_message);
-        EventBus.$on('channel-ad',              this.on_channel_ad);
-        EventBus.$on('select-conversation',     this.on_select_conversation);
-        EventBus.$on('conversation-load-more',  this.on_conversation_load_more);
-        EventBus.$on('smartfilters-update',     this.on_smartfilters_update);
+        EventBus.$on('character-data',          this._onCharacterData);
+        EventBus.$on('channel-message',         this._onChannelMessage);
+        EventBus.$on('channel-ad',              this._onChannelAd);
+        EventBus.$on('select-conversation',     this._onSelectConversation);
+        EventBus.$on('conversation-load-more',  this._onConversationLoadMore);
+        EventBus.$on('smartfilters-update',     this._onSmartfiltersUpdate);
         // EventBus.$on('private-message', (data: PrivateMessageEvent) => {}); // Never used.
 
 
@@ -349,10 +349,10 @@ export class CacheManager {
                             if (this.ongoingLog[next.name] || next_log())
                                 skipFetch = true;
 
-                            if (false && next) {
-                                console.log(`Fetch '${next.name}' for channel '${next.channelId}', gap: ${(Date.now() - this.lastFetch)}ms`);
+                            log.debug(() => `Fetch '${next.name}' for channel '${next.channelId}', gap: ${(Date.now() - this.lastFetch)}ms`);
+
+                            if (log.eval())
                                 this.lastFetch = Date.now();
-                            }
 
                             if (!skipFetch) {
                                 this.ongoingLog[next.name] = true;
@@ -486,9 +486,8 @@ export class CacheManager {
 
             c.match.isFiltered = matchesSmartFilters(c.character.character, core.state.settings.risingFilter);
 
-            if (oldFiltered !== c.match.isFiltered) {
+            if (oldFiltered !== c.match.isFiltered)
                 this.scoreAllConversations(c.character.character.name, c.match.matchScore, c.match.isFiltered);
-            }
         });
     }
 
@@ -561,12 +560,12 @@ export class CacheManager {
         if (this.profileStore)
             await this.profileStore.stop();
 
-        EventBus.$off('character-data',         this.on_character_data);
-        EventBus.$off('channel-message',        this.on_channel_message);
-        EventBus.$off('channel-ad',             this.on_channel_ad);
-        EventBus.$off('select-conversation',    this.on_select_conversation);
-        EventBus.$off('conversation-load-more', this.on_conversation_load_more);
-        EventBus.$off('smartfilters-update',    this.on_smartfilters_update);
+        EventBus.$off('character-data',         this._onCharacterData);
+        EventBus.$off('channel-message',        this._onChannelMessage);
+        EventBus.$off('channel-ad',             this._onChannelAd);
+        EventBus.$off('select-conversation',    this._onSelectConversation);
+        EventBus.$off('conversation-load-more', this._onConversationLoadMore);
+        EventBus.$off('smartfilters-update',    this._onSmartfiltersUpdate);
     }
 
 

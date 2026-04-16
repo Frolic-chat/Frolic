@@ -219,7 +219,7 @@ export function init(this: unknown,
                         references_changed = true;
                     }
                     else {
-                        logS.debug(`core.data.watch.state._settings.${k}.changed`, { new: v, old: VueUpdate.cache[k] });
+                        logS.debug(`core.data.watch.state._settings.${k}.changed`, () => ({ new: v, old: VueUpdate.cache[k] }));
 
                         VueUpdate.cache[k] = v;
                         references_changed = true;

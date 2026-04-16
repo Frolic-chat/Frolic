@@ -340,7 +340,7 @@ export default class Chat extends Vue {
         // Updating on config change is done inside SettingsView.
 
         if (this.selectedCharacter)
-            core.connection.connect(this.selectedCharacter.name);
+            void core.connection.connect(this.selectedCharacter.name);
     }
 
     getChatView(): ChatView | undefined {
