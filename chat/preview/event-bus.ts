@@ -8,6 +8,7 @@ import type { Character as CharacterState } from '../../fchat/interfaces';
 import type { CharacterCacheRecord } from '../../learn/profile-cache';
 import type { NoteCheckerCount } from '../../site/note-checker';
 import type { GeneralSettings } from '../../electron/common';
+import type { Scoring } from '../../learn/matcher-types';
 
 // export interface EmptyEvent {}
 
@@ -49,7 +50,7 @@ export interface PrivateMessageEvent {
 }
 
 export interface CharacterScoreEvent extends CharacterDataEvent {
-    score:      number;
+    score:      Scoring;
     isFiltered: boolean;
 }
 
@@ -100,6 +101,10 @@ export interface NotificationChangeEvent {
     new: boolean,
 }
 
+export interface SettingsEvent extends EventBusEvent {
+    settings: Settings,
+}
+
 export interface DownloadProgressEvent {
     download?:  boolean;
     upload?:    boolean;
@@ -118,7 +123,7 @@ class EventBusManager {
      * 'core-connected' and 'configuration-update' go hand-in-hand, you probably want to use one if you use the other.
      */
     $on(event: 'core-connected'
-             | 'configuration-update',   callback: (e: Settings) => void | Promise<void>): void;
+             | 'configuration-update',   callback: (e: SettingsEvent) => void | Promise<void>): void;
     $on(event: 'smartfilters-update',    callback: (e: SmartFilterSettings) => void | Promise<void>): void;
     $on(event: 'notification-setting',   callback: (e: NotificationChangeEvent) => void | Promise<void>): void;
     $on(event: 'settings-from-main',     callback: (e: GeneralSettings) => void | Promise<void>): void;
@@ -240,7 +245,7 @@ class EventBusManager {
 
 
     $emit(event: 'core-connected'
-               | 'configuration-update',   data: Settings): void;
+               | 'configuration-update',   data: SettingsEvent): void;
     $emit(event: 'smartfilters-update',    data: SmartFilterSettings): void;
     $emit(event: 'notification-setting',   data: NotificationChangeEvent): void;
     $emit(event: 'settings-from-main',     data: GeneralSettings): void;

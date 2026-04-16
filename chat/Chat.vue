@@ -336,7 +336,7 @@ export default class Chat extends Vue {
             'silence',
         ]);
 
-        EventBus.$on('core-connected', s => core.notifications.applyGlobalAudioVolume(s.notifyVolume));
+        EventBus.$on('core-connected', s => core.notifications.applyGlobalAudioVolume(s.settings.notifyVolume));
         // Updating on config change is done inside SettingsView.
 
         if (this.selectedCharacter)

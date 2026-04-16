@@ -254,7 +254,7 @@ export function init(this: unknown,
                     await data.settingsStore?.set('settings', newValue);
                 }
 
-                EventBus.$emit('configuration-update', newValue);
+                EventBus.$emit('configuration-update', { settings: newValue });
             }
             else {
                 logS.debug('core.data.watch.state._settings.unchanged');
@@ -311,7 +311,7 @@ export function init(this: unknown,
         await data.reloadSettings();
         data.bbCodeParser = createBBCodeParser();
 
-        EventBus.$emit('core-connected', data.state.settings);
+        EventBus.$emit('core-connected', { settings: data.state.settings });
     });
 }
 
