@@ -166,8 +166,8 @@ export default class ImagePreview extends Vue {
 
         const webview = this.getWebview();
 
-        EventBus.$on('core-connected',       s => webview.send('volume-from-main', s.linkPreviewVolume));
-        EventBus.$on('configuration-update', s => webview.send('volume-from-main', s.linkPreviewVolume));
+        EventBus.$on('core-connected',       s => webview.send('volume-from-main', s.settings.linkPreviewVolume));
+        EventBus.$on('configuration-update', s => webview.send('volume-from-main', s.settings.linkPreviewVolume));
 
         // clear preview cache, particularly cookies
         // setInterval(
@@ -243,8 +243,10 @@ export default class ImagePreview extends Vue {
         webview.addEventListener('ipc-message', e => {
             this.debugLog('ImagePreview ipc-message', e);
 
-            if (e.channel === 'webview.img') {
-                this.updatePreviewSize(parseInt(e.args[0], 10), parseInt(e.args[1], 10));
+            if (e.channel === 'webview.img' && (typeof e.args[0] === 'string' || typeof e.args[0] === 'number')) {
+                const w = e.args[0];
+                const h = typeof e.args[1] === 'string' || typeof e.args[1] === 'number' ? e.args[1] : e.args[0];
+                this.updatePreviewSize(Number(w), Number(h));
             }
             else if (e.channel === 'webview.dom-loaded') {
                 void webview.send('volume-from-main', core.state.settings.linkPreviewVolume);

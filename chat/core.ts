@@ -262,8 +262,7 @@ export function init(this: unknown,
         }
     }, { deep: true });
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    data.watch(() => state.generalSettings, async () => {
+    data.watch(() => state.generalSettings, () => {
         logS.debug(MainUpdateCache.skipWatch ? 'Skipping this watch.' : 'Sending own update to main.', MainUpdateCache.timestamp);
 
         if (MainUpdateCache.skipWatch) {
@@ -336,8 +335,9 @@ export interface Core {
     updateMain(channel: 'settings'): void;
 }
 
-// Commentary preserved for posterity.
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
 const core = <Core><any>data; /*tslint:disable-line:no-any*///hack
+// Commentary preserved for posterity.
 
 export default core;
 log.verbose('init.core');

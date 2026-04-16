@@ -114,7 +114,8 @@ export interface DownloadProgressEvent {
     total?:     number;
 }
 
-export type EventCallback = (data: unknown) => void | Promise<void>;
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export type EventCallback = (data: any) => void | Promise<void>;
 
 class EventBusManager {
     private callbacks: Record<string, EventCallback[]> = {};
@@ -281,9 +282,9 @@ class EventBusManager {
     $emit(event: 'imagepreview-show' | 'imagepreview-dismiss', data: ImagePreviewEvent): void;
     $emit(event: 'imagepreview-toggle-sticky', data: ImageToggleEvent): void;
     $emit(event: 'eicon-progress',         data: DownloadProgressEvent): void;
-    $emit(event: string, data?: EventBusEvent): void {
+    $emit(event: string, data?: unknown): void {
         if (event in this.callbacks)
-            this.callbacks[event].forEach(cb => cb(data));
+            this.callbacks[event].forEach(cb => void cb(data));
     }
 
 
@@ -294,6 +295,45 @@ class EventBusManager {
         this.callbacks = {};
     }
 }
+
+// type EventMap = [
+//     'core-connected',
+//     'configuration-update',
+//     'smartfilters-update',
+//     'notification-setting',
+//     'settings-from-main',
+
+//     'error',
+
+//     'site-session',
+//     'notes-api',
+
+//     'word-definition',
+
+//     'note-counts-update',
+//     'activity-friend-login',
+//     'activity-friend-logout',
+//     'activity-bookmark-login',
+//     'activity-bookmark-logout',
+//     'activity-friend-status',
+//     'activity-bookmark-status',
+//     'bookmark-list',
+//     'friend-list',
+
+//     'own-profile-update',
+//     'character-data',
+//     'character-score',
+//     'character-memo',
+
+//     'channel-message',
+//     'channel-ad',
+//     'private-message',
+//     'conversation-load-more',
+
+//     'imagepreview-show' | 'imagepreview-dismiss',
+//     'imagepreview-toggle-sticky',
+//     'eicon-progress',
+// ];
 
 // This should be turned into a module; with the initialization in well-defined place.
 const EventBus = new EventBusManager();
