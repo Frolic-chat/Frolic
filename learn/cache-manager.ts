@@ -3,18 +3,19 @@ import EventBus from '../chat/preview/event-bus';
 import type { ChannelAdEvent, ChannelMessageEvent, CharacterDataEvent, SelectConversationEvent } from '../chat/preview/event-bus';
 import { Conversation } from '../chat/interfaces';
 import { methods } from '../site/character_page/data_store';
-import { Character as ComplexCharacter } from '../site/character_page/interfaces';
+import type { Character as ComplexCharacter } from '../site/character_page/interfaces';
 import { AdCache } from './ad-cache';
 import { ChannelConversationCache } from './channel-conversation-cache';
 import { CharacterProfiler } from './character-profiler';
-import { CharacterCacheRecord, ProfileCache } from './profile-cache';
+import type { CharacterCacheRecord} from './profile-cache';
+import { ProfileCache } from './profile-cache';
 import ChannelConversation = Conversation.ChannelConversation;
 import Message = Conversation.Message;
-import { Character as ChatCharacter } from '../fchat/interfaces';
+import type { Character as ChatCharacter } from '../fchat/interfaces';
 import ChatMessage = Conversation.ChatMessage;
-import { Gender } from './matcher-types';
+import type { Gender } from './matcher-types';
 import { WorkerStore } from './store/worker';
-import { PermanentIndexedStore } from './store/types';
+import type { PermanentIndexedStore } from './store/types';
 import { lastElement } from '../helpers/utils';
 import { matchesSmartFilters } from './filter/smart-filter';
 
@@ -29,18 +30,17 @@ import { shouldFilterPrivate } from '../chat/conversations';
 const QUEUE_MAX_SORTS = 2;
 
 export interface ProfileCacheQueueEntry {
-    name: string;
-    key: string;
-    added: Date;
-    gender?: Gender;
-    score: number;
+    name:       string;
+    key:        string;
+    added:      Date;
+    gender?:    Gender;
+    score:      number;
     channelId?: string;
     retryCount: number;
 }
 
 
 export class CacheManager {
-    // @ts-ignore
     private _isVue = true;
 
     private readonly startTime = new Date();
@@ -53,7 +53,7 @@ export class CacheManager {
 
     protected queue: ProfileCacheQueueEntry[] = [];
 
-    protected profileTimer: NodeJS.Timeout | null = null;
+    protected profileTimer:      NodeJS.Timeout | null = null;
     protected characterProfiler: CharacterProfiler | undefined;
 
     protected profileStore?: PermanentIndexedStore;
@@ -68,13 +68,12 @@ export class CacheManager {
     protected isActiveTab = true;
 
     setTabActive(isActive: boolean): void {
-      this.isActiveTab = isActive;
+        this.isActiveTab = isActive;
 
-      if (this.isActiveTab) {
-        void this.onSelectConversation({ conversation: core.conversations.selectedConversation });
-      } else {
-        void this.onSelectConversation({ conversation: null });
-      }
+        if (this.isActiveTab)
+            void this.onSelectConversation({ conversation: core.conversations.selectedConversation });
+        else
+            void this.onSelectConversation({ conversation: null });
     }
 
     markLastPostTime(): void {
@@ -122,9 +121,9 @@ export class CacheManager {
             name,
             key,
             channelId,
-            added: new Date(),
-            score: this.characterProfiler?.calculateInterestScore(name) ?? 0,
-            retryCount: 0
+            added:      new Date(),
+            score:      this.characterProfiler?.calculateInterestScore(name) ?? 0,
+            retryCount: 0,
         };
 
         if (!this.queue.length) {
@@ -191,24 +190,23 @@ export class CacheManager {
 
     // Manage rejections in case we didn't have a score at the time we received the message
     async respondToPendingRejections(c: ComplexCharacter): Promise<void> {
-      const char = core.characters.get(c.character.name);
+        const char = core.characters.get(c.character.name);
 
-      if (char && char.status !== 'offline') {
-        const conv = core.conversations.getPrivate(char, true);
-        const time = conv && conv.messages.length > 0 && lastElement(conv.messages)?.time.getTime();
+        if (char && char.status !== 'offline') {
+            const conv = core.conversations.getPrivate(char, true);
+            const time = conv && conv.messages.length > 0 && lastElement(conv.messages)?.time.getTime();
 
-        if (time && Date.now() - time < 5 * 60 * 1000) {
-          const sessionMessages = conv.messages.filter(m => m.time.getTime() >= this.startTime.getTime());
+            if (time && Date.now() - time < 5 * 60 * 1000) {
+                const sessionMessages = conv.messages.filter(m => m.time.getTime() >= this.startTime.getTime());
 
-          const allMessagesFromThem = sessionMessages
+                const allMessagesFromThem = sessionMessages
                 // Update to `Object.hasOwn(m, 'sender')` once typescript stops being shit.
-                .every(m => ('sender' in m) && m.sender.name === conv.character.name);
+                    .every(m => ('sender' in m) && m.sender.name === conv.character.name);
 
-          if (sessionMessages.length > 0 && allMessagesFromThem) {
-            await shouldFilterPrivate(char);
-          }
+                if (sessionMessages.length > 0 && allMessagesFromThem)
+                    await shouldFilterPrivate(char);
+            }
         }
-      }
     }
 
     /**
@@ -272,29 +270,29 @@ export class CacheManager {
         return this.characterProfiler ? this.characterProfiler.calculateInterestScore(e.name) : 0;
     }
 
-    private on_character_data = async(data: CharacterDataEvent) => {
+    private on_character_data = (data: CharacterDataEvent) => {
         void this.onCharacterData(data);
-    }
-
-    private on_channel_message = async(data: ChannelMessageEvent) => {
-        void this.onChannelMessage(data);
     };
 
-    private on_channel_ad = async(data: ChannelAdEvent) => {
+    private on_channel_message = (data: ChannelMessageEvent) => {
+        this.onChannelMessage(data);
+    };
+
+    private on_channel_ad = (data: ChannelAdEvent) => {
         void this.onChannelAd(data);
     };
 
-    private on_select_conversation = async(data: SelectConversationEvent) => {
-        this.onSelectConversation(data);
+    private on_select_conversation = (data: SelectConversationEvent) => {
+        void this.onSelectConversation(data);
     };
 
-    private on_conversation_load_more = async(data: SelectConversationEvent) => {
-        this.onLoadMoreConversation(data);
+    private on_conversation_load_more = (data: SelectConversationEvent) => {
+        void this.onLoadMoreConversation(data);
     };
 
-    private on_smartfilters_update = async () => {
+    private on_smartfilters_update = () => {
         this.rebuildFilters();
-    }
+    };
 
     async start(flushCache = false, expirationInDays = 30): Promise<boolean> {
         await this.stop();
@@ -332,6 +330,7 @@ export class CacheManager {
 
         const scheduleNextFetch = () => {
             this.profileTimer = setTimeout(
+                /* eslint-disable-next-line @typescript-eslint/no-misused-promises */
                 async() => {
                     // const d = Date.now();
                     const next = this.consumeNextInQueue();
@@ -347,36 +346,35 @@ export class CacheManager {
                                 return log !== undefined && Date.now() - log < 12000;
                             };
 
-                            if (this.ongoingLog[next.name] || next_log()) {
-                              skipFetch = true;
-                            }
+                            if (this.ongoingLog[next.name] || next_log())
+                                skipFetch = true;
 
-                            if ((false) && (next)) {
-                              console.log(`Fetch '${next.name}' for channel '${next.channelId}', gap: ${(Date.now() - this.lastFetch)}ms`);
-                              this.lastFetch = Date.now();
+                            if (false && next) {
+                                console.log(`Fetch '${next.name}' for channel '${next.channelId}', gap: ${(Date.now() - this.lastFetch)}ms`);
+                                this.lastFetch = Date.now();
                             }
 
                             if (!skipFetch) {
-                              this.ongoingLog[next.name] = true;
+                                this.ongoingLog[next.name] = true;
 
-                              await this.fetchProfile(next.name);
+                                await this.fetchProfile(next.name);
 
-                              this.fetchLog[next.name] = Date.now();
+                                this.fetchLog[next.name] = Date.now();
                             }
 
                             // just in case - remove duplicates
                             this.queue = this.queue.filter(q => q.name !== next.name);
                             delete this.ongoingLog[next.name];
-                        } catch (err) {
+                        }
+                        catch (err) {
                             console.error('Profile queue error', err);
 
                             delete this.ongoingLog[next.name];
 
                             next.retryCount += 1;
 
-                            if (next.retryCount < 10) {
-                              this.queue.push(next); // return to queue
-                            }
+                            if (next.retryCount < 10)
+                                this.queue.push(next); // return to queue
                         }
 
                         // console.log('Completed', next.name, (Date.now() - d) / 1000.0);
@@ -395,20 +393,20 @@ export class CacheManager {
 
 
     async onCharacterData(data: CharacterDataEvent): Promise<void> {
-      await this.addProfile(data.profile);
+        await this.addProfile(data.profile);
     }
 
 
-    async onChannelMessage(data: ChannelMessageEvent): Promise<void> {
+    onChannelMessage(data: ChannelMessageEvent): void {
         const message = data.message;
         const channel = data.channel;
 
         this.channelConversationCache.register(
             {
-                name: message.sender.name,
-                channelName : channel.name,
-                datePosted: message.time,
-                message: message.text
+                name:        message.sender.name,
+                channelName: channel.name,
+                datePosted:  message.time,
+                message:     message.text,
             }
         );
 
@@ -421,24 +419,21 @@ export class CacheManager {
         const channel = data.channel;
 
         this.adCache.register({
-            name: message.sender.name,
-            channelName : channel.name,
-            datePosted: message.time,
-            message: message.text
+            name:        message.sender.name,
+            channelName: channel.name,
+            datePosted:  message.time,
+            message:     message.text,
         });
 
-        if (!data.profile
-        &&  core.conversations.selectedConversation === data.channel
-        &&  this.isActiveTab) {
+        if (!data.profile &&  core.conversations.selectedConversation === data.channel &&  this.isActiveTab)
             await this.queueForFetching(message.sender.name, true, data.channel.channel.id);
-        }
 
         // this.addProfile(message.sender.name);
     }
 
 
     async onLoadMoreConversation(data: SelectConversationEvent): Promise<void> {
-      await this.onSelectConversation(data);
+        await this.onSelectConversation(data);
     }
 
 
@@ -511,22 +506,23 @@ export class CacheManager {
                         conv: ChannelConversation,
                         msg?: Message,
                         populateAll: boolean = true
-                       ): Promise<CharacterCacheRecord | undefined> {
-      if (!core.characters.ownProfile)
-          return undefined;
+    ): Promise<CharacterCacheRecord | undefined> {
+        if (!core.characters.ownProfile)
+            return undefined;
 
-      // this is done here so that the message will be rendered correctly when cache is hit
-      let p = await core.cache.profileCache.get(char.name, skipStore, conv.channel.name) ?? undefined;
+        // this is done here so that the message will be rendered correctly when cache is hit
+        const p = await core.cache.profileCache.get(char.name, skipStore, conv.channel.name) ?? undefined;
 
-      if (p && msg) {
-          msg.score = p.match.matchScore;
-          msg.filterMatch = p.match.isFiltered;
+        if (p && msg) {
+            msg.score = p.match.matchScore;
+            msg.filterMatch = p.match.isFiltered;
 
-          if (populateAll) this.scoreAllConversations(char.name, p.match.matchScore, p.match.isFiltered);
-      }
+            if (populateAll)
+                this.scoreAllConversations(char.name, p.match.matchScore, p.match.isFiltered);
+        }
 
-      // Undefined return is legacy code and should be updated to just use null.
-      return p;
+        // Undefined return is legacy code and should be updated to just use null.
+        return p;
     }
 
     // private normalAction(msg: Message): msg is ChatMessage {
@@ -562,9 +558,8 @@ export class CacheManager {
             this.profileTimer = null;
         }
 
-        if (this.profileStore) {
+        if (this.profileStore)
             await this.profileStore.stop();
-        }
 
         EventBus.$off('character-data',         this.on_character_data);
         EventBus.$off('channel-message',        this.on_channel_message);

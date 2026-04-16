@@ -11,8 +11,8 @@ const log = NewLogger('connection', () => core.state.generalSettings.argv.includ
 import core from '../chat/core';
 import throat from 'throat';
 
-const fatalErrors = [2, 3, 4, 9, 30, 31, 33, 39, 40, 62, -4];
-const dieErrors = [9, 30, 31, 39, 40];
+const fatalErrors = [ 2, 3, 4, 9, 30, 31, 33, 39, 40, 62, -4 ];
+const dieErrors = [ 9, 30, 31, 39, 40 ];
 
 let lastFetch = Date.now();
 let lastApiTicketFetch = Date.now();
@@ -318,7 +318,8 @@ export default class Connection implements Interfaces.Connection {
     }
 
     // We cannot drop `any` from data yet without more tight typings on the incoming data, and verification that we're receiving normal formats.
-    protected async handleMessage<T extends keyof Interfaces.ServerCommands>(type: T, data: unknown): Promise<void> {
+    // Dropping 'unknown' from data without runtime checking is unsafe. But we rely on F-List not $*&@ing us over anyways.
+    protected async handleMessage<T extends keyof Interfaces.ServerCommands>(type: T, data: Interfaces.ServerCommands[T]): Promise<void> {
         const time = new Date();
         const handlers = <Interfaces.CommandHandler<T>[] | undefined> this.messageHandlers[type];
 
@@ -326,6 +327,38 @@ export default class Connection implements Interfaces.Connection {
             for (const handler of handlers)
                 await handler(data, time);
         }
+
+        // Benefit unclear
+        // if (type === 'VAR') {
+        //     const d = data as Interfaces.ServerCommands['VAR'];
+        //     this.vars[<keyof Interfaces.Vars>d.variable] = d.value;
+        // }
+        // else if (type === 'PIN') {
+        //     this.send('PIN');
+        //     this.resetPinTimeout();
+        // }
+        // else if (type === 'ERR') {
+        //     const d = data as Interfaces.ServerCommands['ERR'];
+        //     if (fatalErrors.indexOf(d.number) !== -1) {
+        //         this.invokeErrorHandlers(new Error(d.message), true);
+
+        //         if (dieErrors.indexOf(d.number) !== -1) {
+        //             this.close();
+        //             this.character = '';
+        //         }
+        //         else {
+        //             this.socket!.close();
+        //         }
+        //     }
+        // }
+        // else if (type === 'NLN') {
+        //     const d = data as Interfaces.ServerCommands['NLN'];
+        //     if (d.identity === this.character) {
+        //         await this.invokeHandlers('connected', this.isReconnect);
+        //         this.reconnectDelay = 0;
+        //         this.isReconnect = true;
+        //     }
+        // }
 
         switch (type) {
         case 'VAR':

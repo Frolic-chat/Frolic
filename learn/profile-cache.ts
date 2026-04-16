@@ -281,12 +281,10 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
     static isSafePortraitURL(url: string): boolean {
-        if (url.match(/^https:\/\/(?:static\.f-list\.net|(?:[a-zA-Z0-9\-.]+\.)?(?:imgur\.com|freeimage\.host|iili\.io|redgifs\.com|e621\.net))\//)) {
+        if (url.match(/^https:\/\/(?:static\.f-list\.net|(?:[a-zA-Z0-9\-.]+\.)?(?:imgur\.com|freeimage\.host|iili\.io|redgifs\.com|e621\.net))\//))
             return true;
-        }
-        else {
+        else
             return false;
-        }
     }
 
     /**
@@ -402,7 +400,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         logC.debug(`Applying overrides to character ${name}.`, o);
 
-        Object.entries(o).forEach(([k, v]) =>
+        Object.entries(o).forEach(([ k, v ]) =>
             core.characters.setOverride(name, k as keyof CharacterOverrides, v)
         );
     }
@@ -448,7 +446,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
          * Color regexes are available in CoreBBCodeParser in bbcode/core.ts.
          * In fact, there's probably a way to reuse those.
          */
-        const valid_colors = ['red', 'blue', 'white', 'yellow', 'pink', 'gray', 'green', 'orange', 'purple', 'black', 'brown', 'cyan'];
+        const valid_colors = [ 'red', 'blue', 'white', 'yellow', 'pink', 'gray', 'green', 'orange', 'purple', 'black', 'brown', 'cyan' ];
         const invalid: string[] = [];
 
         logPhelper.debug('dev.phelper.color.matches', matches);
@@ -533,10 +531,10 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         this.update(k, new_record);
         void this.evictOutdated({
             chatChar: (name: string) => core.characters.get(name),
-            privates: core.conversations.privateConversations
+            privates: core.conversations.privateConversations,
         });
 
-        EventBus.$emit('character-score', { profile: c, score, is_filtered });
+        EventBus.$emit('character-score', { profile: c, score, isFiltered });
 
         return new_record;
     }

@@ -139,11 +139,13 @@ export default [
                 { selector: 'typeAlias', format: [ 'PascalCase' ] },
                 { selector: 'typeMethod', format: [ 'camelCase' ] },
                 { selector: 'typeParameter', format: [ 'PascalCase' ] },
-                { selector: 'variable', format: [ 'snake_case' ] },
+                // Should be snake_case for locals, but can't declare locals only.
+                { selector: 'variable', format: [ 'camelCase', 'snake_case' ] },
                 { selector: 'variable', format: [ 'camelCase' ], modifiers: [ 'exported' ] },
                 {   // hard CONST
                     selector: 'variable',
-                    format: [ 'UPPER_CASE', 'snake_case' ],
+                    // Should be UPPER_CASE but some local and object entries use camel/snake
+                    format: [ 'UPPER_CASE', 'camelCase', 'snake_case' ],
                     modifiers: [ 'const' ],
                     types: [ 'boolean', 'number', 'string', ],
                 },
