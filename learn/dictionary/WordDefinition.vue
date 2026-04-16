@@ -18,7 +18,6 @@
 <script lang="ts">
 import Vue from 'vue';
 import { Component, Hook, Prop } from '@frolic/vue-ts';
-import type { EventBusEvent } from '../../chat/preview/event-bus';
 import type * as Electron from 'electron';
 
 import NewLogger from '../../helpers/log';
@@ -39,21 +38,21 @@ export default class WordDefinition extends Vue {
     @Prop
     readonly expression?: string;
 
-  @Hook('mounted')
-  async mounted(): Promise<void> {
-    const webview = this.getWebview();
+    @Hook('mounted')
+    mounted(): void {
+        const webview = this.getWebview();
 
-    const eventProcessor = async (event: EventBusEvent): Promise<void> => {
-        const js = this.wrapJs(this.getMutator(this.mode));
+        const eventProcessor = (event: unknown): void => {
+            const js = this.wrapJs(this.getMutator(this.mode));
 
-        return this.executeJavaScript(js, event);
-    };
+            void this.executeJavaScript(js, event);
+        };
 
-    webview.addEventListener('update-target-url', eventProcessor);
-    webview.addEventListener('dom-ready', eventProcessor);
+        webview.addEventListener('update-target-url', eventProcessor);
+        webview.addEventListener('dom-ready', eventProcessor);
 
     // await remote.webContents.fromId(webview.getWebContentsId()).session.clearStorageData({storages: ['cookies', 'indexdb']});
-  }
+    }
 
 
     setMode(mode: 'dictionary' | 'thesaurus' | 'urbandictionary' | 'wikipedia'): void {
@@ -95,24 +94,25 @@ export default class WordDefinition extends Vue {
     }
 
 
-  protected async executeJavaScript(js: string | undefined, logDetails?: any): Promise<any> {
-      const webview = this.getWebview();
+    protected async executeJavaScript(js: string | undefined, logDetails?: unknown): Promise<unknown> {
+        const webview = this.getWebview();
 
-      if (!js) {
-          log.debug('word-definition.execute-js.missing', { logDetails });
-          return;
-      }
+        if (!js) {
+            log.debug('word-definition.execute-js.missing', { logDetails });
+            return;
+        }
 
-      try {
-          const result = await (webview.executeJavaScript(js) as unknown as Promise<any>);
+        try {
+            const result = await webview.executeJavaScript(js);
 
-          log.debug('word-definition.execute-js.result', result);
+            log.debug('word-definition.execute-js.result', result);
 
-          return result;
-      } catch (err) {
-          log.debug('word-definition.execute-js.error', err);
-      }
-  }
+            return result;
+        }
+        catch (err) {
+            log.debug('word-definition.execute-js.error', err);
+        }
+    }
 
 
     protected wrapJs(mutatorJs: string): string {
