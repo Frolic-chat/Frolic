@@ -215,22 +215,6 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
     }
 
 
-    // async registerCount(name: string, counts: CountRecord): Promise<void> {
-    //     const record = await this.get(name);
-    //
-    //     if (!record) {
-    //         // coward's way out
-    //         return;
-    //     }
-    //
-    //     record.counts = counts;
-    //
-    //     if (this.store) {
-    //         await this.store.updateProfileCounts(name, counts.guestbookCount, counts.friendCount, counts.groupCount);
-    //     }
-    // }
-
-
     async registerMeta(name: string, meta: MetaRecord): Promise<void> {
         const record = await this.get(name);
 
