@@ -63,7 +63,7 @@ export class CacheManager {
     protected lastFetch = Date.now();
 
     protected fetchLog:   Record<string, number> = {};
-    protected ongoingLog: Record<string, true>   = {};
+    protected ongoingLog: Map<string, true>   = new Map();
 
     protected isActiveTab = true;
 
@@ -346,7 +346,7 @@ export class CacheManager {
                                 return log !== undefined && Date.now() - log < 12000;
                             };
 
-                            if (this.ongoingLog[next.name] || next_log())
+                            if (this.ongoingLog.has(next.name) || next_log())
                                 skipFetch = true;
 
                             log.debug(() => `Fetch '${next.name}' for channel '${next.channelId}', gap: ${(Date.now() - this.lastFetch)}ms`);
@@ -355,7 +355,7 @@ export class CacheManager {
                                 this.lastFetch = Date.now();
 
                             if (!skipFetch) {
-                                this.ongoingLog[next.name] = true;
+                                this.ongoingLog.set(next.name, true);
 
                                 await this.fetchProfile(next.name);
 
@@ -364,12 +364,12 @@ export class CacheManager {
 
                             // just in case - remove duplicates
                             this.queue = this.queue.filter(q => q.name !== next.name);
-                            delete this.ongoingLog[next.name];
+                            this.ongoingLog.delete(next.name);
                         }
                         catch (err) {
                             console.error('Profile queue error', err);
 
-                            delete this.ongoingLog[next.name];
+                            this.ongoingLog.delete(next.name);
 
                             next.retryCount += 1;
 
