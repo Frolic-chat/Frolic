@@ -63,7 +63,6 @@ import type { Point } from 'electron';
 import * as remote from '@electron/remote';
 import type * as Electron from 'electron';
 
-import Timer = NodeJS.Timeout;
 import CharacterPreview from './CharacterPreview.vue';
 
 const screen = remote.screen;
@@ -106,9 +105,9 @@ export default class ImagePreview extends Vue {
     shouldShowSpinner = false;
     shouldShowError = true;
 
-    private interval: Timer | null = null;
+    private interval: number | null = null;
 
-    private exitInterval: Timer | null = null;
+    private exitInterval: number | null = null;
     private exitUrl:      string | null = null;
 
     private initialCursorPosition: Point | null = null;
@@ -270,7 +269,7 @@ export default class ImagePreview extends Vue {
         });
 
 
-        setInterval(
+        window.setInterval(
             () => {
                 if ((this.visible && !this.exitInterval && !this.shouldDismiss) || this.interval)
                     this.initialCursorPosition = screen.getCursorScreenPoint();
@@ -374,7 +373,7 @@ export default class ImagePreview extends Vue {
         // This timeout makes the preview window disappear with a slight delay, which helps UX
         // when dealing with situations such as quickly scrolling text that moves the cursor away
         // from the link
-        this.exitInterval = setTimeout(() => this.hide(), due);
+        this.exitInterval = window.setTimeout(() => this.hide(), due);
     }
 
     show(initialUrl: string): void {
@@ -414,7 +413,7 @@ export default class ImagePreview extends Vue {
 
         // This timer makes sure that just by accidentally brushing across a link won't show (blink) the preview
         // -- you actually have to pause on it
-        this.interval = setTimeout(
+        this.interval = window.setTimeout(
             () => {
                 this.debugLog('ImagePreview: show.timeout', this.url);
 
@@ -448,21 +447,21 @@ export default class ImagePreview extends Vue {
             return (p.x !== this.initialCursorPosition.x || p.y !== this.initialCursorPosition.y);
         }
         catch (err) {
-            console.error('ImagePreview', err);
+            window.console.error('ImagePreview', err);
             return true;
         }
     }
 
     cancelTimer(): void {
         if (this.interval)
-            clearTimeout(this.interval);
+            window.clearTimeout(this.interval);
 
         this.interval = null;
     }
 
     cancelExitTimer(): void {
         if (this.exitInterval)
-            clearTimeout(this.exitInterval);
+            window.clearTimeout(this.exitInterval);
 
         this.exitInterval = null;
     }
@@ -522,7 +521,10 @@ export default class ImagePreview extends Vue {
         }
     }
 
-    debugLog(...args: any[]): void { if (this.debug) console.log(...args) }
+    debugLog(...args: unknown[]): void {
+        if (this.debug)
+            window.console.log(...args);
+    }
 
 
     toggleStickyMode(): void {
