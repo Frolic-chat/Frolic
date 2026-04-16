@@ -139,7 +139,7 @@ export namespace Connection {
     export interface Connection {
         readonly character:      string
         readonly vars:           Readonly<Vars>
-        readonly _handleMessage: ((...args: unknown[]) => unknown) | undefined;
+        readonly _handleMessage: (<T extends keyof ServerCommands>(type: T, data: ServerCommands[T]) => Promise<void>) | undefined;
         readonly isOpen:         boolean
         setCredentials(account: string, ticketProvider: TicketProvider | string): void
         connect(character: string): void | Promise<void>

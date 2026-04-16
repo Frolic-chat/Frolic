@@ -30,7 +30,7 @@ async function queryApi(this: unknown, endpoint: string, data: object): Promise<
 export default class Connection implements Interfaces.Connection {
     character = '';
     vars:                       Interfaces.Vars = <any>{}; // AWFUL. AWFUL AWFUL AWFUL. TODO: FIX.
-    _handleMessage = undefined;
+    _handleMessage:             (<T extends keyof Interfaces.ServerCommands>(type: T, data: Interfaces.ServerCommands[T]) => Promise<void>) | undefined = undefined;
     protected socket:           WebSocketConnection | undefined = undefined; // AWFUL.
     private messageHandlers = <{ [key in keyof Interfaces.ServerCommands]: Interfaces.CommandHandler<key>[] }>{};
     private connectionHandlers: { [key in Interfaces.EventType]?: Interfaces.EventHandler[] } = {};
@@ -48,7 +48,7 @@ export default class Connection implements Interfaces.Connection {
                 private readonly version: string,
                 private readonly socketProvider: new() => WebSocketConnection) {
         if (process.env.NODE_ENV === 'development')
-            this._handleMessage = this.handleMessage;
+            this._handleMessage = this.handleMessage.bind(this);
     }
 
     setCredentials(account: string, ticketProvider: Interfaces.TicketProvider | string): void {
