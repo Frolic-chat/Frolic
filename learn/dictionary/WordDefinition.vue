@@ -1,23 +1,25 @@
 <template>
-  <div class="definition-wrapper">
-    <webview
+<div class="definition-wrapper">
+  <webview
+      id="defintion-preview"
+      ref="definitionPreview"
+
       :src="getWebUrl()"
       webpreferences="autoplayPolicy=no-user-gesture-required,contextIsolation,sandbox,disableDialogs,disableHtmlFullScreenWindowResize,webSecurity,enableWebSQL=no,nodeIntegration=no,nativeWindowOpen=no,nodeIntegrationInWorker=no,nodeIntegrationInSubFrames=no,webviewTag=no"
       enableremotemodule="false"
       allowpopups="false"
       nodeIntegration="false"
       partition="persist:adblocked"
-
-      id="defintion-preview"
-      ref="definitionPreview"
       class="definition-preview"
-    ></webview>
-  </div>
+  ></webview>
+</div>
 </template>
+
 <script lang="ts">
 import Vue from 'vue';
 import { Component, Hook, Prop } from '@frolic/vue-ts';
-import { EventBusEvent } from '../../chat/preview/event-bus';
+import type { EventBusEvent } from '../../chat/preview/event-bus';
+import type * as Electron from 'electron';
 
 import NewLogger from '../../helpers/log';
 const log = NewLogger('dictionary');
@@ -26,16 +28,16 @@ import mutatorScript from '!!raw-loader!./assets/mutator.raw.js';
 
 
 const scripts = {
-  mutator: mutatorScript
-}
+    mutator: mutatorScript
+};
 
 
 @Component({})
 export default class WordDefinition extends Vue {
-  mode: 'dictionary' | 'thesaurus' | 'urbandictionary' | 'wikipedia' = 'dictionary';
+    mode: 'dictionary' | 'thesaurus' | 'urbandictionary' | 'wikipedia' = 'dictionary';
 
-  @Prop
-  readonly expression?: string;
+    @Prop
+    readonly expression?: string;
 
   @Hook('mounted')
   async mounted(): Promise<void> {
@@ -54,44 +56,43 @@ export default class WordDefinition extends Vue {
   }
 
 
-  setMode(mode: 'dictionary' | 'thesaurus' | 'urbandictionary' | 'wikipedia'): void {
-    this.mode = mode;
-  }
-
-
-  getWebUrl(): string {
-    if (!this.expression) {
-      return 'about:blank';
+    setMode(mode: 'dictionary' | 'thesaurus' | 'urbandictionary' | 'wikipedia'): void {
+        this.mode = mode;
     }
 
-    switch(this.mode) {
-      case 'dictionary':
-        return `https://www.dictionary.com/browse/${encodeURI(this.getCleanedWordDefinition())}`;
 
-      case 'thesaurus':
-        return `https://www.thesaurus.com/browse/${encodeURI(this.getCleanedWordDefinition())}`;
+    getWebUrl(): string {
+        if (!this.expression)
+            return 'about:blank';
 
-      case 'urbandictionary':
-        return `https://www.urbandictionary.com/define.php?term=${encodeURIComponent(this.getCleanedWordDefinition())}`;
+        switch (this.mode) {
+        case 'dictionary':
+            return `https://www.dictionary.com/browse/${encodeURI(this.getCleanedWordDefinition())}`;
 
-      case 'wikipedia':
-        return `https://en.m.wikipedia.org/wiki/${encodeURI(this.getCleanedWordDefinition())}`;
+        case 'thesaurus':
+            return `https://www.thesaurus.com/browse/${encodeURI(this.getCleanedWordDefinition())}`;
+
+        case 'urbandictionary':
+            return `https://www.urbandictionary.com/define.php?term=${encodeURIComponent(this.getCleanedWordDefinition())}`;
+
+        case 'wikipedia':
+            return `https://en.m.wikipedia.org/wiki/${encodeURI(this.getCleanedWordDefinition())}`;
+        }
     }
-  }
 
 
-  getCleanedWordDefinition(expression = this.expression): string {
-    return (expression || '')
-      .toLowerCase()
-      //.replace(/[^a-z0-9\-]/g, ' ')
-      .replace(/  +/g, ' ')
-      .trim();
-  }
+    getCleanedWordDefinition(expression = this.expression): string {
+        return (expression || '')
+            .toLowerCase()
+        //.replace(/[^a-z0-9\-]/g, ' ')
+            .replace(/  +/g, ' ')
+            .trim();
+    }
 
 
-  protected getWebview(): Electron.WebviewTag {
-      return this.$refs.definitionPreview as Electron.WebviewTag;
-  }
+    protected getWebview(): Electron.WebviewTag {
+        return this.$refs.definitionPreview as Electron.WebviewTag;
+    }
 
 
   protected async executeJavaScript(js: string | undefined, logDetails?: any): Promise<any> {
@@ -114,19 +115,17 @@ export default class WordDefinition extends Vue {
   }
 
 
-  protected wrapJs(mutatorJs: string): string {
-      return `(() => { try { ${mutatorJs} } catch (err) { console.error('Mutator error', err); } })();`;
-  }
+    protected wrapJs(mutatorJs: string): string {
+        return `(() => { try { ${mutatorJs} } catch (err) { console.error('Mutator error', err); } })();`;
+    }
 
 
-  protected getMutator(mode: string): string {
-    const js = scripts.mutator; // ./assets/mutator.raw.js
+    protected getMutator(mode: string): string {
+        const js = scripts.mutator; // ./assets/mutator.raw.js
 
-    return js.replace(/## SITE ##/g, mode);
-  }
-
+        return js.replace(/## SITE ##/g, mode);
+    }
 }
-
 </script>
 
 <style lang="scss">
