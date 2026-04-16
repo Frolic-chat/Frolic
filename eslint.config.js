@@ -108,7 +108,7 @@ export default [
                 { selector: 'autoAccessor', format: [ 'camelCase' ] },
                 { selector: 'class', format: [ 'PascalCase' ] },
                 { selector: 'classMethod', format: [ 'camelCase' ] },
-                { selector: 'classProperty', format: [ 'camelCase' ] },
+                { selector: 'classProperty', format: [ 'camelCase' ], leadingUnderscore: 'allow' },
                 { selector: 'enum', format: [ 'PascalCase' ] },
                 { selector: 'enumMember', format: [ 'PascalCase' ] },
                 { selector: 'function', format: [ 'camelCase' ], modifiers: [ 'exported' ] },
