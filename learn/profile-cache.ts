@@ -485,18 +485,18 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         // const dimensionsAtScoreLevel = match ? (Matcher.countScoresAtLevel(match, score) || 0) : 0;
         // const dimensionsAboveScoreLevel = match ? (Matcher.countScoresAboveLevel(match, Math.max(score, Scoring.WEAK_MATCH))) : 0;
         const filter = core.state.settings.risingFilter;
-        const is_filtered = matchesSmartFilters(c.character, filter);
+        const isFiltered = matchesSmartFilters(c.character, filter);
 
-        const penalty = (is_filtered && filter.penalizeMatches) ? -5 : (!is_filtered && filter.rewardNonMatches) ? 2 : 0;
+        const penalty = (isFiltered && filter.penalizeMatches) ? -5 : (!isFiltered && filter.rewardNonMatches) ? 2 : 0;
 
-        if (is_filtered && filter.penalizeMatches)
+        if (isFiltered && filter.penalizeMatches)
             score = Scoring.MISMATCH;
 
         const searchScore = match
             ? Matcher.calculateSearchScoreForMatch(score, match, penalty)
             : 0;
 
-        const matchDetails = { matchScore: score, searchScore, isFiltered: is_filtered };
+        const matchDetails = { matchScore: score, searchScore, isFiltered };
 
         if (this.store && !skipStore) {
             await this.store.storeProfile(c);
