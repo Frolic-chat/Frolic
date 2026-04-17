@@ -8,29 +8,29 @@
   <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" listClasses="btn-group" itemClasses="btn">
     <span><!-- Chat -->
       <span
-        :class="{
-          'fa-fw fa-solid fa-house-user':   isHome,
-          'fa-fw fa       fa-star':         isOfficialChannel,
-          'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
-          'fa-fw fa-solid fa-user':         isPrivate,
-        }"
+          :class="{
+            'fa-fw fa-solid fa-house-user':   isHome,
+            'fa-fw fa       fa-star':         isOfficialChannel,
+            'fa-fw fa       fa-chart-gantt': !isOfficialChannel && isChannel,
+            'fa-fw fa-solid fa-user':         isPrivate,
+          }"
       ></span>
     </span>
     <span :class="{ 'hidden-tab': !secondaryConversation }"><!-- Linked conversation -->
       <span v-if="isHome"
-        :class="{
-          'fa-fw fa-solid fa-terminal':  isHome,
-          'fa-fw fa-solid fa-link':     !isHome,
-        }"
+          :class="{
+            'fa-fw fa-solid fa-terminal':  isHome,
+            'fa-fw fa-solid fa-link':     !isHome,
+          }"
       ></span>
     </span>
     <span><!-- Personalize/Description/Recon -->
       <span
-        :class="{
-          'fa-fw fa-solid fa-user-pen':       isHome,
-          'fa-fw fa-solid fa-align-left':     isChannel,
-          'fa-fw fa-solid fa-satellite-dish': isPrivate,
-        }"
+          :class="{
+            'fa-fw fa-solid fa-user-pen':       isHome,
+            'fa-fw fa-solid fa-align-left':     isChannel,
+            'fa-fw fa-solid fa-satellite-dish': isPrivate,
+          }"
       ></span>
     </span>
     <span><!-- Settings -->
@@ -43,7 +43,7 @@
 
   <!-- home page -->
   <home v-if="isHome" v-show="tab === '0'" id="home" role="tabpanel" class="page" :logs="logs" :navigationRequest="navRequestData.tab === '0' && navRequestData" @navigate="handleNavigation">
-    <template #title-end>
+    <template v-slot:title-end>
       <span>
         <button aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
           <span class="fa-solid fa-screwdriver-wrench"></span>
@@ -61,15 +61,15 @@
   </home>
 
   <convo v-show="tab === '0' && !isHome"
-    ref="primaryView"
-    :id="   isHome ? '' : 'home'"
-    :conversation="primaryConversation"
-    :navigationRequest="navRequestData.tab === '0' && navRequestData"
-    :commandHelp="commandHelp" :eiconSelector="eiconSelector"
-    :class="isHome ? '' : 'page'" :role=" isHome ? '' : 'tabpanel'"
-    @navigate="handleNavigation"
+      ref="primaryView"
+      :id="   isHome ? '' : 'home'"
+      :conversation="primaryConversation"
+      :navigationRequest="navRequestData.tab === '0' && navRequestData"
+      :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+      :class="isHome ? '' : 'page'" :role=" isHome ? '' : 'tabpanel'"
+      @navigate="handleNavigation"
   >
-    <template #title-end>
+    <template v-slot:title-end>
       <span>
         <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
           <span class="fa fa-file-alt"></span>
@@ -86,15 +86,15 @@
 
   <!-- console/secondary conversation -->
   <convo v-if="secondaryConversation" v-show="tab === '1'"
-    ref="secondaryView"
-    id="linked-conversation"
-    :conversation="secondaryConversation"
-    class="page" role="tabpanel"
-    :navigationRequest="navRequestData.tab === '1' && navRequestData"
-    :commandHelp="commandHelp" :eiconSelector="eiconSelector"
-    @navigate="handleNavigation"
+      ref="secondaryView"
+      id="linked-conversation"
+      :conversation="secondaryConversation"
+      class="page" role="tabpanel"
+      :navigationRequest="navRequestData.tab === '1' && navRequestData"
+      :commandHelp="commandHelp" :eiconSelector="eiconSelector"
+      @navigate="handleNavigation"
   >
-    <template #title-end>
+    <template v-slot:title-end>
       <span v-if="isHome">
         <button aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
           <span class="fa-solid fa-screwdriver-wrench"></span>
@@ -110,10 +110,10 @@
   </convo>
 
   <page v-else v-show="tab === '1'"
-    id="linked-conversation"
-    role="tabpanel" class="page"
-    :navigationRequest="navRequestData.tab === '1' && navRequestData"
-    @navigate="handleNavigation"
+      id="linked-conversation"
+      role="tabpanel" class="page"
+      :navigationRequest="navRequestData.tab === '1' && navRequestData"
+      @navigate="handleNavigation"
   >
     <template #prescroll>
       <div class="page-header d-flex align-items-center">
@@ -163,8 +163,8 @@
     </page>
 
     <!-- Comms -->
-    <comms v-else-if="isPrivate" v-show="tab === '2'" ref="comms" :character="conversation.name"
-      :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
+    <comms v-else-if="isPrivate" v-show="tab === '2'" ref="comms"
+        :character="conversation.name" :navigationRequest="navRequestData.tab === '2' && navRequestData" @navigate="handleNavigation"
     >
       <template #title-end>
         <div ref="tabsContainer2private" id="tabs-container-in-comms" style="display: contents;"></div>
