@@ -9,14 +9,14 @@ import * as path from 'path';
 export async function getAvailableCharacters(baseDir: string): Promise<string[]> {
     fs.mkdirSync(baseDir, { recursive: true });
     const files = await fs.promises.readdir(baseDir, { withFileTypes: true });
-    return files.reduce(
+    return files.reduce<string[]>(
         (box, f) => {
             if (f.isDirectory())
                 box.push(f.name);
 
             return box;
         },
-        [] as string[]
+        []
     );
 }
 
