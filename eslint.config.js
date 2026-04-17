@@ -52,6 +52,13 @@ export default [
             '@typescript-eslint/no-unsafe-return': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
 
+            'vue/v-slot-style': [
+                'warn', {
+                    "atComponent": "longform",
+                    "default": "longform",
+                    "named": "longform",
+                },
+            ],
             'vue/html-indent': [
                 'warn',
                 2, {
@@ -60,6 +67,11 @@ export default [
                     alignAttributesVertically: false,
                 }
             ],
+            // "vue/multiline-html-element-content-newline": ["error", {
+            //     "ignoreWhenEmpty": true,
+            //     "ignores": [ "pre", "textarea" ],
+            //     "allowEmptyLines": false
+            // }],
             'vue/max-attributes-per-line': 'off',
             'vue/html-self-closing': 'off',
             'vue/max-len': 'off',
@@ -202,6 +214,7 @@ export default [
             '@stylistic/array-bracket-newline': [
                 'warn', {
                     multiline: true,
+                    minItems: 5,
                 }
             ],
             '@stylistic/object-curly-newline': [

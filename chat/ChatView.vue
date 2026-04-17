@@ -1,588 +1,619 @@
 <template>
-    <div style="height:100%; display: flex; position: relative;" id="chatView" @click="contextMenuHandle" @contextmenu="contextMenuHandle" @touchstart.passive="contextMenuHandle" @touchend="contextMenuHandle">
-        <sidebar id="sidebar" :label="l('chat.menu')" icon="fa-bars">
-            <div class="character-header">
-                <div class="image-block" v-if="showAvatars">
-                    <img :src="characterImage(ownCharacter.name)" style="margin-top:5px; margin-right:5px; max-width: 100px;"/>
-                </div>
-                <div class="character-info">
-                    <a target="_blank" :href="ownCharacterLink" class="btn character-name">
-                        {{ownCharacter.name}}
-                    </a>
-                    <a href="#" @click.prevent="showStatus()" class="btn">
-                        <span class="fas fa-fw" :class="getStatusIcon(ownCharacter.status)"></span>
-                        {{l('status.' + ownCharacter.status)}}
-                    </a>
-                    <a href="#" @click.prevent="logOut()" class="btn">
-                        <span class="fas fa-fw fa-sign-out-alt"></span>
-                        {{l('chat.logout')}}
-                    </a>
-                </div>
-            </div>
-
-            <div>
-                <a href="#" @click.prevent="showSearch()" class="btn">
-                    <span class="fas fa-search"></span>
-                    {{l('characterSearch.open')}}
-                </a>
-            </div>
-
-            <div><a href="#" @click.prevent="showAdCenter()" class="btn">
-                <span class="fas fa-ad"></span>
-                {{l('chat.adEditor')}}
-            </a></div>
-
-            <div>
-                <a href="#" @click.prevent="showAdLauncher()" class="btn">
-                    <span class="fas fa-play"></span>
-                    {{l('chat.postAds')}}
-                </a>
-                <span v-show="adsAreRunning()" class="adControls">
-                    <span :aria-label="l('chat.stopAds')" class="fas fa-stop" @click.prevent="stopAllAds()"></span>
-                </span>
-            </div>
-
-            <div v-if="env === 'development'">
-                <a href="#" @click.prevent="showDevTools()" class="btn">
-                    <span class="fas fa-bug"></span>
-                    {{l('chat.devTools')}}
-                </a>
-            </div>
-
-            <div class="nav-group-container"><!-- CONSOLE -->
-                <div class="list-group conversation-nav">
-                    <a :class="getHomeClasses()" href="#" @click.prevent="goHome()" class="list-group-item list-group-item-action"
-                        :aria-label="homeButtonTooltip" data-balloon-nofocus data-balloon-pos="up" data-balloon-length="fit"
-                    >
-                        <template v-if="siteCheckerCount">
-                            {{ siteCheckerCount }}
-                            <span :class="siteCheckerIconClass" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
-                        </template>
-                        {{ l('home') }}
-                    </a>
-                </div>
-            </div>
-
-            <div class="nav-group-container"><!-- PMs -->
-                <a href="#" @click.prevent="showAddPmPartner()" class="btn" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }">
-                    <span class="fas fa-comment"></span>
-                    {{l('chat.pms')}}
-                </a>
-
-                <div class="list-group conversation-nav" ref="privateConversations">
-                    <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent.stop="showConversation(conversation)"
-                        :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false"
-                        class="list-group-item list-group-item-action item-private" :key="conversation.key"
-                        @click.middle.prevent.stop="conversation.close()">
-                        <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
-                        <div class="name">
-                            <span>{{conversation.character.name}}</span>
-                            <div class="icon-bed">
-                                <span class='fa-fw online-status' :class="getOnlineStatusIconClasses(conversation)"></span>
-                                <span class="fa-fw fas fa-reply" v-show="needsReply(conversation)"></span>
-                                <span style="flex:1"></span>
-                                <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}"
-                                    @click.stop="conversation.isPinned = !conversation.isPinned" :aria-label="l('chat.pinTab')"></span>
-                                <span v-if="!conversation.isPinned" class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <a href="#" @click.prevent="showRecent()" class="recent-conversation">
-                    <span class="fas fa-history"></span>
-                    {{ l('chat.recentConversations') }}
-                </a>
-            </div>
-
-            <div class="nav-group-container"><!-- CHANNELS -->
-                <a href="#" @click.prevent="showChannels()" class="btn">
-                    <span class="fas fa-list"></span>
-                    {{l('chat.channels')}}
-                </a>
-
-                <div class="list-group conversation-nav" ref="channelConversations">
-                    <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="showConversation(conversation)"
-                        :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" :key="conversation.key"
-                        @click.middle.prevent.stop="conversation.close()">
-                        <span class="name">{{conversation.name}}</span>
-                        <span>
-                            <span v-if="conversation.hasAutomatedAds()" class="fas fa-ad" :class="{'active': conversation.isSendingAutomatedAds()}" :aria-label="l('chat.toggleAds')"
-                            @click.stop="conversation.toggleAutomatedAds()"></span>
-                            <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')"
-                                @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
-                            <span v-if="!conversation.isPinned" class="leave fas fa-times" @click.stop="conversation.close()" :aria-label="l('chat.closeTab')"></span>
-                        </span>
-                    </a>
-                </div>
-
-                <a href="#" @click.prevent="showChannels()" class="join-channel" :class="{ glowing: conversations.channelConversations.length === 0 && channelCanGlow }">
-                    {{l('chat.joinChannel')}}
-                </a>
-            </div>
-        </sidebar>
-        <div style="display:flex;flex-direction:column;flex:1;min-width:0">
-            <div id="quick-switcher" class="list-group">
-                <a :class="getClasses(conversations.consoleTab)" href="#" @click.prevent="goHome()"
-                    class="list-group-item list-group-item-action">
-                    <span class="fas fa-home conversation-icon"></span>
-                    {{conversations.consoleTab.name}}
-                </a>
-                <a v-for="conversation in conversations.privateConversations" href="#" @click.prevent="showConversation(conversation)"
-                    :class="getClasses(conversation)" class="list-group-item list-group-item-action" :key="conversation.key">
-                    <img :src="characterImage(conversation.character.name)" v-if="showAvatars"/>
-                    <span class="far fa-user-circle conversation-icon" v-else></span>
-                    <div class="name">{{conversation.character.name}}</div>
-                </a>
-                <a v-for="conversation in conversations.channelConversations" href="#" @click.prevent="showConversation(conversation)"
-                    :class="getClasses(conversation)" class="list-group-item list-group-item-action" :key="conversation.key">
-                    <span class="fas fa-hashtag conversation-icon"></span>
-                    <div class="name">{{conversation.name}}</div>
-                </a>
-            </div>
-
-            <home-screen :activeConversationClicked="currentClicked" :reportDialog="reportDialog" :eiconSelector="eiconSelector"></home-screen>
-        </div>
-        <user-list></user-list>
-        <channels ref="channelsDialog"></channels>
-        <status-switcher ref="statusDialog" :eiconSelector="eiconSelector"></status-switcher>
-        <character-search ref="searchDialog"></character-search>
-        <adLauncher ref="adLauncher"></adLauncher>
-        <adCenter ref="adCenter"></adCenter>
-        <report-dialog ref="reportDialog"></report-dialog>
-        <context-menu ref="contextMenu" :reportDialog="$refs['reportDialog']"></context-menu>
-        <recent-conversations ref="recentDialog"></recent-conversations>
-        <dev-tools ref="devTools"></dev-tools>
-        <image-preview ref="imagePreview"></image-preview>
-        <add-pm-partner ref="addPmPartnerDialog" :switch="this.addPmPartnerSwitch"></add-pm-partner>
-        <eicon-selector ref="eiconSelector"></eicon-selector>
+<div id="chatView" style="height:100%; display: flex; position: relative;" @click="contextMenuHandle" @contextmenu="contextMenuHandle" @touchstart.passive="contextMenuHandle" @touchend="contextMenuHandle">
+  <sidebar id="sidebar" :label="l('chat.menu')" icon="fa-bars">
+    <div class="character-header">
+      <div v-if="showAvatars" class="image-block">
+        <img :src="characterImage(ownCharacter.name)" style="margin-top:5px; margin-right:5px; max-width: 100px;" />
+      </div>
+      <div class="character-info">
+        <a target="_blank" :href="ownCharacterLink" class="btn character-name">
+          {{ ownCharacter.name }}
+        </a>
+        <a href="#" class="btn" @click.prevent="showStatus()">
+          <span class="fas fa-fw" :class="getStatusIcon(ownCharacter.status)"></span>
+          {{ l('status.' + ownCharacter.status) }}
+        </a>
+        <a href="#" class="btn" @click.prevent="logOut()">
+          <span class="fas fa-fw fa-sign-out-alt"></span>
+          {{ l('chat.logout') }}
+        </a>
+      </div>
     </div>
+
+    <div>
+      <a href="#" class="btn" @click.prevent="showSearch()">
+        <span class="fas fa-search"></span>
+        {{ l('characterSearch.open') }}
+      </a>
+    </div>
+
+    <div>
+      <a href="#" class="btn" @click.prevent="showAdCenter()">
+        <span class="fas fa-ad"></span>
+        {{ l('chat.adEditor') }}
+      </a>
+    </div>
+
+    <div>
+      <a href="#" class="btn" @click.prevent="showAdLauncher()">
+        <span class="fas fa-play"></span>
+        {{ l('chat.postAds') }}
+      </a>
+      <span v-show="adsAreRunning()" class="adControls">
+        <span :aria-label="l('chat.stopAds')" class="fas fa-stop" @click.prevent="stopAllAds()"></span>
+      </span>
+    </div>
+
+    <div v-if="env === 'development'">
+      <a href="#" class="btn" @click.prevent="showDevTools()">
+        <span class="fas fa-bug"></span>
+        {{ l('chat.devTools') }}
+      </a>
+    </div>
+
+    <div class="nav-group-container"><!-- CONSOLE -->
+      <div class="list-group conversation-nav">
+        <a :class="getHomeClasses()" href="#" class="list-group-item list-group-item-action" :aria-label="homeButtonTooltip"
+            data-balloon-nofocus data-balloon-pos="up" data-balloon-length="fit" @click.prevent="goHome()"
+        >
+          <template v-if="siteCheckerCount">
+            {{ siteCheckerCount }}
+            <span :class="siteCheckerIconClass" class="mr-1" style="margin-bottom: -1px; /* I have no idea why this looks off to me. */"></span>
+          </template>
+          {{ l('home') }}
+        </a>
+      </div>
+    </div>
+
+    <div class="nav-group-container"><!-- PMs -->
+      <a href="#" class="btn" :class="{ glowing: conversations.privateConversations.length === 0 && privateCanGlow }" @click.prevent="showAddPmPartner()">
+        <span class="fas fa-comment"></span>
+        {{ l('chat.pms') }}
+      </a>
+
+      <div ref="privateConversations" class="list-group conversation-nav">
+        <a v-for="conversation in conversations.privateConversations" :key="conversation.key" href="#" :class="getClasses(conversation)" :data-character="conversation.character.name" data-touch="false" class="list-group-item list-group-item-action item-private" @click.prevent.stop="showConversation(conversation)" @click.middle.prevent.stop="conversation.close()">
+          <img v-if="showAvatars" :src="characterImage(conversation.character.name)" />
+          <div class="name">
+            <span>{{ conversation.character.name }}</span>
+            <div class="icon-bed">
+              <span class="fa-fw online-status" :class="getOnlineStatusIconClasses(conversation)"></span>
+              <span v-show="needsReply(conversation)" class="fa-fw fas fa-reply"></span>
+              <span style="flex:1"></span>
+              <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')" @click.stop="conversation.isPinned = !conversation.isPinned"></span>
+              <span v-if="!conversation.isPinned" class="leave fas fa-times" :aria-label="l('chat.closeTab')" @click.stop="conversation.close()"></span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <a href="#" class="recent-conversation" @click.prevent="showRecent()">
+        <span class="fas fa-history"></span>
+        {{ l('chat.recentConversations') }}
+      </a>
+    </div>
+
+    <div class="nav-group-container"><!-- CHANNELS -->
+      <a href="#" class="btn" @click.prevent="showChannels()">
+        <span class="fas fa-list"></span>
+        {{ l('chat.channels') }}
+      </a>
+
+      <div ref="channelConversations" class="list-group conversation-nav">
+        <a v-for="conversation in conversations.channelConversations" :key="conversation.key" href="#" :class="getClasses(conversation)" class="list-group-item list-group-item-action item-channel" @click.prevent="showConversation(conversation)" @click.middle.prevent.stop="conversation.close()">
+          <span class="name">{{ conversation.name }}</span>
+          <span>
+            <span v-if="conversation.hasAutomatedAds()" class="fas fa-ad" :class="{'active': conversation.isSendingAutomatedAds()}" :aria-label="l('chat.toggleAds')" @click.stop="conversation.toggleAutomatedAds()"></span>
+            <span class="pin fas fa-thumbtack" :class="{'active': conversation.isPinned}" :aria-label="l('chat.pinTab')" @click.stop="conversation.isPinned = !conversation.isPinned" @mousedown.prevent></span>
+            <span v-if="!conversation.isPinned" class="leave fas fa-times" :aria-label="l('chat.closeTab')" @click.stop="conversation.close()"></span>
+          </span>
+        </a>
+      </div>
+
+      <a href="#" class="join-channel" :class="{ glowing: conversations.channelConversations.length === 0 && channelCanGlow }" @click.prevent="showChannels()">
+        {{ l('chat.joinChannel') }}
+      </a>
+    </div>
+  </sidebar>
+  <div style="display:flex;flex-direction:column;flex:1;min-width:0">
+    <div id="quick-switcher" class="list-group">
+      <a :class="getClasses(conversations.consoleTab)" href="#" class="list-group-item list-group-item-action" @click.prevent="goHome()">
+        <span class="fas fa-home conversation-icon"></span>
+        {{ conversations.consoleTab.name }}
+      </a>
+      <a v-for="conversation in conversations.privateConversations" :key="conversation.key" href="#" :class="getClasses(conversation)" class="list-group-item list-group-item-action" @click.prevent="showConversation(conversation)">
+        <img v-if="showAvatars" :src="characterImage(conversation.character.name)" />
+        <span v-else class="far fa-user-circle conversation-icon"></span>
+        <div class="name">{{ conversation.character.name }}</div>
+      </a>
+      <a v-for="conversation in conversations.channelConversations" :key="conversation.key" href="#" :class="getClasses(conversation)" class="list-group-item list-group-item-action" @click.prevent="showConversation(conversation)">
+        <span class="fas fa-hashtag conversation-icon"></span>
+        <div class="name">{{ conversation.name }}</div>
+      </a>
+    </div>
+
+    <home-screen :activeConversationClicked="currentClicked" :reportDialog="reportDialog" :eiconSelector="eiconSelector"></home-screen>
+  </div>
+  <user-list></user-list>
+  <channels ref="channelsDialog"></channels>
+  <status-switcher ref="statusDialog" :eiconSelector="eiconSelector"></status-switcher>
+  <character-search ref="searchDialog"></character-search>
+  <ad-launcher ref="adLauncher"></ad-launcher>
+  <ad-center ref="adCenter"></ad-center>
+  <report-dialog ref="reportDialog"></report-dialog>
+  <context-menu ref="contextMenu" :reportDialog="$refs['reportDialog']"></context-menu>
+  <recent-conversations ref="recentDialog"></recent-conversations>
+  <dev-tools ref="devTools"></dev-tools>
+  <image-preview ref="imagePreview"></image-preview>
+  <add-pm-partner ref="addPmPartnerDialog" :switch="addPmPartnerSwitch"></add-pm-partner>
+  <eicon-selector ref="eiconSelector"></eicon-selector>
+</div>
 </template>
 
 <script lang="ts">
 import { Component, Hook, Watch } from '@frolic/vue-ts';
 
-    import Sortable from 'sortablejs';
+import Sortable from 'sortablejs';
 
-    import Vue from 'vue';
-    import {Keys} from '../keys';
-    import ChannelList from './ChannelList.vue';
-    import CharacterSearch from './CharacterSearch.vue';
-    import { getKey, profileLink } from './common';
-    import HomeScreen from './UniversalHome.vue';
-    import core from './core';
-    import {Character, Connection, Conversation} from './interfaces';
-    import l from './localize';
-    import PmPartnerAdder from './PmPartnerAdder.vue';
-    import RecentConversations from './RecentConversations.vue';
-    import ReportDialog from './ReportDialog.vue';
-    import EIconSelector from '../bbcode/EIconSelector.vue';
-    import Sidebar from './Sidebar.vue';
-    import StatusSwitcher from './StatusSwitcher.vue';
-    import {getStatusIcon} from './UserView.vue';
-    import UserList from './UserList.vue';
-    import ContextMenu from './ContextMenu.vue';
-    import ImagePreview from './preview/ContentPreview.vue';
-    import PrivateConversation = Conversation.PrivateConversation;
-    import { Dialog } from '../helpers/dialog';
-    import AdCenterDialog from './ads/AdCenter.vue';
-    import AdLauncherDialog from './ads/AdLauncher.vue';
-    import EventBus from './preview/event-bus';
+import Vue from 'vue';
+import { Keys } from '../keys';
+import ChannelList from './ChannelList.vue';
+import CharacterSearch from './CharacterSearch.vue';
+import { getKey, profileLink } from './common';
+import HomeScreen from './UniversalHome.vue';
+import core from './core';
+import type { Character, Connection } from './interfaces';
+import { Conversation } from './interfaces';
+import l from './localize';
+import PmPartnerAdder from './PmPartnerAdder.vue';
+import RecentConversations from './RecentConversations.vue';
+import ReportDialog from './ReportDialog.vue';
+import EIconSelector from '../bbcode/EIconSelector.vue';
+import Sidebar from './Sidebar.vue';
+import StatusSwitcher from './StatusSwitcher.vue';
+import { getStatusIcon } from './UserView.vue';
+import UserList from './UserList.vue';
+import ContextMenu from './ContextMenu.vue';
+import ImagePreview from './preview/ContentPreview.vue';
+import PrivateConversation = Conversation.PrivateConversation;
+import { Dialog } from '../helpers/dialog';
+import AdCenterDialog from './ads/AdCenter.vue';
+import AdLauncherDialog from './ads/AdLauncher.vue';
+import EventBus from './preview/event-bus';
+import type Modal from '../components/Modal.vue';
 
-    const unreadClasses = {
-        [Conversation.UnreadState.None]: '',
-        [Conversation.UnreadState.Mention]: 'list-group-item-warning',
-        [Conversation.UnreadState.Unread]: 'list-group-item-danger'
-    };
+const unreadClasses = {
+    [Conversation.UnreadState.None]:    '',
+    [Conversation.UnreadState.Mention]: 'list-group-item-warning',
+    [Conversation.UnreadState.Unread]:  'list-group-item-danger',
+};
 
-    @Component({
-        components: {
-            'user-list': UserList, channels: ChannelList, 'status-switcher': StatusSwitcher, 'character-search': CharacterSearch,
-            'home-screen': HomeScreen,
-            'report-dialog': ReportDialog,
-            'eicon-selector': EIconSelector,
-            sidebar: Sidebar,
-            'context-menu': ContextMenu, 'recent-conversations': RecentConversations,
-            'image-preview': ImagePreview,
-            'add-pm-partner': PmPartnerAdder,
-            adCenter: AdCenterDialog,
-            adLauncher: AdLauncherDialog,
-            ...(process.env.NODE_ENV === 'development' ? { 'dev-tools': () => import('../devtools/CommandCenter.vue') } : {})
-        }
-    })
-    export default class ChatView extends Vue {
-        l = l;
-        env = process.env.NODE_ENV;
-        sidebarExpanded = false;
-        characterImage = (c: string) => core.characters.getImage(c);
-        conversations = core.conversations;
-        getStatusIcon = getStatusIcon;
-        coreState = core.state;
+@Component({
+    components: {
+        'user-list':            UserList,
+        channels:               ChannelList,
+        'status-switcher':      StatusSwitcher,
+        'character-search':     CharacterSearch,
+        'home-screen':          HomeScreen,
+        'report-dialog':        ReportDialog,
+        'eicon-selector':       EIconSelector,
+        sidebar:                Sidebar,
+        'context-menu':         ContextMenu,
+        'recent-conversations': RecentConversations,
+        'image-preview':        ImagePreview,
+        'add-pm-partner':       PmPartnerAdder,
+        'ad-center':            AdCenterDialog,
+        'ad-launcher':          AdLauncherDialog,
+        ...(process.env.NODE_ENV === 'development'
+            ? { 'dev-tools': () => import('../devtools/CommandCenter.vue') }
+            : {}
+        ),
+    },
+})
+export default class ChatView extends Vue {
+    l = l;
+    env = process.env.NODE_ENV;
+    sidebarExpanded = false;
+    characterImage = (c: string) => core.characters.getImage(c);
+    conversations = core.conversations;
+    getStatusIcon = getStatusIcon;
+    coreState = core.state;
 
-        eiconSelector!: EIconSelector;
-        reportDialog!: ReportDialog;
+    eiconSelector!: EIconSelector;
+    reportDialog!:  ReportDialog;
 
-        keydownListener!: (e: KeyboardEvent) => void;
-        focusListener!: () => void;
-        blurListener!: () => void;
+    keydownListener!: (e: KeyboardEvent) => void;
+    focusListener!:   () => void;
+    blurListener!:    () => void;
 
-        channelConversations = core.conversations.channelConversations
-        privateConversations = core.conversations.privateConversations
+    channelConversations = core.conversations.channelConversations;
+    privateConversations = core.conversations.privateConversations;
 
-        privateCanGlow = !this.channelConversations?.length;
-        channelCanGlow = !this.privateConversations?.length;
+    privateCanGlow = !this.channelConversations?.length;
+    channelCanGlow = !this.privateConversations?.length;
 
-        get homeConversation(): Conversation {
-            return core.state.generalSettings.defaultToHome
-                ? this.conversations.activityTab
-                : this.conversations.consoleTab;
-        }
+    get homeConversation(): Conversation {
+        return core.state.generalSettings.defaultToHome
+            ? this.conversations.activityTab
+            : this.conversations.consoleTab;
+    }
 
-        /**
+    /**
          * This is broken because you can't have a scrollbar in one direction and overflow in another. Seems bad.
          */
-        get homeButtonTooltip(): string | undefined {
-            if (this.conversations.selectedConversation === this.conversations.activityTab)
-                return 'Click again for the console';
-            else if (this.conversations.selectedConversation === this.conversations.consoleTab)
-                return 'Click again for the home page';
-        }
+    get homeButtonTooltip(): string | undefined {
+        if (this.conversations.selectedConversation === this.conversations.activityTab)
+            return 'Click again for the console';
+        else if (this.conversations.selectedConversation === this.conversations.consoleTab)
+            return 'Click again for the home page';
+        else
+            return undefined;
+    }
 
-        @Watch('conversations.channelConversations')
-        channelConversationsChange() {
-          if (this.conversations.channelConversations?.length) {
+    @Watch('conversations.channelConversations')
+    channelConversationsChange() {
+        if (this.conversations.channelConversations?.length)
             this.channelCanGlow = false;
-          }
-        }
+    }
 
-        @Watch('conversations.privateConversations')
-        privateConversationsChange() {
-          if (this.conversations.privateConversations?.length) {
+    @Watch('conversations.privateConversations')
+    privateConversationsChange() {
+        if (this.conversations.privateConversations?.length)
             this.privateCanGlow = false;
-          }
-        }
+    }
 
-        @Hook('created')
-        created() {
-            EventBus.$on('note-counts-update', this.onNoteOrMessageEvent);
-            EventBus.$on('notes-api',          this.onNoteOrMessageEvent);
-        }
+    @Hook('created')
+    created() {
+        EventBus.$on('note-counts-update', this.onNoteOrMessageEvent);
+        EventBus.$on('notes-api',          this.onNoteOrMessageEvent);
+    }
 
-        @Hook('beforeDestroy')
-        beforeDestroy() {
-            EventBus.$off('note-counts-update', this.onNoteOrMessageEvent);
-            EventBus.$off('notes-api',          this.onNoteOrMessageEvent);
-        }
+    @Hook('beforeDestroy')
+    beforeDestroy() {
+        EventBus.$off('note-counts-update', this.onNoteOrMessageEvent);
+        EventBus.$off('notes-api',          this.onNoteOrMessageEvent);
+    }
 
-        @Hook('mounted')
-        mounted(): void {
-            this.eiconSelector = this.$refs['eiconSelector'] as EIconSelector;
-            this.reportDialog  = this.$refs['reportDialog']  as ReportDialog;
+    @Hook('mounted')
+    mounted(): void {
+        this.eiconSelector = this.$refs['eiconSelector'] as EIconSelector;
+        this.reportDialog  = this.$refs['reportDialog']  as ReportDialog;
 
-            this.keydownListener = (e: KeyboardEvent) => this.onKeyDown(e);
-            window.addEventListener('keydown', this.keydownListener);
-            this.setFontSize(core.state.settings.fontSize);
+        this.keydownListener = (e: KeyboardEvent) => this.onKeyDown(e);
+        window.addEventListener('keydown', this.keydownListener);
+        this.setFontSize(core.state.settings.fontSize);
 
-            Sortable.create(<HTMLElement>this.$refs['privateConversations'], {
-                animation: 50,
-                fallbackTolerance: 5,
-                onEnd: async(e) => {
-                    if(!e.oldIndex || e.oldIndex === e.newIndex) return;
-                    const old_convo = core.conversations.privateConversations[e.oldIndex];
-                    if (old_convo)
-                        return old_convo.sort(e.newIndex!);
-                }
-            });
+        Sortable.create(this.$refs['privateConversations'] as HTMLElement, {
+            animation:         50,
+            fallbackTolerance: 5,
+            onEnd:             e => {
+                if (!e.oldIndex || e.oldIndex === e.newIndex)
+                    return;
 
-            Sortable.create(<HTMLElement>this.$refs['channelConversations'], {
-                animation: 50,
-                fallbackTolerance: 5,
-                onEnd: async(e) => {
-                    if(!e.oldIndex || e.oldIndex === e.newIndex) return;
-                    const old_convo = core.conversations.privateConversations[e.oldIndex];
-                    if (old_convo)
-                        return old_convo.sort(e.newIndex!);
-                }
-            });
+                const old_convo = core.conversations.privateConversations[e.oldIndex];
+                if (old_convo)
+                    void old_convo.sort(e.newIndex!);
+            },
+        });
 
-            const ownCharacter = core.characters.ownCharacter;
-            let idleTimer: number | undefined, idleStatus: Connection.ClientCommands['STA'] | undefined, lastUpdate = 0;
-            window.addEventListener('focus', this.focusListener = () => {
-                core.notifications.isInBackground = false;
-                if(idleTimer !== undefined) {
-                    clearTimeout(idleTimer);
-                    idleTimer = undefined;
-                }
-                if(idleStatus !== undefined) {
-                    const status = idleStatus;
-                    window.setTimeout(() => core.connection.send('STA', status),
-                        Math.max(lastUpdate + core.connection.vars.sta_flood * 1000 + 1000 - Date.now(), 0));
-                    idleStatus = undefined;
-                }
-            });
-            window.addEventListener('blur', this.blurListener = () => {
-                core.notifications.isInBackground = true;
-                if(idleTimer !== undefined) clearTimeout(idleTimer);
-                if(core.state.settings.idleTimer > 0 && core.characters.ownCharacter.status !== 'dnd')
-                    idleTimer = window.setTimeout(() => {
-                        lastUpdate = Date.now();
-                        idleStatus = {status: ownCharacter.status, statusmsg: ownCharacter.statusText};
-                        core.connection.send('STA', {status: 'idle', statusmsg: ownCharacter.statusText});
-                    }, core.state.settings.idleTimer * 60000);
-            });
-            core.connection.onEvent('closed', () => {
-                if(idleTimer !== undefined) {
-                    window.clearTimeout(idleTimer);
-                    idleTimer = undefined;
-                }
-            });
-            core.watch<number>(function(): number {
-                return this.state.settings.fontSize;
-            }, (value) => {
-                this.setFontSize(value);
-            });
+        Sortable.create(<HTMLElement> this.$refs['channelConversations'], {
+            animation:         50,
+            fallbackTolerance: 5,
+            onEnd:             e => {
+                if (!e.oldIndex || e.oldIndex === e.newIndex)
+                    return;
 
-            void core.adCenter.load();
-        }
+                const old_convo = core.conversations.privateConversations[e.oldIndex];
+                if (old_convo)
+                    void old_convo.sort(e.newIndex!);
+            },
+        });
 
-        @Hook('destroyed')
-        destroyed(): void {
-            window.removeEventListener('keydown', this.keydownListener);
-            window.removeEventListener('focus', this.focusListener);
-            window.removeEventListener('blur', this.blurListener);
-        }
+        const ownCharacter = core.characters.ownCharacter;
+        let idleTimer: number | undefined,
+            idleStatus: Connection.ClientCommands['STA'] | undefined,
+            lastUpdate = 0;
 
-        needsReply(conversation: Conversation): boolean {
-            if(!core.state.settings.showNeedsReply) return false;
-            for(let i = conversation.messages.length - 1; i >= 0; --i) {
-                const sender = (<Partial<Conversation.ChatMessage>>conversation.messages[i]).sender;
-
-                // noinspection TypeScriptValidateTypes
-                if(sender !== undefined)
-                    return sender !== core.characters.ownCharacter;
+        window.addEventListener('focus', this.focusListener = () => {
+            core.notifications.isInBackground = false;
+            if (idleTimer !== undefined) {
+                window.clearTimeout(idleTimer);
+                idleTimer = undefined;
             }
+            if (idleStatus !== undefined) {
+                const status = idleStatus;
+                window.setTimeout(() => core.connection.send('STA', status),
+                    Math.max(lastUpdate + core.connection.vars.sta_flood * 1000 + 1000 - Date.now(), 0));
+                idleStatus = undefined;
+            }
+        });
+        window.addEventListener('blur', this.blurListener = () => {
+            core.notifications.isInBackground = true;
+            if (idleTimer !== undefined)
+                window.clearTimeout(idleTimer);
+            if (core.state.settings.idleTimer > 0 && core.characters.ownCharacter.status !== 'dnd') {
+                idleTimer = window.setTimeout(() => {
+                    lastUpdate = Date.now();
+                    idleStatus = { status: ownCharacter.status, statusmsg: ownCharacter.statusText };
+                    core.connection.send('STA', { status: 'idle', statusmsg: ownCharacter.statusText });
+                }, core.state.settings.idleTimer * 60000);
+            }
+        });
+        core.connection.onEvent('closed', () => {
+            if (idleTimer !== undefined) {
+                window.clearTimeout(idleTimer);
+                idleTimer = undefined;
+            }
+        });
+        core.watch<number>(function(): number {
+            return this.state.settings.fontSize;
+        }, (value) => {
+            this.setFontSize(value);
+        });
+
+        void core.adCenter.load();
+    }
+
+    @Hook('destroyed')
+    destroyed(): void {
+        window.removeEventListener('keydown', this.keydownListener);
+        window.removeEventListener('focus', this.focusListener);
+        window.removeEventListener('blur', this.blurListener);
+    }
+
+    needsReply(conversation: Conversation): boolean {
+        if (!core.state.settings.showNeedsReply)
             return false;
+
+        for (let i = conversation.messages.length - 1; i >= 0; --i) {
+            const sender = (<Partial<Conversation.ChatMessage>>conversation.messages[i]).sender;
+
+            // noinspection TypeScriptValidateTypes
+            if (sender !== undefined)
+                return sender !== core.characters.ownCharacter;
         }
 
-        onKeyDown(e: KeyboardEvent): void {
-            const selected = this.conversations.selectedConversation;
-            const pms = this.conversations.privateConversations;
-            const channels = this.conversations.channelConversations;
-            const console = this.conversations.consoleTab;
-            const activity = this.conversations.activityTab;
-            if(getKey(e) === Keys.ArrowUp && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console || selected === activity) {
-                    if(channels.length > 0) channels[channels.length - 1]?.show();
-                    else if(pms.length > 0) pms[pms.length - 1]?.show();
-                } else if(Conversation.isPrivate(selected)) {
-                    const index = pms.indexOf(selected);
-                    if(index === 0) this.goHome();
-                    else pms[index - 1]?.show();
-                } else {
-                    const index = channels.indexOf(<Conversation.ChannelConversation>selected);
-                    if(index === 0)
-                        if(pms.length > 0) pms[pms.length - 1]?.show();
-                        else this.goHome();
-                    else channels[index - 1]?.show();
-                }
-            else if(getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey)
-                if(selected === console || selected === activity) {
-                    if(pms.length > 0) pms[0]?.show();
-                    else if(channels.length > 0) channels[0]?.show();
-                } else if(Conversation.isPrivate(selected)) {
-                    const index = pms.indexOf(selected);
-                    if(index === pms.length - 1) {
-                        if(channels.length > 0) channels[0]?.show();
-                        else this.goHome();
-                    } else pms[index + 1]?.show();
-                } else {
-                    const index = channels.indexOf(<Conversation.ChannelConversation>selected);
-                    if(index < channels.length - 1) channels[index + 1]?.show();
-                    else this.goHome();
-                }
-        }
+        return false;
+    }
 
-        setFontSize(fontSize: number): void {
-            let overrideEl = <HTMLStyleElement | null>document.getElementById('overrideFontSize');
-            if(overrideEl !== null)
-                document.body.removeChild(overrideEl);
-            overrideEl = document.createElement('style');
-            overrideEl.id = 'overrideFontSize';
-            document.body.appendChild(overrideEl);
-            const sheet = <CSSStyleSheet>overrideEl.sheet;
-            sheet.insertRule(`#chatView, .btn, .form-control, .custom-select { font-size: ${fontSize}px; }`, sheet.cssRules.length);
-            sheet.insertRule(`.form-control, select.form-control { line-height: 1.428571429 }`, sheet.cssRules.length);
-        }
-
-        getOnlineStatusIconClasses(conversation: PrivateConversation): Record<string, any> {
-            const status = conversation.character.status;
-
-            if ((conversation.typingStatus === 'typing') || (conversation.typingStatus === 'paused')) {
-                return {
-                    fas: true,
-                    'fa-comment-dots': (conversation.typingStatus === 'typing'),
-                    'fa-comment': (conversation.typingStatus === 'paused')
-                };
+    onKeyDown(e: KeyboardEvent): void {
+        const selected = this.conversations.selectedConversation;
+        const pms = this.conversations.privateConversations;
+        const channels = this.conversations.channelConversations;
+        const console = this.conversations.consoleTab;
+        const activity = this.conversations.activityTab;
+        if (getKey(e) === Keys.ArrowUp && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            if (selected === console || selected === activity) {
+                if (channels.length > 0)
+                    channels[channels.length - 1]?.show();
+                else if (pms.length > 0)
+                    pms[pms.length - 1]?.show();
             }
-
-            const styling = {
-                crown:   { color: 'online',  icon: ['fas', 'fa-fw', 'fa-crown'] },
-                online:  { color: 'online',  icon: ['fas', 'fa-fw', 'fa-user'] },
-                looking: { color: 'online',  icon: ['fa',  'fa-fw', 'fa-eye'] },
-                offline: { color: 'offline', icon: ['fa',  'fa-fw', 'fa-user-slash'] },
-                busy:    { color: 'away',    icon: ['fa',  'fa-fw', 'fa-cog'] },
-                idle:    { color: 'away',    icon: ['far', 'fa-fw', 'fa-clock'] },
-                dnd:     { color: 'dnd',     icon: ['fa',  'fa-fw', 'fa-minus-circle'] },
-                away:    { color: 'away',    icon: ['far', 'fa-fw', 'fa-circle'] }
-            };
-
-            const cls = { [styling[status].color]: true };
-
-            styling[status].icon.forEach(name => cls[name] = true);
-
-            return cls;
-        }
-
-        logOut(): void {
-            if(Dialog.confirmDialog(l('chat.confirmLeave'))) core.connection.close();
-        }
-
-        showSearch(): void {
-            (<CharacterSearch>this.$refs['searchDialog']).show();
-        }
-
-        showRecent(): void {
-            (<RecentConversations>this.$refs['recentDialog']).show();
-        }
-
-        showChannels(): void {
-            (<ChannelList>this.$refs['channelsDialog']).show();
-        }
-
-        showStatus(): void {
-            (<StatusSwitcher>this.$refs['statusDialog']).show();
-        }
-
-        showAdCenter(): void {
-          (<AdCenterDialog>this.$refs['adCenter']).show();
-        }
-
-        showAdLauncher(): void {
-          (<AdLauncherDialog>this.$refs['adLauncher']).show();
-        }
-
-        currentClicked = true;
-        goHome(): void {
-            if (this.conversations.selectedConversation === this.conversations.activityTab
-            ||  this.conversations.selectedConversation === this.conversations.consoleTab) {
-                this.currentClicked = !this.currentClicked;
-            }
-
-            this.homeConversation.show();
-        }
-
-        showConversation(c: Conversation.Conversation) {
-            if (this.conversations.selectedConversation === c) {
-                this.currentClicked = !this.currentClicked;
+            else if (Conversation.isPrivate(selected)) {
+                const index = pms.indexOf(selected);
+                if (index === 0)
+                    this.goHome();
+                else
+                    pms[index - 1]?.show();
             }
             else {
-                c.show(); // Set the conversation, Home will update from watcher.
+                const index = channels.indexOf(<Conversation.ChannelConversation>selected);
+                if (index === 0) {
+                    if (pms.length > 0)
+                        pms[pms.length - 1]?.show();
+                    else
+                        this.goHome();
+                }
+                else {
+                    channels[index - 1]?.show();
+                }
             }
         }
-
-        showDevTools(): void {
-            if (this.env === 'development') {
-                (this.$refs.devTools as any).show();
+        else if (getKey(e) === Keys.ArrowDown && e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            if (selected === console || selected === activity) {
+                if (pms.length > 0)
+                    pms[0]?.show();
+                else if (channels.length > 0)
+                    channels[0]?.show();
             }
-        }
-
-        addPmPartnerSwitch: boolean = false;
-        showAddPmPartner(): void {
-            this.addPmPartnerSwitch = !this.addPmPartnerSwitch;
-            (<PmPartnerAdder>this.$refs['addPmPartnerDialog']).show();
-        }
-
-        contextMenuHandle(e: MouseEvent | TouchEvent): void {
-            (this.$refs['contextMenu'] as ContextMenu).handleEvent(e);
-        }
-
-        get showAvatars(): boolean {
-            return core.state.settings.showAvatars;
-        }
-
-        get ownCharacter(): Character {
-            return core.characters.ownCharacter;
-        }
-
-        get ownCharacterLink(): string {
-            return profileLink(core.characters.ownCharacter.name);
-        }
-
-        getClasses(conversation: Conversation): string {
-            return conversation === core.conversations.selectedConversation
-                ? ' active'
-                : unreadClasses[conversation.unread];
-        }
-
-        getHomeClasses(): string {
-            const s = core.conversations.selectedConversation;
-
-            return core.conversations.activityTab === s
-                || core.conversations.consoleTab  === s
-                    ? 'active'
-                    : unreadClasses[this.homeConversation.unread];
-        }
-
-        isColorblindModeActive(): boolean {
-          return core.state.settings.risingColorblindMode;
-        }
-
-        getImagePreview(): ImagePreview | undefined {
-          return this.$refs['imagePreview'] as ImagePreview;
-        }
-
-        adsAreRunning(): boolean {
-          return core.adCenter.adsAreRunning();
-        }
-
-        stopAllAds(): void {
-          core.adCenter.stopAllAds();
-        }
-
-        /**
-         * NOTE CHECKER on home tab
-         */
-        siteCheckerNoteCounts = 0;
-        siteCheckerMsgCounts  = 0;
-
-        @Watch('coreState.settings.risingShowUnreadOfflineCount')
-        onUnreadSettingChanged() {
-            this.updateNoteAndMessageCount();
-        }
-
-        get siteCheckerCount() {
-            return this.coreState.generalSettings.widgets.inbox
-                    ? this.siteCheckerNoteCounts + this.siteCheckerMsgCounts
-                    : 0;
-        }
-
-        siteCheckerIconClass = '';
-
-        onNoteOrMessageEvent = () => this.updateNoteAndMessageCount();
-
-        updateNoteAndMessageCount() {
-            this.siteCheckerMsgCounts  = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
-            this.siteCheckerNoteCounts = core.siteSession.interfaces.notes.getUnread().total ?? 0;
-
-            if (this.siteCheckerCount > 10)
-                this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelopes-bulk';
-            else if (this.siteCheckerNoteCounts)
-                this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelope';
-            else if (this.siteCheckerMsgCounts)
-                this.siteCheckerIconClass = 'fa-regular fa-fw fa-envelope';
-            // Site updates: fa-square-rss fa-newspaper ?
+            else if (Conversation.isPrivate(selected)) {
+                const index = pms.indexOf(selected);
+                if (index === pms.length - 1) {
+                    if (channels.length > 0)
+                        channels[0]?.show();
+                    else
+                        this.goHome();
+                }
+                else {
+                    pms[index + 1]?.show();
+                }
+            }
+            else {
+                const index = channels.indexOf(<Conversation.ChannelConversation>selected);
+                if (index < channels.length - 1)
+                    channels[index + 1]?.show();
+                else
+                    this.goHome();
+            }
         }
     }
+
+    setFontSize(fontSize: number): void {
+        let overrideEl = <HTMLStyleElement | null>document.getElementById('overrideFontSize');
+        if (overrideEl !== null)
+            document.body.removeChild(overrideEl);
+        overrideEl = document.createElement('style');
+        overrideEl.id = 'overrideFontSize';
+        document.body.appendChild(overrideEl);
+        const sheet = <CSSStyleSheet>overrideEl.sheet;
+        sheet.insertRule(`#chatView, .btn, .form-control, .custom-select { font-size: ${fontSize}px; }`, sheet.cssRules.length);
+        sheet.insertRule('.form-control, select.form-control { line-height: 1.428571429 }', sheet.cssRules.length);
+    }
+
+    getOnlineStatusIconClasses(conversation: PrivateConversation): Record<string, unknown> {
+        const status = conversation.character.status;
+
+        if ((conversation.typingStatus === 'typing') || (conversation.typingStatus === 'paused')) {
+            return {
+                fas:               true,
+                'fa-comment-dots': (conversation.typingStatus === 'typing'),
+                'fa-comment':      (conversation.typingStatus === 'paused'),
+            };
+        }
+
+        const styling = {
+            crown:   { color: 'online',  icon: [ 'fas', 'fa-fw', 'fa-crown'        ] },
+            online:  { color: 'online',  icon: [ 'fas', 'fa-fw', 'fa-user'         ] },
+            looking: { color: 'online',  icon: [ 'fa',  'fa-fw', 'fa-eye'          ] },
+            offline: { color: 'offline', icon: [ 'fa',  'fa-fw', 'fa-user-slash'   ] },
+            busy:    { color: 'away',    icon: [ 'fa',  'fa-fw', 'fa-cog'          ] },
+            idle:    { color: 'away',    icon: [ 'far', 'fa-fw', 'fa-clock'        ] },
+            dnd:     { color: 'dnd',     icon: [ 'fa',  'fa-fw', 'fa-minus-circle' ] },
+            away:    { color: 'away',    icon: [ 'far', 'fa-fw', 'fa-circle'       ] },
+        };
+
+        const cls = { [styling[status].color]: true };
+
+        styling[status].icon.forEach(name => cls[name] = true);
+
+        return cls;
+    }
+
+    logOut(): void {
+        if (Dialog.confirmDialog(l('chat.confirmLeave')))
+            core.connection.close();
+    }
+
+    showSearch(): void {
+        (<CharacterSearch> this.$refs['searchDialog']).show();
+    }
+
+    showRecent(): void {
+        (<RecentConversations> this.$refs['recentDialog']).show();
+    }
+
+    showChannels(): void {
+        (<ChannelList> this.$refs['channelsDialog']).show();
+    }
+
+    showStatus(): void {
+        (<StatusSwitcher> this.$refs['statusDialog']).show();
+    }
+
+    showAdCenter(): void {
+        (<AdCenterDialog> this.$refs['adCenter']).show();
+    }
+
+    showAdLauncher(): void {
+        (<AdLauncherDialog> this.$refs['adLauncher']).show();
+    }
+
+    currentClicked = true;
+    goHome(): void {
+        if (this.conversations.selectedConversation === this.conversations.activityTab || this.conversations.selectedConversation === this.conversations.consoleTab)
+            this.currentClicked = !this.currentClicked;
+
+        this.homeConversation.show();
+    }
+
+    showConversation(c: Conversation.Conversation) {
+        if (this.conversations.selectedConversation === c)
+            this.currentClicked = !this.currentClicked;
+        else
+            c.show(); // Set the conversation, Home will update from watcher.
+    }
+
+    showDevTools(): void {
+        if (this.env === 'development')
+            (this.$refs.devTools as Modal).show();
+    }
+
+    addPmPartnerSwitch: boolean = false;
+    showAddPmPartner(): void {
+        this.addPmPartnerSwitch = !this.addPmPartnerSwitch;
+        (<PmPartnerAdder> this.$refs['addPmPartnerDialog']).show();
+    }
+
+    contextMenuHandle(e: MouseEvent | TouchEvent): void {
+        (this.$refs['contextMenu'] as ContextMenu).handleEvent(e);
+    }
+
+    get showAvatars(): boolean {
+        return core.state.settings.showAvatars;
+    }
+
+    get ownCharacter(): Character {
+        return core.characters.ownCharacter;
+    }
+
+    get ownCharacterLink(): string {
+        return profileLink(core.characters.ownCharacter.name);
+    }
+
+    getClasses(conversation: Conversation): string {
+        return conversation === core.conversations.selectedConversation
+            ? ' active'
+            : unreadClasses[conversation.unread];
+    }
+
+    getHomeClasses(): string {
+        const s = core.conversations.selectedConversation;
+
+        return core.conversations.activityTab === s || core.conversations.consoleTab  === s
+            ? 'active'
+            : unreadClasses[this.homeConversation.unread];
+    }
+
+    isColorblindModeActive(): boolean {
+        return core.state.settings.risingColorblindMode;
+    }
+
+    getImagePreview(): ImagePreview | undefined {
+        return this.$refs['imagePreview'] as ImagePreview;
+    }
+
+    adsAreRunning(): boolean {
+        return core.adCenter.adsAreRunning();
+    }
+
+    stopAllAds(): void {
+        core.adCenter.stopAllAds();
+    }
+
+    /**
+     * NOTE CHECKER on home tab
+     */
+    siteCheckerNoteCounts = 0;
+    siteCheckerMsgCounts  = 0;
+
+    @Watch('coreState.settings.risingShowUnreadOfflineCount')
+    onUnreadSettingChanged() {
+        this.updateNoteAndMessageCount();
+    }
+
+    get siteCheckerCount() {
+        return this.coreState.generalSettings.widgets.inbox
+            ? this.siteCheckerNoteCounts + this.siteCheckerMsgCounts
+            : 0;
+    }
+
+    siteCheckerIconClass = '';
+
+    onNoteOrMessageEvent = () => this.updateNoteAndMessageCount();
+
+    updateNoteAndMessageCount() {
+        this.siteCheckerMsgCounts  = core.siteSession.interfaces.noteChecker.getCounts().unreadMessages;
+        this.siteCheckerNoteCounts = core.siteSession.interfaces.notes.getUnread().total ?? 0;
+
+        if (this.siteCheckerCount > 10)
+            this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelopes-bulk';
+        else if (this.siteCheckerNoteCounts)
+            this.siteCheckerIconClass = 'fa-solid fa-fw fa-envelope';
+        else if (this.siteCheckerMsgCounts)
+            this.siteCheckerIconClass = 'fa-regular fa-fw fa-envelope';
+            // Site updates: fa-square-rss fa-newspaper ?
+    }
+}
 </script>
 
 <style lang="scss">
