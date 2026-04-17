@@ -1,92 +1,87 @@
 <template>
-    <modal :action="l('adEditor.title')" @submit="submit" ref="dialog" @open="load" dialogClass="w-100"
-        :buttonText="l('adEditor.save')">
+<modal ref="dialog" :action="l('adEditor.title')" dialog-class="w-100" :button-text="l('adEditor.save')" @submit="submit" @open="load">
+  <div v-for="(ad, index) in ads" :key="index" class="form-group ad-list">
+    <label :for="'adm-content-' + index" class="control-label">Ad #{{ (index + 1) }}
+      <a v-if="(index > 0)" :title="l('adEditor.moveUp')" @click="moveAdUp(index)"><i class="fa fa-arrow-up"></i></a>
+      <a v-if="(index < ads.length - 1)" :title="l('adEditor.moveDown')" @click="moveAdDown(index)"><i class="fa fa-arrow-down"></i></a>
+      <a :title="l('adEditor.remove')" @click="removeAd(index)"><i class="fas fa-times-circle"></i></a>
+    </label>
 
-        <div class="form-group ad-list" v-for="(ad, index) in ads">
-            <label :for="'adm-content-' + index" class="control-label">Ad #{{(index + 1)}}
-                <a v-if="(index > 0)" @click="moveAdUp(index)" :title="l('adEditor.moveUp')"><i class="fa fa-arrow-up"></i></a>
-                <a v-if="(index < ads.length - 1)" @click="moveAdDown(index)" :title="l('adEditor.moveDown')"><i class="fa fa-arrow-down"></i></a>
-                <a @click="removeAd(index)" :title="l('adEditor.remove')"><i class="fas fa-times-circle"></i></a>
-            </label>
+    <editor :id="'adm-content-' + index" v-model="ad.content" :has-toolbar="true" class="form-control" :maxlength="core.connection.vars.lfrp_max" :disabled="ad.disabled">
+    </editor>
 
-            <editor :id="'adm-content-' + index" v-model="ad.content" :hasToolbar="true" class="form-control" :maxlength="core.connection.vars.lfrp_max" :disabled="ad.disabled">
-            </editor>
+    <tagEditor :id="'adm-tags-' + index" v-model="ad.tags" :placeholder="l('adEditor.tags')" :add-tag-on-keys="[13, 188, 9, 32]" class="form-control" :disabled="ad.disabled" :add-tag-on-blur="true"></tagEditor>
 
-            <tagEditor :id="'adm-tags-' + index" v-model="ad.tags" :placeholder="l('adEditor.tags')" :add-tag-on-keys="[13, 188, 9, 32]" class="form-control" :disabled="ad.disabled" :add-tag-on-blur="true"></tagEditor>
+    <label class="control-label disable" :for="'adm-disabled-' + index">
+      <input :id="'adm-disabled-' + index" v-model="ad.disabled" type="checkbox" />
+      {{ l('adEditor.disable') }}
+    </label>
+  </div>
 
-            <label class="control-label disable" :for="'adm-disabled-' + index">
-              <input type="checkbox" :id="'adm-disabled-' + index" v-model='ad.disabled' />
-              {{ l('adEditor.disable') }}
-            </label>
-        </div>
-
-        <button class="btn btn-outline-secondary" @click="addAd()">{{ l('adEditor.another') }}</button>
-
-    </modal>
+  <button class="btn btn-outline-secondary" @click="addAd()">{{ l('adEditor.another') }}</button>
+</modal>
 </template>
 
 <script lang="ts">
-    import {Component} from '@frolic/vue-ts';
-    import CustomDialog from '../../components/custom_dialog';
-    import Modal from '../../components/Modal.vue';
-    import {Conversation} from '../interfaces';
-    import l from '../localize';
-    import {Editor} from '../bbcode';
-    import core from '../core';
-    import { Dialog } from '../../helpers/dialog';
-    import InputTag from 'vue-input-tag';
-    import { Ad } from './ad-center';
+import { Component } from '@frolic/vue-ts';
+import CustomDialog from '../../components/custom_dialog';
+import Modal from '../../components/Modal.vue';
+import { Conversation } from '../interfaces';
+import l from '../localize';
+import { Editor } from '../bbcode';
+import core from '../core';
+import { Dialog } from '../../helpers/dialog';
+import InputTag from 'vue-input-tag';
+import type { Ad } from './ad-center';
 
-    @Component({
-        components: {modal: Modal, editor: Editor, tagEditor: InputTag},
-    })
-    export default class AdCenterDialog extends CustomDialog {
-        l = l;
-        setting = Conversation.Setting;
-        ads!: Ad[];
-        core = core;
+@Component({
+    components: { modal: Modal, editor: Editor, tagEditor: InputTag },
+})
+export default class AdCenterDialog extends CustomDialog {
+    l = l;
+    setting = Conversation.Setting;
+    ads!: Ad[];
+    core = core;
 
-        load(): void {
-            this.ads = structuredClone(core.adCenter.get());
+    load(): void {
+        this.ads = window.structuredClone(core.adCenter.get());
 
-            if (this.ads.length === 0) {
-              this.addAd();
-            }
-        }
-
-        async submit(): Promise<void> {
-          await core.adCenter.set(this.ads);
-        }
-
-        addAd(): void {
-            this.ads.push({
-              content: '',
-              disabled: false,
-              tags: []
-            });
-        }
-
-        removeAd(index: number): void {
-            // if (confirm('Are you sure you wish to remove this ad?')) {
-            if (Dialog.confirmDialog(l('adEditor.removeConfirm'))) {
-                this.ads.splice(index, 1);
-            }
-        }
-
-        moveAdUp(index: number): void {
-            const ad = this.ads.splice(index, 1);
-
-            this.ads.splice(index - 1, 0, ad[0]);
-        }
-
-
-        moveAdDown(index: number): void {
-            const ad = this.ads.splice(index, 1);
-
-            this.ads.splice(index + 1, 0, ad[0]);
-        }
-
+        if (!this.ads.length)
+            this.addAd();
     }
+
+    async submit(): Promise<void> {
+        await core.adCenter.set(this.ads);
+    }
+
+    addAd(): void {
+        this.ads.push({
+            content:  '',
+            disabled: false,
+            tags:     [],
+        });
+    }
+
+    removeAd(index: number): void {
+        // if (confirm('Are you sure you wish to remove this ad?')) {
+        if (Dialog.confirmDialog(l('adEditor.removeConfirm')))
+            this.ads.splice(index, 1);
+    }
+
+    moveAdUp(index: number): void {
+        const ad = this.ads.splice(index, 1);
+
+        this.ads.splice(index - 1, 0, ad[0]);
+    }
+
+
+    moveAdDown(index: number): void {
+        const ad = this.ads.splice(index, 1);
+
+        this.ads.splice(index + 1, 0, ad[0]);
+    }
+
+}
 </script>
 
 <style lang="scss">

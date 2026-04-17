@@ -64,6 +64,7 @@ export default [
             'vue/html-self-closing': 'off',
             'vue/max-len': 'off',
             'vue/first-attribute-linebreak': 'off',
+            'vue/singleline-html-element-content-newline': 'off',
             'vue/html-closing-bracket-newline': [
                 'warn', {
                     singleline: 'never',

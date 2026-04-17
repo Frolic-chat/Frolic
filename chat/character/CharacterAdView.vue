@@ -1,23 +1,22 @@
 <template>
-   <modal :buttons="false" ref="dialog" @open="onOpen" @close="onClose" style="width:98%" dialogClass="ads-dialog">
-        <template slot="title">
-            {{ l('characterAds.title') }}<user :character="character">{{character.name}}</user>
-        </template>
+<modal ref="dialog" :buttons="false" style="width:98%" dialogClass="ads-dialog" @open="onOpen" @close="onClose">
+  <template slot="title">
+    {{ l('characterAds.title') }}<user :character="character">{{ character.name }}</user>
+  </template>
 
-       <div class="row ad-viewer" ref="pageBody" v-if="messages.length > 0">
-            <template v-for="message in messages">
-                <h3>#{{message.channelName}} <span class="message-time">{{formatTime(message.datePosted)}}</span></h3>
-                <div class="border-bottom">
-                    <bbcode :text="message.message"></bbcode>
-                </div>
-            </template>
-        </div>
+  <div v-if="messages.length > 0" ref="pageBody" class="row ad-viewer">
+    <template v-for="message in messages">
+      <h3>#{{ message.channelName }} <span class="message-time">{{ formatTime(message.datePosted) }}</span></h3>
+      <div class="border-bottom">
+        <bbcode :text="message.message"></bbcode>
+      </div>
+    </template>
+  </div>
 
-        <div class="row ad-viewer" ref="pageBody" v-else>
-            <i><user :character="character">{{character.name}}</user>{{ l('characterAds.none') }}</i>
-        </div>
-
-   </modal>
+  <div v-else ref="pageBody" class="row ad-viewer">
+    <i><user :character="character">{{ character.name }}</user>{{ l('characterAds.none') }}</i>
+  </div>
+</modal>
 </template>
 
 
@@ -26,20 +25,20 @@ import l from '../localize';
 import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
-import { Character } from '../../fchat/interfaces';
-import { AdCachedPosting } from '../../learn/ad-cache';
+import type { Character } from '../../fchat/interfaces';
+import type { AdCachedPosting } from '../../learn/ad-cache';
 import core from '../core';
-import {formatTime} from '../common';
+import { formatTime } from '../common';
 import UserView from '../UserView.vue';
 import { BBCodeView } from '../../bbcode/view';
 
 @Component({
-    components: {modal: Modal, user: UserView, bbcode: BBCodeView(core.bbCodeParser)}
+    components: { modal: Modal, user: UserView, bbcode: BBCodeView(core.bbCodeParser) },
 })
 export default class CharacterAdView extends CustomDialog {
     l = l;
 
-    @Prop({required: true})
+    @Prop({ required: true })
     readonly character!: Character;
 
     messages: AdCachedPosting[] = [];
@@ -71,13 +70,13 @@ export default class CharacterAdView extends CustomDialog {
     }
 
 
-    async onOpen(): Promise<void> {
+    onOpen(): void {
         // empty
         return;
     }
 
 
-    async onClose(): Promise<void> {
+    onClose(): void {
         // empty
         return;
     }
