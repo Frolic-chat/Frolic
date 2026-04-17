@@ -22,22 +22,22 @@ export namespace Relation {
     }
 
     export const Label: Record<Chooser, LocalizationKey> = {
-        [Chooser.NoOne]     : 'settings.relation.noOne',
-        [Chooser.Friends]   : 'settings.relation.friendsOnly',
-        [Chooser.Bookmarks] : 'settings.relation.bookmarksOnly',
-        [Chooser.Both]      : 'settings.relation.friendsAndBookmarks',
-        [Chooser.Default]   : 'settings.relation.default'
+        [Chooser.NoOne]:     'settings.relation.noOne',
+        [Chooser.Friends]:   'settings.relation.friendsOnly',
+        [Chooser.Bookmarks]: 'settings.relation.bookmarksOnly',
+        [Chooser.Both]:      'settings.relation.friendsAndBookmarks',
+        [Chooser.Default]:   'settings.relation.default'
     };
 }
 
 export namespace Conversation {
     interface BaseMessage {
-        readonly id: number
+        readonly id:   number
         readonly type: Message.Type
         readonly text: string
         readonly time: Date
 
-        score: number;
+        score:       number;
         filterMatch: boolean;
     }
 
@@ -46,19 +46,19 @@ export namespace Conversation {
     }
 
     export interface BcastMessage extends BaseMessage {
-        readonly type: Message.Type.Bcast
+        readonly type:   Message.Type.Bcast
         readonly sender: Character;
     }
 
     export interface ChatMessage extends BaseMessage {
         readonly isHighlight: boolean
-        readonly sender: Character
+        readonly sender:      Character
     }
 
     export type Message = BcastMessage | EventMessage | ChatMessage;
 
     export interface SFCMessage extends EventMessage {
-        sfc: Connection.ServerCommands['SFC'] & {confirmed?: true}
+        sfc: Connection.ServerCommands['SFC'] & { confirmed?: true }
     }
 
     export namespace Message {
@@ -69,7 +69,7 @@ export namespace Conversation {
             Roll,
             Warn,
             Event,
-            Bcast
+            Bcast,
         }
     }
 
@@ -88,7 +88,7 @@ export namespace Conversation {
         | { e: 'EBS'; } & ActivityStatusEvent
         | {
             [K in keyof Connection.ServerCommands]: {
-                e: K;
+                e:    K;
                 data: Connection.ServerCommands[K];
                 time: Date;
             } & (K extends 'BRO'
@@ -96,22 +96,22 @@ export namespace Conversation {
                 : {})
         }[keyof Connection.ServerCommands];
 
-    export type RecentChannelConversation = {readonly channel: string, readonly name: string};
-    export type RecentPrivateConversation = {readonly character: string};
+    export type RecentChannelConversation = { readonly channel: string, readonly name: string };
+    export type RecentPrivateConversation = { readonly character: string };
 
     export type TypingStatus = 'typing' | 'paused' | 'clear';
 
     export type TabType = 'conversation' | 'description' | 'settings';
 
     interface TabConversation extends Conversation {
-        isPinned: boolean
+        isPinned:                  boolean
         readonly maxMessageLength: number
         close(): Promise<void> | void
         sort(newIndex: number): Promise<void>
     }
 
     export interface PrivateConversation extends TabConversation {
-        readonly character: Character
+        readonly character:    Character
         readonly typingStatus: TypingStatus
 
         notes: ConversationNoteManager;
@@ -121,9 +121,9 @@ export namespace Conversation {
 
     export interface ChannelConversation extends TabConversation {
         readonly channel: Channel
-        mode: Channel.Mode
-        readonly nextAd: number
-        isSendingAds: boolean
+        mode:             Channel.Mode
+        readonly nextAd:  number
+        isSendingAds:     boolean
 
         isSendingAutomatedAds(): boolean
         toggleAutomatedAds(): void
@@ -138,7 +138,7 @@ export namespace Conversation {
         // We're opting to include these to overwrite them with readonlies:
         readonly errorText: string;
         readonly infoText:  string;
-        messages: Array<Message>;
+        messages:           Array<Message>;
 
         readonly members: string[];
         // messageForMember(name: string): Message | null;
@@ -167,12 +167,12 @@ export namespace Conversation {
     export interface State {
         readonly privateConversations: ReadonlyArray<PrivateConversation>
         readonly channelConversations: ReadonlyArray<ChannelConversation>
-        readonly activityTab: ActivityConversation;
-        readonly consoleTab: ConsoleConversation
-        readonly recent: ReadonlyArray<RecentPrivateConversation>
-        readonly recentChannels: ReadonlyArray<RecentChannelConversation>
+        readonly activityTab:          ActivityConversation;
+        readonly consoleTab:           ConsoleConversation
+        readonly recent:               ReadonlyArray<RecentPrivateConversation>
+        readonly recentChannels:       ReadonlyArray<RecentChannelConversation>
         readonly selectedConversation: Conversation
-        readonly hasNew: boolean;
+        readonly hasNew:               boolean;
         byKey(key: string): Conversation | undefined
 
         getPrivate(character: Character): PrivateConversation;
@@ -180,40 +180,40 @@ export namespace Conversation {
     }
 
     export enum Setting {
-        True, False, Default
+        True, False, Default,
     }
 
     export interface Settings {
-        notify: Setting;
+        notify:                Setting;
         notifyOnFriendMessage: Relation.Chooser;
-        highlight: Setting;
-        highlightWords: Array<string>;
-        highlightUsernames: Array<string>;
-        joinMessages: Setting;
-        defaultHighlights: boolean;
-        adSettings: AdSettings;
+        highlight:             Setting;
+        highlightWords:        Array<string>;
+        highlightUsernames:    Array<string>;
+        joinMessages:          Setting;
+        defaultHighlights:     boolean;
+        adSettings:            AdSettings;
     }
 
     export interface AdSettings {
-        readonly ads: string[];
-        readonly randomOrder: boolean;
+        readonly ads:             string[];
+        readonly randomOrder:     boolean;
         readonly lastAdTimestamp: number;
     }
 
     export const enum UnreadState { None, Unread, Mention }
 
     export interface Conversation {
-        enteredText: string;
-        infoText: string;
-        readonly name: string;
-        messages: Array<Message>;
+        enteredText:             string;
+        infoText:                string;
+        readonly name:           string;
+        messages:                Array<Message>;
         readonly reportMessages: ReadonlyArray<Message>;
-        readonly lastRead: Message | undefined
-        errorText: string
-        readonly key: string
-        readonly unread: UnreadState
-        settings: Settings
-        readonly adManager: AdManager;
+        readonly lastRead:       Message | undefined
+        errorText:               string
+        readonly key:            string
+        readonly unread:         UnreadState
+        settings:                Settings
+        readonly adManager:      AdManager;
         send(): Promise<void>
         clear(): void
         loadLastSent(): void
@@ -226,31 +226,34 @@ export namespace Conversation {
 export type Conversation = Conversation.Conversation;
 
 export namespace Logs {
-    export type Conversation = {readonly key: string, readonly name: string};
+    export type Conversation = {
+        readonly key:  string,
+        readonly name: string,
+    };
 }
 
 export interface Logs {
     logMessage(conversation: Conversation, message: Conversation.Message): Promise<void> | void
     getBacklog(conversation: Conversation): Promise<ReadonlyArray<Conversation.Message>>
-    getConversations(character: string): Promise<ReadonlyArray<Logs.Conversation>>
+    getConversations(character: string): ReadonlyArray<Logs.Conversation>
     getLogs(character: string, key: string, date: Date): Promise<ReadonlyArray<Conversation.Message>>
-    getLogDates(character: string, key: string): Promise<ReadonlyArray<Date>>
-    getAvailableCharacters(): Promise<ReadonlyArray<string>>
+    getLogDates(character: string, key: string): ReadonlyArray<Date>
+    getAvailableCharacters(): ReadonlyArray<string>
     canZip: boolean;
 }
 
-export type SearchKink = {id: number, name: string, description: string};
-export type SearchSpecies = {id: number, name: string, shortName: string, details: string, keywords: string};
+export type SearchKink    = { id: number, name: string, description: string };
+export type SearchSpecies = { id: number, name: string, shortName: string, details: string, keywords: string };
 
 export interface SearchData {
-    kinks: SearchKink[]
-    genders: string[]
+    kinks:        SearchKink[]
+    genders:      string[]
     orientations: string[]
-    languages: string[]
-    furryprefs: string[]
-    roles: string[]
-    positions: string[]
-    bodytypes: string[]
+    languages:    string[]
+    furryprefs:   string[]
+    roles:        string[]
+    positions:    string[]
+    bodytypes:    string[]
 }
 
 export interface ExtendedSearchData extends SearchData {
@@ -259,71 +262,71 @@ export interface ExtendedSearchData extends SearchData {
 
 export namespace Settings {
     export type Keys = {
-        settings: Settings
-        pinned: {channels: string[], private: string[]}
-        conversationSettings: {[key: string]: Conversation.Settings | undefined}
-        modes: {[key: string]: Channel.Mode | undefined}
-        recent: Conversation.RecentPrivateConversation[]
-        recentChannels: Conversation.RecentChannelConversation[]
-        hiddenUsers: string[]
-        favoriteEIcons: Record<string, boolean>
-        statusHistory: string[]
-        searchHistory: (ExtendedSearchData | SearchData)[]
-        hideNonMatchingAds: boolean
+        settings:                     Settings
+        pinned:                       { channels: string[], private: string[] }
+        conversationSettings:         { [key: string]: Conversation.Settings | undefined }
+        modes:                        { [key: string]: Channel.Mode | undefined }
+        recent:                       Conversation.RecentPrivateConversation[]
+        recentChannels:               Conversation.RecentChannelConversation[]
+        hiddenUsers:                  string[]
+        favoriteEIcons:               Record<string, boolean>
+        statusHistory:                string[]
+        searchHistory:                (ExtendedSearchData | SearchData)[]
+        hideNonMatchingAds:           boolean
         hideProfileComparisonSummary: boolean
-        ads: Ad[]
+        ads:                          Ad[]
     };
 
     export interface Store {
-        get<K extends keyof Keys>(key: K, character?: string): Promise<Keys[K] | undefined>
-        getAvailableCharacters(): Promise<ReadonlyArray<string>>
-        set<K extends keyof Keys>(key: K, value: Keys[K]): Promise<void>
+        get<K extends keyof Keys>(key: K, character?: string): Keys[K] | undefined
+        getAvailableCharacters(): ReadonlyArray<string>
+        set<K extends keyof Keys>(key: K, value: Keys[K]): void
     }
 
     export interface Settings {
-        playSound: boolean;
-        notifyVolume: number;
-        clickOpensMessage: boolean;
-        disallowedTags: string[];
-        notifications: boolean;
-        notifyFriendSignIn: Relation.Chooser;
+        playSound:             boolean;
+        notifyVolume:          number;
+        clickOpensMessage:     boolean;
+        disallowedTags:        string[];
+        notifications:         boolean;
+        notifyFriendSignIn:    Relation.Chooser;
         notifyOnFriendMessage: Relation.Chooser;
-        highlight: boolean;
-        highlightWords: string[];
-        highlightUsers: boolean;
-        highlightUsernames: string[];
-        showBroadcastsInPMs: boolean;
-        showAvatars: boolean;
-        animatedEicons: boolean;
-        idleTimer: number;
-        messageSeparators: boolean;
-        eventMessages: boolean;
-        joinMessages: boolean;
-        alwaysNotify: boolean;
-        logMessages: boolean; // All messages
-        logChannels: boolean;
-        logAds: boolean;
-        expensiveMemberList: boolean;
-        fontSize: number;
-        showNeedsReply: boolean;
-        enterSend: boolean;
-        secondEnterSend: boolean;
-        colorBookmarks: boolean;
+        highlight:             boolean;
+        highlightWords:        string[];
+        highlightUsers:        boolean;
+        highlightUsernames:    string[];
+        showBroadcastsInPMs:   boolean;
+        showAvatars:           boolean;
+        animatedEicons:        boolean;
+        idleTimer:             number;
+        messageSeparators:     boolean;
+        eventMessages:         boolean;
+        joinMessages:          boolean;
+        alwaysNotify:          boolean;
+        logMessages:           boolean; // All messages
+        logChannels:           boolean;
+        logAds:                boolean;
+        expensiveMemberList:   boolean;
+        fontSize:              number;
+        showNeedsReply:        boolean;
+        enterSend:             boolean;
+        secondEnterSend:       boolean;
+        colorBookmarks:        boolean;
 
-        risingAdScore: boolean;
-        risingLinkPreview: boolean;
-        linkPreviewVolume: number;
+        risingAdScore:          boolean;
+        risingLinkPreview:      boolean;
+        linkPreviewVolume:      number;
         risingAutoCompareKinks: boolean;
 
         risingAutoExpandCustomKinks: boolean;
-        risingCharacterPreview: boolean;
-        risingComparisonInUserMenu: boolean;
-        risingComparisonInSearch: boolean;
+        risingCharacterPreview:      boolean;
+        risingComparisonInUserMenu:  boolean;
+        risingComparisonInSearch:    boolean;
 
-        risingShowUnreadOfflineCount: boolean;
-        risingColorblindMode: boolean;
-        risingShowPortraitNearInput: boolean;
-        risingShowPortraitInMessage: boolean;
+        risingShowUnreadOfflineCount:   boolean;
+        risingColorblindMode:           boolean;
+        risingShowPortraitNearInput:    boolean;
+        risingShowPortraitInMessage:    boolean;
         risingShowHighQualityPortraits: boolean;
 
         risingFilter: SmartFilterSettings;
@@ -341,25 +344,25 @@ export type Settings = Settings.Settings;
 
 export interface Notifications {
     isInBackground: boolean
-    notify(conversation: Conversation, title: string, body: string, icon: string, sound: string): Promise<void>
+    notify(conversation: Conversation, title: string, body: string, icon: string, sound: string): void
     playSound(sound: string): void
     requestPermission(): Promise<void>
-    initSounds(sounds: ReadonlyArray<string>): Promise<void[]>
+    initSounds(sounds: ReadonlyArray<string>): Promise<unknown[]>
     applyGlobalAudioVolume(volume: number): Promise<void>
 }
 
 export interface State {
-    settings: Settings;
+    settings:        Settings;
     generalSettings: GeneralSettings;
-    hiddenUsers: string[];
-    favoriteEIcons: Record<string, boolean>;
+    hiddenUsers:     string[];
+    favoriteEIcons:  Record<string, boolean>;
 }
 
 /**
  * Miscellaneous elements that are pointless to persist across sessions. Typically, this means information relevant to the UI/display, or cache dependent on constantly updating state. If you need to save anything, you should use `core.state` and its associated disk-writing features.
  */
 export interface Runtime {
-    dialogStack: Modal[];
+    dialogStack:  Modal[];
     primaryInput: HTMLInputElement | HTMLTextAreaElement | null;
     registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement): void;
     userToggles: {
