@@ -97,8 +97,10 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
             icon.style.marginRight = '10px';
 
             // HACK: to allow [hr] in header part
-            if (param.startsWith('[hr]'))
-                header.appendChild(parser.createElement('hr')); param = param.slice(4);
+            if (param.startsWith('[hr]')) {
+                header.appendChild(parser.createElement('hr'));
+                param = param.slice(4);
+            }
 
             header.appendChild(icon);
 
