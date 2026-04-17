@@ -346,7 +346,10 @@ async function load(): Promise<EiconStoreExport> {
             ret.asOfTimestamp = 0;
 
         if (!ret.store.length || !ret.asOfTimestamp) {
-            logEicon.warn('store.load.disk.failure', { timestamp: data.asOfTimestamp, data: ret.store.length });
+            logEicon.warn('store.load.disk.failure', {
+                timestamp: 'asOfTimestamp' in data ? data.asOfTimestamp : '',
+                data:      ret.store.length,
+            });
 
             ret.status = 'error';
 
@@ -524,7 +527,10 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
         }
     ) /* eslint-disable @stylistic/indent */
     .catch((e: unknown) => {
-        function isAxios (err: unknown): err is AxiosError { return err.isAxiosError; }
+        function isAxios (err: unknown): err is AxiosError {
+            return !!(typeof err === 'object' && err
+                   && 'isAxiosError' in err && err.isAxiosError);
+        }
 
         if (isAxios(e) && e.response) { // Server responded with failure
             logEicon.info('store.axios.err.response', e.response.status, e.response.headers);
@@ -774,7 +780,9 @@ function addAndRemoveIcons(removals: string[] = [], additions: string[] = []): v
  * and explicitly has `version: 2`.
  */
 function ExplicitlyVersion2(d: unknown): d is { version: 2, records: string[] } {
-    return d?.version === 2 && ImplicitlyVersion2(d);
+    return !!(typeof d === 'object' && d
+           && 'version' in d && d.version === 2
+           && ImplicitlyVersion2(d));
 }
 
 /**
@@ -786,7 +794,8 @@ function ExplicitlyVersion2(d: unknown): d is { version: 2, records: string[] } 
  * @returns True if the variable is the shape of the eicon store version 2.
  */
 function ImplicitlyVersion2(d: unknown): d is { records: string[] } {
-    return Utils.isArrayOfStrings(d?.records);
+    return !!(typeof d === 'object' && d
+           && 'records' in d && Utils.isArrayOfStrings(d.records));
 }
 
 /**
@@ -798,7 +807,8 @@ function ImplicitlyVersion2(d: unknown): d is { records: string[] } {
  * @returns True if the variable is the shape of the Rising eicon store.
  */
 function ImplicitlyVersion1(d: unknown): d is { records: object[] } {
-    return Utils.isArrayOfObjects(d?.records);
+    return !!(typeof d === 'object' && d
+           && 'records' in d && Utils.isArrayOfObjects(d.records));
 }
 
 /**
