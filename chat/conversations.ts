@@ -263,7 +263,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
                 await core.logs.logMessage(this, message);
 
             if (this.settings.notify !== Interfaces.Setting.False && message.sender !== core.characters.ownCharacter)
-                await core.notifications.notify(this, message.sender.name, message.text, core.characters.getImage(message.sender.name), 'attention');
+                core.notifications.notify(this, message.sender.name, message.text, core.characters.getImage(message.sender.name), 'attention');
 
             if (this !== state.selectedConversation || !state.windowFocused)
                 this.unread = Interfaces.UnreadState.Mention;
@@ -1504,7 +1504,7 @@ export default function(this: any): Interfaces.State {
         };
 
         if (msg) {
-            await core.notifications.notify(conversation, data.character, msg.notify, core.characters.getImage(data.character), 'attention');
+            core.notifications.notify(conversation, data.character, msg.notify, core.characters.getImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
                 conversation.unread = Interfaces.UnreadState.Mention;
@@ -1516,7 +1516,7 @@ export default function(this: any): Interfaces.State {
         else if (conversation.settings.notify === Interfaces.Setting.True
         || (shouldNotifyOnFriendMessage()   && core.characters.get(data.character.toLowerCase()).isFriend)
         || (shouldNotifyOnBookmarkMessage() && core.characters.get(data.character.toLowerCase()).isBookmarked)) {
-            await core.notifications.notify(conversation, conversation.name, messageToString(message),
+            core.notifications.notify(conversation, conversation.name, messageToString(message),
                 core.characters.getImage(data.character), 'attention');
 
             if (conversation !== state.selectedConversation || !state.windowFocused)
@@ -1557,7 +1557,7 @@ export default function(this: any): Interfaces.State {
             if(conversation === undefined) return core.channels.leave(channel);
             if(sender.isIgnored) return;
             if(data.type === 'bottle' && data.target === core.connection.character) {
-                await core.notifications.notify(conversation, conversation.name, messageToString(message),
+                core.notifications.notify(conversation, conversation.name, messageToString(message),
                     core.characters.getImage(data.character), 'attention');
                 if(conversation !== state.selectedConversation || !state.windowFocused)
                     conversation.unread = Interfaces.UnreadState.Mention;
@@ -1583,7 +1583,7 @@ export default function(this: any): Interfaces.State {
             const should_notify = shouldNotifyOnFriendLogin()   && c.isFriend
                                || shouldNotifyOnBookmarkLogin() && c.isBookmarked;
             if (should_notify) {
-                await core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), core.characters.getImage(data.identity), 'silence');
+                core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), core.characters.getImage(data.identity), 'silence');
             }
         }
 
@@ -1662,7 +1662,7 @@ export default function(this: any): Interfaces.State {
             //state.activityTab.parse({ e: 'BRO', data, time, message });
             await state.consoleTab.addMessage(message);
 
-            await core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, core.characters.getImage(data.character), 'attention');
+            core.notifications.notify(state.consoleTab, l('events.broadcast.notification', data.character), content, core.characters.getImage(data.character), 'attention');
 
             for (const conv of state.channelConversations)
                 await conv.addMessage(message);
@@ -1752,7 +1752,7 @@ export default function(this: any): Interfaces.State {
             text = l('events.rtb_note', `[user]${data.sender}[/user]`, `[url=${url}view_note.php?note_id=${data.id}]${data.subject}[/url]`);
             character = data.sender;
 
-            await core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
+            core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
         } else if(data.type === 'friendrequest') {
             core.siteSession.interfaces.noteChecker.incrementMessages();
             text = l(`events.rtb_friendrequest`, `[user]${data.name}[/user]`);
@@ -1789,7 +1789,7 @@ export default function(this: any): Interfaces.State {
         if(data.action === 'report') {
             text = l('events.report', `[user]${data.character}[/user]`, decodeHTML(data.tab), decodeHTML(data.report));
             if(!data.old)
-                await core.notifications.notify(state.consoleTab, data.character, text, core.characters.getImage(data.character), 'modalert');
+                core.notifications.notify(state.consoleTab, data.character, text, core.characters.getImage(data.character), 'modalert');
             message = new EventMessage(text, time);
             safeAddMessage(sfcList, message, 500);
             (<Interfaces.SFCMessage>message).sfc = data;

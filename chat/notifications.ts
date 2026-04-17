@@ -1,7 +1,7 @@
 // import path from 'path';
 
 import core from './core';
-import {Conversation, Notifications as Interface} from './interfaces';
+import type { Conversation, Notifications as Interface } from './interfaces';
 import EventBus from './preview/event-bus';
 
 const codecs = { mpeg: 'mp3' } as const;
@@ -21,27 +21,36 @@ export default class Notifications implements Interface {
             conversation !== core.conversations.selectedConversation || core.state.settings.alwaysNotify);
     }
 
-    async notify(conversation: Conversation, title: string, body: string, icon: string, sound: string): Promise<void> {
-        if(!this.shouldNotify(conversation)) return;
+    notify(conversation: Conversation, title: string, body: string, icon: string, sound: string): void {
+        if (!this.shouldNotify(conversation))
+            return;
         this.playSound(sound);
-        if(core.state.settings.notifications && (<{Notification?: object}>window).Notification !== undefined
-            && Notification.permission === 'granted') {
+        if (core.state.settings.notifications && (<{ Notification?: object }>window).Notification !== undefined && Notification.permission === 'granted') {
             const notification = new Notification(title, this.getOptions(conversation, body, icon));
             notification.onclick = () => {
                 conversation.show();
                 window.focus();
-                if('close' in notification) notification.close();
+                if ('close' in notification)
+                    notification.close();
             };
-            if('close' in notification) window.setTimeout(() => notification.close(), 5000);
+            if ('close' in notification)
+                window.setTimeout(() => notification.close(), 5000);
         }
     }
 
     getOptions(conversation: Conversation, body: string, icon: string): NotificationOptions & { renotify: boolean } {
+        /* Legacy code */
+        /* eslint-disable-next-line @typescript-eslint/no-require-imports */
         const badge = <string>require('../electron/build/blossom.png').default;
 
         return {
-            body, icon: core.state.settings.showAvatars ? icon : undefined, badge, silent: true,  data: {key: conversation.key},
-            tag: conversation.key, renotify: true
+            body,
+            icon:     core.state.settings.showAvatars ? icon : undefined,
+            badge,
+            silent:   true,
+            data:     { key: conversation.key },
+            tag:      conversation.key,
+            renotify: true,
         };
     }
 
@@ -53,10 +62,10 @@ export default class Notifications implements Interface {
 
         audio.muted = false;
 
-        audio.play().catch(e => console.error(e));
+        audio.play().catch((e: unknown) => console.error(e));
     }
 
-    async initSounds(sounds: ReadonlyArray<string>): Promise<void[]> {
+    async initSounds(sounds: ReadonlyArray<string>): Promise<unknown[]> {
         const promises = [];
 
         for (const sound of sounds) {
@@ -74,6 +83,8 @@ export default class Notifications implements Interface {
             Object.entries(codecs).forEach(([ codec, format ]) => {
                 const src = document.createElement('source');
                 src.type = `audio/${codec}`;
+                /* Legacy code */
+                /* eslint-disable-next-line @typescript-eslint/no-require-imports */
                 src.src = <string>require(`./assets/${sound}.${format}`);
                 audio.appendChild(src);
             });
@@ -82,7 +93,7 @@ export default class Notifications implements Interface {
             audio.volume = 0;
             audio.muted = true;
 
-            promises.push(audio.play().catch(e => console.error(e)));
+            promises.push(audio.play().catch((e: unknown) => console.error(e)));
         }
 
         return Promise.all(promises);
@@ -96,6 +107,7 @@ export default class Notifications implements Interface {
     }
 
     async requestPermission(): Promise<void> {
-        if((<{Notification?: object}>window).Notification !== undefined) await Notification.requestPermission();
+        if ((<{ Notification?: object }>window).Notification !== undefined)
+            await Notification.requestPermission();
     }
 }
