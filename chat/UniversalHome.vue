@@ -40,7 +40,7 @@
       ></span>
     </span>
     <span><!-- Settings -->
-      <span class="fa-fw fa-solid fa-screwdriver-wrench"></span>
+      <span class="fa-fw fa-solid fa-gear"></span>
     </span>
     <span><!-- Data -->
       <span class="fa-fw fa-solid fa-file-contract"></span>
@@ -52,12 +52,12 @@
     <template v-slot:title-end>
       <span>
         <button aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
-          <span class="fa-solid fa-screwdriver-wrench"></span>
+          <span class="fa-solid fa-fw fa-screwdriver-wrench"></span>
         </button>
       </span>
       <span>
         <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
-          <span class="fa fa-file-alt"></span>
+          <span class="fa fa-fw fa-file-alt"></span>
         </button>
       </span>
       <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
@@ -78,12 +78,12 @@
     <template v-slot:title-end>
       <span>
         <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
-          <span class="fa fa-file-alt"></span>
+          <span class="fa fa-fw fa-file-alt"></span>
         </button>
       </span>
       <span>
         <button :aria-label="reportTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="report()">
-          <span class="fa fa-exclamation-triangle"></span>
+          <span class="fa fa-fw fa-exclamation-triangle"></span>
         </button>
       </span>
       <div ref="tabsContainer0" id="tabs-container-in-primaryconvo" style="display: contents;"></div>
@@ -103,12 +103,12 @@
     <template v-slot:title-end>
       <span v-if="isHome">
         <button aria-label="Home Page Options" data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="openWidgetOptions()">
-          <span class="fa-solid fa-screwdriver-wrench"></span>
+          <span class="fa-solid fa-fw fa-screwdriver-wrench"></span>
         </button>
       </span>
       <span>
         <button :aria-label="logsTitle" data-balloon-nofocus data-balloon-pos="down" class="btn btn-outline-secondary" @click.prevent="showLogs()">
-          <span class="fa fa-file-alt"></span>
+          <span class="fa fa-fw fa-file-alt"></span>
         </button>
       </span>
       <div ref="tabsContainer1" id="tabs-container-in-secondaryconvo" style="display: contents;"></div>

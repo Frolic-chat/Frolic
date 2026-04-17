@@ -348,11 +348,11 @@ Are you sure?`,
     'settings.hidePrivateMessages.help': "Messages from global ops and moderators of any channel you're in will remain visible.",
     'settings.useGlobalSetting': 'Use global setting',
 
-    'home.tab.home': 'Home',
-    'home.tab.comms': 'Comms',
+    'home.tab.home':        'Home',
+    'home.tab.comms':       'Comms',
     'home.tab.description': 'Description',
-    'home.tab.settings': 'Settings',
-    'home.tab.data': 'Data',
+    'home.tab.settings':    'General Settings',
+    'home.tab.data':        'Data',
 
     // Home page widgets
     'home.widgetOptions.title': 'Customize homepage',
