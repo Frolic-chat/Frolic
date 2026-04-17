@@ -106,6 +106,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         logCache.silly('ProfileCache.recalcCacheSize', this.MAX_CACHE_SIZE);
     }
 
+    /* eslint-disable @stylistic/nonblock-statement-body-position */
     protected setFriendCount(n: number) {
         if (n >= 0) this.friend_cache_size = n;
         else        this.friend_cache_size = 0;
@@ -119,6 +120,14 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
         this.recalcCacheSize();
     }
+
+    protected setSettingsCount(n: number) {
+        if (n >= 0) this.user_cache_size = n;
+        else        this.user_cache_size = 0;
+
+        this.recalcCacheSize();
+    }
+    /* eslint-enable @stylistic/nonblock-statement-body-position */
 
     setChannelCount(conversations: Conversation[]) {  // Scale per-channel.
         this.channel_cache_size = conversations.reduce(
@@ -140,13 +149,6 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
         );
 
         //this.recalcCacheSize();
-    }
-
-    protected setSettingsCount(n: number) {
-        if (n >= 0) this.user_cache_size = n;
-        else        this.user_cache_size = 0;
-
-        this.recalcCacheSize();
     }
 
     protected lastFetch = Date.now();
@@ -435,6 +437,7 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
          * Color regexes are available in CoreBBCodeParser in bbcode/core.ts.
          * In fact, there's probably a way to reuse those.
          */
+        /* eslint-disable-next-line @stylistic/array-element-newline */
         const valid_colors = [ 'red', 'blue', 'white', 'yellow', 'pink', 'gray', 'green', 'orange', 'purple', 'black', 'brown', 'cyan' ];
         const invalid: string[] = [];
 
@@ -553,13 +556,13 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
                     return false;
 
                 if (k !== undefined) {
-                    const v = this.cache.get(k)!;
+                    const is_self = this.cache.get(k)?.character.is_self || false;
                     const c = options?.chatChar?.(k);
                     const active_in_pm = options?.privates?.find(c => c.key === k);
 
                     const relevant = active_in_pm
                                   || (c?.isBookmarked || c?.isFriend) && c.status !== 'offline'
-                                  || v.character.is_self;
+                                  || is_self;
 
                     if (relevant) {
                         logCache.silly('ProfileCache.evictOutdated.skipRelevant', k);

@@ -47,9 +47,9 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
             parent.appendChild(outer);
             return outer;
         }));
-        this.addTag(new BBCodeSimpleTag('left', 'span', [ 'leftText' ]));
-        this.addTag(new BBCodeSimpleTag('right', 'span', [ 'rightText' ]));
-        this.addTag(new BBCodeSimpleTag('center', 'span', [ 'centerText' ]));
+        this.addTag(new BBCodeSimpleTag('left',    'span', [ 'leftText'    ]));
+        this.addTag(new BBCodeSimpleTag('right',   'span', [ 'rightText'   ]));
+        this.addTag(new BBCodeSimpleTag('center',  'span', [ 'centerText'  ]));
         this.addTag(new BBCodeSimpleTag('justify', 'span', [ 'justifyText' ]));
         this.addTag(new BBCodeSimpleTag(
             'big',
