@@ -30,6 +30,7 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
         return outer;
     }
 
+    /* eslint-disable @stylistic/array-element-newline */
     constructor() {
         super();
         const hr = new BBCodeSimpleTag('hr', 'hr', [], []);
@@ -272,7 +273,7 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
                 return;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
             const view = new UrlTagView({
                 el:        root,
                 propsData: { url: tag_data.url, text: tag_data.textContent, domain: tag_data.domain },
@@ -282,7 +283,7 @@ export class StandardBBCodeParser extends CoreBBCodeParser {
 
             return root;
         }));
-    }
+    } /* eslint-enable @stylistic/array-element-newline */
 
 
     parseEverything(input: string): BBCodeElement {

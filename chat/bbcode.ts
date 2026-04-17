@@ -1,5 +1,5 @@
 import type Vue from 'vue';
-import type { BBCodeElement} from '../bbcode/core';
+import type { BBCodeElement } from '../bbcode/core';
 import { CoreBBCodeParser, analyzeUrlTag } from '../bbcode/core';
 import BaseEditor from '../bbcode/Editor.vue';
 import { BBCodeTextTag } from '../bbcode/parser';
@@ -31,10 +31,11 @@ export default class BBCodeParser extends CoreBBCodeParser {
             const el = parser.createElement('span');
             parent.appendChild(el);
 
+            /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
             const view = new UserView({
                 el,
                 propsData: { character: core.characters.get(content) },
-            });
+            }) as Vue;
 
             this.cleanup.push(view);
 
@@ -54,10 +55,11 @@ export default class BBCodeParser extends CoreBBCodeParser {
             parent.appendChild(root);
             root.appendChild(el);
 
+            /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
             const view = new IconView({
                 el,
                 propsData: { character: content },
-            });
+            }) as Vue;
 
             this.cleanup.push(view);
             return root;
@@ -98,10 +100,11 @@ export default class BBCodeParser extends CoreBBCodeParser {
             parent.appendChild(root);
             root.appendChild(el);
 
+            /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
             const view = new ChannelView({
                 el,
-                propsData: {id: content, text: param}
-            });
+                propsData: { id: content, text: param },
+            }) as Vue;
 
             this.cleanup.push(view);
 
@@ -114,10 +117,11 @@ export default class BBCodeParser extends CoreBBCodeParser {
             parent.appendChild(root);
             root.appendChild(el);
 
+            /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
             const view = new ChannelView({
                 el,
-                propsData: {id: content, text: content}
-            });
+                propsData: { id: content, text: content },
+            }) as Vue;
 
             this.cleanup.push(view);
 
@@ -140,14 +144,15 @@ export default class BBCodeParser extends CoreBBCodeParser {
                     return;
                 }
 
+                /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
                 const view = new UrlTagView({
-                    el: root,
+                    el:        root,
                     propsData: {
-                        url: tag_data.url,
-                        text: tag_data.textContent,
+                        url:    tag_data.url,
+                        text:   tag_data.textContent,
                         domain: tag_data.domain,
                     },
-                });
+                }) as Vue;
 
                 this.cleanup.push(view);
 
