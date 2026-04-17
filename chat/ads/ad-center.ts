@@ -1,10 +1,10 @@
 import core from '../core';
-import { Conversation } from '../interfaces';
+import type { Conversation } from '../interfaces';
 
 export interface Ad {
     disabled: boolean;
-    tags: string[];
-    content: string;
+    tags:     string[];
+    content:  string;
 }
 
 export class AdCenter {
@@ -30,7 +30,7 @@ export class AdCenter {
                 return {
                     ...ad,
                     content: ad.content.trim(),
-                    tags: filteredTags.length > 0 ? filteredTags : ['default'],
+                    tags:    filteredTags.length > 0 ? filteredTags : [ 'default' ],
                 };
             }
             );
@@ -38,7 +38,7 @@ export class AdCenter {
         await core.settingsStore.set('ads', this.ads);
     }
 
-    async add(content: string, tags: string[] = ['default']): Promise<void> {
+    async add(content: string, tags: string[] = [ 'default' ]): Promise<void> {
         this.ads.push({ content, tags, disabled: false });
 
         await this.set(this.ads);
@@ -87,9 +87,8 @@ export class AdCenter {
     isSafeToOverride(channelId: string): boolean {
         const conv = this.getConversation(channelId);
 
-        if (!conv) {
+        if (!conv)
             return true;
-        }
 
         return conv.settings.adSettings.ads.every(adContent => !this.isMissingFromAdCenter(adContent));
     }
@@ -97,9 +96,8 @@ export class AdCenter {
     protected scheduleForChannel(channelId: string, ads: Ad[], order: 'random' | 'ad-center', timeoutMinutes: number): void {
         const conv = this.getConversation(channelId);
 
-        if (!conv) {
+        if (!conv)
             return;
-        }
 
         conv.settings = {
             ...conv.settings,
@@ -109,8 +107,8 @@ export class AdCenter {
                 ads: ads
                     .filter(ad => !ad.disabled && ad.content.trim())
                     .map(ad => ad.content.trim()),
-                randomOrder: order === 'random'
-            }
+                randomOrder: order === 'random',
+            },
         };
 
         conv.adManager.stop();

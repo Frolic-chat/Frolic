@@ -1,7 +1,7 @@
 <template>
 <modal ref="dialog" :action="l('adEditor.title')" dialog-class="w-100" :button-text="l('adEditor.save')" @submit="submit" @open="load">
   <div v-for="(ad, index) in ads" :key="index" class="form-group ad-list">
-    <label :for="'adm-content-' + index" class="control-label">Ad #{{ (index + 1) }}
+    <label :for="'adm-content-' + index" class="d-flex align-items-center justify-content-center gap-1" style="gap: 0.5em">Ad #{{ (index + 1) }}
       <a v-if="(index > 0)" :title="l('adEditor.moveUp')" @click="moveAdUp(index)"><i class="fa fa-arrow-up"></i></a>
       <a v-if="(index < ads.length - 1)" :title="l('adEditor.moveDown')" @click="moveAdDown(index)"><i class="fa fa-arrow-down"></i></a>
       <a :title="l('adEditor.remove')" @click="removeAd(index)"><i class="fas fa-times-circle"></i></a>
@@ -33,6 +33,8 @@ import core from '../core';
 import { Dialog } from '../../helpers/dialog';
 import InputTag from 'vue-input-tag';
 import type { Ad } from './ad-center';
+import NewLogger from '../../helpers/log';
+const log = NewLogger('ads');
 
 @Component({
     components: { modal: Modal, editor: Editor, tagEditor: InputTag },
@@ -51,7 +53,7 @@ export default class AdCenterDialog extends CustomDialog {
     }
 
     async submit(): Promise<void> {
-        await core.adCenter.set(this.ads);
+        await core.adCenter.set(window.structuredClone(this.ads));
     }
 
     addAd(): void {
@@ -60,12 +62,14 @@ export default class AdCenterDialog extends CustomDialog {
             disabled: false,
             tags:     [],
         });
+        log.debug('AdCenterDialog.addAd', this.ads[this.ads.length - 1]);
     }
 
     removeAd(index: number): void {
-        // if (confirm('Are you sure you wish to remove this ad?')) {
-        if (Dialog.confirmDialog(l('adEditor.removeConfirm')))
+        if (Dialog.confirmDialog(l('adEditor.removeConfirm'))) {
+            log.debug('AdCenterDialog.removeAd', this.ads[index]);
             this.ads.splice(index, 1);
+        }
     }
 
     moveAdUp(index: number): void {
@@ -80,7 +84,6 @@ export default class AdCenterDialog extends CustomDialog {
 
         this.ads.splice(index + 1, 0, ad[0]);
     }
-
 }
 </script>
 
@@ -103,12 +106,11 @@ export default class AdCenterDialog extends CustomDialog {
       font-size: 140%;
 
       a {
-        padding-right: 0.3rem;
-        opacity:0.3;
+        opacity: 0.45;
         font-size: 70%;
 
         &:hover {
-          opacity:0.6
+          opacity: 0.9
         }
       }
     }

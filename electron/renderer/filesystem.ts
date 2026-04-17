@@ -337,7 +337,9 @@ function getSettingsDir(character: string = core.connection.character): string {
 }
 
 export class SettingsStore implements Settings.Store {
-    get<K extends keyof Settings.Keys>(key: K, character?: string): Settings.Keys[K] | undefined {
+    async get<K extends keyof Settings.Keys>(key: K, character?: string): Promise<Settings.Keys[K] | undefined> {
+        await Promise.resolve();
+
         try {
             const file = path.join(getSettingsDir(character), key);
 
@@ -357,7 +359,8 @@ export class SettingsStore implements Settings.Store {
         return (fs.readdirSync(baseDir)).filter((x) => fs.statSync(path.join(baseDir, x)).isDirectory());
     }
 
-    set<K extends keyof Settings.Keys>(key: K, value: Settings.Keys[K]): void {
+    async set<K extends keyof Settings.Keys>(key: K, value: Settings.Keys[K]): Promise<void> {
+        await Promise.resolve();
         writeFile(path.join(getSettingsDir(), key), JSON.stringify(value, null, 4));
     }
 }

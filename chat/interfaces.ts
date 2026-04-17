@@ -1,18 +1,18 @@
-import {Connection} from '../fchat';
+import type { Connection } from '../fchat';
 
-import {Channel, Character} from '../fchat/interfaces';
-import { AdManager } from './ads/ad-manager';
-import ConversationNoteManager from './conversation_notes';
-import { SmartFilterSettings } from '../learn/filter/types';
-export {Connection, Channel, Character} from '../fchat/interfaces';
+import type { Channel, Character } from '../fchat/interfaces';
+import type { AdManager } from './ads/ad-manager';
+import type ConversationNoteManager from './conversation_notes';
+import type { SmartFilterSettings } from '../learn/filter/types';
+export { Connection, Channel, Character } from '../fchat/interfaces';
 /**
  * User statuses are specifically the statuses that users can set for themselves via UIs and alash commands.
  */
 export const userStatuses: ReadonlyArray<Character.Status> = ['online', 'looking', 'away', 'busy', 'dnd'];
 export const channelModes: ReadonlyArray<Channel.Mode> = ['chat', 'ads', 'both'];
-import { Ad } from './ads/ad-center';
-import { GeneralSettings } from '../electron/common';
-import { LocalizationKey } from './localize';
+import type { Ad } from './ads/ad-center';
+import type { GeneralSettings } from '../electron/common';
+import type { LocalizationKey } from './localize';
 import type Modal from '../components/Modal.vue';
 import type { ActivityEvent, ActivityStatusEvent } from './preview/event-bus';
 
@@ -278,9 +278,9 @@ export namespace Settings {
     };
 
     export interface Store {
-        get<K extends keyof Keys>(key: K, character?: string): Keys[K] | undefined
+        get<K extends keyof Keys>(key: K, character?: string): Promise<Keys[K] | undefined>
         getAvailableCharacters(): ReadonlyArray<string>
-        set<K extends keyof Keys>(key: K, value: Keys[K]): void
+        set<K extends keyof Keys>(key: K, value: Keys[K]): Promise<void>
     }
 
     export interface Settings {
