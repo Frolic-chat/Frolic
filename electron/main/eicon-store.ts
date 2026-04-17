@@ -12,7 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import * as FChatFs from './filesystem';
-import Axios, { AxiosError, AxiosProgressEvent } from 'axios';
+import type { AxiosError, AxiosProgressEvent } from 'axios';
+import Axios from 'axios';
 import * as Utils from '../../helpers/utils';
 
 // even importing just the type from event-bus doesn't work, though it should
@@ -128,7 +129,7 @@ export async function init(directory: string, storeFilename: string, favoritesFi
     }
 
     await checkForUpdates();
-    setInterval(() => checkForUpdates(), UPDATE_FREQUENCY);
+    setInterval(() => void checkForUpdates(), UPDATE_FREQUENCY);
 
     Electron.webContents.getAllWebContents().forEach(wc => wc.send('eicon-ready'));
 
@@ -143,7 +144,7 @@ export async function init(directory: string, storeFilename: string, favoritesFi
  * Call with no arguments to register pre-programmed events; provide your own events to register those.
  * @param extraCalls Optional: Tuples of event-name and Function
  */
-function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...args: any[]) => void] ]) {
+function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...args: unknown[]) => void] ]) {
     if (extraCalls) {
         logEicon.debug('store.registerIPC.extras', { count: extraCalls.length });
 
@@ -168,7 +169,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
         return { status: status, amount: store.length };
     });
 
-    Electron.ipcMain.handle('eicon-page', (_e, count?: any): string[] => {
+    Electron.ipcMain.handle('eicon-page', (_e, count?: unknown): string[] => {
         logEicon.silly('store.handle.eicon-page', count);
 
         const n = typeof count === 'number' && count >= 0 && count <= store.length
@@ -178,7 +179,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
         return randomPage(n);
     });
 
-    Electron.ipcMain.handle('eicon-search', async (_e, userQuery: any): Promise<string[]> => {
+    Electron.ipcMain.handle('eicon-search', async (_e, userQuery: unknown): Promise<string[]> => {
         logEicon.silly('store.handle.eicon-search', userQuery);
 
         if (userQuery && typeof userQuery === 'string') { // exists AND has text
@@ -200,8 +201,9 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
 
             return search(query);
         }
-        else
+        else {
             return randomPage();
+        }
     });
 
     Electron.ipcMain.handle('eicon-refresh', async (_e, payload): Promise<boolean> => {
@@ -243,7 +245,7 @@ async function save(): Promise<boolean> {
             logEicon.debug('store.save.success.saved', {
                 records: store.length,
                 asOfTimestamp,
-                file: filename,
+                file:    filename,
             });
 
             return true;
@@ -285,13 +287,13 @@ async function load(): Promise<EiconStoreExport> {
     logEicon.verbose('store.load', { store: filename });
 
     const ret: EiconStoreExport = {
-        store: [] as string[],
+        store:         [] as string[],
         asOfTimestamp: 0,
-        status: 'uninitialized',
+        status:        'uninitialized',
     };
 
     try {
-        const data = JSON.parse(await fs.promises.readFile(filename, { encoding: 'utf-8' }));
+        const data = JSON.parse(await fs.promises.readFile(filename, { encoding: 'utf-8' })) as object;
 
         /** Handling old formats is a must.
          *
@@ -338,7 +340,10 @@ async function load(): Promise<EiconStoreExport> {
             );
         }
 
-        ret.asOfTimestamp = data?.asOfTimestamp || 0;
+        if ('asOfTimestamp' in data && typeof data.asOfTimestamp === 'number')
+            ret.asOfTimestamp = data.asOfTimestamp;
+        else
+            ret.asOfTimestamp = 0;
 
         if (!ret.store.length || !ret.asOfTimestamp) {
             logEicon.warn('store.load.disk.failure', { timestamp: data.asOfTimestamp, data: ret.store.length });
@@ -355,25 +360,24 @@ async function load(): Promise<EiconStoreExport> {
     catch (e) {
         logEicon.error('store.load.failure', e);
     }
-    finally {
-        return ret;
-    }
+
+    return ret;
 }
 
-    // catch (err) {
-    //     try {
-    //         await downloadAll();
-    //     }
-    //     catch (err2) {
-    //         logEicon.error('eicons.load.failure.download', { initial: err, explicit: err2 });
+// catch (err) {
+//     try {
+//         await downloadAll();
+//     }
+//     catch (err2) {
+//         logEicon.error('eicons.load.failure.download', { initial: err, explicit: err2 });
 
-    //         emitError({
-    //             source:  'eicon',
-    //             type:    'load.download',
-    //             message: 'Failed to update or download new eicons. Eicon search may provide outdated results.',
-    //         });
-    //     }
-    // }
+//         emitError({
+//             source:  'eicon',
+//             type:    'load.download',
+//             message: 'Failed to update or download new eicons. Eicon search may provide outdated results.',
+//         });
+//     }
+// }
 
 /**
  * Returns the hardcoded name for the eicon db file.
@@ -463,7 +467,7 @@ async function update(): Promise<void> {
 
     logEicon.verbose('store.update.processed', {
         asOfTimestamp,
-        removals: removals.length,
+        removals:  removals.length,
         additions: additions.length,
     });
 
@@ -479,12 +483,10 @@ async function update(): Promise<void> {
  * As it's called from a timer, it should handle writing to the export data to the variables itself.
  */
 async function checkForUpdates(force?: boolean): Promise<void> {
-    if (force || !asOfTimestamp || !store.length || (status !== 'ready' && status !== 'loading')) {
+    if (force || !asOfTimestamp || !store.length || (status !== 'ready' && status !== 'loading'))
         await rebuildFromRemote();
-    }
-    else {
+    else
         await update();
-    }
 }
 
 
@@ -495,8 +497,7 @@ async function checkForUpdates(force?: boolean): Promise<void> {
 async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> {
     const controller = new AbortController();
 
-    // @ts-ignore
-    let user_impatience = () => controller.abort("Xariah connection timeout.");
+    const user_impatience = () => controller.abort('Xariah connection timeout.');
     let no_response = setTimeout(user_impatience, 8000);
 
     logEicon.debug('store.fetchAll.timeout.start');
@@ -508,7 +509,7 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
      */
     const result = await Axios.get(
         FULL_DATA_URL, {
-            signal: controller.signal,
+            signal:             controller.signal,
             onDownloadProgress: e => {
                 logEicon.debug('store.fetchAll.progress.datareceived');
 
@@ -518,12 +519,12 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
                 if (e.lengthComputable)
                     emitProgress(e);
             },
-            timeout: 15000,
+            timeout:             15000,
             timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
         }
-    )
-    .catch(e => {
-        function isAxios (err: any): err is AxiosError { return err.isAxiosError; }
+    ) /* eslint-disable @stylistic/indent */
+    .catch((e: unknown) => {
+        function isAxios (err: unknown): err is AxiosError { return err.isAxiosError; }
 
         if (isAxios(e) && e.response) { // Server responded with failure
             logEicon.info('store.axios.err.response', e.response.status, e.response.headers);
@@ -555,7 +556,7 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
         }
 
         return undefined;
-    });
+    }); /* eslint-enable @stylistic/indent */
 
     clearTimeout(no_response);
 
@@ -589,14 +590,13 @@ async function fetchAll(): Promise<{ eicons: string[], asOfTimestamp: number }> 
 async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExport> {
     const controller = new AbortController();
 
-    // @ts-ignore
-    let user_impatience = () => controller.abort("Xariah connection timeout.");
+    const user_impatience = () => controller.abort('Xariah connection timeout.');
     let no_response = setTimeout(user_impatience, 8000);
 
     logEicon.debug('store.fetchUpdates.timeout.start');
 
     const result = await Axios.get(`${DATA_UPDATE_URL}/${fromTimestampInSecs}`, {
-        signal: controller.signal,
+        signal:             controller.signal,
         onDownloadProgress: e => {
             logEicon.debug('store.fetchUpdates.progress.datareceived');
 
@@ -606,14 +606,14 @@ async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExp
             if (e.lengthComputable)
                 emitProgress(e);
         },
-        timeout: 15000,
+        timeout:             15000,
         timeoutErrorMessage: 'Failed to get Xariah.net eicon database.',
-    })
+    }) /* eslint-disable @stylistic/indent */
     .catch(() => emitError({
         source:  'eicon',
         type:    'fetchUpdates.connection',
         message: "Didn't receive timestamp from eicon server.",
-    }));
+    })); /* eslint-enable @stylistic/indent */
 
     // bad result; lets pretend this update never happened.
     if (!result || typeof result.data !== 'string')
@@ -631,7 +631,7 @@ async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExp
         if (!line || line.startsWith('#'))
             return;
 
-        const [action, eicon] = line.split('\t', 3);
+        const [ action, eicon ] = line.split('\t', 3);
 
         if (eicon && (action === '+' || action === '-'))
             recordUpdates[action].push(eicon.toLowerCase());
@@ -654,16 +654,16 @@ async function fetchUpdates(fromTimestampInSecs: number): Promise<EiconUpdateExp
 
     return {
         asOfTimestamp: asOfTimestamp || fromTimestampInSecs,
-        record: recordUpdates,
-        status: asOfTimestamp ? 'ready' : 'unverified',
+        record:        recordUpdates,
+        status:        asOfTimestamp ? 'ready' : 'unverified',
     };
 }
 
-async function emitError(err: ErrorEvent) {
+function emitError(err: ErrorEvent) {
     Electron.webContents.getAllWebContents().forEach(wc => wc.send('eicon-error', err));
 }
 
-async function emitProgress(e: AxiosProgressEvent) {
+function emitProgress(e: AxiosProgressEvent) {
     Electron.webContents.getAllWebContents().forEach(wc => wc.send('eicon-progress', e));
 }
 
@@ -704,6 +704,7 @@ function search(searchKey: string): string[] {
 /**
  * Randomize the eicon db using the fast Fisher-Yates shuffle, capable of shuffing only a select few cards at a time.
  */
+/* eslint-disable @stylistic/nonblock-statement-body-position */
 async function shuffle(amount?: number): Promise<void> {
     logEicon.silly('store.shuffle', amount);
 
@@ -712,7 +713,7 @@ async function shuffle(amount?: number): Promise<void> {
     await Utils.FisherYatesShuffle(store, amount);
 
     if (logEicon.eval()) console.timeEnd(`shuffle ${amount}`);
-}
+} /* eslint-enable @stylistic/nonblock-statement-body-position */
 
 /**
  * Retrieve the first `amount` of eicons from the (presumably shuffled) eicon
@@ -723,7 +724,7 @@ async function shuffle(amount?: number): Promise<void> {
 function randomPage(amount: number = 0): string[] {
     const r = Utils.Rotate(store, amount || EICON_PAGE_RESULTS_COUNT);
 
-    shuffle(r.length);
+    void shuffle(r.length);
 
     return r;
 }
@@ -734,6 +735,7 @@ function randomPage(amount: number = 0): string[] {
  * Adding to a "unique" array requires checking your new addition doesn't exist; removing requires finding index and splicing to remove it for each removal, or filtering all at once.
  * @param removals Array of eicon names
  */
+/* eslint-disable @stylistic/nonblock-statement-body-position */
 function addAndRemoveIcons(removals: string[] = [], additions: string[] = []): void {
     logEicon.silly('store.addAndRemoveIcons.start');
 
@@ -756,7 +758,7 @@ function addAndRemoveIcons(removals: string[] = [], additions: string[] = []): v
     store = Array.from(store_set);
 
     if (logEicon.eval()) console.timeEnd('addAndRemoveIcons');
-}
+} /* eslint-enable @stylistic/nonblock-statement-body-position */
 
 
 /**
@@ -771,7 +773,7 @@ function addAndRemoveIcons(removals: string[] = [], additions: string[] = []): v
  * @returns True if the variable is the shape of the eicon store version 2
  * and explicitly has `version: 2`.
  */
-function ExplicitlyVersion2(d: any): d is { version: 2, records: string[] } {
+function ExplicitlyVersion2(d: unknown): d is { version: 2, records: string[] } {
     return d?.version === 2 && ImplicitlyVersion2(d);
 }
 
@@ -783,7 +785,7 @@ function ExplicitlyVersion2(d: any): d is { version: 2, records: string[] } {
  * @param d A variable to test the structure of.
  * @returns True if the variable is the shape of the eicon store version 2.
  */
-function ImplicitlyVersion2(d: any): d is { records: string[] } {
+function ImplicitlyVersion2(d: unknown): d is { records: string[] } {
     return Utils.isArrayOfStrings(d?.records);
 }
 
@@ -795,7 +797,7 @@ function ImplicitlyVersion2(d: any): d is { records: string[] } {
  * @param d A variable to test the structure of.
  * @returns True if the variable is the shape of the Rising eicon store.
  */
-function ImplicitlyVersion1(d: any): d is { records: object[] } {
+function ImplicitlyVersion1(d: unknown): d is { records: object[] } {
     return Utils.isArrayOfObjects(d?.records);
 }
 
@@ -806,7 +808,8 @@ function ImplicitlyVersion1(d: any): d is { records: object[] } {
 function getCategoryResults(category: string): string[] {
     logEicon.debug('store.getCategoryResults', category);
 
-    switch(category) {
+    /* eslint-disable @stylistic/indent, @stylistic/array-element-newline */
+    switch (category) {
     case 'random':
         return randomPage();
 
@@ -884,12 +887,15 @@ function getCategoryResults(category: string): string[] {
 
     case 'memes':
         return [
-            'flowercatnopls', 'flowercatpls', 'bad eicon detected', 'admiss', 'perish', 'fsquint', 'kille', 'majimamelon', 'dogboom', 'catexplode',  'despairing', 'doorkick', 'doorkick2', 'emptyhand', 'sweat 1', 'tap the sign', 'soypoint', 'pethand', 'tailwaggy', 'tailsooo', 'e62pog', 'thehorse', 'guncock', 'nct1', 'michaelguns', 'squirtlegun', 'palpatine', 'thatskindahot', 'ygod', 'flirting101', 'loudnoises', 'nyancat', 'gayb', 'apologize to god', 'jabbalick', 'raisefinger', 'whatislove', 'surprisemothafucka', 'thanksihateit', 'hell is this', 'confused travolta', 'no words', 'coffindance', 'homelander', 'thatsapenis', 'kermitbusiness', 'imdyingsquirtle', 'goodbye', 'oag',
+            'flowercatnopls', 'flowercatpls',
+            'bad eicon detected', 'admiss',
+            'perish', 'fsquint', 'kille', 'majimamelon', 'dogboom', 'catexplode',  'despairing', 'doorkick', 'doorkick2', 'emptyhand', 'sweat 1', 'tap the sign', 'soypoint',
+            'pethand', 'tailwaggy', 'tailsooo', 'e62pog', 'thehorse', 'guncock', 'nct1', 'michaelguns', 'squirtlegun', 'palpatine', 'thatskindahot', 'ygod', 'flirting101', 'loudnoises', 'nyancat', 'gayb', 'apologize to god', 'jabbalick', 'raisefinger', 'whatislove', 'surprisemothafucka', 'thanksihateit', 'hell is this', 'confused travolta', 'no words', 'coffindance', 'homelander', 'thatsapenis', 'kermitbusiness', 'imdyingsquirtle', 'goodbye', 'oag',
         ];
 
     case 'favorites':
-        return []; // TODO:
-    }
+        return []; // TODO: This part.
+    } /* eslint-enable @stylistic/indent, @stylistic/array-element-newline */
 
     return [];
 }
@@ -903,25 +909,28 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
     const player_query = new RegExp(query, 'i');
 
     const chars = (await FChatFs.getAvailableCharacters(dir))
-        .reduce((box, char) => {
-            const rank = char.search(player_query);
-            if (rank > -1)
-                box.push([ char, rank ]);
+        .reduce<[ string, number ][]>(
+            (box, char) => {
+                const rank = char.search(player_query);
+                if (rank > -1)
+                    box.push([ char, rank ]);
 
-            return box;
-        }, [] as [ string, number ][])
+                return box;
+            },
+            []
+        )
         .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
         .map(e => e[0]);
 
-        if (!chars[0])
-            throw new Error('Impossible: You must have deleted your character folder while the app is running.');
+    if (!chars[0])
+        throw new Error('Impossible: You must have deleted your character folder while the app is running.');
 
     const settings_dir = FChatFs.getCharacterSettingsDir(dir, chars[0]);
 
     const fn = path.join(settings_dir, favoritesFile);
     if (fs.existsSync(fn)) {
         try {
-            const json = JSON.parse(await fs.promises.readFile(fn, 'utf-8'));
+            const json = JSON.parse(await fs.promises.readFile(fn, 'utf-8')) as object;
 
             return Object.keys(json);
         }
@@ -936,12 +945,13 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
 export function startFromScratch() {
     console.warn('Force acquiring fresh eicon store data for new version.');
 
-    if (status === 'loading')
+    if (status === 'loading') {
         setTimeout(() => startFromScratch(), 500);
+    }
     else {
         store.length = 0;
         asOfTimestamp = 0;
 
-        checkForUpdates(true);
+        void checkForUpdates(true);
     }
 }
