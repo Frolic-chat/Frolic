@@ -34,7 +34,7 @@ export class Debugger implements DebugIface {
             return;
         }
 
-        this.client._handleMessage(command, data);
+        void this.client._handleMessage(command, data as Interfaces.ServerCommands[typeof ServerCommandKeys[number]]);
         log.debug('devtools.debug.send', { key: command, data: data });
     }
 }

@@ -11,7 +11,9 @@ const log = NewLogger('connection', () => core.state.generalSettings.argv.includ
 import core from '../chat/core';
 import throat from 'throat';
 
+/* eslint-disable-next-line @stylistic/array-element-newline */
 const fatalErrors = [ 2, 3, 4, 9, 30, 31, 33, 39, 40, 62, -4 ];
+/* eslint-disable-next-line @stylistic/array-element-newline */
 const dieErrors = [ 9, 30, 31, 39, 40 ];
 
 let lastFetch = Date.now();
@@ -29,6 +31,7 @@ async function queryApi(this: unknown, endpoint: string, data: object): Promise<
 
 export default class Connection implements Interfaces.Connection {
     character = '';
+    /* eslint-disable-next-line */
     vars:                       Interfaces.Vars = <any>{}; // AWFUL. AWFUL AWFUL AWFUL. TODO: FIX.
     _handleMessage:             (<T extends keyof Interfaces.ServerCommands>(type: T, data: Interfaces.ServerCommands[T]) => Promise<void>) | undefined = undefined;
     protected socket:           WebSocketConnection | undefined = undefined; // AWFUL.
@@ -117,7 +120,7 @@ export default class Connection implements Interfaces.Connection {
 
             log.silly('socket.recv', { type, data });
 
-            return this.handleMessage(type, data);
+            return this.handleMessage(type, data as Interfaces.ServerCommands[typeof type]);
         });
         this.socket.onClose(async (event: CloseEvent) => {
             log.debug(
@@ -191,7 +194,8 @@ export default class Connection implements Interfaces.Connection {
         if (!this.ticketProvider)
             throw new Error('No credentials set!');
 
-
+        // Legacy code
+        /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
         this.ticket = await queryTicketThroat(async() => this.ticketProvider!());
 
         log.debug(
@@ -328,20 +332,54 @@ export default class Connection implements Interfaces.Connection {
         }
 
         // Benefit unclear
-        // if (type === 'VAR') {
-        //     const d = data as Interfaces.ServerCommands['VAR'];
-        //     this.vars[<keyof Interfaces.Vars>d.variable] = d.value;
-        // }
-        // else if (type === 'PIN') {
+        if (type === 'VAR') {
+            const d = data as Interfaces.ServerCommands['VAR'];
+            // @ts-expect-error Typing is awful; legacy code
+            this.vars[<keyof Interfaces.Vars>d.variable] = d.value;
+        }
+        else if (type === 'PIN') {
+            this.send('PIN');
+            this.resetPinTimeout();
+        }
+        else if (type === 'ERR') {
+            const d = data as Interfaces.ServerCommands['ERR'];
+            if (fatalErrors.indexOf(d.number) !== -1) {
+                this.invokeErrorHandlers(new Error(d.message), true);
+
+                if (dieErrors.indexOf(d.number) !== -1) {
+                    this.close();
+                    this.character = '';
+                }
+                else {
+                    // Legacy code
+                    /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
+                    this.socket!.close();
+                }
+            }
+        }
+        else if (type === 'NLN') {
+            const d = data as Interfaces.ServerCommands['NLN'];
+            if (d.identity === this.character) {
+                await this.invokeHandlers('connected', this.isReconnect);
+                this.reconnectDelay = 0;
+                this.isReconnect = true;
+            }
+        }
+
+        // switch (type) {
+        // case 'VAR':
+        //     /* eslint-disable-next-line */
+        //     this.vars[<keyof Interfaces.Vars>data.variable] = data.value;
+        //     break;
+        // case 'PIN':
         //     this.send('PIN');
         //     this.resetPinTimeout();
-        // }
-        // else if (type === 'ERR') {
-        //     const d = data as Interfaces.ServerCommands['ERR'];
-        //     if (fatalErrors.indexOf(d.number) !== -1) {
-        //         this.invokeErrorHandlers(new Error(d.message), true);
+        //     break;
+        // case 'ERR':
+        //     if (fatalErrors.indexOf(data.number) !== -1) {
+        //         this.invokeErrorHandlers(new Error(data.message), true);
 
-        //         if (dieErrors.indexOf(d.number) !== -1) {
+        //         if (dieErrors.indexOf(data.number) !== -1) {
         //             this.close();
         //             this.character = '';
         //         }
@@ -349,44 +387,14 @@ export default class Connection implements Interfaces.Connection {
         //             this.socket!.close();
         //         }
         //     }
-        // }
-        // else if (type === 'NLN') {
-        //     const d = data as Interfaces.ServerCommands['NLN'];
-        //     if (d.identity === this.character) {
+        //     break;
+        // case 'NLN':
+        //     if (data.identity === this.character) {
         //         await this.invokeHandlers('connected', this.isReconnect);
         //         this.reconnectDelay = 0;
         //         this.isReconnect = true;
         //     }
         // }
-
-        switch (type) {
-        case 'VAR':
-            this.vars[<keyof Interfaces.Vars>data.variable] = data.value;
-            break;
-        case 'PIN':
-            this.send('PIN');
-            this.resetPinTimeout();
-            break;
-        case 'ERR':
-            if (fatalErrors.indexOf(data.number) !== -1) {
-                this.invokeErrorHandlers(new Error(data.message), true);
-
-                if (dieErrors.indexOf(data.number) !== -1) {
-                    this.close();
-                    this.character = '';
-                }
-                else {
-                    this.socket!.close();
-                }
-            }
-            break;
-        case 'NLN':
-            if (data.identity === this.character) {
-                await this.invokeHandlers('connected', this.isReconnect);
-                this.reconnectDelay = 0;
-                this.isReconnect = true;
-            }
-        }
     }
 
     private async getTicket(password: string): Promise<string> {
@@ -458,6 +466,8 @@ export default class Connection implements Interfaces.Connection {
         this.pinTimeout = setTimeout(
             () => {
                 log.error('pin.timeout');
+                // Legacy code
+                /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
                 this.socket!.close();
             },
             90000

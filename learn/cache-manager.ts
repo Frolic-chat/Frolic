@@ -7,7 +7,7 @@ import type { Character as ComplexCharacter } from '../site/character_page/inter
 import { AdCache } from './ad-cache';
 import { ChannelConversationCache } from './channel-conversation-cache';
 import { CharacterProfiler } from './character-profiler';
-import type { CharacterCacheRecord} from './profile-cache';
+import type { CharacterCacheRecord } from './profile-cache';
 import { ProfileCache } from './profile-cache';
 import ChannelConversation = Conversation.ChannelConversation;
 import Message = Conversation.Message;
@@ -41,10 +41,12 @@ export interface ProfileCacheQueueEntry {
 
 
 export class CacheManager {
+    // @ts-expect-error Vue shananigans.
     private _isVue = true;
 
     private readonly startTime = new Date();
 
+    /* eslint-disable-next-line */
     static readonly PROFILE_QUERY_DELAY = 400; //1 * 1000;
 
     adCache:                  AdCache                  = new AdCache();
@@ -452,6 +454,8 @@ export class CacheManager {
         const checkedNames: Record<string, boolean> = {};
 
         // Add fetchers for unknown profiles in ads
+        // Legacy code
+        /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
         await Promise.all(conversation!.messages
             .filter(m => {
                 if (m.type !== Message.Type.Ad)
