@@ -37,7 +37,11 @@ import NewLogger from '../../helpers/log';
 const log = NewLogger('ads');
 
 @Component({
-    components: { modal: Modal, editor: Editor, tagEditor: InputTag },
+    components: {
+        modal:     Modal,
+        editor:    Editor,
+        tagEditor: InputTag,
+    },
 })
 export default class AdCenterDialog extends CustomDialog {
     l = l;

@@ -59,12 +59,12 @@
 </template>
 
 <script lang="ts">
-import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
+import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
 import Vue from 'vue';
 import { mixin as clickaway } from 'vue-clickaway';
-import {getKey} from '../chat/common';
-import {Keys} from '../keys';
-import { CoreBBCodeParser, urlRegex} from './core';
+import { getKey } from '../chat/common';
+import { Keys } from '../keys';
+import { CoreBBCodeParser, urlRegex } from './core';
 import { defaultButtons } from './editor';
 import IconView from './IconView.vue';
 
@@ -88,7 +88,7 @@ export default class Editor extends Vue {
     @Prop
     readonly extras?: EditorButton[];
 
-    @Prop({default: 1000})
+    @Prop({ default: 1000 })
     readonly maxlength!: number;
 
     @Prop
@@ -103,16 +103,16 @@ export default class Editor extends Vue {
     @Prop
     readonly placeholder?: string;
 
-    @Prop({default: true})
+    @Prop({ default: true })
     readonly hasToolbar!: boolean;
 
-    @Prop({default: false, type: Boolean})
+    @Prop({ default: false, type: Boolean })
     readonly invalid!: boolean;
 
-    @Prop({default: null})
+    @Prop({ default: null })
     readonly characterName: string | null = null;
 
-    @Prop({default: 'normal'})
+    @Prop({ default: 'normal' })
     readonly type: 'normal' | 'big' = 'normal';
 
     buttonColors = [
