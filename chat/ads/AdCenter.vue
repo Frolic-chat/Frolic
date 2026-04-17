@@ -7,7 +7,7 @@
       <a :title="l('adEditor.remove')" @click="removeAd(index)"><i class="fas fa-times-circle"></i></a>
     </label>
 
-    <editor :id="'adm-content-' + index" v-model="ad.content" :has-toolbar="true" class="form-control" :maxlength="core.connection.vars.lfrp_max" :disabled="ad.disabled">
+    <editor :id="'adm-content-' + index" v-model="ad.content" :has-toolbar="true" class="form-control" :maxlength="core.connection.vars.lfrp_max" :disabled="ad.disabled" :eiconSelector="eiconSelector">
     </editor>
 
     <tagEditor :id="'adm-tags-' + index" v-model="ad.tags" :placeholder="l('adEditor.tags')" :add-tag-on-keys="[13, 188, 9, 32]" class="form-control" :disabled="ad.disabled" :add-tag-on-blur="true"></tagEditor>
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from '@frolic/vue-ts';
+import { Component, Prop } from '@frolic/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import { Conversation } from '../interfaces';
@@ -33,6 +33,7 @@ import core from '../core';
 import { Dialog } from '../../helpers/dialog';
 import InputTag from 'vue-input-tag';
 import type { Ad } from './ad-center';
+import type EIconSelector from '../../bbcode/EIconSelector.vue';
 import NewLogger from '../../helpers/log';
 const log = NewLogger('ads');
 
@@ -44,6 +45,9 @@ const log = NewLogger('ads');
     },
 })
 export default class AdCenterDialog extends CustomDialog {
+    @Prop
+    readonly eiconSelector?: EIconSelector;
+
     l = l;
     setting = Conversation.Setting;
     ads!: Ad[];

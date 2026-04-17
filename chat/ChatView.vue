@@ -139,7 +139,7 @@
   <status-switcher ref="statusDialog" :eiconSelector="eiconSelector"></status-switcher>
   <character-search ref="searchDialog"></character-search>
   <ad-launcher ref="adLauncher"></ad-launcher>
-  <ad-center ref="adCenter"></ad-center>
+  <ad-center ref="adCenter" :eiconSelector="eiconSelector"></ad-center>
   <report-dialog ref="reportDialog"></report-dialog>
   <context-menu ref="contextMenu" :reportDialog="$refs['reportDialog']"></context-menu>
   <recent-conversations ref="recentDialog"></recent-conversations>

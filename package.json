@@ -1,8 +1,8 @@
 {
   "name": "frolic",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "author": "Frolic team & all other contributors",
-  "description": "🌺 Frolic! F-Chat Client",
+  "description": "🌺 Frolic! F-Chat 3.0 Client",
   "license": "AGPL-3.0-or-later",
   "main": "main.js",
   "packageManager": "yarn@1.22.22",
