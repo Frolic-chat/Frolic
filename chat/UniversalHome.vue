@@ -5,7 +5,13 @@
             listClasses="nav nav-tabs"
             itemClasses="nav-item"
             linkClasses="nav-link" -->
-  <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0" :tooltips="tabTooltips" listClasses="btn-group" itemClasses="btn">
+  <!-- listClasses="btn-group" itemClasses="btn" -->
+  <tabs ref="tabsBar" v-model="tab" class="conversation-tabs flex-shrink-0"
+      :tooltips="tabTooltips" navClasses="nav-tab-scroll"
+      listClasses="nav nav-tabs"
+      itemClasses="nav-item"
+      linkClasses="nav-link"
+  >
     <span><!-- Chat -->
       <span
           :class="{
@@ -714,21 +720,11 @@ export default class HomeScreen extends Vue {
         margin-right: 32px !important;
     }
 
+    .nav-tabs {
+        border-bottom: 0;
+    }
+
     .nav-item {
-        > .active {
-            color: var(--gray-dark);
-        }
-
-        > :not(.active) {
-            color: var(--gray);
-        }
-
-        &:has(.active) {
-            // Heuristic values
-            background: radial-gradient(circle at 48% 53%, var(--info), color-mix(in oklab, var(--info), transparent) 20%, transparent 57%);
-            border-bottom: 1px solid var(--info);
-        }
-
         &:not(:has(.active)) {
             border-bottom: 1px solid var(--gray);
         }
@@ -736,6 +732,11 @@ export default class HomeScreen extends Vue {
 
     .nav-item:has(.hidden-tab) {
         display: none !important;
+    }
+
+    .nav-link {
+        // padding: 0.5rem 0.635rem;
+        padding: 0.45rem 0.635rem; /* Heuristics */
     }
 }
 
