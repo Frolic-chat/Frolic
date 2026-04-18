@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Vue from 'vue';
-import {queuedJoin} from '../fchat/channels';
-import {decodeHTML} from '../fchat/common';
+import { queuedJoin } from '../fchat/channels';
+import { decodeHTML } from '../fchat/common';
 import { AdManager } from './ads/ad-manager';
 import ConversationNoteManager from './conversation_notes';
 import { ConversationSettings, EventMessage, BroadcastMessage,  Message, messageToString } from './common';
 import core from './core';
 import { sleep } from '../helpers/utils';
-import { Channel, Character, Conversation as Interfaces, Relation } from './interfaces';
+import type { Character } from './interfaces';
+import { Channel, Conversation as Interfaces, Relation } from './interfaces';
 import isChannel = Interfaces.isChannel;
 import l from './localize';
-import {CommandContext, isAction, isCommand, isWarn, parse as parseCommand} from './slash_commands';
+import { CommandContext, isAction, isCommand, isWarn, parse as parseCommand } from './slash_commands';
 import MessageType = Interfaces.Message.Type;
 import EventBus from './preview/event-bus';
 import throat from 'throat';
@@ -25,37 +26,38 @@ const logNotes = NewLogger('notes', () => core?.state.generalSettings.argv.inclu
 const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
 const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
 
-function createMessage(this: any, type: MessageType, sender: Character, text: string, time?: Date): Message {
-    if(type === MessageType.Message && isAction(text)) {
+function createMessage(this: unknown, type: MessageType, sender: Character, text: string, time?: Date): Message {
+    if (type === MessageType.Message && isAction(text)) {
         type = MessageType.Action;
         text = text.substring(text.charAt(4) === ' ' ? 4 : 3);
     }
     return new Message(type, sender, text, time);
 }
 
-function safeAddMessage(this: any, messages: Interfaces.Message[], message: Interfaces.Message, max: number): void {
-    if(messages.length >= max) messages.shift();
+function safeAddMessage(this: unknown, messages: Interfaces.Message[], message: Interfaces.Message, max: number): void {
+    if (messages.length >= max)
+        messages.shift();
     messages.push(message);
 }
 
 abstract class Conversation implements Interfaces.Conversation {
     abstract enteredText: string;
     abstract readonly name: string;
-    messages: Interfaces.Message[] = [];
+    messages:                Interfaces.Message[] = [];
     errorText = '';
     unread = Interfaces.UnreadState.None;
-    lastRead: Interfaces.Message | undefined = undefined;
+    lastRead:                Interfaces.Message | undefined = undefined;
     infoText = '';
     abstract readonly maxMessageLength: number | undefined;
-    _settings: Interfaces.Settings;
+    _settings:               Interfaces.Settings;
     protected abstract context: CommandContext;
     protected maxMessages = 50;
     protected insertCount = 0;
-    protected allMessages: Interfaces.Message[] = [];
+    protected allMessages:   Interfaces.Message[] = [];
     readonly reportMessages: Interfaces.Message[] = [];
     private lastSent = '';
     // private loadedMore = false;
-    adManager: AdManager;
+    adManager:               AdManager;
 
     public static readonly conversationThroat = throat(1); // make sure user posting and ad posting won't get in each others' way
 
@@ -69,9 +71,9 @@ abstract class Conversation implements Interfaces.Conversation {
         else {
             this._settings = Vue.observable(state.settings[key] || new ConversationSettings());
 
-            core.watch(() => this._settings, async (newValue, _oldValue) => {
+            core.watch(() => this._settings, (newValue, _oldValue) => {
                 logS.warn(`watch _settings will save conversation ${this.name}.`);
-                state.setSettings(this.key, newValue);
+                void state.setSettings(this.key, newValue);
             }, { deep: true });
         }
     }
@@ -89,7 +91,8 @@ abstract class Conversation implements Interfaces.Conversation {
     }
 
     set isPinned(value: boolean) {
-        if(value === this._isPinned) return;
+        if (value === this._isPinned)
+            return;
         this._isPinned = value;
         void state.savePinned();
     }
@@ -105,15 +108,18 @@ abstract class Conversation implements Interfaces.Conversation {
         if (!this.enteredText)
             return;
 
-        if(isCommand(this.enteredText)) {
+        if (isCommand(this.enteredText)) {
             const parsed = parseCommand(this.enteredText, this.context);
-            if(typeof parsed === 'string') this.errorText = parsed;
+            if (typeof parsed === 'string') {
+                this.errorText = parsed;
+            }
             else {
                 parsed.call(this);
                 this.lastSent = this.enteredText;
                 this.clearText();
             }
-        } else {
+        }
+        else {
             this.lastSent = this.enteredText;
             await this.doSend();
         }
@@ -126,7 +132,9 @@ abstract class Conversation implements Interfaces.Conversation {
     }
 
     loadMore(): boolean {
-        if(this.messages.length >= this.allMessages.length) return false;
+        if (this.messages.length >= this.allMessages.length)
+            return false;
+
         this.maxMessages += 50;
         // this.loadedMore = true;
         this.messages = this.allMessages.slice(-this.maxMessages);
@@ -155,14 +163,14 @@ abstract class Conversation implements Interfaces.Conversation {
 
     // Keeps the message-list from re-rendering every time when full, cleaning up after itself every 200 messages
     stretch(): void {
-        if ((core.conversations.selectedConversation !== this) || (this.messages.length < this.maxMessages)) {
+        if (core.conversations.selectedConversation !== this || this.messages.length < this.maxMessages)
             return;
-        }
 
         if (this.insertCount < 200) {
             this.maxMessages += 1;
             this.insertCount += 1;
-        } else {
+        }
+        else {
             const removed = this.insertCount;
 
             this.maxMessages -= removed;
@@ -178,7 +186,7 @@ abstract class Conversation implements Interfaces.Conversation {
         this.messages = [];
     }
 
-    abstract close(): void;
+    abstract close(): Promise<void> | void;
 
     protected safeAddMessage(message: Interfaces.Message): void {
         safeAddMessage(this.reportMessages, message, 500);
@@ -204,7 +212,7 @@ abstract class Conversation implements Interfaces.Conversation {
 
 
     toggleAutomatedAds(): void {
-        this.adManager.isActive() ? this.adManager.stop() : this.adManager.start();
+        return this.adManager.isActive() ? this.adManager.stop() : this.adManager.start();
     }
 
 
@@ -214,13 +222,13 @@ abstract class Conversation implements Interfaces.Conversation {
 }
 
 class PrivateConversation extends Conversation implements Interfaces.PrivateConversation {
-    readonly name: string;
+    readonly name:           string;
     readonly context = CommandContext.Private;
-    typingStatus: Interfaces.TypingStatus = 'clear';
+    typingStatus:            Interfaces.TypingStatus = 'clear';
     readonly maxMessageLength = core.connection.vars.priv_max;
     private _enteredText = '';
     private ownTypingStatus: Interfaces.TypingStatus = 'clear';
-    private timer: number | undefined;
+    private timer:           number | undefined;
     private logPromise = core.logs.getBacklog(this).then((messages) => {
         this.allMessages.unshift(...messages);
         this.reportMessages.unshift(...messages);
@@ -243,11 +251,17 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
 
     set enteredText(value: string) {
         this._enteredText = value;
-        if(this.timer !== undefined) clearTimeout(this.timer);
-        if(value.length > 0) {
-            if(this.ownTypingStatus !== 'typing') this.setOwnTyping('typing');
+        if (this.timer !== undefined)
+            clearTimeout(this.timer);
+
+        if (value.length > 0) {
+            if (this.ownTypingStatus !== 'typing')
+                this.setOwnTyping('typing');
             this.timer = window.setTimeout(() => this.setOwnTyping('paused'), 5000);
-        } else if(this.ownTypingStatus !== 'clear') this.setOwnTyping('clear');
+        }
+        else if (this.ownTypingStatus !== 'clear') {
+            this.setOwnTyping('clear');
+        }
     }
 
     async addMessage(message: Interfaces.Message): Promise<void> {
@@ -275,9 +289,12 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
     async close(): Promise<void> {
         this.setOwnTyping('clear');
         state.privateConversations.splice(state.privateConversations.indexOf(this), 1);
+        // Legacy code
+        /* eslint-disable-next-line @typescript-eslint/no-dynamic-delete */
         delete state.privateMap[this.character.name.toLowerCase()];
         await state.savePinned();
-        if(state.selectedConversation === this) state.show(core.state.generalSettings.defaultToHome ? state.activityTab : state.consoleTab);
+        if (state.selectedConversation === this)
+            state.show(core.state.generalSettings.defaultToHome ? state.activityTab : state.consoleTab);
     }
 
     async sort(newIndex: number): Promise<void> {
@@ -287,12 +304,12 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
     }
 
     public async sendMessageEx(messageText: string): Promise<void> {
-        if(this.character.status === 'offline') {
+        if (this.character.status === 'offline') {
             this.errorText = l('chat.errorOffline', this.character.name);
             return;
         }
 
-        if(this.character.isIgnored) {
+        if (this.character.isIgnored) {
             this.errorText = l('chat.errorIgnored', this.character.name);
             return;
         }
@@ -301,29 +318,30 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
             async() => {
                 await Conversation.testPostDelay();
 
-                core.connection.send('PRI', {recipient: this.name, message: messageText});
+                core.connection.send('PRI', { recipient: this.name, message: messageText });
                 core.cache.markLastPostTime();
 
                 const message = createMessage(MessageType.Message, core.characters.ownCharacter, messageText);
                 this.safeAddMessage(message);
 
-                if(core.state.settings.logMessages) await core.logs.logMessage(this, message);
+                if (core.state.settings.logMessages)
+                    await core.logs.logMessage(this, message);
             }
         );
     }
 
     protected async doSend(): Promise<void> {
         await this.logPromise;
-        if(this.character.status === 'offline') {
+        if (this.character.status === 'offline') {
             this.errorText = l('chat.errorOffline', this.character.name);
             return;
         }
-        if(this.character.isIgnored) {
+        if (this.character.isIgnored) {
             this.errorText = l('chat.errorIgnored', this.character.name);
             return;
         }
 
-        if(this.adManager.isActive()) {
+        if (this.adManager.isActive()) {
             this.errorText = 'Cannot send ads manually while ad auto-posting is active';
             return;
         }
@@ -336,31 +354,32 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
             async() => {
                 await Conversation.testPostDelay();
 
-                core.connection.send('PRI', {recipient: this.name, message: messageText});
+                core.connection.send('PRI', { recipient: this.name, message: messageText });
                 core.cache.markLastPostTime();
 
                 const message = createMessage(MessageType.Message, core.characters.ownCharacter, messageText);
                 this.safeAddMessage(message);
 
-                if(core.state.settings.logMessages) await core.logs.logMessage(this, message);
+                if (core.state.settings.logMessages)
+                    await core.logs.logMessage(this, message);
             }
         );
     }
 
     private setOwnTyping(status: Interfaces.TypingStatus): void {
         this.ownTypingStatus = status;
-        core.connection.send('TPN', {character: this.name, status});
+        core.connection.send('TPN', { character: this.name, status });
     }
 }
 
 class ChannelConversation extends Conversation implements Interfaces.ChannelConversation {
     readonly context = CommandContext.Channel;
-    readonly name: string;
-    isSendingAds: boolean;
+    readonly name:  string;
+    isSendingAds:   boolean;
     nextAd = 0;
-    private chat: Interfaces.Message[] = [];
-    private ads: Interfaces.Message[] = [];
-    private both: Interfaces.Message[] = [];
+    private chat:   Interfaces.Message[] = [];
+    private ads:    Interfaces.Message[] = [];
+    private both:   Interfaces.Message[] = [];
     private _mode!: Channel.Mode;
     private adEnteredText = '';
     private chatEnteredText = '';
@@ -379,11 +398,16 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             const c = this.channels.getChannel(channel.id);
             return c !== undefined ? c.mode : undefined;
         }, (value: Channel.Mode | undefined) => {
-            if(value === undefined) return;
+            if (value === undefined)
+                return;
+
             this.mode = value;
-            if(value !== 'both') this.isSendingAds = value === 'ads';
+            if (value !== 'both')
+                this.isSendingAds = value === 'ads';
         });
 
+        // Legacy code
+        /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
         this.mode = channel.mode === 'both' && channel.id in state.modes ? state.modes[channel.id]! : channel.mode;
 
         this.name = this.channel.name;
@@ -404,9 +428,18 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         this.maxMessages = 50;
         this.allMessages = this[mode];
         this.messages = this.allMessages.slice(-this.maxMessages);
-        if(mode === this.channel.mode && this.channel.id in state.modes) delete state.modes[this.channel.id];
-        else if(mode !== this.channel.mode && mode !== state.modes[this.channel.id]) state.modes[this.channel.id] = mode;
-        else return;
+        if (mode === this.channel.mode && this.channel.id in state.modes) {
+            // Legacy code
+            /* eslint-disable-next-line @typescript-eslint/no-dynamic-delete */
+            delete state.modes[this.channel.id];
+        }
+        else if (mode !== this.channel.mode && mode !== state.modes[this.channel.id]) {
+            state.modes[this.channel.id] = mode;
+        }
+        else {
+            return;
+        }
+
         void state.saveModes();
     }
 
@@ -415,13 +448,17 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     }
 
     set enteredText(value: string) {
-        if(this.isSendingAds) this.adEnteredText = value;
-        else this.chatEnteredText = value;
+        if (this.isSendingAds)
+            this.adEnteredText = value;
+        else
+            this.chatEnteredText = value;
     }
 
     addModeMessage(mode: Channel.Mode, message: Interfaces.Message): void {
         safeAddMessage(this[mode], message, 500);
-        if(this._mode === mode) safeAddMessage(this.messages, message, this.maxMessages);
+
+        if (this._mode === mode)
+            safeAddMessage(this.messages, message, this.maxMessages);
     }
 
     async addMessage(message: Interfaces.Message): Promise<void> {
@@ -436,23 +473,21 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                 return isWarn(m.text) && (is_mod || m.sender.isChatOp);
             }
             return false;
-        }
+        };
 
-        if (is_warning_from_mod(message)) {
+        if (is_warning_from_mod(message))
             message = new Message(MessageType.Warn, message.sender, message.text.substring(6), message.time);
-        }
 
         const user_should_know = (c: ChannelConversation) => {
             return this.mode !== 'ads'
-                && (c !== state.selectedConversation || !state.windowFocused)
-        }
+                && (c !== state.selectedConversation || !state.windowFocused);
+        };
 
         if (message.type === MessageType.Ad) {
             this.addModeMessage('ads', message);
 
-            if (core.state.settings.logAds) {
+            if (core.state.settings.logAds)
                 await core.logs.logMessage(this, message);
-            }
         }
         else {
             this.addModeMessage('chat', message);
@@ -474,9 +509,8 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
 
         this.addModeMessage('both', message);
 
-        if (message.type !== MessageType.Event) {
+        if (message.type !== MessageType.Event)
             safeAddMessage(this.reportMessages, message, 500);
-        }
     }
 
     clear(): void {
@@ -487,7 +521,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     }
 
     close(): void {
-        core.connection.send('LCH', {channel: this.channel.id});
+        core.connection.send('LCH', { channel: this.channel.id });
     }
 
     async sort(newIndex: number): Promise<void> {
@@ -499,43 +533,42 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     protected async doSend(): Promise<void> {
         const isAd = this.isSendingAds;
 
-        if(isAd && this.adManager.isActive()) {
+        if (isAd && this.adManager.isActive()) {
             this.errorText = 'Cannot post ads manually while ad auto-posting is active';
             return;
         }
 
-        if(isAd && Date.now() < this.nextAd) {
+        if (isAd && Date.now() < this.nextAd) {
             this.errorText = 'You must wait at least ten minutes between ad posts on this channel';
             return;
         }
 
         const message = this.enteredText;
 
-        if (!isAd) {
+        if (!isAd)
             this.clearText();
-        }
 
         await Conversation.conversationThroat(
             async() => {
                 await Conversation.testPostDelay();
 
-                core.connection.send(isAd ? 'LRP' : 'MSG', {channel: this.channel.id, message});
+                core.connection.send(isAd ? 'LRP' : 'MSG', { channel: this.channel.id, message });
                 core.cache.markLastPostTime();
 
                 await this.addMessage(
                     createMessage(isAd ? MessageType.Ad : MessageType.Message, core.characters.ownCharacter, message, new Date())
                 );
 
-                if(isAd) {
+                if (isAd) {
                     this.nextAd = Date.now() + core.connection.vars.lfrp_flood * 1000;
 
                     // enforces property setter
                     this.settings = {
                         ...this.settings,
                         adSettings: {
-                          ...this.settings.adSettings,
-                          lastAdTimestamp: Date.now()
-                      }
+                            ...this.settings.adSettings,
+                            lastAdTimestamp: Date.now(),
+                        },
                     };
                 }
             }
@@ -560,25 +593,25 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                 const throatTime = Date.now();
 
                 await Promise.all([
-                    await Conversation.testPostDelay(),
-                    await core.adCoordinator.requestTurnToPostAd()
+                    Conversation.testPostDelay(),
+                    core.adCoordinator.requestTurnToPostAd(),
                 ]);
 
                 const delayTime = Date.now();
 
-                core.connection.send('LRP', {channel: this.channel.id, message: text});
+                core.connection.send('LRP', { channel: this.channel.id, message: text });
                 core.cache.markLastPostTime();
 
                 log.debug(
-                'conversation.sendAd',
-                  {
-                    character: core.characters.ownCharacter.name,
-                    channel: this.channel.name,
-                    throatDelta: throatTime - initTime,
-                    delayDelta: delayTime - throatTime,
-                    totalWait: delayTime - initTime,
-                    text
-                  }
+                    'conversation.sendAd',
+                    {
+                        character:   core.characters.ownCharacter.name,
+                        channel:     this.channel.name,
+                        throatDelta: throatTime - initTime,
+                        delayDelta:  delayTime - throatTime,
+                        totalWait:   delayTime - initTime,
+                        text,
+                    }
                 );
 
                 await this.addMessage(
@@ -591,9 +624,9 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                 this.settings = {
                     ...this.settings,
                     adSettings: {
-                      ...this.settings.adSettings,
-                      lastAdTimestamp: Date.now()
-                  }
+                        ...this.settings.adSettings,
+                        lastAdTimestamp: Date.now(),
+                    },
                 };
             }
         );
@@ -616,8 +649,11 @@ class ConsoleConversation extends Conversation {
 
     async addMessage(message: Interfaces.Message): Promise<void> {
         this.safeAddMessage(message);
-        if(core.state.settings.logMessages) await core.logs.logMessage(this, message);
-        if(this !== state.selectedConversation || !state.windowFocused) this.unread = Interfaces.UnreadState.Unread;
+
+        if (core.state.settings.logMessages)
+            await core.logs.logMessage(this, message);
+        if (this !== state.selectedConversation || !state.windowFocused)
+            this.unread = Interfaces.UnreadState.Unread;
     }
 
     protected doSend(): void {
@@ -659,7 +695,7 @@ class ActivityConversation extends Conversation {
 
             this.cleanseOutdatedData();
             this.updateDisplay();
-        })
+        });
     }
 
     //override messages: Array<Interfaces.Message | undefined> = [];
@@ -672,8 +708,8 @@ class ActivityConversation extends Conversation {
     _messages: Array<Interfaces.Message | undefined> = [];
 
     static importance = {
-        login: 0,
-        status: 1,
+        login:   0,
+        status:  1,
         looking: 2,
     } as const;
 
@@ -762,8 +798,8 @@ class ActivityConversation extends Conversation {
      * Heuristics
      * Unused yet. Useful to check custom statuses if showing all custom statuses doesn't work.
      */
-    protected readonly ignoreKeywords = [ "at work", "working", "busy", "away", "not here", "idle" ];
-    protected readonly preferKeywords = [ "looking for", "want", "new", "you" ];
+    protected readonly ignoreKeywords = [ 'at work', 'working', 'busy', 'away', 'not here', 'idle' ];
+    protected readonly preferKeywords = [ 'looking for', 'want', 'new', 'you' ];
 
     protected updateDisplay(addedAny?: boolean, elevateAlertLevel?: boolean): void {
         this.messages = this._messages.filter(m => m !== undefined);
@@ -790,7 +826,7 @@ class ActivityConversation extends Conversation {
             let oldestKey:  string | undefined;
             let oldestTime: number | undefined;
 
-            for (const [key, i] of map.entries()) {
+            for (const [ key, i ] of map.entries()) {
                 const m = this._messages[i];
                 if (!m) { // mystery orphan, use it
                     map.delete(key);
@@ -818,8 +854,8 @@ class ActivityConversation extends Conversation {
                     return i;
             }
         }
-         else { // not full - find existing undefined slot; use default is there isn't one.
-                // if removeCharacter just ran, this is at least going to find that empty slot.
+        else { // not full - find existing undefined slot; use default is there isn't one.
+            // if removeCharacter just ran, this is at least going to find that empty slot.
             const i = this._messages.findIndex(e => !e);
             logA.debug('ActivityConversation.freeSlot.unsaturated', i);
             if (i !== -1)
@@ -872,7 +908,7 @@ class ActivityConversation extends Conversation {
     }
 
     // Login is any status change with the character 'offline' but the status 'online'.
-    protected async handleLogin(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+    protected handleLogin(activity: Interfaces.ActivityContext & { e: 'EBL' }): void {
         const c   = activity.character;
         const key = activity.character.name.toLowerCase();
 
@@ -894,8 +930,8 @@ class ActivityConversation extends Conversation {
             // c.isFriend && shouldNotifyOnFriendLogin() || c.isBookmarked && shouldNotifyOnBookmarkLogin()
 
             logA.debug('ActivityConversation.handleLogin.postAdd', {
-                name: key,
-                index: index ?? index2,
+                name:         key,
+                index:        index ?? index2,
                 loginEntries: [ ...this.login.entries() ].map(e => `${e[0]}->${e[1]}`),
             });
         }
@@ -906,12 +942,12 @@ class ActivityConversation extends Conversation {
     }
 
     // Logout is any status change with the character whos new status is 'offline'.
-    protected async handleLogout(activity: Interfaces.ActivityContext & { e: 'EBL' }): Promise<void> {
+    protected handleLogout(activity: Interfaces.ActivityContext & { e: 'EBL' }): void {
         const key = activity.character.name.toLowerCase();
 
         logA.debug('ActivityConversation.handleLogout.tracked', {
             name: key,
-            x:    activity.date
+            x:    activity.date,
         });
 
         this.removeCharacter(key);
@@ -926,7 +962,7 @@ class ActivityConversation extends Conversation {
      * 3. Set looking status. add to `this.looking`.
      * 4. Set custom message. add to `this.status`.
      */
-    protected async handleStatus(activity: Interfaces.ActivityContext & { e: 'EBS' }): Promise<void> {
+    protected handleStatus(activity: Interfaces.ActivityContext & { e: 'EBS' }): void {
         const key = activity.character.name.toLowerCase();
 
         let target_map: Map<string, number> | undefined;
@@ -1064,16 +1100,16 @@ class ActivityConversation extends Conversation {
 class State implements Interfaces.State {
     privateConversations: PrivateConversation[] = [];
     channelConversations: ChannelConversation[] = [];
-    privateMap: {[key: string]: PrivateConversation | undefined} = {};
-    channelMap: {[key: string]: ChannelConversation | undefined} = {};
-    activityTab!: ActivityConversation;
-    consoleTab!: ConsoleConversation;
+    privateMap:           { [key: string]: PrivateConversation | undefined } = {};
+    channelMap:           { [key: string]: ChannelConversation | undefined } = {};
+    activityTab!:         ActivityConversation;
+    consoleTab!:          ConsoleConversation;
     selectedConversation: Conversation = this.consoleTab;
-    recent: Interfaces.RecentPrivateConversation[] = [];
-    recentChannels: Interfaces.RecentChannelConversation[] = [];
-    pinned!: {channels: string[], private: string[]};
-    settings!: {[key: string]: Interfaces.Settings};
-    modes!: {[key: string]: Channel.Mode | undefined};
+    recent:               Interfaces.RecentPrivateConversation[] = [];
+    recentChannels:       Interfaces.RecentChannelConversation[] = [];
+    pinned!:              { channels: string[], private: string[] };
+    settings!:            { [key: string]: Interfaces.Settings };
+    modes!:               { [key: string]: Channel.Mode | undefined };
     windowFocused = document.hasFocus();
 
     get hasNew(): boolean {
@@ -1103,9 +1139,10 @@ class State implements Interfaces.State {
 
         this.recent = this.recent.filter(c => c.character !== conv.name);
 
-        if (this.recent.length >= 50) this.recent.pop();
+        if (this.recent.length >= 50)
+            this.recent.pop();
 
-        this.recent.unshift({character: conv.name});
+        this.recent.unshift({ character: conv.name });
         void core.settingsStore.set('recent', this.recent);
 
         return conv;
@@ -1137,7 +1174,8 @@ class State implements Interfaces.State {
     }
 
     show(conversation: Conversation): void {
-        if(conversation === this.selectedConversation) return;
+        if (conversation === this.selectedConversation)
+            return;
 
         this.selectedConversation.onHide();
         // "Unread messages" are messages you haven't read yet. (So clearing them should be UI based.)
@@ -1159,12 +1197,13 @@ class State implements Interfaces.State {
         this.recent         = await core.settingsStore.get('recent')         || [];
         this.recentChannels = await core.settingsStore.get('recentChannels') || [];
 
-        const settings = <{[key: string]: ConversationSettings}> await core.settingsStore.get('conversationSettings') || {};
+        const settings = <{ [key: string]: ConversationSettings }> await core.settingsStore.get('conversationSettings') || {};
 
         for (const key in settings) {
             settings[key] = Object.assign(new ConversationSettings(), settings[key]);
             const conv = this.byKey(key);
-            if (conv !== undefined) conv._settings = settings[key];
+            if (conv !== undefined)
+                conv._settings = settings[key];
         }
         this.settings = settings;
     }
@@ -1172,9 +1211,9 @@ class State implements Interfaces.State {
 
 let state: State;
 
-async function addEventMessage(this: any, message: Interfaces.Message): Promise<void> {
+async function addEventMessage(this: unknown, message: Interfaces.Message): Promise<void> {
     await state.consoleTab.addMessage(message);
-    if(core.state.settings.eventMessages && state.selectedConversation !== state.consoleTab)
+    if (core.state.settings.eventMessages && state.selectedConversation !== state.consoleTab)
         await state.selectedConversation.addMessage(message);
 }
 
@@ -1184,21 +1223,20 @@ async function addEventMessage(this: any, message: Interfaces.Message): Promise<
  * @param character Character to test importance of
  * @returns true if character is friend, bookmark, or has an open private message chat.
  */
-function isOfInterest(this: any, character: Character): boolean {
+function isOfInterest(this: unknown, character: Character): boolean {
     return character.isFriend || character.isBookmarked || state.privateMap[character.name.toLowerCase()] !== undefined;
 }
 
 async function withNeutralVisibilityPrivateConversation(character: Character.Character,
                                                         cb: (p: PrivateConversation, c: Character.Character) => Promise<void>
-                                                       ): Promise<void> {
+): Promise<void> {
     const isVisibleConversation = !!state.getPrivate(character, true);
     const conv = state.getPrivate(character);
 
     await cb(conv, character);
 
-    if (!isVisibleConversation) {
+    if (!isVisibleConversation)
         await conv.close();
-    }
 }
 
 function shouldNotifyOnFriendLogin(): boolean {
@@ -1257,11 +1295,10 @@ export async function shouldFilterPrivate(fromChar: Character.Character, origina
 
                 const message = {
                     recipient: fromChar.name,
-                    message: '\n[sub][color=orange][b][AUTOMATED MESSAGE][/b][/color][/sub]\n' +
+                    message:   '\n[sub][color=orange][b][AUTOMATED MESSAGE][/b][/color][/sub]\n' +
                       'Sorry, the player of this character is not interested in characters matching your profile.' +
                       `${core.state.settings.risingFilter.hidePrivateMessages ? ' They did not see your message. To bypass this warning, send your message again.' : ''}\n` +
-                      '\n' +
-                      ''
+                      '\n',
                 };
 
                 core.connection.send('PRI', message);
@@ -1272,27 +1309,26 @@ export async function shouldFilterPrivate(fromChar: Character.Character, origina
                         message.message, new Date());
 
                     await withNeutralVisibilityPrivateConversation(
-                      fromChar,
-                      async(p) => {
-                        // core.logs.logMessage(p, logMessage)
-                        await p.addMessage(logMessage);
-                      }
+                        fromChar,
+                        async(p) => {
+                            // core.logs.logMessage(p, logMessage)
+                            await p.addMessage(logMessage);
+                        }
                     );
                 }
             }
         );
     }
 
-    if (
-        !globallyImportant(fromChar) &&
+    if (!globallyImportant(fromChar) &&
         cachedProfile?.match.isFiltered &&
         core.state.settings.risingFilter.hidePrivateMessages &&
         firstTime // subsequent messages bypass this filter on purpose
     ) {
         if (core.state.settings.logMessages && originalMessage) {
             await withNeutralVisibilityPrivateConversation(
-              fromChar,
-              async p => core.logs.logMessage(p, originalMessage)
+                fromChar,
+                async p => core.logs.logMessage(p, originalMessage)
             );
         }
 
@@ -1328,24 +1364,24 @@ async function testSmartFilterForChannel(fromChar: Character.Character, conversa
     if (filterPubChannels(conversation) || filterPrivChannels(conversation)) {
         const storedProfile = await core.cache.profileCache.get(fromChar.name);
 
-        if (storedProfile?.match.isFiltered && !isImportantToChannel(fromChar, conversation.channel)) {
+        if (storedProfile?.match.isFiltered && !isImportantToChannel(fromChar, conversation.channel))
             return true;
-        }
     }
 
     return false;
 }
 
-export default function(this: any): Interfaces.State {
+export default function(this: unknown): Interfaces.State {
     state = new State();
     window.addEventListener('focus', () => {
         state.windowFocused = true;
-        if(state.selectedConversation !== undefined!) state.selectedConversation.unread = Interfaces.UnreadState.None;
+        if (state.selectedConversation !== undefined)
+            state.selectedConversation.unread = Interfaces.UnreadState.None;
     });
     window.addEventListener('blur', () => {
         state.windowFocused = false;
-        if(state.selectedConversation !== undefined!)
-             state.selectedConversation.lastRead = state.selectedConversation.messages[state.selectedConversation.messages.length - 1];
+        if (state.selectedConversation !== undefined)
+            state.selectedConversation.lastRead = state.selectedConversation.messages[state.selectedConversation.messages.length - 1];
     });
     const connection = core.connection;
     connection.onEvent('connecting', async(isReconnect) => {
@@ -1354,12 +1390,17 @@ export default function(this: any): Interfaces.State {
 
         state.channelConversations = [];
         state.channelMap = {};
-        if(!isReconnect) {
+
+        if (!isReconnect) {
             state.activityTab = new ActivityConversation();
             state.consoleTab = new ConsoleConversation();
             state.privateConversations = [];
             state.privateMap = {};
-        } else state.consoleTab.unread = Interfaces.UnreadState.None;
+        }
+        else {
+            state.consoleTab.unread = Interfaces.UnreadState.None;
+        }
+
         state.selectedConversation = core.state.generalSettings.defaultToHome
             ? state.activityTab
             : state.consoleTab;
@@ -1367,43 +1408,63 @@ export default function(this: any): Interfaces.State {
         await state.reloadSettings();
     });
     connection.onEvent('connected', (isReconnect) => {
-        if(isReconnect) return;
-        for(const item of state.pinned.private) state.getPrivate(core.characters.get(item));
+        if (isReconnect)
+            return;
+
+        for (const item of state.pinned.private)
+            state.getPrivate(core.characters.get(item));
         queuedJoin(state.pinned.channels.slice());
     });
     core.channels.onEvent(async(type, channel, member) => {
-        if(type === 'join')
-            if(member === undefined) {
+        if (type === 'join') {
+            if (member === undefined) {
                 const conv = new ChannelConversation(channel);
                 state.channelMap[channel.id] = conv;
                 state.channelConversations.push(conv);
+
                 const index = state.recentChannels.findIndex((c) => c.channel === channel.id);
-                if(index !== -1) state.recentChannels.splice(index, 1);
-                if(state.recentChannels.length >= 50) state.recentChannels.pop();
-                state.recentChannels.unshift({channel: channel.id, name: conv.channel.name});
+                if (index !== -1)
+                    state.recentChannels.splice(index, 1);
+
+                if (state.recentChannels.length >= 50)
+                    state.recentChannels.pop();
+
+                state.recentChannels.unshift({ channel: channel.id, name: conv.channel.name });
                 void core.settingsStore.set('recentChannels', state.recentChannels);
 
                 AdManager.onNewChannelAvailable(conv);
-            } else {
+            }
+            else {
                 const conv = state.channelMap[channel.id];
-                if(conv === undefined) return;
-                if(conv.settings.joinMessages === Interfaces.Setting.False || conv.settings.joinMessages === Interfaces.Setting.Default &&
-                    !core.state.settings.joinMessages) return;
+                if (conv === undefined)
+                    return;
+                if (conv.settings.joinMessages === Interfaces.Setting.False || conv.settings.joinMessages === Interfaces.Setting.Default && !core.state.settings.joinMessages)
+                    return;
+
                 const text = l('events.channelJoin', `[user]${member.character.name}[/user]`);
                 await conv.addMessage(new EventMessage(text));
             }
-        else if(member === undefined) {
+        }
+        else if (member === undefined) {
             const conv = state.channelMap[channel.id];
-            if(conv === undefined) return;
+            if (conv === undefined)
+                return;
+
             state.channelConversations.splice(state.channelConversations.indexOf(conv), 1);
+            // Legacy code
+            /* eslint-disable-next-line @typescript-eslint/no-dynamic-delete */
             delete state.channelMap[channel.id];
             await state.savePinned();
-            if(state.selectedConversation === conv) state.show(state.consoleTab);
-        } else {
+            if (state.selectedConversation === conv)
+                state.show(state.consoleTab);
+        }
+        else {
             const conv = state.channelMap[channel.id];
-            if(conv === undefined) return;
-            if(conv.settings.joinMessages === Interfaces.Setting.False || conv.settings.joinMessages === Interfaces.Setting.Default &&
-                !core.state.settings.joinMessages) return;
+            if (conv === undefined)
+                return;
+            if (conv.settings.joinMessages === Interfaces.Setting.False || conv.settings.joinMessages === Interfaces.Setting.Default && !core.state.settings.joinMessages)
+                return;
+
             const text = l('events.channelLeave', `[user]${member.character.name}[/user]`);
             await conv.addMessage(new EventMessage(text));
         }
@@ -1412,12 +1473,12 @@ export default function(this: any): Interfaces.State {
         //state.activityTab.parse({ e: 'PRI', data, time });
 
         const char = core.characters.get(data.character);
-        if(char.isIgnored) return connection.send('IGN', {action: 'notify', character: data.character});
+        if (char.isIgnored)
+            return connection.send('IGN', { action: 'notify', character: data.character });
         const message = createMessage(MessageType.Message, char, decodeHTML(data.message), time);
 
-        if (await shouldFilterPrivate(char, message) === true) {
+        if (await shouldFilterPrivate(char, message))
             return;
-        }
 
         // This was never implemented, but it might be a worthwhile entry point.
         // It only ever had a hook in cache-manager.
@@ -1453,8 +1514,8 @@ export default function(this: any): Interfaces.State {
                     conversation.settings.notifyOnFriendMessage === Relation.Chooser.Both      )
                 || (conversation.settings.notifyOnFriendMessage === Relation.Chooser.Default   &&
                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Friends   ||
-                    core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both      )
-        }
+                    core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both      );
+        };
 
         const shouldNotifyOnBookmarkMessage = () => {
             if (!conversation)
@@ -1464,17 +1525,15 @@ export default function(this: any): Interfaces.State {
                      conversation.settings.notifyOnFriendMessage === Relation.Chooser.Both    )
                 || ( conversation.settings.notifyOnFriendMessage === Relation.Chooser.Default   &&
                      core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Bookmarks ||
-                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both    )
-        }
+                     core.state.settings.notifyOnFriendMessage   === Relation.Chooser.Both    );
+        };
 
         const hilite_words = conversation.settings.highlightWords.slice();
         if (conversation.settings.defaultHighlights)
             hilite_words.push(...core.state.settings.highlightWords);
 
-        if ((conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight)
-        ||  conversation.settings.highlight === Interfaces.Setting.True) {
+        if ((conversation.settings.highlight === Interfaces.Setting.Default && core.state.settings.highlight) || conversation.settings.highlight === Interfaces.Setting.True)
             hilite_words.push(core.connection.character);
-        }
 
         const words = hilite_words
             .map(e => e.replace(/[^\w]/gi, '\\$&'));
@@ -1482,25 +1541,25 @@ export default function(this: any): Interfaces.State {
             .map(e => e.replace(/[^\w]/gi, '\\$&'));
 
         const msg_results  = words.length > 0
-                ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
-                : null;
+            ? message.text.match(new RegExp(`\\b(${words.join('|')})\\b`, 'i'))
+            : null;
         const name_results = names.length > 0
-                ? data.character.match(new RegExp(`^(${names.join('|')})$`, 'i'))
-                : null;
+            ? data.character.match(new RegExp(`^(${names.join('|')})$`, 'i'))
+            : null;
 
         let msg = null;
 
         if (name_results) {
             msg = {
                 notify: l('chat.highlight.user', conversation.name),
-                event: l('events.highlight.user', `[user]${data.character}[/user]`, `[session=${conversation.name}]${data.channel}[/session]`, message.text),
-            }
+                event:  l('events.highlight.user', `[user]${data.character}[/user]`, `[session=${conversation.name}]${data.channel}[/session]`, message.text),
+            };
         }
         else if (msg_results) {
             msg = {
                 notify: l('chat.highlight', msg_results[0], conversation.name, message.text.length > 25 ? message.text.slice(0, 25).trim() + '...' : message.text),
-                event: l('events.highlight', `[user]${data.character}[/user]`, msg_results[0], `[session=${conversation.name}]${data.channel}[/session]`),
-            }
+                event:  l('events.highlight', `[user]${data.character}[/user]`, msg_results[0], `[session=${conversation.name}]${data.channel}[/session]`),
+            };
         };
 
         if (msg) {
@@ -1544,31 +1603,41 @@ export default function(this: any): Interfaces.State {
     connection.onMessage('RLL', async(data, time) => {
         const sender = core.characters.get(data.character);
         let text: string;
-        if(data.type === 'bottle')
+        if (data.type === 'bottle') {
             text = l('chat.bottle', `[user]${data.target}[/user]`);
+        }
         else {
             const results = data.results.length > 1 ? `${data.results.join('+')} = ${data.endresult}` : data.endresult.toString();
             text = l('chat.roll', data.rolls.join('+'), results);
         }
         const message = new Message(MessageType.Roll, sender, text, time);
-        if('channel' in data) {
-            const channel = (<{channel: string}>data).channel.toLowerCase();
+        if ('channel' in data) {
+            const channel = (<{ channel: string }>data).channel.toLowerCase();
             const conversation = state.channelMap[channel];
-            if(conversation === undefined) return core.channels.leave(channel);
-            if(sender.isIgnored) return;
-            if(data.type === 'bottle' && data.target === core.connection.character) {
+            if (conversation === undefined)
+                return core.channels.leave(channel);
+
+            if (sender.isIgnored)
+                return;
+
+            if (data.type === 'bottle' && data.target === core.connection.character) {
                 core.notifications.notify(conversation, conversation.name, messageToString(message),
                     core.characters.getImage(data.character), 'attention');
-                if(conversation !== state.selectedConversation || !state.windowFocused)
+                if (conversation !== state.selectedConversation || !state.windowFocused)
                     conversation.unread = Interfaces.UnreadState.Mention;
                 message.isHighlight = true;
             }
             await conversation.addMessage(message);
-        } else {
-            if(sender.isIgnored) return;
+        }
+        else {
+            if (sender.isIgnored)
+                return;
+
             const char = core.characters.get(
-                data.character === connection.character ? (<{recipient: string}>data).recipient : data.character);
-            if(char.isIgnored) return connection.send('IGN', {action: 'notify', character: data.character});
+                data.character === connection.character ? (<{ recipient: string }>data).recipient : data.character);
+            if (char.isIgnored)
+                return connection.send('IGN', { action: 'notify', character: data.character });
+
             const conversation = state.getPrivate(char);
             await conversation.addMessage(message);
         }
@@ -1582,9 +1651,8 @@ export default function(this: any): Interfaces.State {
 
             const should_notify = shouldNotifyOnFriendLogin()   && c.isFriend
                                || shouldNotifyOnBookmarkLogin() && c.isBookmarked;
-            if (should_notify) {
+            if (should_notify)
                 core.notifications.notify(state.consoleTab, data.identity, l('events.login', data.identity), core.characters.getImage(data.identity), 'silence');
-            }
         }
 
         const conv = state.privateMap[data.identity.toLowerCase()];
@@ -1611,14 +1679,12 @@ export default function(this: any): Interfaces.State {
             }
         }
     });
-    connection.onMessage('TPN', (data) => {
+    connection.onMessage('TPN', data => {
         const conv = state.privateMap[data.character.toLowerCase()];
-        if (conv) {
+        if (conv)
             conv.typingStatus = data.status;
-        }
-        else if (data.status === 'typing' && core.state.settings.risingAdScore && !core.cache.profileCache.getSync(data.character)) {
-            core.cache.addProfile(data.character.toLowerCase());
-        }
+        else if (data.status === 'typing' && core.state.settings.risingAdScore && !core.cache.profileCache.getSync(data.character))
+            void core.cache.addProfile(data.character.toLowerCase());
     });
     connection.onMessage('CBU', async(data, time) => {
         const conv = state.channelMap[data.channel.toLowerCase()];
@@ -1648,7 +1714,7 @@ export default function(this: any): Interfaces.State {
         return addEventMessage(new EventMessage(text, time));
     });
     connection.onMessage('BRO', async(data, time) => {
-        if(data.character !== undefined) {
+        if (data.character !== undefined) {
             log.error('devtools.debug.BRO', {
                 sender: data.character,
                 msg:    data.message,
@@ -1673,7 +1739,7 @@ export default function(this: any): Interfaces.State {
             }
         }
         else {
-            const message = new EventMessage(decodeHTML(data.message), time)
+            const message = new EventMessage(decodeHTML(data.message), time);
             //state.activityTab.parse({ e: 'BRO', data, time, message });
             return addEventMessage(message);
         }
@@ -1704,7 +1770,7 @@ export default function(this: any): Interfaces.State {
 
         if (process.env.NODE_ENV === 'development' || logRTB.eval()) {
             const debug_string = Object.entries(data)
-                .map(([k, v]) => `${k}: ${v}`)
+                .map(([ k, v ]) => `${k}: ${v}`)
                 .join(', ');
 
             await addEventMessage(new EventMessage(debug_string, time));
@@ -1714,18 +1780,18 @@ export default function(this: any): Interfaces.State {
         let text: string, character: string;
 
         if (data.type === 'comment') {
-            switch(data.target_type) {
-                case 'newspost':
-                    url += `newspost/${data.target_id}/#Comment${data.id}`;
-                    break;
-                case 'bugreport':
-                    url += `view_bugreport.php?id=${data.target_id}/#${data.id}`;
-                    break;
-                case 'changelog':
-                    url += `log.php?id=${data.target_id}/#${data.id}`;
-                    break;
-                case 'feature':
-                    url += `vote.php?id=${data.target_id}/#${data.id}`;
+            switch (data.target_type) {
+            case 'newspost':
+                url += `newspost/${data.target_id}/#Comment${data.id}`;
+                break;
+            case 'bugreport':
+                url += `view_bugreport.php?id=${data.target_id}/#${data.id}`;
+                break;
+            case 'changelog':
+                url += `log.php?id=${data.target_id}/#${data.id}`;
+                break;
+            case 'feature':
+                url += `vote.php?id=${data.target_id}/#${data.id}`;
             }
 
             const key = data.parent_id
@@ -1741,7 +1807,7 @@ export default function(this: any): Interfaces.State {
 
             const convo = state.byKey(data.sender) as PrivateConversation | undefined;
 
-            logNotes.debug('RTB.note.convo', { key: convo?.key, init: convo?.notes.initialized});
+            logNotes.debug('RTB.note.convo', { key: convo?.key, init: convo?.notes.initialized });
 
             if (convo?.notes.initialized) { // if not, when opening a PM it will be.
                 core.siteSession.interfaces.notes.getLatestFrom(data.sender)
@@ -1753,30 +1819,33 @@ export default function(this: any): Interfaces.State {
             character = data.sender;
 
             core.notifications.notify(state.consoleTab, character, text, core.characters.getImage(character), 'newnote');
-        } else if(data.type === 'friendrequest') {
+        }
+        else if (data.type === 'friendrequest') {
             core.siteSession.interfaces.noteChecker.incrementMessages();
-            text = l(`events.rtb_friendrequest`, `[user]${data.name}[/user]`);
+            text = l('events.rtb_friendrequest', `[user]${data.name}[/user]`);
             character = data.name;
-        } else {
-            switch(data.type) {
-                case 'grouprequest':
-                    url += 'panel/group_requests.php';
-                    break;
-                case 'bugreport':
-                    url += `view_bugreport.php?id=${data.id}`;
-                    break;
-                case 'helpdeskticket':
-                    url += `view_ticket.php?id=${data.id}`;
-                    break;
-                case 'helpdeskreply':
-                    url += `view_ticket.php?id=${data.id}`;
-                    break;
-                case 'featurerequest':
-                    url += `vote.php?fid=${data.id}`;
-                    break;
-                default: //TODO
-                    return;
+        }
+        else {
+            switch (data.type) {
+            case 'grouprequest':
+                url += 'panel/group_requests.php';
+                break;
+            case 'bugreport':
+                url += `view_bugreport.php?id=${data.id}`;
+                break;
+            case 'helpdeskticket':
+                url += `view_ticket.php?id=${data.id}`;
+                break;
+            case 'helpdeskreply':
+                url += `view_ticket.php?id=${data.id}`;
+                break;
+            case 'featurerequest':
+                url += `vote.php?fid=${data.id}`;
+                break;
+            default: //TODO
+                return;
             }
+
             text = l(`events.rtb_${data.type}`, `[user]${data.name}[/user]`,
                 data.title !== undefined ? `[url=${url}]${data.title}[/url]` : url);
             character = data.name;
@@ -1786,17 +1855,18 @@ export default function(this: any): Interfaces.State {
     const sfcList: Interfaces.SFCMessage[] = [];
     connection.onMessage('SFC', async(data, time) => {
         let text: string, message: Interfaces.Message;
-        if(data.action === 'report') {
+        if (data.action === 'report') {
             text = l('events.report', `[user]${data.character}[/user]`, decodeHTML(data.tab), decodeHTML(data.report));
-            if(!data.old)
+            if (!data.old)
                 core.notifications.notify(state.consoleTab, data.character, text, core.characters.getImage(data.character), 'modalert');
             message = new EventMessage(text, time);
             safeAddMessage(sfcList, message, 500);
             (<Interfaces.SFCMessage>message).sfc = data;
-        } else {
+        }
+        else {
             text = l('events.report.confirmed', `[user]${data.moderator}[/user]`, `[user]${data.character}[/user]`);
             for (const item of sfcList) {
-                if(item.sfc.logid === data.logid) {
+                if (item.sfc.logid === data.logid) {
                     item.sfc.confirmed = true;
                     break;
                 }
@@ -1823,7 +1893,7 @@ export default function(this: any): Interfaces.State {
             );
         }
         else {
-            key = data.statusmsg ? 'events.status.message' : 'events.status',
+            key = data.statusmsg ? 'events.status.message' : 'events.status';
             l_msg.push(
                 `[user]${data.character}[/user]`,
                 l(`status.${data.status}`),
@@ -1847,15 +1917,15 @@ export default function(this: any): Interfaces.State {
     });
     connection.onMessage('UPT', async(data, time) =>
         addEventMessage(new EventMessage(
-                            l('events.uptime',
-                                data.startstring,
-                                data.channels.toString(),
-                                data.users.toString(),
-                                data.accepted.toString(),
-                                data.maxusers.toString()
-                            ),
-                            time,
-                       ))
+            l('events.uptime',
+                data.startstring,
+                data.channels.toString(),
+                data.users.toString(),
+                data.accepted.toString(),
+                data.maxusers.toString()
+            ),
+            time
+        ))
     );
     connection.onMessage('ZZZ', async(data, time) => {
         state.selectedConversation.infoText = data.message;
