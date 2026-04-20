@@ -117,6 +117,7 @@ export default [
             ],
             '@typescript-eslint/naming-convention': [
                 'warn',
+                { selector: [ 'classProperty' ], modifiers: [ 'static', 'readonly'], format: [ 'UPPER_CASE' ] },
                 { selector: 'classicAccessor', format: [ 'camelCase' ] },
                 { selector: 'autoAccessor', format: [ 'camelCase' ] },
                 { selector: 'class', format: [ 'PascalCase' ] },
@@ -202,8 +203,9 @@ export default [
             ],
             '@stylistic/array-element-newline': [
                 'warn', {
+                    consistent: true,
                     multiline: true,
-                    minItems: 5,
+                    // minItems: 5,
                 }
             ],
             '@stylistic/object-property-newline': [
@@ -214,7 +216,7 @@ export default [
             '@stylistic/array-bracket-newline': [
                 'warn', {
                     multiline: true,
-                    minItems: 5,
+                    // minItems: 5,
                 }
             ],
             '@stylistic/object-curly-newline': [

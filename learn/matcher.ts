@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { Character, CharacterInfotag, KinkChoice } from '../interfaces';
+import type { Character, CharacterInfotag, KinkChoice } from '../interfaces';
 import type { CharacterOverrides } from '../fchat/characters';
 
 // Because matcher is loaded in the worker, we can't rely on anything that chains into core, so we must use a custom log implementation for the portion in worker. This is just NewLogger without defaults dependent on `core`.
@@ -7,20 +7,28 @@ import Logger from 'electron-log';
 const we_care_about_matcher_logging = false;
 const in_renderer = self.document !== undefined;
 const log = {
+    /* eslint-disable @typescript-eslint/no-explicit-any, @stylistic/brace-style, @typescript-eslint/no-unsafe-argument, @stylistic/nonblock-statement-body-position */
     l:       Logger.scope('Matcher'),
     cond:    () => we_care_about_matcher_logging && in_renderer,
-    debug:   (...args: any) => { if (log.cond()) log.l.debug(...args)   },
-    error:   (...args: any) => { if (log.cond()) log.l.error(...args)   },
-    info:    (...args: any) => { if (log.cond()) log.l.info(...args)    },
-    log:     (...args: any) => { if (log.cond()) log.l.log(...args)     },
-    silly:   (...args: any) => { if (log.cond()) log.l.silly(...args)   },
-    verbose: (...args: any) => { if (log.cond()) log.l.verbose(...args) },
-    warn:    (...args: any) => { if (log.cond()) log.l.warn(...args)    },
+    debug:   (...args: any) => { if (log.cond()) log.l.debug(...args);   },
+    error:   (...args: any) => { if (log.cond()) log.l.error(...args);   },
+    info:    (...args: any) => { if (log.cond()) log.l.info(...args);    },
+    log:     (...args: any) => { if (log.cond()) log.l.log(...args);     },
+    silly:   (...args: any) => { if (log.cond()) log.l.silly(...args);   },
+    verbose: (...args: any) => { if (log.cond()) log.l.verbose(...args); },
+    warn:    (...args: any) => { if (log.cond()) log.l.warn(...args);    },
+    /* eslint-enable */
 };
 
-import anyAscii from 'any-ascii';
+import AnyAscii from 'any-ascii';
 
 import { Store } from '../site/character_page/data_store';
+
+import type {
+    KinkBucketScore,
+    SpeciesMap,
+    SpeciesMappingCache,
+} from './matcher-types';
 
 import {
     BodyType,
@@ -32,7 +40,6 @@ import {
     genderToKinkMap,
     kinkToGenderMap,
     Kink,
-    KinkBucketScore,
     kinkComparisonExclusionGroups,
     kinkComparisonExclusions,
     kinkComparisonSwaps,
@@ -51,9 +58,7 @@ import {
     postLengthPreferenceScoreMapping,
     Scoring,
     Species,
-    SpeciesMap,
     speciesMapping,
-    SpeciesMappingCache,
     speciesNames,
     SubDomRole,
     TagId,
@@ -279,6 +284,7 @@ export class Matcher {
         const themYouMatch = themYou.match('your');
 
         const report: MatchReport = {
+            /* eslint-disable-next-line @typescript-eslint/naming-convention */
             _isVue:           true,
             you:              youThemMatch,
             them:             themYouMatch,
@@ -325,6 +331,7 @@ export class Matcher {
                 const themYouMatch = themYou.match('your');
 
                 const report: MatchReport = {
+                    /* eslint-disable-next-line @typescript-eslint/naming-convention */
                     _isVue:           true,
                     you:              youThemMatch,
                     them:             themYouMatch,
@@ -370,13 +377,15 @@ export class Matcher {
         //     }
         // );
 
+        // Legacy code
+        /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
         return bestReport!;
     }
 
 
     private static mergeResultScores(scores: MatchResultScores, results: MatchResultScores): void {
         Object.entries(scores)
-            .forEach(([category, categoryScore]) => {
+            .forEach(([ category, categoryScore ]) => {
                 if (categoryScore.score !== Scoring.NEUTRAL && (!(category in results) || categoryScore.score < results[category].score))
                     results[Number(category)] = categoryScore;
             });
@@ -384,11 +393,9 @@ export class Matcher {
 
 
     static mergeResults(you: MatchResult, them: MatchResult): MatchResultScores {
-        const results: MatchResultScores = {} as any;
-
+        const results = {} as unknown as MatchResultScores;
         Matcher.mergeResultScores(you.scores,  results);
         Matcher.mergeResultScores(them.scores, results);
-
         return results;
     }
 
@@ -401,7 +408,7 @@ export class Matcher {
 
         return speciesOptions.map(
             species => {
-                const nc = {...c, infotags: {...c.infotags, [TagId.Species]: {string: species}}};
+                const nc = { ...c, infotags: { ...c.infotags, [TagId.Species]: { string: species }}};
 
                 return { character: nc, analysis: new CharacterAnalysis(nc, overrides) };
             }
@@ -412,24 +419,23 @@ export class Matcher {
         const yourScores =  Object.values(m.you.scores);
         const theirScores = Object.values(m.them.scores);
 
-        const finalScore = [...yourScores, ...theirScores]
-                .reduce(
-                    (accum: Scoring | null, score: Score) => {
-                        if (accum === null)
-                            return score.score !== Scoring.NEUTRAL ? score.score : null;
+        const finalScore = [ ...yourScores, ...theirScores ]
+            .reduce(
+                (accum: Scoring | null, score: Score) => {
+                    if (accum === null)
+                        return score.score !== Scoring.NEUTRAL ? score.score : null;
 
-                        return score.score === Scoring.NEUTRAL ? accum : Math.min(accum, score.score);
-                    },
-                    null
-                );
+                    return score.score === Scoring.NEUTRAL ? accum : Math.min(accum, score.score);
+                },
+                null
+            );
 
         // Manage edge cases where high score may not be ideal
         if (finalScore !== null && finalScore > 0) {
 
             // Not enough information for accurate score
-            if (yourScores.length === 0 || theirScores.length === 0) {
+            if (!yourScores.length || !theirScores.length)
                 return Scoring.NEUTRAL;
-            }
 
             // Only neutral scores given
             if ( yourScores.every(n => n.score === Scoring.NEUTRAL)
@@ -478,7 +484,7 @@ export class Matcher {
 
 
         data.total = Object.keys(data.scores)
-                .reduce((accum: number, key: string) => accum + data.scores[Number(key)].score, 0);
+            .reduce((accum: number, key: string) => accum + data.scores[Number(key)].score, 0);
 
         return data;
     }
@@ -501,7 +507,7 @@ export class Matcher {
             orientation: this.yourAnalysis.orientation,
         }, {
             gender:    this.theirAnalysis.gender,
-            nonbinary: rating ? rating > 0 : false,
+            nonbinary: rating ? rating >= KinkPreference.Yes : false,
         });
     }
 
@@ -608,7 +614,7 @@ export class Matcher {
         ||  theirLength === PostLengthPreference.NoPreference)
             return new Score(Scoring.NEUTRAL);
 
-        let score = postLengthPreferenceScoreMapping[yourLength][theirLength];
+        const score = postLengthPreferenceScoreMapping[yourLength][theirLength];
 
         return this.formatScoring(score, postLengthPreferenceMapping[theirLength]);
     }
@@ -773,13 +779,14 @@ export class Matcher {
                 ? Matcher.humanLikeabilityScore(you)
                 : Scoring.NEUTRAL;
 
-        if (score === Scoring.WEAK_MATCH)
+        if (score === Scoring.WEAK_MATCH) {
             return new Score(
                 score,
                 theyAreAnthro
                     ? 'Prefers <span>humans</span>, ok with anthros'
                     : 'Prefers <span>anthros</span>, ok with humans'
             );
+        }
 
         return this.formatScoring(
             score,
@@ -805,25 +812,21 @@ export class Matcher {
 
         // log.debug('report.score.kink', { them: this.them.name, you: this.you.name, scores, weight: weighted });
 
-        if (scores.fave.count + scores.yes.count + scores.maybe.count + scores.no.count < 10) {
+        if (scores.fave.count + scores.yes.count + scores.maybe.count + scores.no.count < 10)
             return new Score(Scoring.NEUTRAL);
-        }
 
-        if (weighted === 0) {
+        if (weighted === 0)
             return new Score(Scoring.NEUTRAL);
-        }
 
         if (weighted < 0) {
-            if (Math.abs(weighted) < kinkMatchWeights.weakMismatchThreshold) {
+            if (Math.abs(weighted) < kinkMatchWeights.weakMismatchThreshold)
                 return new Score(Scoring.WEAK_MISMATCH, `Hesitant about ${pronoun} <span>kinks</span>`);
-            }
 
             return new Score(Scoring.MISMATCH, `Dislikes ${pronoun} <span>kinks</span>`);
         }
 
-        if (Math.abs(weighted) < kinkMatchWeights.weakMatchThreshold) {
+        if (Math.abs(weighted) < kinkMatchWeights.weakMatchThreshold)
             return new Score(Scoring.WEAK_MATCH, `Likes ${pronoun} <span>kinks</span>`);
-        }
 
         return new Score(Scoring.MATCH, `Loves ${pronoun} <span>kinks</span>`);
     }
@@ -990,10 +993,8 @@ export class Matcher {
 
         if (theirBodyType && theirBodyType in bodyTypeKinkMapping) {
             const bodyTypePreference = Matcher.getKinkPreference(this.you, bodyTypeKinkMapping[theirBodyType]);
-
-            if (bodyTypePreference !== null) {
+            if (bodyTypePreference !== null)
                 return Matcher.formatKinkScore(bodyTypePreference, `${BodyType[theirBodyType].toLowerCase()}s`);
-            }
         }
 
         return new Score(Scoring.NEUTRAL);
@@ -1177,7 +1178,7 @@ export class Matcher {
         // let missed = 0;
 
         const result: KinkBucketScore = Object.entries(yourKinks).reduce(
-            (accum, [yourKinkIdStr, yourKinkValue]) => {
+            (accum, [ yourKinkIdStr, yourKinkValue ]) => {
                 const yourKinkId = Number(yourKinkIdStr);
                 const theirKinkId = yourKinkId in kinkComparisonSwaps
                     ? kinkComparisonSwaps[yourKinkId]
@@ -1240,12 +1241,13 @@ export class Matcher {
     // }
 
     static getAllStandardKinks(c: Character): { [key: number]: KinkChoice } {
-        const kinks = Object.fromEntries(Object.entries(c.kinks)
-                .filter(([_, value]) => typeof value === 'string')
+        const kinks = Object.fromEntries(
+            Object.entries(c.kinks)
+                .filter(([ _, value ]) => typeof value === 'string')
         ) as { [key: number]: KinkChoice };
 
         Object.values(c.customs)
-                .forEach(custom => custom?.children?.forEach(c => kinks[c] = custom.choice));
+            .forEach(custom => custom?.children?.forEach(c => kinks[c] = custom.choice));
 
         return kinks;
     }
@@ -1322,7 +1324,7 @@ export class Matcher {
      * Used as a last-ditch effort after all the good ways to resolve gender compatibility have been exhausted without match.
      */
     static excludeNebulousGenders(...genders: Gender[]): Gender[] {
-        const sanitized = genders.filter(g => ![Gender.Androgynous, Gender.Feminine, Gender.Masculine, Gender.Nonbinary, Gender.None, Gender.Transgender].includes(g));
+        const sanitized = genders.filter(g => ![ Gender.Androgynous, Gender.Feminine, Gender.Masculine, Gender.Nonbinary, Gender.None, Gender.Transgender ].includes(g));
 
         const femb = sanitized.indexOf(Gender.Femboy);
         if (femb > -1) {
@@ -1345,7 +1347,6 @@ export class Matcher {
 
     static getKinkPreference(c: Character, kinkId: number): KinkPreference | null {
         const kinkVal = Matcher.findKinkById(c, kinkId);
-
         if (kinkVal === undefined)
             return null;
 
@@ -1353,7 +1354,6 @@ export class Matcher {
             return kinkMapping[kinkVal];
 
         const custom = c.customs[kinkVal];
-
         if (!custom)
             return null;
 
@@ -1380,7 +1380,6 @@ export class Matcher {
     static isMammal(c: Character, species: Species | null = null): boolean {
         if (!species)
             species = Matcher.species(c);
-
         if (!species)
             return false;
 
@@ -1389,13 +1388,11 @@ export class Matcher {
 
     static isAnthro(c: Character, species: Species | null = null): boolean {
         const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
-
         if (bodyTypeId === BodyType.Anthro)
             return true;
 
         if (!species)
             species = Matcher.species(c);
-
         if (!species)
             return false;
 
@@ -1404,11 +1401,11 @@ export class Matcher {
 
     static isHuman(c: Character, species: Species | null = null): boolean {
         const bodyTypeId: BodyType | null = Matcher.getTagValueList(TagId.BodyType, c);
-
         if (bodyTypeId === BodyType.Human)
             return true;
 
-        if (!species) species = Matcher.species(c);
+        if (!species)
+            species = Matcher.species(c);
 
         return species === Species.Human;
     }
@@ -1418,12 +1415,13 @@ export class Matcher {
         if (!speciesTag?.string)
             return null;
 
-        Matcher.ensureMapsAreBuilt();
+        const caches = Matcher.getSpeciesMaps();
 
-        const mappedSpecies = Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!)
-                           || Matcher.matchMappedSpecies(speciesTag.string, Matcher.nekoCache!, true);
+        const mappedSpecies = Matcher.matchMappedSpecies(speciesTag.string, caches.nekoCache)
+                           || Matcher.matchMappedSpecies(speciesTag.string, caches.nekoCache, true);
 
-        if (mappedSpecies) log.debug('species.kemonomimi.mapped', { character: c.name, species: mappedSpecies });
+        if (mappedSpecies)
+            log.debug('species.kemonomimi.mapped', { character: c.name, species: mappedSpecies });
 
         return mappedSpecies;
     }
@@ -1437,7 +1435,6 @@ export class Matcher {
     static isKemonomimi(c: Character, species: Species | null = null): boolean {
         if (!species)
             species = Matcher.species(c);
-
         if (!species)
             return false;
 
@@ -1514,14 +1511,15 @@ export class Matcher {
 
         const s = Matcher.getMappedSpecies(mySpecies.string);
 
-        if (!s) log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });
+        if (!s)
+            log.debug('matcher.species.unknown', { character: c.name, species: mySpecies.string });
 
         return s;
     }
 
     static generateSpeciesMappingCache(mapping: SpeciesMap): SpeciesMappingCache {
         return Object.fromEntries(
-            Object.entries(mapping).map(([key, speciesPhraseList]) => [
+            Object.entries(mapping).map(([ key, speciesPhraseList ]) => [
                 key,
                 speciesPhraseList.map(mappedPhrase => {
                     // this is weak: elf -> elves doesn't occur
@@ -1531,7 +1529,7 @@ export class Matcher {
                         mappedPhrase,
                         regexp: RegExp(`(^|\\b)(${mappedPhrase}|${phrasePlural})($|\\b)`),
                     };
-                })
+                }),
             ])
         );
     }
@@ -1544,9 +1542,9 @@ export class Matcher {
         let foundSpeciesId: Species | null = null;
         let match = '';
 
-        const finalSpecies = (skipAscii ? species : anyAscii(species)).toLowerCase().trim();
+        const finalSpecies = (skipAscii ? species : AnyAscii(species)).toLowerCase().trim();
 
-        Object.entries(mapping).forEach(([speciesId, matchers]) => {
+        Object.entries(mapping).forEach(([ speciesId, matchers ]) => {
             matchers.forEach(matcher => {
                 if (matcher.mappedPhrase.length > match.length && matcher.regexp.test(finalSpecies)) {
                     match = matcher.mappedPhrase;
@@ -1558,23 +1556,33 @@ export class Matcher {
         return foundSpeciesId;
     }
 
-    static ensureMapsAreBuilt(): void {
+    static getSpeciesMaps(): {
+        speciesMappingCache: SpeciesMappingCache
+        likelyHumanCache:    SpeciesMappingCache
+        nekoCache:           SpeciesMappingCache
+    } {
         if (!Matcher.speciesMappingCache)
             Matcher.speciesMappingCache = Matcher.generateSpeciesMappingCache(speciesMapping);
         if (!Matcher.likelyHumanCache)
             Matcher.likelyHumanCache =    Matcher.generateSpeciesMappingCache(likelyHuman);
         if (!Matcher.nekoCache)
             Matcher.nekoCache =           Matcher.generateSpeciesMappingCache(nekoMap);
+
+        return {
+            speciesMappingCache: Matcher.speciesMappingCache,
+            likelyHumanCache:    Matcher.likelyHumanCache,
+            nekoCache:           Matcher.nekoCache,
+        };
     }
 
     static getMappedSpecies(species: string): Species | null {
-        Matcher.ensureMapsAreBuilt();
+        const caches = Matcher.getSpeciesMaps();
 
-        const mappedSpecies = Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!)
-                           ?? Matcher.matchMappedSpecies(species, Matcher.speciesMappingCache!, true);
+        const mappedSpecies = Matcher.matchMappedSpecies(species, caches.speciesMappingCache)
+                           ?? Matcher.matchMappedSpecies(species, caches.speciesMappingCache, true);
 
-        const maybeHuman    = Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!)
-                           ?? Matcher.matchMappedSpecies(species, Matcher.likelyHumanCache!, true);
+        const maybeHuman    = Matcher.matchMappedSpecies(species, caches.likelyHumanCache)
+                           ?? Matcher.matchMappedSpecies(species, caches.likelyHumanCache, true);
 
         // log.debug('matcher.getMappedSpecies', { mappedspecies: mappedSpecies, maybehuman: maybeHuman });
 
@@ -1597,7 +1605,7 @@ export class Matcher {
             return [];
 
         const speciesStr = mySpecies.string.toLowerCase().replace(/optionally|alternatively/g, ',')
-                .replace(/[)(]/g, ' ').trim();
+            .replace(/[)(]/g, ' ').trim();
         const matches = speciesStr.split(/[,]? or |,/);
 
         return matches
@@ -1621,9 +1629,8 @@ export class Matcher {
         skipYours: boolean = false,
         skipTheirs: boolean = false
     ): number | null {
-        if (scoreLevel === null) {
-            return null;
-        }
+        if (scoreLevel === null)
+            return null; // TODO: Change to pure numeric return.
 
         const yourScores  = skipYours  ? [] : Object.values(m.you.scores);
         const theirScores = skipTheirs ? [] : Object.values(m.them.scores);
@@ -1639,9 +1646,8 @@ export class Matcher {
         skipYours: boolean = false,
         skipTheirs: boolean = false
     ): number {
-        if (scoreLevel === null) {
+        if (scoreLevel === null)
             return 0;
-        }
 
         const yourScores  = skipYours  ? [] : Object.values(m.you.scores);
         const theirScores = skipTheirs ? [] : Object.values(m.them.scores);
@@ -1663,35 +1669,15 @@ export class Matcher {
         if (!rawAge?.string)
             return null;
 
-        /**
-         * There are strings/emoji that give no hint to a number, but are still
-         * very useful for matching, so they should be used even inefficiently.
-         */
-
-        function commonString(ageStr: string): boolean {
-            return ageStr.includes('shota') || ageStr.includes('loli')
-                || ageStr.includes('cub') || ageStr.includes('pup')
-        }
-
-        function isBaby(ageStr: string): boolean {
-            return ageStr.includes('👶')
-                || ageStr.includes('🍼')
-                || ageStr.includes('🚼');
-        }
-
-        function genericMatch(ageStr: string): boolean {
-            return ageStr.includes('🔞');
-        }
-
         const ageStr = rawAge.string.toLowerCase().replace(/[,.]/g, '').trim();
 
         if (isBaby(ageStr))
             return 7;
 
-        if (commonString(ageStr))
+        if (commonUAString(ageStr))
             return 10;
 
-        if (genericMatch(ageStr))
+        if (genericUAMatch(ageStr))
             return 13;
 
         let age: number | null = null;
@@ -1716,16 +1702,13 @@ export class Matcher {
 
     static apparentAge(c: Character): { min: number, max: number } | null {
         const rawAge = Matcher.getTagValue(TagId.ApparentAge, c);
-
-        if (!rawAge || !rawAge.string) {
+        if (!rawAge || !rawAge.string)
             return null;
-        }
 
+        // What's with the Any Character removal? Should it be optional space character?
         const ageStr = rawAge.string.toLowerCase().replace(/[,.]/g, '').trim();
-
-        if (ageStr === '') {
+        if (!ageStr)
             return null;
-        }
 
         // '18'
         if (/^[0-9]+$/.exec(ageStr)) {
@@ -1744,10 +1727,14 @@ export class Matcher {
             return { min: Math.min(v1, v2), max: Math.max(v1, v2) };
         }
 
-        if ((ageStr.includes('shota')) || (ageStr.includes('loli'))
-            || (ageStr.includes('lolli')) || (ageStr.includes('pup'))) {
-            return { min: 10, max: 10 };
-        }
+        if (isBaby(ageStr))
+            return { min: 1, max: 7 };
+
+        if (commonUAString(ageStr))
+            return { min: 7, max: 13 };
+
+        if (genericUAMatch(ageStr))
+            return { min: 13, max: 17 };
 
         return null;
     }
@@ -1774,7 +1761,7 @@ export class Matcher {
             const matchRatio = dimensionsAtScoreLevel / totalScoreDimensions;
             theirAtLevelDimensions = Matcher.countScoresAtLevel(match, score, true, false) || 0;
 
-          // 1.0 == bad balance; 0.0 == ideal balance
+            // 1.0 == bad balance; 0.0 == ideal balance
             atLevelMul = Math.abs(theirAtLevelDimensions / dimensionsAtScoreLevel - 0.5) * 2;
 
             atLevelScore = (1 - atLevelMul * 0.5) * Math.pow(dimensionsAtScoreLevel, matchRatio);
@@ -1785,7 +1772,7 @@ export class Matcher {
 
             theirAboveLevelDimensions = Matcher.countScoresAboveLevel(match, score, true, false) || 0;
 
-          // 1.0 == bad balance; 0.0 == ideal balance
+            // 1.0 == bad balance; 0.0 == ideal balance
             aboveLevelMul = Math.abs(theirAboveLevelDimensions / dimensionsAboveScoreLevel - 0.5) * 2;
 
             aboveLevelScore = (1 - aboveLevelMul * 0.5) * Math.pow(dimensionsAboveScoreLevel, matchRatio);
@@ -1815,6 +1802,27 @@ export class Matcher {
 
         return atLevelScore + aboveLevelScore + penalty;
     }
+}
+
+/**
+ * There are strings/emoji that give no hint to a number, but are still very useful for matching, so they should be used even inefficiently.
+ *
+ * These are determined heuristically to avoid adding runtime baggage for situations that don't actually exist.
+ */
+
+function isBaby(ageStr: string): boolean {
+    return ageStr.includes('👶')
+        || ageStr.includes('🍼')
+        || ageStr.includes('🚼');
+}
+
+function commonUAString(ageStr: string): boolean {
+    return ageStr.includes('shota') || ageStr.includes('loli') || ageStr.includes('lolli')
+        || ageStr.includes('cub')   || ageStr.includes('pup');
+}
+
+function genericUAMatch(ageStr: string): boolean {
+    return ageStr.includes('🔞');
 }
 
 log.debug('init.matcher');
