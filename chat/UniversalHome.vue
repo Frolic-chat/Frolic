@@ -381,8 +381,7 @@ export default class HomeScreen extends Vue {
             : undefined;
     }
 
-    /* eslint-disable @stylistic/nonblock-statement-body-position */
-    /* eslint-disable @stylistic/brace-style */
+    /* eslint-disable @stylistic/nonblock-statement-body-position, @stylistic/brace-style */
     get tab0Name() {
         if (this.isHome)    return l('home.tab.home');
         if (this.isPrivate) return this.conversation.name;
@@ -404,11 +403,14 @@ export default class HomeScreen extends Vue {
         return undefined;
     }
 
-    get tab3Name() { return l('home.tab.settings'); }
+    get tab3Name() {
+        return this.isHome
+            ? l('home.tab.generalSettings')
+            : l('home.tab.settings');
+    }
 
     get tab4Name() { return l('home.tab.data'); }
-    /* eslint-enable @stylistic/brace-style */
-    /* eslint-enable @stylistic/nonblock-statement-body-position */
+    /* eslint-enable @stylistic/nonblock-statement-body-position, @stylistic/brace-style */
 
     get tabTooltips() {
         return [
