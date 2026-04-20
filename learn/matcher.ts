@@ -528,8 +528,8 @@ export class Matcher {
         if (doesntHaveGender(you.gender) || doesntHaveGender(them.gender) || lovesEveryone(you.orientation))
             return new Score(Scoring.NEUTRAL);
 
-        const yourConcrete  = Matcher.excludeNebulousGenders(...you.gender);
-        const theirConcrete = Matcher.excludeNebulousGenders(...them.gender);
+        const yourConcrete  = Matcher.excludeNebulousGenders(you.gender);
+        const theirConcrete = Matcher.excludeNebulousGenders(them.gender);
         if (!yourConcrete.length || !theirConcrete.length)
             return new Score(Scoring.NEUTRAL);
 
@@ -542,14 +542,14 @@ export class Matcher {
             return new Score(Scoring.MATCH, 'Loves <span>male</span> partners');
 
         // CIS
-        const theirCisGender = Matcher.isCisGender(...you.gender);
-        const yourCisGender  =  them.nonbinary
-            ? Matcher.translateNbToCis(...you.gender)
-            : Matcher.isCisGender(...them.gender);
+        // Attempt to reduce both parties to purely cisgenders; these functions return `false` when a reduction can't resonably be made, so check false before trying to use them as M/F.
+        const yourCisGender  = Matcher.isCisGender(you.gender);
+        const theirCisGender = them.nonbinary
+            ? Matcher.translateNbToCis(them.gender)
+            : Matcher.isCisGender(them.gender);
 
         if (theirCisGender && yourCisGender) {
-            if (yourCisGender === theirCisGender) { // Gay cis
-                // same sex CIS
+            if (yourCisGender === theirCisGender) {
                 if (you.orientation === Orientation.Straight)
                     return new Score(Scoring.MISMATCH, 'No <span>same sex</span> partners');
 
@@ -965,7 +965,7 @@ export class Matcher {
 
             if (yourGenders && yourOrientation) {
                 for (const yourG of yourGenders) {
-                    if (Matcher.isCisGender(yourG) && !Matcher.isCisGender(theirG)) {
+                    if (Matcher.isCisGender([ yourG ]) && !Matcher.isCisGender([ theirG ])) {
                         if ([ // straight+bi orientations
                             Orientation.Straight,
                             Orientation.Gay,
@@ -1286,7 +1286,7 @@ export class Matcher {
     /**
      * Selecting non-ambiguous genders results in faster match-making.
      */
-    static isCisGender(...genders: Gender[]): Gender.Male | Gender.Female | false {
+    static isCisGender(genders: Gender[]): Gender.Male | Gender.Female | false {
         const nb = new Set([ Gender.Herm, Gender.MaleHerm, Gender.Cuntboy, Gender.Shemale, Gender.Transman, Gender.Transwoman, Gender.Transgender, Gender.Nonbinary, Gender.None ]);
 
         for (const g of genders) {
@@ -1306,7 +1306,7 @@ export class Matcher {
         return false;
     }
 
-    static translateNbToCis(...genders: Gender[]): Gender.Male | Gender.Female | false {
+    static translateNbToCis(genders: Gender[]): Gender.Male | Gender.Female | false {
         const m_map = new Set([ Gender.MaleHerm, Gender.Cuntboy, Gender.Transman,   Gender.Femboy, Gender.Male   ]);
         const f_map = new Set([ Gender.Herm,     Gender.Shemale, Gender.Transwoman, Gender.Tomboy, Gender.Female ]);
         // const b_map = new Set([ Gender.Transgender, Gender.Nonbinary, Gender.None ]);
@@ -1317,13 +1317,13 @@ export class Matcher {
         if (genders.some(g => f_map.has(g)) && genders.every(g => !m_map.has(g)))
             return Gender.Female;
 
-        return false;
+        return false; // Nb
     }
 
     /**
      * Used as a last-ditch effort after all the good ways to resolve gender compatibility have been exhausted without match.
      */
-    static excludeNebulousGenders(...genders: Gender[]): Gender[] {
+    static excludeNebulousGenders(genders: Gender[]): Gender[] {
         const sanitized = genders.filter(g => ![ Gender.Androgynous, Gender.Feminine, Gender.Masculine, Gender.Nonbinary, Gender.None, Gender.Transgender ].includes(g));
 
         const femb = sanitized.indexOf(Gender.Femboy);
