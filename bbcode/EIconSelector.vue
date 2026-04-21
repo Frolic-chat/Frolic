@@ -8,7 +8,9 @@
     </div>
     <div v-else>
       <div class="search-bar">
-        <input id="search" ref="search" v-model="search" type="text" class="form-control search" :placeholder="l('eicon.search')" tabindex="0" @input="searchUpdateDebounce()" />
+        <div data-balloon-length="fit" :aria-label="l('eicon.favTooltip')" data-balloon-pos="down" data-balloon-nofocus>
+          <input id="search" ref="search" v-model="search" type="text" class="form-control search" :placeholder="l('eicon.search')" tabindex="0" @input="searchUpdateDebounce()" />
+        </div>
         <!-- @click.prevent.stop="setFocus()" @mousedown.prevent.stop @mouseup.prevent.stop -->
         <div class="btn-group search-buttons">
           <div class="btn expressions" :title="l('eicon.favorites')" role="button" tabindex="0" @click.prevent.stop="searchWithString(favesSearchString)">
