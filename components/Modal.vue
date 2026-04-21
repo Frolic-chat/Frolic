@@ -1,120 +1,125 @@
 <template>
-    <span v-show="isShown">
-        <div class="modal" @mousedown.self="hideWithCheck()" style="display:flex;justify-content:center">
-            <div class="modal-dialog" :class="dialogClass" style="display:flex;align-items:center;margin-left:0;margin-right:0">
-                <div class="modal-content" style="max-height:100%">
-                    <div class="modal-header" style="flex-shrink:0">
-                        <h4 class="modal-title">
-                            <slot name="title">{{action}}</slot>
-                        </h4>
-                        <button type="button" class="close" @click="hide" aria-label="Close" v-show="!keepOpen">&times;</button>
-                    </div>
-                    <div ref="scrollCage" class="modal-body" style="overflow:auto;-webkit-overflow-scrolling:auto" tabindex="-1">
-                        <slot></slot>
-                    </div>
-                    <div class="modal-footer" v-if="buttons">
-                        <button type="button" class="btn btn-secondary" @click="hideWithCheck" v-if="showCancel">Cancel</button>
-                        <button type="button" class="btn" :class="buttonClass" @click="submit" :disabled="shouldBeDisabled()">
-                            {{submitText}}
-                        </button>
-                    </div>
-                </div>
-            </div>
+<span v-show="isShown">
+  <div class="modal" style="display:flex;justify-content:center" @mousedown.self="hideWithCheck()">
+    <div class="modal-dialog" :class="dialogClass" style="display:flex;align-items:center;margin-left:0;margin-right:0">
+      <div class="modal-content" style="max-height:100%">
+        <div class="modal-header" style="flex-shrink:0">
+          <h4 class="modal-title">
+            <slot name="title">{{ action }}</slot>
+          </h4>
+          <button v-show="!keepOpen" type="button" class="close" aria-label="Close" @click="hide">&times;</button>
         </div>
-        <div class="modal-backdrop show"></div>
-    </span>
+        <div ref="scrollCage" class="modal-body" style="overflow:auto;-webkit-overflow-scrolling:auto" tabindex="-1">
+          <slot></slot>
+        </div>
+        <div v-if="buttons" class="modal-footer">
+          <button v-if="showCancel" type="button" class="btn btn-secondary" @click="hideWithCheck">Cancel</button>
+          <button type="button" class="btn" :class="buttonClass" :disabled="shouldBeDisabled()" @click="submit">
+            {{ submitText }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+</span>
 </template>
 
 <script lang="ts">
-    import {Component, Hook, Prop} from '@frolic/vue-ts';
-    import Vue from 'vue';
-    import core from '../chat/core';
+import { Component, Hook, Prop } from '@frolic/vue-ts';
+import Vue from 'vue';
+import core from '../chat/core';
 
-    window.addEventListener('backbutton', (e) => {
-        if(core.runtime.dialogStack.length > 0) {
+window.addEventListener(
+    'backbutton', e => {
+        if (core.runtime.dialogStack.length > 0) {
             e.stopPropagation();
             e.preventDefault();
             core.runtime.dialogStack[core.runtime.dialogStack.length - 1].hide();
         }
-    }, true);
+    },
+    true
+);
 
-    export let isShowing = false;
+export let isShowing = false;
 
-    @Component
-    export default class Modal extends Vue {
-        @Prop({default: ''})
-        readonly action!: string;
-        @Prop
-        readonly dialogClass?: {string: boolean};
-        @Prop({default: true})
-        readonly buttons!: boolean;
-        @Prop({default: () => ({'btn-primary': true})})
-        readonly buttonClass!: {string: boolean};
-        @Prop
-        readonly disabled?: boolean;
-        @Prop({default: true})
-        readonly showCancel!: boolean;
-        @Prop
-        readonly buttonText?: string;
-        isShown = false;
+@Component
+export default class Modal extends Vue {
+    @Prop({ default: '' })
+    readonly action!: string;
+    @Prop
+    readonly dialogClass?: { string: boolean };
+    @Prop({ default: true })
+    readonly buttons!: boolean;
+    @Prop({ default: () => ({ 'btn-primary': true }) })
+    readonly buttonClass!: { string: boolean };
+    @Prop
+    readonly disabled?: boolean;
+    @Prop({ default: true })
+    readonly showCancel!: boolean;
+    @Prop
+    readonly buttonText?: string;
 
-        keepOpen = false;
-        forcedDisabled = false;
+    isShown = false;
+    keepOpen = false;
+    forcedDisabled = false;
 
-        get submitText(): string {
-            return this.buttonText !== undefined ? this.buttonText : this.action;
-        }
-
-        forceDisabled(disabled: boolean): void {
-          this.forcedDisabled = disabled;
-        }
-
-        shouldBeDisabled(): boolean {
-          return this.disabled || this.forcedDisabled;
-        }
-
-        submit(e: Event): void {
-            this.$emit('submit', e);
-            if(!e.defaultPrevented) this.hideWithCheck();
-        }
-
-        show(keepOpen: boolean = false): void {
-            this.keepOpen = keepOpen;
-            if(this.isShown) {
-              this.$emit('reopen');
-              return;
-            }
-            this.isShown = true;
-            core.runtime.dialogStack.push(this);
-            this.$emit('open');
-            isShowing = true;
-        }
-
-        hide(): void {
-            this.isShown = false;
-            this.$emit('close');
-            core.runtime.dialogStack.pop();
-            if (core.runtime.dialogStack.length === 0)
-                isShowing = false;
-        }
-
-        hideWithCheck(): void {
-            if(this.keepOpen) return;
-            this.hide();
-        }
-
-        /**
-         * Direct rip off from home-page's scroll cage setup.
-         */
-        scrollToTop(): void {
-            this.$nextTick(() => (this.$refs['scrollCage'] as HTMLDivElement).scrollTo(0,0));
-        }
-
-        @Hook('beforeDestroy')
-        beforeDestroy(): void {
-            if(this.isShown) this.hide();
-        }
+    get submitText(): string {
+        return this.buttonText !== undefined ? this.buttonText : this.action;
     }
+
+    forceDisabled(disabled: boolean): void {
+        this.forcedDisabled = disabled;
+    }
+
+    shouldBeDisabled(): boolean {
+        return this.disabled || this.forcedDisabled;
+    }
+
+    submit(e: Event): void {
+        this.$emit('submit', e);
+        if (!e.defaultPrevented)
+            this.hideWithCheck();
+    }
+
+    show(keepOpen: boolean = false): void {
+        this.keepOpen = keepOpen;
+        if (this.isShown) {
+            this.$emit('reopen');
+            return;
+        }
+        this.isShown = true;
+        core.runtime.dialogStack.push(this);
+        this.$emit('open');
+        isShowing = true;
+    }
+
+    hide(): void {
+        this.isShown = false;
+        this.$emit('close');
+        core.runtime.dialogStack.pop();
+        if (core.runtime.dialogStack.length === 0)
+            isShowing = false;
+    }
+
+    hideWithCheck(): void {
+        if (!this.keepOpen)
+            this.hide();
+    }
+
+    /**
+     * Direct rip off from home-page's scroll cage setup.
+     */
+    scrollToTop(): void {
+        this.$nextTick(() => (this.$refs['scrollCage'] as HTMLDivElement).scrollTo(0,0));
+    }
+
+    @Hook('beforeDestroy')
+    beforeDestroy(): void {
+        if (this.isShown)
+            this.hide();
+    }
+}
 </script>
 
 <style>
