@@ -1,5 +1,5 @@
 <template>
-<modal ref="dialog" :action="l('adEditor.title')" dialog-class="w-100" :button-text="l('adEditor.save')" @submit="submit" @open="load">
+<modal ref="dialog" :action="l('adEditor.title')" dialog-class="w-100" :button-text="l('adEditor.save')" :backdropClose="false" @submit="submit" @open="load">
   <div v-for="(ad, index) in ads" :key="index" class="form-group ad-list">
     <label :for="'adm-content-' + index" class="d-flex align-items-center justify-content-center gap-1" style="gap: 0.5em">Ad #{{ (index + 1) }}
       <a v-if="(index > 0)" :title="l('adEditor.moveUp')" @click="moveAdUp(index)"><i class="fa fa-arrow-up"></i></a>

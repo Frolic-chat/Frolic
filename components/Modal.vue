@@ -1,6 +1,6 @@
 <template>
 <span v-show="isShown">
-  <div class="modal" style="display:flex;justify-content:center" @mousedown.self="hideWithCheck()">
+  <div class="modal" style="display:flex;justify-content:center" @mousedown.self="clickOutOfBounds()">
     <div class="modal-dialog" :class="dialogClass" style="display:flex;align-items:center;margin-left:0;margin-right:0">
       <div class="modal-content" style="max-height:100%">
         <div class="modal-header" style="flex-shrink:0">
@@ -59,6 +59,8 @@ export default class Modal extends Vue {
     readonly showCancel!: boolean;
     @Prop
     readonly buttonText?: string;
+    @Prop({ default: true })
+    readonly backdropClose!: boolean;
 
     isShown = false;
     keepOpen = false;
@@ -105,6 +107,11 @@ export default class Modal extends Vue {
     hideWithCheck(): void {
         if (!this.keepOpen)
             this.hide();
+    }
+
+    clickOutOfBounds(): void {
+        if (this.backdropClose)
+            this.hideWithCheck();
     }
 
     /**
