@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+/* eslint-disable @stylistic/key-spacing */
 const strings = {
     'home': 'Home',
     'default': 'Default',
@@ -137,7 +138,7 @@ const strings = {
     'charName.empty': 'Name must be longer.',
     'charName.space': 'Name cannot begin or end with a space.',
     'charName.invalid': 'Name contains invalid characters.',
-    'charName.tooLong': "Name is too long.",
+    'charName.tooLong': 'Name is too long.',
     'chat.confirmLeave': 'You are still connected to chat. Would you like to disconnect?',
 
     // Used in the notification.
@@ -259,12 +260,12 @@ SELECT THE TAB YOU WISH TO REPORT, LOGS ARE AUTOMATICALLY ATTACHED[/color]`,
     'settings.cg.alert': '⚠ Alert!',
     'settings.cg.experimental': 'This feature is in testing. The exact benefit may improve over time. Only players who use Frolic will see your gender phrase, but your chosen gender kinks will still be used to determine your matchmaking compatibility with any character who fills out their kink list.',
     'settings.cg.identity.lead': '1. Identity',
-    'settings.cg.identity.desc': "Enter the word or phrase that best describes your gender identity. It will appear to others viewing your profile.",
+    'settings.cg.identity.desc': 'Enter the word or phrase that best describes your gender identity. It will appear to others viewing your profile.',
     'settings.cg.identity.example': 'Example: Transman, Genderqueer, Null',
-    'settings.cg.kink.lead': "2. Matching",
+    'settings.cg.kink.lead': '2. Matching',
     'settings.cg.kink.desc': "The matchmaker uses a character's F-List kinks to determine if your gender is a good match for them. You can select any number of gender-related kinks to represent yourself to the matcher.",
     'settings.cg.kink.example': "Kinks are checked in order. For example: If your character is a transman, you can select trans male, male, and transgender in that order. If the other player has transmen in their favorites, your gender will appear as a great match to them. If the user doesn't have transmen in their kinks but has men in their maybes, your gender will appear as a yellow slight-mismatch.",
-    'settings.cg.errorEmptyKinks': "Choosing no gender kinks will remove gender as a compatibility factor. (F-List has no genderless/null-gender kink to match against - so even if you want to be perceived as void, there is no way for anyone to express an interest for it.)",
+    'settings.cg.errorEmptyKinks': 'Choosing no gender kinks will remove gender as a compatibility factor. (F-List has no genderless/null-gender kink to match against - so even if you want to be perceived as void, there is no way for anyone to express an interest for it.)',
     'settings.cg.output.lead': 'Your Final Gender',
     'settings.cg.output.desc': "The text below is pre-formatted and ready to be pasted into your profile description. It isn't visible to any real person, but Frolic will understand it.",
     'settings.cg.exampleOutput': '[i=fcg://display=Butch;match=597,532,554;mismatch=;v=1][/i]',
@@ -343,8 +344,8 @@ Are you sure?`,
     'settings.linkPreviewVolume': 'Image preview volume: {0}%',
     'settings.linkPreviewVolume.help': '⚠ Not all websites respect selected volume. Recommended setting: 0%',
 
-    'settings.hideChannelMembers.help': "Channel moderators and global ops will remain visible.",
-    'settings.hideChannelMessages.help': "Messages from channel moderators and global ops will remain visible.",
+    'settings.hideChannelMembers.help': 'Channel moderators and global ops will remain visible.',
+    'settings.hideChannelMessages.help': 'Messages from channel moderators and global ops will remain visible.',
     'settings.hidePrivateMessages.help': "Messages from global ops and moderators of any channel you're in will remain visible.",
     'settings.useGlobalSetting': 'Use global setting',
 
@@ -956,7 +957,7 @@ export default function l(key: LKeys, ...args: (string | number)[]): string {
     }
 
     let i = args.length;
-    while(i-- > 0)
+    while (i-- > 0)
         str = str.replace(new RegExp(`\\{${i}\\}`, 'igm'), args[i].toString());
 
     return str;

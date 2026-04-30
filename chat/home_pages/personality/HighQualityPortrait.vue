@@ -1,36 +1,36 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <collapse>
-<template v-slot:header>
+  <template v-slot:header>
     {{ title }}
-</template>
-<template v-slot:button>
+  </template>
+  <template v-slot:button>
     <span v-if="youHaveHqp">
-        <span class="text-success fa-solid fa-circle-check"></span>
+      <span class="text-success fa-solid fa-circle-check"></span>
     </span>
     <span v-else>
-        <span class="fa-solid fa-face-grin-stars"></span>
-        <span class="ml-2 d-none d-sm-inline">Create</span>
+      <span class="fa-solid fa-face-grin-stars"></span>
+      <span class="ml-2 d-none d-sm-inline">Create</span>
     </span>
-</template>
-<template v-slot:default>
+  </template>
+  <template v-slot:default>
     <p v-if="!hqpEnabled" class="lead text-warning">{{ disabled }}</p>
     <div>{{ desc1 }}</div>
 
     <div class="warning" style="margin-top: 10px">
-        <h5>{{ alert }}</h5>
-        <div>{{ desc2 }}</div>
+      <h5>{{ alert }}</h5>
+      <div>{{ desc2 }}</div>
     </div>
 
     <div>
-        {{ allowedDomains }}
-        <ul>
-            <li>static.f-list.net {{ flist }}</li>
-            <li>freeimage.host</li>
-            <li>iili.io</li>
-            <li>e621.net</li>
-            <li>redgifs</li>
-        </ul>
+      {{ allowedDomains }}
+      <ul>
+        <li>static.f-list.net {{ flist }}</li>
+        <li>freeimage.host</li>
+        <li>iili.io</li>
+        <li>e621.net</li>
+        <li>redgifs</li>
+      </ul>
     </div>
 
     <!--
@@ -39,15 +39,15 @@
     -->
 
     <div class="form-group">
-        <textarea class="hqp-input form-control" v-model="normalLink" @keydown.enter.prevent.stop="" rows="1" :placeholder="inputPh"></textarea>
-        <div class="form-label">{{ copy }}</div>
-        <div v-if="hqpError">
-            {{ error }}
-            <div class="hqp-error">{{ hqpErrorMsg }}</div>
-        </div>
-        <textarea class="hqp-input form-control" @click="selectAllIfValid" :value="hqpLink" rows="1" :placeholder="outputPh" readonly="true"></textarea>
+      <textarea v-model="normalLink" class="hqp-input form-control" rows="1" :placeholder="inputPh" @keydown.enter.prevent.stop=""></textarea>
+      <div class="form-label">{{ copy }}</div>
+      <div v-if="hqpError">
+        {{ error }}
+        <div class="hqp-error">{{ hqpErrorMsg }}</div>
+      </div>
+      <textarea class="hqp-input form-control" :value="hqpLink" rows="1" :placeholder="outputPh" readonly="true" @click="selectAllIfValid"></textarea>
     </div>
-</template>
+  </template>
 </collapse>
 </template>
 
@@ -61,7 +61,7 @@ import core from '../../core';
 import l from '../../localize';
 import { ProfileCache } from '../../../learn/profile-cache';
 
-type hqpErrorString = 'settings.hqp.errorUrl'
+type HqpErrorString = 'settings.hqp.errorUrl'
                     | 'settings.hqp.errorDomain'
                     | 'settings.hqp.errorBrace'
                     | '';
@@ -69,7 +69,7 @@ type hqpErrorString = 'settings.hqp.errorUrl'
 @Component({
     components: {
         collapse: Collapse,
-    }
+    },
 })
 export default class HQPCreator extends Vue {
     title = l('settings.hqp.title');
@@ -84,10 +84,11 @@ export default class HQPCreator extends Vue {
     error = l('settings.hqp.error');
     outputPh = l('settings.hqp.output.ph');
 
-    get hqpErrorMsg() { return l(this.hqpError) }
-
-    get hqpEnabled() { return core.state.settings.risingShowHighQualityPortraits }
-    get youHaveHqp() { return !!core.characters.ownCharacter.overrides.avatarUrl }
+    /* eslint-disable @stylistic/brace-style */
+    get hqpErrorMsg() { return l(this.hqpError); }
+    get hqpEnabled()  { return core.state.settings.risingShowHighQualityPortraits; }
+    get youHaveHqp()  { return !!core.characters.ownCharacter.overrides.avatarUrl; }
+    /* eslint-enable @stylistic/brace-style */
 
     normalLink = '';
     get hqpLink() {
@@ -103,20 +104,20 @@ export default class HQPCreator extends Vue {
             e.target.select();
     }
 
-    get hqpError() {
+    get hqpError(): HqpErrorString {
         if (!this.normalLink)
-            return '' as hqpErrorString;
+            return '';
 
         if (!this.normalLink.startsWith('https://'))
-            return 'settings.hqp.errorUrl' as hqpErrorString;
+            return 'settings.hqp.errorUrl';
 
         if (this.normalLink.includes(']'))
-            return 'settings.hqp.errorBrace' as hqpErrorString;
+            return 'settings.hqp.errorBrace';
 
         if (!ProfileCache.isSafePortraitURL(this.normalLink))
-            return 'settings.hqp.errorDomain' as hqpErrorString;
+            return 'settings.hqp.errorDomain';
 
-        return '' as hqpErrorString;
+        return '';
     }
 
     you = core.characters.ownCharacter.overrides;
