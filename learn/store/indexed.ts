@@ -108,10 +108,16 @@ export class IndexedStore implements PermanentIndexedStore {
 
     private async prepareProfileData(c: ComplexCharacter): Promise<ProfileRecord> {
         const existing = await this.getProfile(c.character.name);
-        const overrides = core.characters.get(c.character.name).overrides;
 
-        if (Object.keys(overrides).length)
-            console.debug('Using overrides in indexed:', overrides);
+        const overrides = core.characters.get(c.character.name).overrides;
+        if (Object.values(overrides).every(v => v === null)) {
+            const or_rec = await this.getOverrides(c.character.name);
+            if (or_rec) {
+                overrides.avatarUrl = or_rec.avatarUrl;
+                overrides.gender = or_rec.gender;
+                overrides.status = or_rec.status;
+            }
+        }
 
         const ca = new CharacterAnalysis(c.character, overrides);
 
@@ -171,20 +177,19 @@ export class IndexedStore implements PermanentIndexedStore {
             if (!data)
                 return;
 
-            const output = {
+            const output: OverrideRecord = {
                 id: data.id,
-                ...(data.avatarUrl && { avatarUrl: data.avatarUrl }),
-                ...(data.gender    && { gender:    data.gender    }),
-                ...(data.status    && { status:    data.status    }),
                 lastFetched: data.lastFetched,
+                avatarUrl: data.avatarUrl ?? null,
+                gender:    data.gender    ?? null,
+                status:    data.status    ?? null,
             }
 
+            // Save locally before sending to main.
             const o = core.characters.get(name.toLowerCase()).overrides;
-            if (data.avatarUrl) o.avatarUrl = data.avatarUrl;
-            if (data.gender)    o.gender    = data.gender;
-            if (data.status)    o.status    = data.status;
-
-            // Save character overrides.
+            o.avatarUrl = data.avatarUrl;
+            o.gender    = data.gender;
+            o.status    = data.status;
 
             return output;
         }
@@ -207,33 +212,31 @@ export class IndexedStore implements PermanentIndexedStore {
         const tasks = names.map(async name => {
             try {
                 const or = await promisifyRequest<OverrideRecord | undefined>(store.get(this.toProfileId(name)));
-                if (or) {
-                    const { id, lastFetched, ...rest } = or;
 
-                    if (Object.keys(rest).length)
-                        results[name] = rest;
-                }
+                results[name] = {
+                    avatarUrl: or?.avatarUrl ?? null,
+                    gender:    or?.gender    ?? null,
+                    status:    or?.status    ?? null,
+                };
             }
             catch { /* Devoured. */ }
         });
 
         await Promise.allSettled(tasks);
 
-        Object.entries(results).forEach(r => {
-            const o = core.characters.get(r[0]).overrides;
-            if (r[1].avatarUrl) o.avatarUrl = r[1].avatarUrl;
-            if (r[1].gender)    o.gender    = r[1].gender;
-            if (r[1].status)    o.status    = r[1].status;
-        })
-
-
+        Object.entries(results).forEach(([name, overrides]) => {
+            const o = core.characters.get(name).overrides;
+            o.avatarUrl = overrides.avatarUrl;
+            o.gender    = overrides.gender;
+            o.status    = overrides.status;
+        });
 
         return results;
     };
 
     async storeOverrides(name: string, overrides: CharacterOverrides): Promise<void> {
+        // Prevents updating anyone who's been assigned default overrides.
         const existing_overrides = core.characters.get(name).overrides;
-
         if (deepEqual(existing_overrides, overrides)) {
             console.debug('Storing same overrides? Aborting.', {
                 existing_overrides,

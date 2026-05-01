@@ -146,7 +146,11 @@ export function fixLogs(character: string): void {
                     isChatOp:     false,
                     isIgnored:    false,
                     name,
-                    overrides:    {},
+                    overrides:    {
+                        avatarUrl: null,
+                        gender:    null,
+                        status:    null,
+                    },
                 }));
                 const time = deserialized.message.time;
                 const day = Math.floor(time.getTime() / dayMs - time.getTimezoneOffset() / 1440);

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import * as Electron from 'electron';
 import core from '../chat/core';
 import { methods } from '../site/character_page/data_store';
 import { decodeHTML } from './common';
@@ -25,7 +26,12 @@ class Character implements Interfaces.Character {
     isBookmarked = false;
     isChatOp = false;
     isIgnored = false;
-    overrides: CharacterOverrides = {};
+
+    overrides: CharacterOverrides = {
+        avatarUrl: null,
+        gender:    null,
+        status:    null,
+    };
 
     constructor(name: string) {
         this.name = name;
@@ -33,9 +39,9 @@ class Character implements Interfaces.Character {
 }
 
 export interface CharacterOverrides {
-    avatarUrl?: string;
-    gender?:    Interfaces.CustomGender;
-    status?:    Interfaces.Status;
+    avatarUrl: string                  | null;
+    gender:    Interfaces.CustomGender | null;
+    status:    Interfaces.Status       | null;
 }
 
 class State implements Interfaces.State {
@@ -359,15 +365,22 @@ class State implements Interfaces.State {
         character.statusText = decodeHTML(text);
     }
 
-    setOverride(name: string, type: 'avatarUrl', value: string | undefined): void;
-    setOverride(name: string, type: 'gender', value: Interfaces.CustomGender | undefined): void;
-    setOverride(name: string, type: 'status', value: Interfaces.Status | undefined): void;
+    setOverride(name: string, type: 'avatarUrl', value: string | null): void;
+    setOverride(name: string, type: 'gender', value: Interfaces.CustomGender | null): void;
+    setOverride(name: string, type: 'status', value: Interfaces.Status | null): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void;
     setOverride(name: string, type: keyof CharacterOverrides, value: CharacterOverrides[keyof CharacterOverrides]): void {
         const char = this.get(name, false);
 
-        if ([ 'avatarUrl', 'gender', 'status' ].includes(type)) // runtime safety
+        if (type === 'avatarUrl') { // runtime safety
             Vue.set(char.overrides, type, value);
+
+            if (char.name === core.characters.ownCharacter.name)
+                Electron.ipcRenderer.send('update-avatar-url', char.name, value);
+        }
+        else if (type === 'gender' || type === 'status') { // runtime safety
+            Vue.set(char.overrides, type, value);
+        }
     }
 
     async resolveOwnProfile(): Promise<void> {

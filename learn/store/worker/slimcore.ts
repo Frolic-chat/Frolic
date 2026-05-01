@@ -4,7 +4,11 @@ import type { CharacterOverrides } from '../../../fchat/characters';
 class Character {
     constructor(name: string) { this.name = name.toLowerCase(); }
     name: string;
-    overrides: CharacterOverrides = {};
+    overrides: CharacterOverrides = {
+        avatarUrl: null,
+        gender: null,
+        status: null,
+    };
 }
 // characters: {[key: string]: Character | undefined} = {};
 const state = {

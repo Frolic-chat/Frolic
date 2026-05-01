@@ -209,7 +209,7 @@ export class CharacterAnalysis {
      */
     readonly tiltHuman: boolean;
 
-    constructor(c: Character, overrides: CharacterOverrides = {}) {
+    constructor(c: Character, overrides: CharacterOverrides = { avatarUrl: null, gender: null, status: null }) {
         this.character = c;
 
         if (overrides.gender?.match.length) {

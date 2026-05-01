@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import * as Electron from 'electron';
 import core from '../chat/core';
 import EventBus from '../chat/preview/event-bus';
 import { AsyncCache } from './cache';
@@ -342,7 +341,11 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
      */
     static updateOverrides(c: CharacterPage): boolean {
         const unparsed = ProfileCache.getOverridesFromDescription(c.description);
-        const overrides: CharacterOverrides = {};
+        const overrides: CharacterOverrides = {
+            avatarUrl: null,
+            gender:    null,
+            status:    null,
+        };
 
         unparsed.forEach(({ type, value }) => {
             if (type === 'hqp') {
@@ -350,9 +353,6 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
 
                 if (ProfileCache.isSafePortraitURL(url)) { // domain check
                     overrides.avatarUrl = url;
-
-                    if (c.name === core.characters.ownCharacter.name)
-                        Electron.ipcRenderer.send('update-avatar-url', c.name, url);
 
                     logCache.debug('portrait.hq.url', { name: c.name, url: url });
                 }
