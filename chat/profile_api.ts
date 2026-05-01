@@ -358,7 +358,7 @@ export function init(settings: Settings, characters: SimpleCharacter[]): void {
         core.connection.queryApi<FriendsByCharacter>('character-friend-list.php', {id})
     );
     registerMethod('friendRequest', async (targetId: number, sourceId: number) =>
-        (await core.connection.queryApi<{request: FriendRequest}>('request-send2.php', {sourceId, targetId})).request
+        (await core.connection.queryApi<{request: FriendRequest}>('request-send2.php', {source_id: sourceId, target_id: targetId})).request
     );
     registerMethod('friendDissolve', async (friend: Friend) =>
         core.connection.queryApi('friend-remove.php', {source_id: friend.source.id, dest_id: friend.target.id})
