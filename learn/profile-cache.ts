@@ -437,7 +437,6 @@ export class ProfileCache extends AsyncCache<CharacterCacheRecord> {
          * Color regexes are available in CoreBBCodeParser in bbcode/core.ts.
          * In fact, there's probably a way to reuse those.
          */
-        /* eslint-disable-next-line @stylistic/array-element-newline */
         const valid_colors = [ 'red', 'blue', 'white', 'yellow', 'pink', 'gray', 'green', 'orange', 'purple', 'black', 'brown', 'cyan' ];
         const invalid: string[] = [];
 

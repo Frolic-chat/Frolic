@@ -18,14 +18,16 @@ class Character implements Interfaces.Character {
     /**
      * Name; if character is created using state.get(name), character is created with server-case name.
      */
-    name:      string = '';
-    gender:    Interfaces.Gender = 'None';
-    status:    Interfaces.Status = 'offline';
-    statusText = '';
-    isFriend = false;
+    name         = '';
+    statusText   = '';
+
+    isFriend     = false;
     isBookmarked = false;
-    isChatOp = false;
-    isIgnored = false;
+    isChatOp     = false;
+    isIgnored    = false;
+
+    gender: Interfaces.Gender = 'None';
+    status: Interfaces.Status = 'offline';
 
     overrides: CharacterOverrides = {
         avatarUrl: null,
