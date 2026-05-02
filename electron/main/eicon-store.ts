@@ -52,13 +52,18 @@ const EICON_PAGE_RESULTS_COUNT = 7 * 7;
 const UPDATE_FREQUENCY = 60 * 60 * 1000;
 
 /**
+ * If the store failed to refresh last time, how long do we wait until trying again?
+ */
+const UPDATE_FREQUENCY_NOT_READY = 4 * 60 * 1000;
+
+/**
  * `store` is an internally-formatted string array of the eicons.
  * `asOfTimestamp` is the timestamp served from the eicon service.
  * `status` is an arbitrary string that can be used to unambiguously identify certain states. There's no pattern except whatever's useful.
  * The `status` can be used to compare two store exports to see if one is preferred. Maybe don't accept an export who's status is "error". ;)
  */
 interface EiconStoreExport {
-    status: 'ready'   | 'unverified'
+    status: 'ready'   | 'unverified'    | 'cached'
           | 'loading' | 'uninitialized' | 'error';
     store:         string[];
     asOfTimestamp: number;
@@ -164,8 +169,32 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
      *      RECEIVE request: search query
      *      RECEIVE request: hard refresh
      */
-    Electron.ipcMain.handle('eicon-status', (): { status?: string, amount: number } => {
-        // Count or timestamp may be valuable to return to inform the user how long it's been since they updated.
+
+    let pending_status_response = false;
+    Electron.ipcMain.handle('eicon-status', async (): Promise<{ status?: EiconStoreExport['status'], amount: number }> => {
+        if (pending_status_response) {
+            // Don't care if this response is out of date;
+            // The pending reponse will be sent after this.
+            const res = { status: status, amount: store.length };
+            logEicon.debug('store.handle.eicon-status.pending', res);
+            return res;
+        }
+
+        pending_status_response = true;
+        while (status === 'loading')
+            await Utils.sleep(223);
+
+        const since_last_update = (Date.now() * 1000) - asOfTimestamp;
+        if (status !== 'ready' && since_last_update > UPDATE_FREQUENCY_NOT_READY) {
+            logEicon.debug('store.handle.eicon-status.notReady', since_last_update);
+            await checkForUpdates();
+        }
+        else if (status === 'ready' && since_last_update > UPDATE_FREQUENCY) {
+            logEicon.debug('store.handle.eicon-status.ready', since_last_update);
+            await checkForUpdates();
+        }
+
+        pending_status_response = false;
         return { status: status, amount: store.length };
     });
 

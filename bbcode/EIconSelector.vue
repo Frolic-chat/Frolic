@@ -106,7 +106,7 @@ export default class EIconSelector extends CustomDialog {
     results: string[] = [];
     search = '';
     refreshing = true;
-    status: 'ready'   | 'unverified'
+    status: 'ready'   | 'unverified'    | 'cached'
           | 'loading' | 'uninitialized' | 'error' = 'uninitialized';
     loadingPercent = 100;
 
@@ -158,6 +158,14 @@ export default class EIconSelector extends CustomDialog {
 
         log.debug('selector.pollStatus', r);
 
+        if (r?.amount) { // Shortcut success if we have any.
+            if (r.status === 'ready' || r.status === 'unverified')
+                this.status = r.status;
+            else
+                this.status = 'cached';
+
+            this.refreshing = false;
+        }
         if (r?.status) {
             if (r.status === 'ready' || r.status === 'error')
                 this.status = r.status;
@@ -170,7 +178,7 @@ export default class EIconSelector extends CustomDialog {
 
             void this.searchWithString(this.search || this.favesSearchString);
         }
-        else {
+        else { // Broken response?
             log.debug('selector.pollStatus.queuerepoll');
 
             window.setTimeout(() => void this.pollStatus(), 1000);

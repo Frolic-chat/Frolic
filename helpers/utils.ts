@@ -5,7 +5,9 @@ import { execSync } from "child_process";
 
 import * as Electron from 'electron';
 
-export function invoke(channel: 'eicon-status'): Promise<{ status?: string, amount: number }>;
+type EiconStatus = 'ready'   | 'unverified'    | 'cached'
+                 | 'loading' | 'uninitialized' | 'error';
+export function invoke(channel: 'eicon-status'): Promise<{ status?: EiconStatus, amount: number }>;
 export function invoke(channel: 'eicon-search', query: string): Promise<string[]>;
 export function invoke(channel: 'eicon-page', amount: number): Promise<string[]>;
 export function invoke(channel: 'eicon-refresh', force?: boolean): Promise<boolean>;
