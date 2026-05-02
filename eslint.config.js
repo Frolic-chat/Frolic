@@ -317,13 +317,20 @@ export default [
                     ignoreVoidReturningFunctions: true,
                 }
             ],
+            "@typescript-eslint/no-misused-promises": [
+                "warn", {
+                    "checksVoidReturn": {
+                        "arguments": false,
+                    },
+                },
+            ],
             "@typescript-eslint/no-redundant-type-constituents": "off",
             "@typescript-eslint/restrict-template-expressions": [
                 "error", {
                     allow: [{
                         name: ['URL', 'URLSearchParams'],
                         from: 'lib',
-                    }] ,
+                    }],
                     allowAny:       false,
                     allowArray:     true,
                     allowBoolean:   true,

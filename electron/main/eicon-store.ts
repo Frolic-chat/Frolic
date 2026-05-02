@@ -8,8 +8,8 @@
  * Exclusively exports an init() factory function that gives you a EiconStoreExport.
  */
 import * as Electron from 'electron';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as Fs from 'fs';
+import * as Path from 'path';
 
 import * as FChatFs from './filesystem';
 import type { AxiosError, AxiosProgressEvent } from 'axios';
@@ -231,7 +231,7 @@ async function save(): Promise<boolean> {
 
     if (store.length) {
         try {
-            await fs.promises.writeFile(
+            await Fs.promises.writeFile(
                 filename,
                 JSON.stringify({
                     version: CURRENT_STORE_VERSION,
@@ -293,7 +293,7 @@ async function load(): Promise<EiconStoreExport> {
     };
 
     try {
-        const data = JSON.parse(await fs.promises.readFile(filename, { encoding: 'utf-8' })) as object;
+        const data = JSON.parse(await Fs.promises.readFile(filename, { encoding: 'utf-8' })) as object;
 
         /** Handling old formats is a must.
          *
@@ -398,11 +398,11 @@ function getStoreFile(directory?: string, partial?: string): string {
         const file = partial || 'eicons';
 
         if (!directory)
-            directory = path.join(Electron.app.getPath('userData'), 'data');
+            directory = Path.join(Electron.app.getPath('userData'), 'data');
 
         storeFile = CURRENT_STORE_VERSION
-            ? path.join(directory, `${file}-${CURRENT_STORE_VERSION}.json`)
-            : path.join(directory, `${file}.json`);
+            ? Path.join(directory, `${file}-${CURRENT_STORE_VERSION}.json`)
+            : Path.join(directory, `${file}.json`);
     }
 
     logEicon.silly('store.getStoreFile.success', storeFile);
@@ -913,7 +913,7 @@ function getCategoryResults(category: string): string[] {
 async function getCharacterResults(query: string, dir: string): Promise<string[]> {
     logEicon.debug('store.getCharacterResults', query, dir);
 
-    if (!fs.existsSync(dir))
+    if (!Fs.existsSync(dir))
         return [];
 
     const player_query = new RegExp(query, 'i');
@@ -937,10 +937,10 @@ async function getCharacterResults(query: string, dir: string): Promise<string[]
 
     const settings_dir = FChatFs.getCharacterSettingsDir(dir, chars[0]);
 
-    const fn = path.join(settings_dir, favoritesFile);
-    if (fs.existsSync(fn)) {
+    const fn = Path.join(settings_dir, favoritesFile);
+    if (Fs.existsSync(fn)) {
         try {
-            const json = JSON.parse(await fs.promises.readFile(fn, 'utf-8')) as object;
+            const json = JSON.parse(await Fs.promises.readFile(fn, 'utf-8')) as object;
 
             return Object.keys(json);
         }
