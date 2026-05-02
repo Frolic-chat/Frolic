@@ -70,7 +70,7 @@ import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
 import * as ChildProcess from 'child_process';
-import { FindExeFileFromName } from '../helpers/utils';
+import * as Utils from '../helpers/utils';
 
 import l from '../chat/localize';
 import { getSafeLanguages, knownLanguageNames, updateSupportedLanguages } from './language';
@@ -257,7 +257,7 @@ function openURLExternally(url: string, incognito: boolean = false): void {
             fs.accessSync(settings.raw.browserPath, fs.constants.X_OK);
         }
         catch {
-            const stdout = FindExeFileFromName(settings.raw.browserPath);
+            const stdout = Utils.findExeFileFromName(settings.raw.browserPath);
             if (!stdout)
                 throw new Error('Premature catch of empty stdout return. It would error on accessSync anyways.');
 

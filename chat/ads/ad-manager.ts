@@ -4,7 +4,7 @@ import NewLogger from '../../helpers/log';
 const log = NewLogger('ads');
 
 import core from '../core';
-import { FisherYatesShuffle } from '../../helpers/utils';
+import * as Utils from '../../helpers/utils';
 import { Conversation } from '../interfaces';
 import Timer = NodeJS.Timeout;
 import ChannelConversation = Conversation.ChannelConversation;
@@ -151,7 +151,7 @@ export class AdManager {
         const ads = this.getAds();
         const idx = Array.from(ads, (_, i) => i);
 
-        if (this.shouldUseRandomOrder()) FisherYatesShuffle(idx)
+        if (this.shouldUseRandomOrder()) Utils.fisherYatesShuffle(idx)
 
         return idx;
     }

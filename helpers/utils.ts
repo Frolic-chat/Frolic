@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// For FindExeFileFromName
-import { platform } from "process";
-import { execSync } from "child_process";
+// For findExeFileFromName
+import * as Process from 'process';
+import * as ChildProcess from 'child_process';
 
 import * as Electron from 'electron';
 
@@ -11,8 +11,8 @@ export function invoke(channel: 'eicon-status'): Promise<{ status?: EiconStatus,
 export function invoke(channel: 'eicon-search', query: string): Promise<string[]>;
 export function invoke(channel: 'eicon-page', amount: number): Promise<string[]>;
 export function invoke(channel: 'eicon-refresh', force?: boolean): Promise<boolean>;
-export function invoke<P extends any[], R>(channel: string, ...args: P): Promise<R> {
-    return Electron.ipcRenderer.invoke(channel, ...args)
+export function invoke<P extends unknown[], R>(channel: string, ...args: P): Promise<R> {
+    return Electron.ipcRenderer.invoke(channel, ...args);
 }
 
 /**
@@ -21,15 +21,15 @@ export function invoke<P extends any[], R>(channel: string, ...args: P): Promise
  * @param exe A filename, with or without `.exe` at the end
  * @returns A filename if found on the system, otherwise an empty string.
  */
-export function FindExeFileFromName(exe: string): string {
-    if (platform === 'win32') {
+export function findExeFileFromName(exe: string): string {
+    if (Process.platform === 'win32') {
         const bp = exe + (exe.endsWith('.exe') ? '' : '.exe');
-        return execSync(`where.exe /r "c:\\Program Files" "${bp}"`, { encoding: 'utf-8', timeout: 3000 })
-                .trim().split('\n', 2)[0] ?? '';
+        return ChildProcess.execSync(`where.exe /r "c:\\Program Files" "${bp}"`, { encoding: 'utf-8', timeout: 3000 })
+            .trim().split('\n', 2)[0] ?? '';
     }
-    else if (platform === 'linux' || platform === 'darwin') {
-        return execSync(`which '${exe}'`, { encoding: 'utf-8', timeout: 3000 })
-                .trim().split('\n', 2)[0] ?? '';
+    else if (Process.platform === 'linux' || Process.platform === 'darwin') {
+        return ChildProcess.execSync(`which '${exe}'`, { encoding: 'utf-8', timeout: 3000 })
+            .trim().split('\n', 2)[0] ?? '';
     }
     else {
         return '';
@@ -40,18 +40,18 @@ export function FindExeFileFromName(exe: string): string {
  * A fast randomization algorithm.
  * @param arr An array to be randomized; will be modified in-place
  */
-export async function FisherYatesShuffle(arr: any[], amount: number = 0): Promise<void> {
+export function fisherYatesShuffle(arr: unknown[], amount: number = 0): void {
     const end = amount >= 0 && amount <= arr.length
         ? Math.floor(arr.length - amount)
         : 0;
 
     for (let cp = arr.length - 1; cp >= end; cp--) {
         const np = Math.floor(Math.random() * (cp + 1));
-        [arr[cp], arr[np]] = [arr[np], arr[cp]];
+        [ arr[cp], arr[np] ] = [ arr[np], arr[cp] ];
     }
 }
 
-type DebouncedFn<T> = ((this: T, ...args: any) => void) & { cancel: () => void };
+type DebouncedFn<T> = ((this: T, ...args: unknown[]) => void) & { cancel: () => void };
 
 /**
  * A lodash-replacement debounce useful on any input without a submit. Invoke
@@ -65,19 +65,20 @@ type DebouncedFn<T> = ((this: T, ...args: any) => void) & { cancel: () => void }
  * @param maxWait The limit on how long you can delay the function
  * @returns A function to invoke to reset the debounce
  */
-export function debounce<T>(callback: (this: T, ...args: any) => void,
-                            { wait = 330, maxWait = 0 }: {
-                                wait?:    number,
-                                maxWait?: number,
-                            } = {}
-                           ): DebouncedFn<T> {
+export function debounce<T>(
+    callback: (this: T, ...args: unknown[]) => void,
+    { wait = 330, maxWait = 0 }: {
+        wait?:    number,
+        maxWait?: number,
+    } = {}
+): DebouncedFn<T> {
     let ret: DebouncedFn<T>;
 
     if (!maxWait) { // Simple
         let timer: ReturnType<typeof setTimeout> | undefined;
-        const clear = () => { clearTimeout(timer) };
+        const clear = () => clearTimeout(timer);
 
-        const f = function (this: T, ...args: any) {
+        const f = function (this: T, ...args: unknown[]) {
             clear();
             timer = setTimeout(() => callback.apply(this, args), wait);
         };
@@ -97,7 +98,7 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
             timer    = undefined;
         };
 
-        const f = function (this: T, ...args: any) {
+        const f = function (this: T, ...args: unknown[]) {
             if (!maxTimer) {
                 console.log('debounce.maxwait.fresh');
 
@@ -129,7 +130,7 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
                     wait
                 );
             }
-        }
+        };
 
         f.cancel = clear_timers;
 
@@ -145,11 +146,11 @@ export function debounce<T>(callback: (this: T, ...args: any) => void,
  * @param subj Anything
  * @returns true if the object is a normal object.
  */
-function isPlainObject(subj: any): subj is NonNullable<object> {
+function isPlainObject(subj: unknown): subj is NonNullable<object> {
     return subj !== null && typeof subj === 'object' && !Array.isArray(subj);
 }
 
-function isSimpleInterchangeable(subj: any): subj is null | string | number {
+function isSimpleInterchangeable(subj: unknown): subj is null | string | number {
     const t = typeof subj;
     return subj === null || t === 'string' || t === 'number';
 }
@@ -167,11 +168,11 @@ function isSimpleInterchangeable(subj: any): subj is null | string | number {
  * @param supplement User settings to layer on top of defaults
  * @returns Object with defaults filling in the blanks for
  */
-export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>): T {
+export function settingsMerge<T extends object>(base: T, supplement?: Partial<T>): T {
     if (!supplement)
         return base;
 
-    let obj: Partial<T> = {};
+    const obj: Partial<T> = {};
 
     // When one entry has an item and the other doesn't, ignore it - if it's a
     // user value, it's irrelevant; if its a server value, the default will be
@@ -186,8 +187,7 @@ export function SettingsMerge<T extends object>(base: T, supplement?: Partial<T>
         }
         // The 'deep' in 'deep merge'
         else if (isPlainObject(base[k]) && isPlainObject(supplement[k])) {
-            // @ts-ignore
-            obj[k] = SettingsMerge(base[k], supplement[k]);
+            obj[k] = settingsMerge(base[k], supplement[k]);
         }
         // Arrays are user data and should overwrite existing arrays.
         else if (Array.isArray(base[k]) && Array.isArray(supplement[k])) {
@@ -222,9 +222,8 @@ export function deepEqual(obj1: unknown, obj2: unknown): boolean {
         return true;
 
     // Anything simple can be direct compared
-    if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
+    if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null)
         return obj1 === obj2;
-    }
 
     // Shortcut: Check if they have the same number of entries
     const keys1 = Object.keys(obj1);
@@ -238,12 +237,8 @@ export function deepEqual(obj1: unknown, obj2: unknown): boolean {
         if (!keys2.includes(key))
             return false;
 
-        if (!deepEqual(
-            (obj1 as Record<string | number | symbol, unknown>)[key],
-            (obj2 as Record<string | number | symbol, unknown>)[key]
-        )) {
+        if (!deepEqual((obj1 as Record<string | number | symbol, unknown>)[key], (obj2 as Record<string | number | symbol, unknown>)[key]))
             return false;
-        }
     }
 
     return true;
@@ -266,23 +261,23 @@ export type ObjectKeys<T> = {
  * @param param1 Options: `deep` - recurse and return period-separated deep keys of objects as well
  * @returns List of string keys; deep keys (if requested) period-separated.
  */
-export function GetReferenceKeys(obj: Record<string, unknown>, { prefix, deep }: { prefix?: string, deep?: boolean } = {}): string[] {
+export function getReferenceKeys(obj: Record<string, unknown>, { prefix, deep }: { prefix?: string, deep?: boolean } = {}): string[] {
     if (obj === null)
         return [];
 
     const keys: string[] = [];
 
-    Object.entries(obj).forEach(([k, v]) => {
+    Object.entries(obj).forEach(([ k, v ]) => {
         if (v !== null && typeof v === 'object') {
             const path = prefix ? `${prefix}.${k}` : k;
             keys.push(path);
 
             if (deep) { // =\
-                const deep_keys = GetReferenceKeys(v as Record<string, unknown>, { prefix: path, deep: deep });
+                const deep_keys = getReferenceKeys(v as Record<string, unknown>, { prefix: path, deep: deep });
                 keys.push( ...deep_keys);
             }
         }
-    })
+    });
 
     return keys;
 }
@@ -293,10 +288,10 @@ export function GetReferenceKeys(obj: Record<string, unknown>, { prefix, deep }:
  * @returns A reduced object with only those keys that are references (to objects)
  */
 // (readonly [keyof { [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]; }, any])[]
-export function ExtractReferences<T extends Record<string, any>>(obj: T) {
+export function extractReferences<T extends Record<string, any>>(obj: T) {
     return Object.keys(obj)
-        .filter(k => obj[k] && typeof obj[k] === "object")
-        .map(k => [k as ObjectKeys<T>, obj[k]] as const);
+        .filter(k => obj[k] && typeof obj[k] === 'object')
+        .map(k => [ k as ObjectKeys<T>, obj[k] ] as const);
 }
 
 // Previous attempt, limited usefulness.
@@ -304,7 +299,7 @@ export function ExtractReferences<T extends Record<string, any>>(obj: T) {
 //     if (obj === null || typeof obj !== 'object')
 //         return [];
 
-    // const keys: ObjectKeys<T>[] = [];
+//     const keys: ObjectKeys<T>[] = [];
 
 //     Object.entries(obj).forEach(([k, v]) => {
 //         if (v !== null && typeof v === 'object')
@@ -316,7 +311,7 @@ export function ExtractReferences<T extends Record<string, any>>(obj: T) {
 
 // Every pair is a `[oldValue, newValue]` tuple. Only CHANGED keys are compared.
 // TS is the worst :) Please become haskell
-export function ComparePrimitives<
+export function comparePrimitives<
     T extends Record<string, T[keyof T]>
 >(oldObj: T, newObj: T): { [K in keyof T]: [ T[K], T[K] ] } {
     const result = {} as { [K in keyof T]: [ T[K], T[K] ] };
@@ -328,9 +323,8 @@ export function ComparePrimitives<
         if (beforeVal === afterVal) // most obvious short circuit
             continue;
 
-        if (typeof beforeVal !== 'object' && typeof afterVal !== 'object') {
-            result[key] = [beforeVal, afterVal];
-        }
+        if (typeof beforeVal !== 'object' && typeof afterVal !== 'object')
+            result[key] = [ beforeVal, afterVal ];
     }
 
     return result;
@@ -467,16 +461,20 @@ export async function promisifyRequest<T>(req: IDBRequest): Promise<T> {
 /**
  * I've scryed deep into the future and TS will support this natively, but until then we'll use this extracter.
  */
-export type AsyncReturnType<T extends (...args: any) => any> =
-	T extends (...args: any) => Promise<infer U> ? U :
-	T extends (...args: any) => infer U ? U :
-	any
+export type AsyncReturnType<T extends (...args: unknown[]) => unknown> =
+    T extends (...args: unknown[]) => Promise<infer U>
+        ? U
+        : T extends (...args: unknown[]) => infer U
+            ? U
+            : unknown;
 
 /**
  * Useful to avoid non-null assertions. Just x ?? `err()`
  * <T> maintains the potential to truly assert T is truly itself; however this never returns, so never asserts.
  */
-export function err<T>(msg: string): NonNullable<T> { throw msg ?? "Object is null or undefined when that shouldn't be possible." };
+export function err<T>(msg: string): NonNullable<T> {
+    throw new Error(msg ?? "Object is null or undefined when that shouldn't be possible.");
+};
 // Example:
 // const elem = document.getElementById('something') ?? err();
 
@@ -485,11 +483,11 @@ export function err<T>(msg: string): NonNullable<T> { throw msg ?? "Object is nu
  * @param ms Time to sleep in milliseconds
  */
 export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Still uncertain how to use this reliably.
-export function has<K, T extends K>(set: ReadonlySet<T> | ReadonlyMap<T, any>, key: K): key is T {
+export function has<K, T extends K>(set: ReadonlySet<T> | ReadonlyMap<T, unknown>, key: K): key is T {
     return set.has(key as T);
 }
 
@@ -500,7 +498,7 @@ export function has<K, T extends K>(set: ReadonlySet<T> | ReadonlyMap<T, any>, k
  * @param amount Number of results to move from front to back
  * @returns An array of the entries that were flipped through
  */
-export function Rotate<T>(arr: T[], amount: number): T[] {
+export function rotate<T>(arr: T[], amount: number): T[] {
     const remove = arr.splice(0, amount);
 
     arr.push(...remove);
@@ -515,7 +513,7 @@ export function Rotate<T>(arr: T[], amount: number): T[] {
  * @param subj Any type; will validate as array before having its values checked
  * @returns Is the subject an array that contains only strings?
  */
-export function isArrayOfStrings(subj: any): subj is string[] {
+export function isArrayOfStrings(subj: unknown): subj is string[] {
     return Array.isArray(subj) && subj.every(item => typeof item === 'string');
 }
 
@@ -529,7 +527,7 @@ export function isArrayOfStrings(subj: any): subj is string[] {
  * @param subj Any type; will validate as array before having its values checked
  * @returns Is the subject an array that contains only objects?
  */
-export function isArrayOfObjects(subj: any): subj is object[] {
+export function isArrayOfObjects(subj: unknown): subj is object[] {
     return Array.isArray(subj) && subj.every(item => typeof item === 'object');
 }
 
@@ -553,8 +551,8 @@ export function parseRelativeTime(relative: string): number | null {
         if (!matches)
             continue;
 
-        const digit = matches[0],
-               unit = matches[1];
+        const digit = matches[0];
+        const unit  = matches[1];
 
         if      (unit === 'y')
             date.setFullYear(date.getFullYear() - Number(digit));
@@ -575,4 +573,22 @@ export function parseRelativeTime(relative: string): number | null {
     }
 
     return good_ts ? date.getTime() : null;
+}
+
+type NonNegativeNumber = number & { readonly __brand: unique symbol };
+// type Integer = number & { readonly __brand: unique symbol };
+type NonNegativeInteger = number & { readonly __brand: unique symbol };
+
+export function nonNegative(n: number): NonNegativeNumber | false {
+    if (n >= 0)
+        return n as NonNegativeNumber;
+    else
+        return false;
+}
+
+export function nonNegativeInteger(n: number): NonNegativeInteger | false {
+    if (Number.isInteger(n) && nonNegative(n) !== false)
+        return n as NonNegativeInteger;
+    else
+        return false;
 }

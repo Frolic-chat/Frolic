@@ -470,7 +470,7 @@ async function rebuildFromRemote(): Promise<void> {
         }
 
         await save();
-        await shuffle();
+        shuffle();
     }
 }
 
@@ -506,7 +506,7 @@ async function update(): Promise<void> {
     logEicon.debug(`store.update.complete.${changes.status}`);
 
     await save();
-    await shuffle(additions.length);
+    shuffle(additions.length);
 }
 
 /**
@@ -740,12 +740,12 @@ function search(searchKey: string): string[] {
  * Randomize the eicon db using the fast Fisher-Yates shuffle, capable of shuffing only a select few cards at a time.
  */
 /* eslint-disable @stylistic/nonblock-statement-body-position */
-async function shuffle(amount?: number): Promise<void> {
+function shuffle(amount?: number): void {
     logEicon.silly('store.shuffle', amount);
 
     if (logEicon.eval()) console.time(`shuffle ${amount}`);
 
-    await Utils.FisherYatesShuffle(store, amount);
+    Utils.fisherYatesShuffle(store, amount);
 
     if (logEicon.eval()) console.timeEnd(`shuffle ${amount}`);
 } /* eslint-enable @stylistic/nonblock-statement-body-position */
@@ -757,9 +757,9 @@ async function shuffle(amount?: number): Promise<void> {
  * @returns An array of eicon names
  */
 function randomPage(amount: number = 0): string[] {
-    const r = Utils.Rotate(store, amount || EICON_PAGE_RESULTS_COUNT);
+    const r = Utils.rotate(store, amount || EICON_PAGE_RESULTS_COUNT);
 
-    void shuffle(r.length);
+    shuffle(r.length);
 
     return r;
 }

@@ -3,7 +3,7 @@ import type { WatchHandler } from 'vue';
 import Vue from 'vue';
 import * as Electron from 'electron';
 import * as QS from 'querystring';
-import { deepEqual, ExtractReferences, ComparePrimitives, SettingsMerge } from '../helpers/utils';
+import * as Utils from '../helpers/utils';
 import { CacheManager } from '../learn/cache-manager';
 import { Channels, Characters } from '../fchat';
 import BBCodeParser from './bbcode';
@@ -113,7 +113,7 @@ const data = {
 
         logS.debug('data.reloadSettings', { current: state._settings, saved: s });
 
-        state._settings = SettingsMerge(new SettingsClass(), s);
+        state._settings = Utils.settingsMerge(new SettingsClass(), s);
 
         // Technically should be in settingsStore as we always want it for get();
         VueUpdate.cache = {};
@@ -178,12 +178,10 @@ export function init(this: unknown,
     data.register('channels', Channels(connection, core.characters));
     data.register('conversations', Conversations());
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     data.watch(() => state.hiddenUsers, async (newValue) => {
         await data.settingsStore?.set('hiddenUsers', newValue);
     } /*, { deep: true } */);
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     data.watch(() => state._settings, async (newValue) => {
         if (VueUpdate.skipWatch) {
             logS.debug('core.data.watch.state._settings.skipWatch');
@@ -205,8 +203,8 @@ export function init(this: unknown,
             if (VueUpdate.cache.notifications !== newValue.notifications)
                 EventBus.$emit('notification-setting', { old: VueUpdate.cache.notifications ?? false, new: newValue.notifications });
 
-            ExtractReferences(newValue).forEach(([ k, v ]) => {
-                if (!deepEqual(VueUpdate.cache[k], v)) {
+            Utils.extractReferences(newValue).forEach(([ k, v ]) => {
+                if (!Utils.deepEqual(VueUpdate.cache[k], v)) {
                     if (k === 'disallowedTags')
                         data.bbCodeParser = createBBCodeParser();
                     else if (k === 'risingFilter')
@@ -227,7 +225,7 @@ export function init(this: unknown,
                 }
             });
 
-            const changed = ComparePrimitives(VueUpdate.cache, newValue);
+            const changed = Utils.comparePrimitives(VueUpdate.cache, newValue);
             const changed_keys = Object.keys(changed) as (keyof Partial<SettingsClass>)[];
 
             if (changed_keys.length) {
@@ -291,7 +289,7 @@ export function init(this: unknown,
         // const prev_settings = JSON.stringify(state.generalSettings);
         // Main dispatching an identical settings object will still cause `Object.assign` to change the internal references, causing an update without changing anything.
         // if (JSON.stringify(state.generalSettings) !== prev_settings) {
-        if (!deepEqual(state.generalSettings, d.settings)) {
+        if (!Utils.deepEqual(state.generalSettings, d.settings)) {
             Object.assign(state.generalSettings, d.settings);
             MainUpdateCache.skipWatch = true;
         }
