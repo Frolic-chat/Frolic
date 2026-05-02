@@ -238,11 +238,14 @@ export class IndexedStore implements PermanentIndexedStore {
         // Prevents updating anyone who's been assigned default overrides.
         const existing_overrides = core.characters.get(name).overrides;
         if (deepEqual(existing_overrides, overrides)) {
-            console.debug('Storing same overrides? Aborting.', {
-                existing_overrides,
-                overrides,
-            });
+            // console.debug('Storing same overrides? Aborting.', {
+            //     existing_overrides,
+            //     overrides,
+            // });
             return;
+        }
+        else {
+            // Log it.
         }
 
         // prepare()
