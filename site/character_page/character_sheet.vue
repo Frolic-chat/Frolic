@@ -1013,7 +1013,7 @@ export default class CharacterPage extends Vue {
         }
     }
 
-    .character-kinks-block .character-kink.comparison-favorite,
+    .character-kinks-block .character-kink.comparison-fave,
     .match-report .scores .match-score.match,
     .infotag.match {
         background-color: var(--scoreMatchBg);
@@ -1044,7 +1044,7 @@ export default class CharacterPage extends Vue {
 
     .character-kinks-block .highlighting {
         .character-kink {
-            &.comparison-favorite {
+            &.comparison-fave {
                 background-color: var(--scoreFadedMatchBg);
                 border-color: var(--scoreFadedMatchFg);
 

@@ -95,7 +95,7 @@
     border: 1px solid $quick-compare-active-border;
   }
 
-  &.comparison-favorite {
+  &.comparison-fave {
     @include comparison-active;
     background-color: $quick-compare-favorite-bg;
   }
