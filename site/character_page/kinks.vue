@@ -19,8 +19,8 @@
         <option :value="undefined">
           None
         </option>
-        <option v-for="group in kinkGroups" v-if="group" :key="group.id" :value="group.id">
-          {{ group.name }}
+        <option v-for="group in kinkGroups" :key="group.id" :value="group.id">
+          <template v-if="group">{{ group.name }}</template>
         </option>
       </select>
     </div>
@@ -164,7 +164,7 @@ export default class CharacterKinksView extends Vue {
                 to_assign[kink.id] = kink.choice;
             this.comparison = to_assign;
         }
-        catch(e) {
+        catch (e) {
             this.comparing = false;
             this.comparison = {};
             Utils.ajaxError(e, 'Unable to get kinks for comparison.');
@@ -249,38 +249,47 @@ export default class CharacterKinksView extends Vue {
 
             if (a.name === b.name)
                 return 0;
+
             return a.name < b.name ? -1 : 1;
         };
 
         for (const id in characterCustoms) {
-            const custom = characterCustoms[id]!;
-            displayCustoms[id] = {
-                id:          custom.id,
-                name:        custom.name,
-                description: custom.description,
-                choice:      custom.choice,
-                group:       -1,
-                isCustom:    true,
-                hasSubkinks: false,
-                ignore:      false,
-                subkinks:    [],
-                key:         `c${custom.id}`,
-            };
+            const custom = characterCustoms[id];
+            if (custom !== undefined) {
+                displayCustoms[id] = {
+                    id:          custom.id,
+                    name:        custom.name,
+                    description: custom.description,
+                    choice:      custom.choice,
+                    group:       -1,
+                    isCustom:    true,
+                    hasSubkinks: false,
+                    ignore:      false,
+                    subkinks:    [],
+                    key:         `c${custom.id}`,
+                };
+            }
         }
 
         for (const kinkId in characterKinks) {
-            const kinkChoice = characterKinks[kinkId]!;
-            const kink = <Kink | undefined>kinks[kinkId];
-            if (kink === undefined) continue;
-            const newKink = makeKink(kink);
-            if (typeof kinkChoice === 'number' && typeof displayCustoms[kinkChoice] !== 'undefined') {
-                const custom = displayCustoms[kinkChoice]!;
-                newKink.ignore = true;
-                custom.hasSubkinks = true;
-                custom.subkinks.push(newKink);
+            const kinkChoice = characterKinks[kinkId];
+            if (kinkChoice !== undefined) {
+                const kink = <Kink | undefined>kinks[kinkId];
+                if (kink === undefined)
+                    continue;
+
+                const newKink = makeKink(kink);
+
+                if (typeof kinkChoice === 'number' && displayCustoms[kinkChoice] !== undefined) {
+                    const custom = displayCustoms[kinkChoice];
+                    newKink.ignore = true;
+                    custom.hasSubkinks = true;
+                    custom.subkinks.push(newKink);
+                }
+
+                if (!newKink.ignore)
+                    outputKinks[kinkChoice].push(newKink);
             }
-            if (!newKink.ignore)
-                outputKinks[kinkChoice].push(newKink);
         }
 
         for (const customId in displayCustoms) {
@@ -290,7 +299,7 @@ export default class CharacterKinksView extends Vue {
                 custom.subkinks.sort(kinkSorter);
 
             if (custom?.choice)
-                outputKinks[<string>custom.choice].push(custom);
+                outputKinks[custom.choice].push(custom);
         }
 
         for (const choice in outputKinks)

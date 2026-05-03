@@ -51,7 +51,7 @@ export default [
             '@typescript-eslint/no-unsafe-member-access': 'off',
             '@typescript-eslint/no-unsafe-return': 'off',
             '@typescript-eslint/no-unsafe-assignment': 'off',
-
+            'vue/attribute-hyphenation': 'off',
             'vue/v-slot-style': [
                 'warn', {
                     "atComponent": "longform",
