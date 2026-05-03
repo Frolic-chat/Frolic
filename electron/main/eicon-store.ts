@@ -80,6 +80,12 @@ export interface EiconUpdateExport {
     asOfTimestamp: EiconStoreExport['asOfTimestamp'];
 }
 
+interface IPCStatusResponse {
+    status?:  EiconStoreExport['status'],
+    amount:   number,
+    devtools: boolean,
+}
+
 /**
  * The primary structure of the eicon store. Holds the list of eicons that's
  * saved & loaded, shuffled, searched, and paged through.
@@ -112,12 +118,18 @@ let favoritesFile = '';
 let getCharDir: (() => string) | undefined;
 
 /**
+ * Allow the renderer to !@#$ with itself?
+ */
+let devtools = false;
+
+/**
  * This init function need to take in the partial file name and convert it to the appropriate version/json filename. IE `eicons-2.json`
  * @param partialPath
  * @returns
  */
-export async function init(directory: string, storeFilename: string, favoritesFilename: string, getLogDir: () => string): Promise<EiconStoreExport> {
+export async function init(directory: string, storeFilename: string, favoritesFilename: string, getLogDir: () => string, devMode: boolean = false): Promise<EiconStoreExport> {
     getCharDir = getLogDir;
+    devtools = devMode;
 
     getStoreFile(directory, storeFilename);
     favoritesFile = favoritesFilename;
@@ -171,11 +183,11 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
      */
 
     let pending_status_response = false;
-    Electron.ipcMain.handle('eicon-status', async (): Promise<{ status?: EiconStoreExport['status'], amount: number }> => {
+    Electron.ipcMain.handle('eicon-status', async (): Promise<IPCStatusResponse> => {
         if (pending_status_response) {
             // Don't care if this response is out of date;
             // The pending reponse will be sent after this.
-            const res = { status: status, amount: store.length };
+            const res = { status: status, amount: store.length, devtools };
             logEicon.debug('store.handle.eicon-status.pending', res);
             return res;
         }
@@ -195,7 +207,7 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
         }
 
         pending_status_response = false;
-        return { status: status, amount: store.length };
+        return { status: status, amount: store.length, devtools };
     });
 
     Electron.ipcMain.handle('eicon-page', (_e, count?: unknown): string[] => {

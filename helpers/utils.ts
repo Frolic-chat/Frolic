@@ -7,7 +7,7 @@ import * as Electron from 'electron';
 
 type EiconStatus = 'ready'   | 'unverified'    | 'cached'
                  | 'loading' | 'uninitialized' | 'error';
-export function invoke(channel: 'eicon-status'): Promise<{ status?: EiconStatus, amount: number }>;
+export function invoke(channel: 'eicon-status'): Promise<{ status?: EiconStatus, amount: number, devtools: boolean }>;
 export function invoke(channel: 'eicon-search', query: string): Promise<string[]>;
 export function invoke(channel: 'eicon-page', amount: number): Promise<string[]>;
 export function invoke(channel: 'eicon-refresh', force?: boolean): Promise<boolean>;

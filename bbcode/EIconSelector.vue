@@ -2,12 +2,8 @@
 <template>
 <modal ref="dialog" :action="l('eicon.select')" :buttons="false" dialogClass="eicon-selector big" @close="disengage()">
   <div class="eicon-selector-ui">
-    <div v-if="!isReady" class="d-flex align-items-center loading">
-      <strong>{{ l('eicon.notready') }}</strong>
-      <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
-    </div>
-    <div v-else>
-      <div class="search-bar">
+    <div>
+      <div v-if="isReady" class="search-bar">
         <div data-balloon-length="fit" :aria-label="l('eicon.favTooltip')" data-balloon-pos="down" data-balloon-nofocus>
           <input id="search" ref="search" v-model="search" type="text" class="form-control search" :placeholder="l('eicon.search')" tabindex="0" @input="searchUpdateDebounce()" />
         </div>
@@ -51,6 +47,20 @@
         </div>
       </div>
 
+      <div v-if="devtools" class="devtools">
+        <div class="btn-group">
+          {{ status }}
+          <!-- eslint-disable vue/no-multi-spaces -->
+          <div title="Status: Ready"         role="button" tabindex="0" class="btn" @click.prevent.stop="() => status = 'ready'">R</div>
+          <div title="Status: Unverified"    role="button" tabindex="0" class="btn" @click.prevent.stop="() => status = 'unverified'">U</div>
+          <div title="Status: Cached"        role="button" tabindex="0" class="btn" @click.prevent.stop="() => status = 'cached'">C</div>
+          <div title="Status: Loading"       role="button" tabindex="0" class="btn" @click.prevent.stop="() => status = 'loading'">L</div>
+          <div title="Status: Uninitialized" role="button" tabindex="0" class="btn" @click.prevent.stop="() => status = 'uninitialized'">U</div>
+          <div title="Status: Error"         role="button" tabindex="0" class="btn" @click.prevent.stop="() => status = 'error'">E</div>
+          <!-- eslint-enable vue/no-multi-spaces -->
+        </div>
+      </div>
+
       <!-- Footer -->
       <div class="courtesy">
         {{ l('eicon.thanks') }}<a href="https://xariah.net/eicons">xariah.net</a>
@@ -61,7 +71,15 @@
       </div>
       <!-- /Footer -->
 
-      <div class="carousel slide w-100 results">
+      <div v-if="status === 'error'" class="d-flex flex-column align-items-center m-4">
+        <strong>{{ l('eicon.errorWillRefresh') }}</strong>
+      </div>
+      <div v-else-if="!isReady" class="d-flex flex-column align-items-center m-4">
+        <strong>{{ l('eicon.notready') }}</strong>
+        <br>
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+      </div>
+      <div v-else class="carousel slide w-100 results">
         <div class="carousel-inner w-100" role="listbox">
           <template v-if="refreshing">
             <strong>{{ l('eicon.loading') }}</strong>
@@ -110,6 +128,11 @@ export default class EIconSelector extends CustomDialog {
           | 'loading' | 'uninitialized' | 'error' = 'uninitialized';
     loadingPercent = 100;
 
+    /**
+     * Sent from main; extra toolbar to provoke situations for development testing.
+     */
+    devtools = false;
+
     readonly favesSearchString = 'f:';
 
     get isReady() {
@@ -155,10 +178,16 @@ export default class EIconSelector extends CustomDialog {
         this.refreshing = true;
 
         const r = await Utils.invoke('eicon-status').catch(() => undefined);
+        if (!r) {
+            log.verbose('selector.pollStatus.noResponse');
+            return;
+        }
 
         log.debug('selector.pollStatus', r);
 
-        if (r?.amount) { // Shortcut success if we have any.
+        this.devtools = r.devtools ?? false;
+
+        if (r.amount) { // Shortcut success if we have any.
             if (r.status === 'ready' || r.status === 'unverified')
                 this.status = r.status;
             else
@@ -166,11 +195,13 @@ export default class EIconSelector extends CustomDialog {
 
             this.refreshing = false;
         }
-        if (r?.status) {
-            if (r.status === 'ready' || r.status === 'error')
-                this.status = r.status;
+        if (r.status) {
+            if (r.status === 'ready')
+                this.status = 'ready';
+            else if (r.amount)
+                this.status = 'cached';
             else
-                this.status = 'unverified';
+                this.status = r.status;
 
             this.refreshing = false;
 
@@ -264,10 +295,14 @@ export default class EIconSelector extends CustomDialog {
     }
 
     toggleFavorite(eicon: string): void {
-        if (eicon in core.state.favoriteEIcons)
+        if (eicon in core.state.favoriteEIcons) {
+            // Legacy code
+            /* eslint-disable-next-line @typescript-eslint/no-dynamic-delete */
             delete core.state.favoriteEIcons[eicon];
-        else
+        }
+        else {
             core.state.favoriteEIcons[eicon] = true;
+        }
 
         void core.settingsStore.set('favoriteEIcons', core.state.favoriteEIcons);
 
