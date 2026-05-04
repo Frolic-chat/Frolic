@@ -1,4 +1,4 @@
-import throat from 'throat';
+import Throat from 'throat';
 
 import NewLogger from '../../helpers/log';
 const log = NewLogger('ads');
@@ -10,15 +10,15 @@ import Timer = NodeJS.Timeout;
 import ChannelConversation = Conversation.ChannelConversation;
 
 
-const adManagerThroat = throat(1);
+const adManagerThroat = Throat(1);
 
 
 export interface RecoverableAd {
-    channel: string;
-    index: number;
+    channel:     string;
+    index:       number;
     nextPostDue: Date | undefined,
-    firstPost: Date | undefined,
-    expireDue: Date | undefined;
+    firstPost:   Date | undefined,
+    expireDue:   Date | undefined;
 }
 
 
@@ -35,10 +35,10 @@ export class AdManager {
     private adIndex = 0;
     private active = false;
     private nextPostDue?: Date;
-    private expireDue?: Date;
-    private firstPost?: Date;
-    private interval?: Timer;
-    private adMap: number[] = [];
+    private expireDue?:   Date;
+    private firstPost?:   Date;
+    private interval?:    Timer;
+    private adMap:        number[] = [];
 
     constructor(conversation: Conversation) {
         this.conversation = conversation;
@@ -66,22 +66,21 @@ export class AdManager {
 
                 const delta = Date.now() - core.cache.getLastPost().getTime();
 
-                if ((delta > 0) && (delta < AdManager.POST_MANUAL_THRESHOLD)) {
+                if (delta > 0 && delta < AdManager.POST_MANUAL_THRESHOLD)
                     await this.delay(delta);
-                }
 
                 const delayTime = Date.now();
 
                 log.debug(
-                  'adManager.sendAdToChannel',
-                  {
-                    character: core.characters.ownCharacter.name,
-                    channel: conv.channel.name,
-                    throatDelta: throatTime - initTime,
-                    delayDelta: delayTime - throatTime,
-                    totalWait: delayTime - initTime,
-                    msg
-                  }
+                    'adManager.sendAdToChannel',
+                    {
+                        character:   core.characters.ownCharacter.name,
+                        channel:     conv.channel.name,
+                        throatDelta: throatTime - initTime,
+                        delayDelta:  delayTime - throatTime,
+                        totalWait:   delayTime - initTime,
+                        msg,
+                    }
                 );
 
                 await conv.sendAd(msg);
@@ -92,18 +91,16 @@ export class AdManager {
     private determineNextAdDelayMs(chanConv: Conversation.ChannelConversation): number {
         const match = chanConv.channel.description.toLowerCase().match(/\[\s*ads:\s*([0-9.]+)\s*(m|mins?|minutes?|h|hrs?|hours?|s|secs?|seconds?)\.?\s*]/);
 
-        if (!match?.[2]) {
+        if (!match?.[2])
             return AdManager.POST_DELAY;
-        }
 
         const n = Number(match[1]);
         let mul = 1000; // seconds
 
-        if (match[2].substring(0, 1) === 'h') {
+        if (match[2].substring(0, 1) === 'h')
             mul = 60 * 60 * 1000; // hours
-        } else if (match[2].substring(0, 1) === 'm') {
+        else if (match[2].substring(0, 1) === 'm')
             mul = 60 * 1000; // minutes
-        }
 
         return Math.max((n * mul) - Math.max(Date.now() - chanConv.nextAd, 0), AdManager.POST_DELAY);
     }
@@ -116,7 +113,7 @@ export class AdManager {
             return;
         }
 
-        const chanConv = (<Conversation.ChannelConversation>this.conversation);
+        const chanConv = this.conversation as Conversation.ChannelConversation;
 
         await this.sendAdToChannel(msg, chanConv);
 
@@ -128,8 +125,8 @@ export class AdManager {
         this.adIndex = this.adIndex + 1;
 
         this.nextPostDue = new Date(Math.max(
-          Date.now() + nextInMs,
-          (chanConv.settings.adSettings.lastAdTimestamp || 0) + (core.connection.vars.lfrp_flood * 1000)
+            Date.now() + nextInMs,
+            (chanConv.settings.adSettings.lastAdTimestamp || 0) + (core.connection.vars.lfrp_flood * 1000)
         ));
 
         this.interval = setTimeout(
@@ -137,7 +134,7 @@ export class AdManager {
                 await this.sendNextPost();
             },
             nextInMs
-        ) as Timer;
+        );
     }
 
     /**
@@ -151,13 +148,14 @@ export class AdManager {
         const ads = this.getAds();
         const idx = Array.from(ads, (_, i) => i);
 
-        if (this.shouldUseRandomOrder()) Utils.fisherYatesShuffle(idx)
+        if (this.shouldUseRandomOrder())
+            Utils.fisherYatesShuffle(idx);
 
         return idx;
     }
 
     shouldUseRandomOrder(): boolean {
-        return !!this.conversation.settings.adSettings.randomOrder;
+        return this.conversation.settings.adSettings.randomOrder;
     }
 
     getAds(): string[] {
@@ -195,12 +193,12 @@ export class AdManager {
     }
 
     start(timeoutMs = AdManager.POSTING_PERIOD): void {
-        const chanConv = (<Conversation.ChannelConversation>this.conversation);
+        const chanConv = this.conversation as Conversation.ChannelConversation;
 
         const initialWait = Math.max(
-          Math.random() * AdManager.START_VARIANCE,
-          (chanConv.nextAd - Date.now()) * 1.1,
-          ((this.conversation.settings.adSettings.lastAdTimestamp || 0) + (core.connection.vars.lfrp_flood * 1000)) - Date.now()
+            Math.random() * AdManager.START_VARIANCE,
+            (chanConv.nextAd - Date.now()) * 1.1,
+            ((this.conversation.settings.adSettings.lastAdTimestamp || 0) + (core.connection.vars.lfrp_flood * 1000)) - Date.now()
         );
 
         this.adIndex = 0;
@@ -221,21 +219,20 @@ export class AdManager {
                 await this.sendNextPost();
             },
             initialWait
-        ) as Timer;
+        );
     }
 
 
     protected forceTimeout(waitTime: number): void {
-        if (this.interval) {
+        if (this.interval)
             clearTimeout(this.interval);
-        }
 
         this.interval = setTimeout(
             async() => {
                 await this.sendNextPost();
             },
             waitTime
-        ) as Timer;
+        );
     }
 
 
@@ -271,20 +268,20 @@ export class AdManager {
         AdManager.recoverableCharacter = core?.characters?.ownCharacter.name ?? '';
 
         const activeAdChannels = core.conversations.channelConversations
-                    .filter(c => c.adManager && c.adManager.isActive())
+            .filter(c => c.adManager && c.adManager.isActive());
 
         AdManager.recoverableAds = activeAdChannels
-                    .map(c => {
-                        const adManager = c.adManager;
+            .map(c => {
+                const adManager = c.adManager;
 
-                        return {
-                            channel     : c.name,
-                            index       : adManager.adIndex,
-                            nextPostDue : adManager.nextPostDue,
-                            firstPost   : adManager.firstPost,
-                            expireDue   : adManager.expireDue
-                        };
-                    });
+                return {
+                    channel:     c.name,
+                    index:       adManager.adIndex,
+                    nextPostDue: adManager.nextPostDue,
+                    firstPost:   adManager.firstPost,
+                    expireDue:   adManager.expireDue,
+                };
+            });
 
         activeAdChannels.forEach(c => c.adManager.stop());
     }

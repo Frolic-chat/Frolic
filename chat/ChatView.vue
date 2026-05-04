@@ -181,6 +181,7 @@ import AdCenterDialog from './ads/AdCenter.vue';
 import AdLauncherDialog from './ads/AdLauncher.vue';
 import EventBus from './preview/event-bus';
 import type Modal from '../components/Modal.vue';
+import DevTools from '../devtools/CommandCenter.vue';
 
 const unreadClasses = {
     [Conversation.UnreadState.None]:    '',
@@ -191,23 +192,20 @@ const unreadClasses = {
 @Component({
     components: {
         'user-list':            UserList,
-        channels:               ChannelList,
+        'channels':             ChannelList,
         'status-switcher':      StatusSwitcher,
         'character-search':     CharacterSearch,
         'home-screen':          HomeScreen,
         'report-dialog':        ReportDialog,
         'eicon-selector':       EIconSelector,
-        sidebar:                Sidebar,
+        'sidebar':              Sidebar,
         'context-menu':         ContextMenu,
         'recent-conversations': RecentConversations,
         'image-preview':        ImagePreview,
         'add-pm-partner':       PmPartnerAdder,
         'ad-center':            AdCenterDialog,
         'ad-launcher':          AdLauncherDialog,
-        ...(process.env.NODE_ENV === 'development'
-            ? { 'dev-tools': () => import('../devtools/CommandCenter.vue') }
-            : {}
-        ),
+        'dev-tools':            DevTools,
     },
 })
 export default class ChatView extends Vue {
