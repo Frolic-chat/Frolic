@@ -108,7 +108,7 @@ export class AdManager {
     private async sendNextPost(): Promise<void> {
         const msg = this.getNextAd();
 
-        if ((!msg) || ((this.expireDue) && (this.expireDue.getTime() < Date.now()))) {
+        if (!msg || (this.expireDue && this.expireDue.getTime() < Date.now())) {
             this.stop();
             return;
         }
@@ -130,9 +130,7 @@ export class AdManager {
         ));
 
         this.interval = setTimeout(
-            async() => {
-                await this.sendNextPost();
-            },
+            () => void this.sendNextPost(),
             nextInMs
         );
     }

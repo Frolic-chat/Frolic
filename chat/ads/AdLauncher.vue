@@ -1,73 +1,73 @@
 <template>
-<modal :action="l('ads.post.title')" @submit="submit" ref="dialog" @reopen="load" @open="load" dialogClass="w-100" class="adLauncher" :buttonText="l('ads.post.start')">
-    <div v-if="hasAds()">
-        <h4>{{ l('ads.post.tagTitle') }}</h4>
-        <div class="form-group">
-            <p>{{ l('ads.post.desc') }}</p>
+<modal ref="dialog" :action="l('ads.post.title')" dialogClass="w-100" class="adLauncher" :buttonText="l('ads.post.start')" @submit="submit" @reopen="load" @open="load">
+  <div v-if="hasAds()">
+    <h4>{{ l('ads.post.tagTitle') }}</h4>
+    <div class="form-group">
+      <p>{{ l('ads.post.desc') }}</p>
 
-            <label class="control-label" :for="`adr-tag-${index}`" v-for="(tag,index) in tags">
-                <input type="checkbox" v-model="tag.value" :id="`adr-tag-${index}`" />
-                {{ tag.title }}
-            </label>
-        </div>
-
-        <h4>{{ l('ads.post.target.title') }}</h4>
-        <div class="form-group">
-            <p>{{ l('ads.post.target') }}</p>
-
-            <p v-if="channels.length === 0">{{ l('ads.post.noChannels') }}</p>
-
-            <label class="control-label">
-                <input type="checkbox" id="ard-all-channels" @change="selectAllChannels($event)" />
-                <i>{{ l('ads.post.selectAll') }}</i>
-            </label>
-
-            <label class="control-label" :for="`adr-channel-${index}`" v-for="(channel,index) in channels">
-                <input type="checkbox" v-model="channel.value" :id="`adr-channel-${index}`" />
-                {{ channel.title }}
-            </label>
-        </div>
-
-        <h4>{{ l('ads.post.order.title') }}</h4>
-        <div class="form-group">
-            <label class="control-label" for="adOrderRandom">
-                <input type="radio" v-model="adOrder" value="random" id="adOrderRandom" />
-                {{ l('ads.post.random') }}
-            </label>
-            <label class="control-label" for="adOrderAdCenter">
-                <input type="radio" v-model="adOrder" value="ad-center" id="adOrderAdCenter" />
-                {{ l('ads.post.ordered') }}
-            </label>
-        </div>
-
-        <h4>{{ l('ads.post.campaign') }}</h4>
-        <div class="form-group">
-            <label class="control-label" for="timeoutMinutes">
-            {{ l('ads.post.timeout') }}
-            </label>
-
-            <select class="form-control" v-model="timeoutMinutes" id="timeoutMinutes">
-            <option v-for="timeout in timeoutOptions" :value="timeout.value">{{timeout.title}}</option>
-            </select>
-        </div>
-
-        <p class="matches"><b>{{matchCount}}</b>{{ l('ads.post.used') }}</p>
+      <label v-for="(tag,index) in tags" :key="index" class="control-label" :for="`adr-tag-${index}`">
+        <input :id="`adr-tag-${index}`" v-model="tag.value" type="checkbox" />
+        {{ tag.title }}
+      </label>
     </div>
-    <div v-else>
+
+    <h4>{{ l('ads.post.target.title') }}</h4>
+    <div class="form-group">
+      <p>{{ l('ads.post.target') }}</p>
+
+      <p v-if="channels.length === 0">{{ l('ads.post.noChannels') }}</p>
+
+      <label class="control-label">
+        <input id="ard-all-channels" type="checkbox" @change="selectAllChannels" />
+        <i>{{ l('ads.post.selectAll') }}</i>
+      </label>
+
+      <label v-for="(channel,index) in channels" :key="index" class="control-label" :for="`adr-channel-${index}`">
+        <input :id="`adr-channel-${index}`" v-model="channel.value" type="checkbox" />
+        {{ channel.title }}
+      </label>
+    </div>
+
+    <h4>{{ l('ads.post.order.title') }}</h4>
+    <div class="form-group">
+      <label class="control-label" for="adOrderRandom">
+        <input id="adOrderRandom" v-model="adOrder" type="radio" value="random" />
+        {{ l('ads.post.random') }}
+      </label>
+      <label class="control-label" for="adOrderAdCenter">
+        <input id="adOrderAdCenter" v-model="adOrder" type="radio" value="ad-center" />
+        {{ l('ads.post.ordered') }}
+      </label>
+    </div>
+
+    <h4>{{ l('ads.post.campaign') }}</h4>
+    <div class="form-group">
+      <label class="control-label" for="timeoutMinutes">
+        {{ l('ads.post.timeout') }}
+      </label>
+
+      <select id="timeoutMinutes" v-model="timeoutMinutes" class="form-control">
+        <option v-for="timeout in timeoutOptions" :key="timeout" :value="timeout.value">{{ timeout.title }}</option>
+      </select>
+    </div>
+
+    <p class="matches"><b>{{ matchCount }}</b>{{ l('ads.post.used') }}</p>
+  </div>
+  <div v-else>
     <h4>{{ l('ads.post.noAds') }}</h4>
 
     <p>{{ l('ads.post.create1') }}<button class="btn btn-outline-secondary" @click="openAdEditor()">{{ l('ads.post.adEditor') }}</button>{{ l('ads.post.create2') }}</p>
-    </div>
+  </div>
 </modal>
 </template>
 
 <script lang="ts">
-import {Component, Watch} from '@frolic/vue-ts';
+import { Component, Watch } from '@frolic/vue-ts';
 import CustomDialog from '../../components/custom_dialog';
 import Modal from '../../components/Modal.vue';
 import core from '../core';
 import l from '../localize';
-import AdCenterDialog from './AdCenter.vue';
+import type AdCenterDialog from './AdCenter.vue';
 
 @Component({ components: { modal: Modal } })
 export default class AdLauncherDialog extends CustomDialog {
@@ -83,20 +83,20 @@ export default class AdLauncherDialog extends CustomDialog {
 
     channels: { value: boolean, title: string, id: string }[] = [];
 
-    timeoutOptions = [
-        { value:  30, title: '30 '+l('ads.post.minutes') },
-        { value:  60, title: '1 '+l('ads.post.hour') },
-        { value: 120, title: '2 '+l('ads.post.hours') },
-        { value: 180, title: '3 '+l('ads.post.hours') }
-    ]
+    timeoutOptions = [ /* eslint-disable @stylistic/key-spacing */
+        { value:  30, title: '30 ' + l('ads.post.minutes') },
+        { value:  60, title:  '1 ' + l('ads.post.hour')    },
+        { value: 120, title:  '2 ' + l('ads.post.hours')   },
+        { value: 180, title:  '3 ' + l('ads.post.hours')   },
+    ]; /* eslint-enable @stylistic/key-spacing */
 
     load() {
         this.channels = core.channels.joinedChannels
-                .filter(c => c.mode === 'ads' || c.mode === 'both')
-                .map(c => ({ value: false, title: c.name, id: c.id }));
+            .filter(c => c.mode === 'ads' || c.mode === 'both')
+            .map(c => ({ value: false, title: c.name, id: c.id }));
 
         this.tags = core.adCenter.getActiveTags()
-                .map(t => ({ value: false, title: t }));
+            .map(t => ({ value: false, title: t }));
 
         this.checkCanSubmit();
     }
@@ -133,11 +133,11 @@ export default class AdLauncherDialog extends CustomDialog {
 
     openAdEditor(): void {
         this.hide();
-        (<AdCenterDialog>this.$parent.$refs['adCenter'])!.show();
+        (this.$parent.$refs['adCenter'] as AdCenterDialog).show();
     }
 
-    selectAllChannels(e: any): void {
-        const newValue = e.target.checked;
+    selectAllChannels(e: Event): void {
+        const newValue = (e.target as HTMLInputElement).checked;
 
         e.preventDefault();
         e.stopPropagation();
@@ -151,13 +151,13 @@ export default class AdLauncherDialog extends CustomDialog {
 
         if (tags.length === 0) {
             e.preventDefault();
-            alert(l('ads.post.alert.tag'));
+            window.alert(l('ads.post.alert.tag'));
             return;
         }
 
         if (channelIds.length === 0) {
             e.preventDefault();
-            alert(l('ads.post.alert.channel'));
+            window.alert(l('ads.post.alert.channel'));
             return;
         }
 
@@ -170,7 +170,7 @@ export default class AdLauncherDialog extends CustomDialog {
             if (!chan)
                 return true;
 
-            return confirm(l('ads.post.warn', chan.name));
+            return window.confirm(l('ads.post.warn', chan.name));
         })) {
             e.preventDefault();
             return;

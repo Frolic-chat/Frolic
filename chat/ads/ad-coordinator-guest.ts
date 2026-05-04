@@ -51,7 +51,8 @@ export class AdCoordinatorGuest {
 
 
     clear(): void {
-        Object.values(this.pendingAds).forEach(pa => (pa.reject(new Error('Pending ad cleared'))));
+        Object.values(this.pendingAds)
+            .forEach(pa => pa.reject(new Error('Pending ad cleared')));
 
         log.debug('adid.clear', Object.keys(this.pendingAds), core.characters.ownCharacter.name);
 
