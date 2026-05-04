@@ -19,20 +19,32 @@ export class AdCenter {
     }
 
     async set(ads: Ad[]): Promise<void> {
-        // Ad cleaning
+        // Trim ad content and tags.
         this.ads = ads
-            .filter(ad => ad.content.trim())
-            .map(ad => {
-                const filteredTags = ad.tags
-                    .filter(tag => tag.trim())
-                    .map(tag => tag.trim());
+            .reduce<Ad[]>(
+                (adBox, ad) => {
+                    const trimmed_content = ad.content.trim();
+                    if (trimmed_content) {
+                        const trimmedTags = ad.tags
+                            .reduce<string[]>(
+                                (tagBox, value) => {
+                                    const tag = value.trim();
+                                    if (tag)
+                                        tagBox.push(tag);
+                                    return tagBox;
+                                },
+                                []
+                            );
 
-                return {
-                    ...ad,
-                    content: ad.content.trim(),
-                    tags:    filteredTags.length > 0 ? filteredTags : [ 'default' ],
-                };
-            }
+                        ad.content = trimmed_content;
+                        ad.tags = trimmedTags.length ? trimmedTags : [ 'default' ];
+
+                        adBox.push(ad);
+                    }
+
+                    return adBox;
+                },
+                []
             );
 
         await core.settingsStore.set('ads', this.ads);
