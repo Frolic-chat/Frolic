@@ -229,16 +229,34 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
     private _enteredText = '';
     private ownTypingStatus: Interfaces.TypingStatus = 'clear';
     private timer:           number | undefined;
-    private logPromise = core.logs.getBacklog(this).then((messages) => {
-        this.allMessages.unshift(...messages);
-        this.reportMessages.unshift(...messages);
-        this.messages = this.allMessages.slice();
-    });
+
+    /**
+     * Holds the load state of the chat log on disk. Useful to make adding new messages await completion of disk load.
+     *
+     * It may be useful to store resolution in a bool in addition to keeping the promise - for checks we don't want to become async.
+     *
+     * Example:
+     * ```
+     * // Async
+     * await this.logPromise;
+     *
+     * // Sync; proposed
+     * if (!this.logResolved) {
+     *     console.log("Log hasn't loaded.")
+     * }
+     */
+    private logPromise: Promise<void>;
 
     notes = new ConversationNoteManager();
 
     constructor(readonly character: Character) {
         super(character.name.toLowerCase(), state.pinned.private.indexOf(character.name) !== -1);
+
+        this.logPromise = core.logs.getBacklog(this).then(messages => {
+            this.allMessages.unshift(...messages);
+            this.reportMessages.unshift(...messages);
+            this.messages = this.allMessages.slice();
+        });
 
         this.lastRead = this.messages[this.messages.length - 1];
 
@@ -383,17 +401,36 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     private _mode!: Channel.Mode;
     private adEnteredText = '';
     private chatEnteredText = '';
-    private logPromise = core.logs.getBacklog(this).then((messages) => {
-        this.both.unshift(...messages);
-        this.chat.unshift(...this.both.filter((x) => x.type !== MessageType.Ad));
-        this.ads.unshift(...this.both.filter((x) => x.type === MessageType.Ad));
-        this.reportMessages.unshift(...messages);
-        this.lastRead = this.messages[this.messages.length - 1];
-        this.messages = this.allMessages.slice(-this.maxMessages);
-    });
+
+    /**
+     * Holds the load state of the chat log on disk. Useful to make adding new messages await completion of disk load.
+     *
+     * It may be useful to store resolution in a bool in addition to keeping the promise - for checks we don't want to become async.
+     *
+     * Example:
+     * ```
+     * // Async
+     * await this.logPromise;
+     *
+     * // Sync; proposed
+     * if (!this.logResolved) {
+     *     console.log("Log hasn't loaded.")
+     * }
+     */
+    private logPromise: Promise<void>;
 
     constructor(readonly channel: Channel) {
         super(`#${channel.id.replace(/[^\w- ]/gi, '')}`, state.pinned.channels.indexOf(channel.id) !== -1);
+
+        this.logPromise = core.logs.getBacklog(this).then(messages => {
+            this.both.unshift(...messages);
+            this.chat.unshift(...this.both.filter((x) => x.type !== MessageType.Ad));
+            this.ads.unshift(...this.both.filter((x) => x.type === MessageType.Ad));
+            this.reportMessages.unshift(...messages);
+            this.lastRead = this.messages[this.messages.length - 1];
+            this.messages = this.allMessages.slice(-this.maxMessages);
+        });
+
         core.watch<Channel.Mode | undefined>(function(): Channel.Mode | undefined {
             const c = this.channels.getChannel(channel.id);
             return c !== undefined ? c.mode : undefined;
