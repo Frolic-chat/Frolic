@@ -47,7 +47,7 @@
       </label>
 
       <select id="timeoutMinutes" v-model="timeoutMinutes" class="form-control">
-        <option v-for="timeout in timeoutOptions" :key="timeout" :value="timeout.value">{{ timeout.title }}</option>
+        <option v-for="(timeout, index) in timeoutOptions" :key="index" :value="timeout.value">{{ timeout.title }}</option>
       </select>
     </div>
 
