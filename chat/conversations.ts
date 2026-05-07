@@ -288,6 +288,10 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         }
     }
 
+    /**
+     * Add a message to your chatlog and ping you about it.
+     * @param message
+     */
     async addMessage(message: Interfaces.Message): Promise<void> {
         await this.logPromise;
 
@@ -364,6 +368,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
             return;
         }
 
+        // There are admanagers on private conversations...
         if (this.adManager.isActive()) {
             this.errorText = 'Cannot send ads manually while ad auto-posting is active';
             return;
@@ -597,14 +602,13 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
                 core.connection.send(isAd ? 'LRP' : 'MSG', { channel: this.channel.id, message });
                 core.cache.markLastPostTime();
 
-                await this.addMessage(
-                    createMessage(isAd ? MessageType.Ad : MessageType.Message, core.characters.ownCharacter, message, new Date())
-                );
+                const message_display = createMessage(isAd ? MessageType.Ad : MessageType.Message, core.characters.ownCharacter, message, new Date());
+                await this.addMessage(message_display);
 
                 if (isAd) {
                     this.nextAd = Date.now() + core.connection.vars.lfrp_flood * 1000;
 
-                    // enforces property setter
+                    // Trigger vue property setter
                     this.settings = {
                         ...this.settings,
                         adSettings: {
