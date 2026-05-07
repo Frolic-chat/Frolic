@@ -221,12 +221,17 @@ export class Logs implements Logging {
         });
     }
 
+    /**
+     * The use of openSync and other fs sync operations needs to be cleaned up.
+     * @param conversation
+     * @returns
+     */
     async getBacklog(conversation: Conversation): Promise<ReadonlyArray<Conversation.Message>> {
-        // Using this to keep other legacy code intact, as it depends on the promise.
-        await Promise.resolve();
         const file = getLogFile(core.connection.character, conversation.key);
-        if (!fs.existsSync(file))
+        // This await pushes everything out of the main thread.
+        if (!await fs.promises.access(file, fs.constants.R_OK).then(() => true, () => false))
             return [];
+
         let count = 20;
         let messages = new Array<Conversation.Message>(count);
         const fd = fs.openSync(file, 'r');
