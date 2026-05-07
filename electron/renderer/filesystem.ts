@@ -223,17 +223,20 @@ export class Logs implements Logging {
 
     /**
      * The use of openSync and other fs sync operations needs to be cleaned up.
+     *
+     * Inherited from legacy is the concept that any ill circumstance should return an empty Message array (blank conversation). Do not propogate errors.
      * @param conversation
      * @returns
      */
     async getBacklog(conversation: Conversation): Promise<ReadonlyArray<Conversation.Message>> {
         const file = getLogFile(core.connection.character, conversation.key);
-        // This await pushes everything out of the main thread.
+        // This await pushes loading out of the sync loop.
         if (!await fs.promises.access(file, fs.constants.R_OK).then(() => true, () => false))
             return [];
 
         let count = 20;
         let messages = new Array<Conversation.Message>(count);
+
         const fd = fs.openSync(file, 'r');
         try {
             let pos = fs.fstatSync(fd).size;

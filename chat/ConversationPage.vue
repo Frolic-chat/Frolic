@@ -594,7 +594,7 @@ export default class ConversationView extends Vue {
             this.keepScroll();
     }
 
-    async onKeyDown(e: KeyboardEvent): Promise<void> {
+    onKeyDown(e: KeyboardEvent): void {
         if (getKey(e) === Keys.Tab) {
             if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey)
                 return;
@@ -669,14 +669,16 @@ export default class ConversationView extends Vue {
                 // Handles Shift+Enter when "enter to send" is disabled.
                 // Handles solo Enter when "enter to send" is enabled.
                 if (!this.settings.enterSend || !this.settings.secondEnterSend) {
-                    await this.conversation.send();
+                    void this.conversation.send();
                     return;
                 }
-                // Below here is only solo Enter with "enter to send" + "second enter" enabled.
+
+                /**
+                 * Below here is only solo Enter with "enter to send" + "second enter" enabled.
+                 */
 
                 // Welcome to the "I flub a lot of messages so I require confirmation before sending one" zone.
                 if (this.waitingForSecondEnter) {
-                    await this.conversation.send();
                     this.waitingForSecondEnter = false;
                     this.waitingForSecondEnterClass = '';
 
@@ -684,6 +686,9 @@ export default class ConversationView extends Vue {
                         window.clearTimeout(this.waitingForSecondEnterTimeout);
                         this.waitingForSecondEnterTimeout = undefined;
                     }
+
+                    void this.conversation.send();
+                    return;
                 }
                 else {
                     this.waitingForSecondEnter = true;
