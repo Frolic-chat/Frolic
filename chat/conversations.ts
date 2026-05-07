@@ -97,6 +97,9 @@ abstract class Conversation implements Interfaces.Conversation {
         void state.savePinned();
     }
 
+    /**
+     * Find the places where we needed to delay removal and confront the async trash that keeps it that way.
+     */
     clearText(): void {
         setImmediate(() => this.enteredText = '');
     }
@@ -121,7 +124,7 @@ abstract class Conversation implements Interfaces.Conversation {
         }
         else {
             this.lastSent = this.enteredText;
-            await this.doSend();
+            await this.doSend(this.enteredText);
         }
     }
 
@@ -194,7 +197,7 @@ abstract class Conversation implements Interfaces.Conversation {
         safeAddMessage(this.messages, message, this.maxMessages);
     }
 
-    protected abstract doSend(): void | Promise<void>;
+    protected abstract doSend(message: string): void | Promise<void>;
 
 
     protected static readonly POST_DELAY = 1250;
@@ -348,8 +351,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
         );
     }
 
-    protected async doSend(): Promise<void> {
-        await this.logPromise;
+    protected async doSend(message: string): Promise<void> {
         if (this.character.status === 'offline') {
             this.errorText = l('chat.errorOffline', this.character.name);
             return;
@@ -364,22 +366,21 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
             return;
         }
 
-        const messageText = this.enteredText;
-
         this.clearText();
 
         await Conversation.conversationThroat(
             async() => {
                 await Conversation.testPostDelay();
 
-                core.connection.send('PRI', { recipient: this.name, message: messageText });
+                core.connection.send('PRI', { recipient: this.name, message });
                 core.cache.markLastPostTime();
 
-                const message = createMessage(MessageType.Message, core.characters.ownCharacter, messageText);
-                this.safeAddMessage(message);
+                const message_display = createMessage(MessageType.Message, core.characters.ownCharacter, message);
+                await this.logPromise;
+                this.safeAddMessage(message_display);
 
                 if (core.state.settings.logMessages)
-                    await core.logs.logMessage(this, message);
+                    await core.logs.logMessage(this, message_display);
             }
         );
     }
@@ -567,7 +568,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
         return state.savePinned();
     }
 
-    protected async doSend(): Promise<void> {
+    protected async doSend(message: string): Promise<void> {
         const isAd = this.isSendingAds;
 
         if (isAd && this.adManager.isActive()) {
@@ -579,8 +580,6 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             this.errorText = 'You must wait at least ten minutes between ad posts on this channel';
             return;
         }
-
-        const message = this.enteredText;
 
         if (!isAd)
             this.clearText();
@@ -693,7 +692,7 @@ class ConsoleConversation extends Conversation {
             this.unread = Interfaces.UnreadState.Unread;
     }
 
-    protected doSend(): void {
+    protected doSend(_: string): void {
         this.errorText = l('chat.consoleChat');
     }
 }
@@ -1131,7 +1130,7 @@ class ActivityConversation extends Conversation {
     // }
     close(): void {}                     // noop
     onHide(): void {}                    // noop
-    protected doSend(): void {}          // noop
+    protected doSend(_: string): void {} // noop
 }
 
 class State implements Interfaces.State {
