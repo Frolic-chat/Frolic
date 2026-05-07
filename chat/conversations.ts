@@ -249,6 +249,8 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
      * }
      */
     private logPromise: Promise<void>;
+    // @ts-expect-error Unused: Remove when used.
+    private logLoaded = false;
 
     notes = new ConversationNoteManager();
 
@@ -259,6 +261,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
             this.allMessages.unshift(...messages);
             this.reportMessages.unshift(...messages);
             this.messages = this.allMessages.slice();
+            this.logLoaded = true;
         });
 
         this.lastRead = this.messages[this.messages.length - 1];
@@ -419,6 +422,8 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
      * }
      */
     private logPromise: Promise<void>;
+    // @ts-expect-error Unused: Remove when used.
+    private logLoaded = false;
 
     constructor(readonly channel: Channel) {
         super(`#${channel.id.replace(/[^\w- ]/gi, '')}`, state.pinned.channels.indexOf(channel.id) !== -1);
@@ -430,6 +435,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             this.reportMessages.unshift(...messages);
             this.lastRead = this.messages[this.messages.length - 1];
             this.messages = this.allMessages.slice(-this.maxMessages);
+            this.logLoaded = true;
         });
 
         core.watch<Channel.Mode | undefined>(function(): Channel.Mode | undefined {
