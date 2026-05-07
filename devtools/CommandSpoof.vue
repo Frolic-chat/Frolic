@@ -10,9 +10,6 @@
     <button v-for="cmd in commands" :key="cmd" type="button" class="btn btn-secondary" @click="display(cmd)">
       {{ cmd }}
     </button>
-    <button type="button" class="btn btn-secondary" @click="display('TST')">
-      TST
-    </button>
   </div>
 </div>
 </template>
@@ -27,7 +24,7 @@ import Debug from './connection';
 export default class Spoof extends Vue {
     commands = ServerCommandKeys;
     info = 'Command Spoofing';
-    key: typeof ServerCommandKeys[number] | 'TST' = 'TST';
+    key: typeof ServerCommandKeys[number] = 'ZZZ';
     data = '';
 
     handle(): void {
@@ -35,26 +32,29 @@ export default class Spoof extends Vue {
 
         try {
             data = this.data.length > 2
-                ? <object>JSON.parse(this.data)
+                ? JSON.parse(this.data) as object
                 : undefined;
         }
         catch (e: unknown) {
-            this.key = 'TST';
-            data = <object>JSON.parse(`{ "message": "${e}" }`);
+            this.key = 'ZZZ';
+            /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
+            data = JSON.parse(`{ "message": "${e}" }`) as object;
         }
 
         Debug.send(this.key, data);
     }
 
     display(cmd: string): void {
-        this.key = cmd as typeof ServerCommandKeys[number] | 'TST';
+        // @ts-expect-error Strings can be part of a string union... :)
+        if (!ServerCommandKeys.includes(cmd))
+            return;
 
-        this.data = ServerCommandMap[this.key] ?? '{"test": test}'; // for 'TST'
+        this.key = cmd as typeof ServerCommandKeys[number];
+        this.data = ServerCommandMap[this.key];
 
         switch (this.key) {
         case 'BRO':
             this.info = 'Incoming admin broadcast.';
-            // this.data = '{ "character": string, "message": string }';
             break;
         case 'CIU':
             this.info = 'Invites a user to a channel.';
@@ -64,9 +64,6 @@ export default class Spoof extends Vue {
             break;
         case 'VAR':
             this.info = 'Variables the server sends to inform the client about server variables.';
-            break;
-        case 'TST':
-            this.info = 'Test Command Please Ignore';
             break;
         default:
             this.info = '[NYI] Fallback Info';
