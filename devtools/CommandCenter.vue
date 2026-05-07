@@ -3,13 +3,13 @@
 <modal ref="dialog" :action="nameTheModal()" dialogClass="w-100 modal-xl" buttonText="Submit" @submit="handle">
   <tabs v-model="tab" style="flex-shrink:0" :tabs="tabNames"></tabs>
 
-  <spoof v-show="tab === '0'" id="devtools-spoof" ref="0"></spoof>
-  <logs v-show="tab === '1'" id="devtools-logs" ref="1"></logs>
-  <div v-show="tab === '2'" id="devtools-outline" ref="2">
+  <spoof v-show="tab === '0'" ref="0"></spoof>
+  <logs v-show="tab === '1'" ref="1"></logs>
+  <div v-show="tab === '2'" ref="2">
     <input v-model="outlineDisplayToggle" type="checkbox" class="form-input">
     <label>Show outline</label>
   </div>
-  <search v-show="tab === '3'" id="devtools-search" ref="3"></search>
+  <search v-show="tab === '3'" ref="3"></search>
 </modal>
 </template>
 

@@ -1,10 +1,11 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div id="body">
+<div id="command-spoofer">
   <div class="info">
     {{ info }}
   </div>
-  <input v-model="data" type="text">
+  <!--<input v-model="data" type="text">-->
+  <textarea id="command-input" v-model="data" class="form-control"></textarea>
   <div class="buttons">
     <button v-for="cmd in commands" :key="cmd" type="button" class="btn btn-secondary" @click="display(cmd)">
       {{ cmd }}
@@ -76,29 +77,28 @@ export default class Spoof extends Vue {
 </script>
 
 <style lang="css">
-#body {
+#command-spoofer {
     display: flex;
     flex-direction: column;
+}
 
-    .info {
-        width: 100%;
-        align-items: center;
-        justify-content: center;
-    }
+.info {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
 
-    input {
-        width: 100%;
-    }
+textarea#command-input {
+    width: 100%;
 
-    .buttons {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-around;
-    }
+    field-sizing: content;
+    resize: none;
+}
 
-    .btn {
-        margin: 1px 3px;
-    }
+.buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
 }
 </style>
