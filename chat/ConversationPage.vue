@@ -176,7 +176,7 @@
       <div class="footer d-flex flex-nowrap justify-content-between align-items-center">
         <span class="channel-key text-left text-truncate">
           <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-            <user :character="conversation.character" :match="false" :bookmark="false"></user>
+            <user :character="conversation.character" :match="false" :reusable="true" :bookmark="false"></user>
                         &nbsp;{{ l('chat.typing.' + conversation.typingStatus, '').trim() }}
           </span>
 
