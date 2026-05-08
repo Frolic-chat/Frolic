@@ -22,8 +22,8 @@ function lazyval(...args: unknown[]): unknown[] {
  */
 export default function NewLogger(scope: LogType, condition?: (...a: unknown[]) => unknown) {
     // Skips logging if default generalSettings. (argv empty by default)
-    const s = core?.state.generalSettings.argv.includes('--debug-' + scope) ?? true;
-    const c = condition ?? (() => s);
+    const s = () => core?.state.generalSettings.argv.includes('--debug-' + scope) ?? true;
+    const c = condition ?? s;
 
     const l = Logger.scope(scope);
     return {

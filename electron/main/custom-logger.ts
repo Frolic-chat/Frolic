@@ -19,39 +19,39 @@ function lazyval(...args: unknown[]): unknown[] {
  * @returns A logger object with capabilities mapped to those of electron-log
  */
 export default function NewLogger(scope: LogType, condition?: (...a: unknown[]) => unknown) {
-    const c = process.argv.includes('--debug-' + scope);
-    const cond = condition ?? (() => c);
+    const s = () => process.argv.includes('--debug-' + scope);
+    const c = condition ?? s;
 
     const l = Logger.scope(scope);
     return {
         debug:   (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.debug(  ...lazyval(...args));
         },
         error:   (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.error(  ...lazyval(...args));
         },
         info:    (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.info(   ...lazyval(...args));
         },
         log:     (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.log(    ...lazyval(...args));
         },
         silly:   (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.silly(  ...lazyval(...args));
         },
         verbose: (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.verbose(...lazyval(...args));
         },
         warn:    (...args: unknown[]) => {
-            if (cond(...args))
+            if (c(...args))
                 l.warn(   ...lazyval(...args));
         },
-        eval: (...args: unknown[]) => cond(...lazyval(...args)),
+        eval: (...args: unknown[]) => c(...lazyval(...args)),
     };
 }
