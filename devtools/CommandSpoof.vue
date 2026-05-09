@@ -16,9 +16,13 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component } from '@frolic/vue-ts';
+import { Component, Hook } from '@frolic/vue-ts';
 import { ServerCommandKeys, ServerCommandMap } from './api';
-import Debug from './connection';
+import type { Connection as Interfaces } from '../fchat/interfaces';
+import { Debugger } from './connection';
+import core from '../chat/core';
+import NewLogger from '../helpers/log';
+const log = NewLogger('devtools');
 
 @Component
 export default class Spoof extends Vue {
@@ -26,6 +30,20 @@ export default class Spoof extends Vue {
     info = 'Command Spoofing';
     key: typeof ServerCommandKeys[number] = 'ZZZ';
     data = '';
+    debugger: Debugger | null = null;
+
+    @Hook('mounted')
+    mounted() {
+        if (!this.debugger) {
+            if (core.connection) {
+                this.debugger = new Debugger(core.connection);
+                log.debug('Spoof.mounted.connection.success');
+            }
+            else {
+                log.error('Spoof.mounted.connection.none');
+            }
+        }
+    }
 
     handle(): void {
         let data: object | undefined;
@@ -34,14 +52,17 @@ export default class Spoof extends Vue {
             data = this.data.length > 2
                 ? JSON.parse(this.data) as object
                 : undefined;
+
+            this.info = '';
         }
         catch (e: unknown) {
             this.key = 'ZZZ';
+            // data = JSON.parse(`{ "message": "${e}" }`) as object;
             /* eslint-disable-next-line @typescript-eslint/restrict-template-expressions */
-            data = JSON.parse(`{ "message": "${e}" }`) as object;
+            this.info = `${e}`;
         }
 
-        Debug.send(this.key, data);
+        this.debugger?.send(this.key, data as Interfaces.ServerCommands[typeof this.key]);
     }
 
     display(cmd: string): void {

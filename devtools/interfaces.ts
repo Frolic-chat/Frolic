@@ -10,6 +10,6 @@ import type { Connection as Interfaces } from '../fchat/interfaces';
  * Please note this is not intended to be a full server emulator.
  */
 export interface Debugger {
-    readonly client: Interfaces.Connection;
-    send(type: typeof ServerCommandKeys[number], data: unknown): void;
+    // readonly client: Interfaces.Connection;
+    send<T extends typeof ServerCommandKeys[number]>(command: T, data: Interfaces.ServerCommands[T]): void;
 }

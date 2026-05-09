@@ -2,18 +2,14 @@
 import type { Debugger as DebugIface } from './interfaces';
 import type { ServerCommandKeys } from './api';
 import type { Connection as Interfaces } from '../fchat/interfaces';
-import core from '../chat/core';
 import NewLogger from '../helpers/log';
-const log = NewLogger('devtools', () => core.state.generalSettings.argv.includes('--debug-devtools'));
+const log = NewLogger('devtools');
 
 /**
  * A debugger intended to attach to a Client connection.
  */
 export class Debugger implements DebugIface {
-    client: Interfaces.Connection;
-    constructor(client: Interfaces.Connection) {
-        this.client = client;
-    }
+    constructor(private client: Interfaces.Connection) {}
 
     /**
      * Spoof a message to a chat interface.
@@ -23,23 +19,15 @@ export class Debugger implements DebugIface {
      * More information about server commands can be found on the f-list wiki:
      * https://wiki.f-list.net/F-Chat_Server_Commands
      */
-    public send(command: typeof ServerCommandKeys[number] | 'TST', data: unknown): void {
+    public send<T extends typeof ServerCommandKeys[number]>(command: T, data: Interfaces.ServerCommands[T]): void {
         if (typeof this.client._handleMessage !== 'function') {
             log.verbose('devtools.send.connectionfailure');
             return;
         }
 
-        if (command === 'TST') {
-            log.info('devtools.test.send', { key: command, data: data });
-            return;
-        }
-
-        void this.client._handleMessage(command, data as Interfaces.ServerCommands[typeof ServerCommandKeys[number]]);
+        void this.client._handleMessage(command, data);
         log.debug('devtools.debug.send', { key: command, data: data });
     }
 }
-
-const debug = new Debugger(core.connection);
-export default debug;
 
 log.debug('init.devtools');
