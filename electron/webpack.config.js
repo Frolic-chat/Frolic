@@ -345,7 +345,10 @@ const storeWorkerEndpointConfig = {
     },
 };
 
-module.exports = function(mode) {
+// Written to handle `node ../webpack prod|watch|dev`
+module.exports = function(cli_arg) {
+    const configs = [ mainConfig, rendererConfig, storeWorkerEndpointConfig ];
+
     const themesDir = path.join(__dirname, '../scss/themes/chat');
     const themes = fs.readdirSync(themesDir);
     for(const theme of themes) {
@@ -415,8 +418,20 @@ module.exports = function(mode) {
         }
     );
 
+    // Can also check for 'watch' here if this logic isn't appropriate for it.
+    console.log(cli_arg);
+    const mode = Array.isArray(cli_arg) && cli_arg.includes('production') || cli_arg === 'production' ? 'production' : 'development';
+    console.log('Detected mode:', mode, process.env.NODE_ENV);
+
+    const DefinePlugin = require('webpack').DefinePlugin;
+    configs.forEach(c => {
+        c.mode = mode;
+        c.plugins.unshift(new DefinePlugin({ 'process.env.NODE_ENV': JSON.stringify(mode) }));
+    });
+
     if(mode === 'production') {
         process.env.NODE_ENV = 'production';
+        console.log('Running in production mode!');
 
         mainConfig.devtool = false;
         rendererConfig.devtool = false;
@@ -426,29 +441,32 @@ module.exports = function(mode) {
 
         if (process.argv.includes('analyze')) {
             mainConfig.plugins.push(new BundleAnalyzerPlugin({
-                openAnalyzer: false,
+                openAnalyzer: true,
                 analyzerPort: 8880,
                 generateStatsFile: true,
                 statsFilename: path.join('..', 'stats-main.json'),
             }));
             rendererConfig.plugins.push(new BundleAnalyzerPlugin({
-                openAnalyzer: false,
+                openAnalyzer: true,
                 analyzerPort: 8881,
                 generateStatsFile: true,
                 statsFilename: path.join('..', 'stats-renderer.json'),
             }));
             storeWorkerEndpointConfig.plugins.push(new BundleAnalyzerPlugin({
-                openAnalyzer: false,
+                openAnalyzer: true,
                 analyzerPort: 8882,
                 generateStatsFile: true,
                 statsFilename: path.join('..', 'stats-storeworker.json'),
             }));
         }
     } else {
+        process.env.NODE_ENV = 'development';
+        console.log('Running in development mode!');
+
         mainConfig.devtool = 'source-map';
         rendererConfig.devtool = 'source-map';
         storeWorkerEndpointConfig.devtool = 'source-map';
     }
 
-    return [storeWorkerEndpointConfig, mainConfig, rendererConfig];
+    return configs;
 };

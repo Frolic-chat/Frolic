@@ -7,9 +7,6 @@ if (typeof config === 'function')
     config = config(mode);
 config = Array.isArray(config) ? config : [config];
 
-for (const item of config)
-    item.mode = mode  === 'watch' ? 'development' : mode;
-
 let lastHash = null;
 function compilerCallback(err, stats) {
     if (mode !== 'watch' || err)

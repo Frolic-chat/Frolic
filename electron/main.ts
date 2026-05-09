@@ -45,7 +45,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ShellQuote from 'shell-quote';
-import process from 'node:process';
 const platform = process.platform;
 
 import * as Electron from 'electron';
@@ -559,6 +558,11 @@ let upgradeRoutineShouldRun = false;
 function onReady(): void {
     setLogLevel(settings.raw.risingSystemLogLevel);
     Logger.transports.file.maxSize = 5 * 1024 * 1024;
+
+    if (process.env.NODE_ENV === 'development') {
+        console.log(process.platform);
+        console.log(process.argv);
+    }
 
     app.setAppUserModelId('com.squirrel.fchat.Frolic');
     app.on('open-file', createWindow);
