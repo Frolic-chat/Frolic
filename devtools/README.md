@@ -5,8 +5,6 @@ Frolic Devtools is intended to help test scenarios where you'd normally be at th
 
 For example, you may spoof an incoming broadcast to test which chat frames it appears in. You may also spoof a fictional character to receive a chat message from.
 
-These tools are not included in the production builds of the application. The exclusion happens automatically. (By "automatic" we mean webpack figures it out... so don't break webpack.)
-
 ## Caveats
 These tools are not intended to be used without understanding exactly what signals they emit, and what the code that receives those signals does.
 
@@ -24,7 +22,7 @@ These tools may cause side-effects. These side-effects may be long lasting or im
 
 ## FAQ
 #### What controls the enablement of these tools?
-The integration was specifically designed so these files are not included in a production build. The NODE_ENV variable exposed by nodejs controls some codepaths that are then optimized out of the build by webpack. Webpack's tree-shaking feature removes unnecessary code paths and files. In the production build, none of the devtools components are called upon and therefore, webpack tree-shakes them out of the final code.
+The NODE_ENV variable exposed by nodejs controls codepaths relevant to debugging. Most likely, these tools are simply enabled by webpack/node when running from source during development.
 
 For more information about how this feature works in webpack: https://webpack.js.org/guides/production/#specify-the-mode
 
