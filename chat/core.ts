@@ -338,4 +338,4 @@ const core = <Core><any>data; /*tslint:disable-line:no-any*///hack
 // Commentary preserved for posterity.
 
 export default core;
-log.verbose('init.core');
+log.verbose('init.core', process.env.NODE_ENV); // development

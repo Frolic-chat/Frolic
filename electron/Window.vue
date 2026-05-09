@@ -49,8 +49,10 @@
     import { GeneralSettings, GeneralSettingsUpdate } from './common';
     import { getSafeLanguages, updateSupportedLanguages } from './language';
 
+    import NewLogger from '../helpers/log';
     import Logger from 'electron-log/renderer';
     const log = Logger.scope('window');
+    const logDev = NewLogger('devtools');
 
     const browserWindow = remote.getCurrentWindow();
 
@@ -241,7 +243,7 @@
             window.onbeforeunload = e => {
                 const isConnected = this.tabs.some(tab => tab.user !== undefined);
 
-                // process.env.NODE_ENV !== 'production' ||
+                // process.env.NODE_ENV === 'development' ||
                 if (!isConnected) {
                     this.destroyAllTabs();
                     return;
@@ -422,7 +424,8 @@
             delete this.tabMap[tab.view.webContents.id];
             if(this.tabs.length === 0) {
                 browserWindow.setBrowserView(null);
-                if(process.env.NODE_ENV === 'production') browserWindow.close();
+                logDev.debug('Window.remove.NODE_ENV', process.env.NODE_ENV); // Unknown
+                if(process.env.NODE_ENV !== 'development') browserWindow.close();
             } else if(this.activeTab === tab) this.show(this.tabs[0]);
             destroyTab(tab);
         }

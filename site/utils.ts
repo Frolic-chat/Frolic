@@ -4,6 +4,7 @@ import { dialog } from 'electron';
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('utils');
+const logDev = NewLogger('devtools');
 
 type FlashMessageType = 'info' | 'success' | 'warning' | 'danger';
 type FlashMessageImpl = (type: FlashMessageType, message: string) => void;
@@ -59,6 +60,7 @@ export function isJSONError(error: unknown): error is AxiosError & { response: A
     if (err) {
         log.warn('isJSONError.error', { error });
 
+        logDev.debug('utils.isJSONError.NODE_ENV', process.env.NODE_ENV); // Unknown
         if (process.env.NODE_ENV === 'development')
             dialog.showErrorBox("isJSONError error!", "check log.");
     }

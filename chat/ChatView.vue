@@ -44,7 +44,7 @@
       </span>
     </div>
 
-    <div v-if="env === 'development'">
+    <div v-if="devTools">
       <a href="#" class="btn" @click.prevent="showDevTools()">
         <span class="fas fa-bug"></span>
         {{ l('chat.devTools') }}
@@ -182,6 +182,9 @@ import AdLauncherDialog from './ads/AdLauncher.vue';
 import EventBus from './preview/event-bus';
 import type Modal from '../components/Modal.vue';
 import DevTools from '../devtools/CommandCenter.vue';
+import NewLogger from '../helpers/log';
+
+const logDev = NewLogger('devtools');
 
 const unreadClasses = {
     [Conversation.UnreadState.None]:    '',
@@ -210,7 +213,8 @@ const unreadClasses = {
 })
 export default class ChatView extends Vue {
     l = l;
-    env = process.env.NODE_ENV;
+    // Working?
+    devTools = false;
     sidebarExpanded = false;
     characterImage = (c: string) => core.characters.getImage(c);
     conversations = core.conversations;
@@ -264,6 +268,9 @@ export default class ChatView extends Vue {
     created() {
         EventBus.$on('note-counts-update', this.onNoteOrMessageEvent);
         EventBus.$on('notes-api',          this.onNoteOrMessageEvent);
+
+        logDev.debug('ChatView.created.NODE_ENV', process.env.NODE_ENV); // development
+        this.devTools = process.env.NODE_ENV === 'development';
     }
 
     @Hook('beforeDestroy')
@@ -522,7 +529,9 @@ export default class ChatView extends Vue {
     }
 
     showDevTools(): void {
-        if (this.env === 'development')
+        // Working
+        logDev.debug('ChatView.showDevTools.NODE_ENV', process.env.NODE_ENV); // development
+        if (this.devTools)
             (this.$refs.devTools as Modal).show();
     }
 

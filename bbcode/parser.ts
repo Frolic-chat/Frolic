@@ -1,4 +1,7 @@
 import core from '../chat/core';
+import NewLogger from '../helpers/log';
+//const log = NewLogger('bbcode');
+const logDev = NewLogger('devtools');
 
 abstract class BBCodeTag {
     noClosingTag = false;
@@ -80,7 +83,8 @@ export class BBCodeParser {
         this._currentTag = { tag: '<root>', line: 1, column: 1 };
         this.parse(input, 0, undefined, parent, () => true, 0);
 
-        if (process.env.NODE_ENV !== 'production' && this._warnings.length > 0)
+        logDev.debug('BBCodeParser.parseEverything.NODE_ENV', process.env.NODE_ENV); // development
+        if (process.env.NODE_ENV === 'development' && this._warnings.length > 0)
             console.warn(this._warnings);
 
         this._warnings = [];

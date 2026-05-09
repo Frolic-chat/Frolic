@@ -76,6 +76,7 @@ import Logger from 'electron-log';
 import NewLogger from '../helpers/log';
 const log = NewLogger('chat', () => core.state.generalSettings.argv.includes('--debug-chat'));
 const logC = NewLogger('core', () => core.state.generalSettings.argv.includes('--debug-core'));
+const logDev = NewLogger('devtools');
 
 import { LevelOption as LogLevelOption } from 'electron-log';
 
@@ -90,6 +91,7 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
 
 //Axios.defaults.params = {__fchat: `desktop/3.0.14`};
 
+logDev.debug('chat.devtools-opened.NODE_ENV', process.env.NODE_ENV); // development
 if(process.env.NODE_ENV === 'production') {
     remote.getCurrentWebContents().on('devtools-opened', () => {
         console.log(`%c${l('consoleWarning.head')}`, 'background: red; color: yellow; font-size: 30pt');

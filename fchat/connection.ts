@@ -7,6 +7,7 @@ import ReadyState = WebSocketConnection.ReadyState;
 
 import NewLogger from '../helpers/log';
 const log = NewLogger('connection', () => core.state.generalSettings.argv.includes('--debug-connection'));
+const logDev = NewLogger('devtools');
 
 import core from '../chat/core';
 import throat from 'throat';
@@ -50,6 +51,7 @@ export default class Connection implements Interfaces.Connection {
     constructor(private readonly clientName: string,
                 private readonly version: string,
                 private readonly socketProvider: new() => WebSocketConnection) {
+        logDev.debug('Connection.constructor.NODE_ENV', process.env.NODE_ENV); // development
         if (process.env.NODE_ENV === 'development')
             this._handleMessage = this.handleMessage.bind(this);
     }

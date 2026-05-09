@@ -7,7 +7,7 @@ import { LevelOption as LogLevelOption } from 'electron-log';
 import {GeneralSettings} from './common';
 import Window from './Window.vue';
 
-log.verbose('init.window');
+log.verbose('init.window', process.env.NODE_ENV); // development
 
 const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
 const settings                = JSON.parse(params['settings']!) as GeneralSettings;

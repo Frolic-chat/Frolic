@@ -22,6 +22,7 @@ const logS = NewLogger('settings', () => core?.state.generalSettings.argv.includ
 const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
 const logRTB = NewLogger('rtb', () => core?.state.generalSettings.argv.includes('--debug-rtb'));
 const logNotes = NewLogger('notes', () => core?.state.generalSettings.argv.includes('--debug-notes'));
+const logDev = NewLogger('devtools');
 
 const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
 const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
@@ -1814,6 +1815,7 @@ export default function(this: unknown): Interfaces.State {
 
         logRTB.warn(`conversations.RTB.${data.type}`, { data, time });
 
+        logDev.debug('conversations.RTB.NODE_ENV', process.env.NODE_ENV); // development
         if (process.env.NODE_ENV === 'development' || logRTB.eval()) {
             const debug_string = Object.entries(data)
                 .map(([ k, v ]) => `${k}: ${v}`)

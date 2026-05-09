@@ -150,6 +150,7 @@
     import NewLogger from '../helpers/log';
     const log = NewLogger('index');
     const logC = NewLogger('cache');
+    // const logDev = NewLogger('devtools');
     // const logBB = NewLogger('bbcode');
 
     @Component({
@@ -340,7 +341,7 @@
             catch (e) {
                 this.error = l('login.error');
                 log.error('connect.error', e);
-                if (process.env.NODE_ENV !== 'production')
+                if (process.env.NODE_ENV === 'development') // unknown
                     throw e;
             }
             finally {

@@ -85,7 +85,8 @@ import versionUpgradeRoutines from './main/version-upgrade';
 
 //region: 2nd Instance
 const isSquirrelStart = require('electron-squirrel-startup');
-if (isSquirrelStart || process.env.NODE_ENV === 'production' && !app.requestSingleInstanceLock())
+console.log('main.singleInstance.NODE_ENV', process.env.NODE_ENV); // undefined
+if (isSquirrelStart || process.env.NODE_ENV !== 'development' && !app.requestSingleInstanceLock())
     app.quit();
 else {
     app.on('second-instance', () => PrimaryWindow?.show());
@@ -122,7 +123,9 @@ const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 
 // We wouldn't want to await this even if we were using an ES that supported such a thing.
 import * as EiconManager from './main/eicon-store';
-void EiconManager.init(settingsDir, 'eicons', 'favoriteEIcons', () => settings.raw.logDirectory, process.env.NODE_ENV !== 'production');
+// Broken
+console.log('main.EiconManager.init.NODE_ENV', process.env.NODE_ENV); // undefined
+void EiconManager.init(settingsDir, 'eicons', 'favoriteEIcons', () => settings.raw.logDirectory, process.env.NODE_ENV === 'development');
 
 import InitScratchpad from './main/scratchpad';
 const scratchpad_path = path.join(settingsDir, 'scratchpad');
@@ -557,8 +560,6 @@ function onReady(): void {
     setLogLevel(settings.raw.risingSystemLogLevel);
     Logger.transports.file.maxSize = 5 * 1024 * 1024;
 
-    log.info('Starting application.');
-
     app.setAppUserModelId('com.squirrel.fchat.Frolic');
     app.on('open-file', createWindow);
 
@@ -626,8 +627,16 @@ function onReady(): void {
             {role: 'togglefullscreen'}
         ]
     };
-    if (process.env.NODE_ENV !== 'production')
-        viewItem.submenu.unshift({role: 'reload'}, {role: 'forceReload'}, {role: 'toggleDevTools'}, {type: 'separator'});
+    // Broken
+    console.log('main.onReady.viewMenu.NODE_ENV', process.env.NODE_ENV); // undefined
+    if (process.env.NODE_ENV === 'development') {
+        viewItem.submenu.unshift(
+            {role: 'reload'},
+            {role: 'forceReload'},
+            {role: 'toggleDevTools'},
+            {type: 'separator'}
+        );
+    }
     const spellcheckerMenu = new Electron.Menu();
 
     addSpellcheckerItems(spellcheckerMenu);
