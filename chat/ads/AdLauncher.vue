@@ -146,39 +146,40 @@ export default class AdLauncherDialog extends CustomDialog {
     }
 
     submit(e: Event) {
-        const tags = this.getWantedTags();
-        const channelIds = this.getWantedChannels();
+        const wanted_tags = this.getWantedTags();
+        const wanted_channels = this.getWantedChannels();
 
-        if (tags.length === 0) {
+        if (wanted_tags.length === 0) {
             e.preventDefault();
             window.alert(l('ads.post.alert.tag'));
             return;
         }
 
-        if (channelIds.length === 0) {
+        if (!wanted_channels.length) {
             e.preventDefault();
             window.alert(l('ads.post.alert.channel'));
             return;
         }
 
-        if (!channelIds.every(id => {
-            if (core.adCenter.isSafeToOverride(id))
-                return true;
-
-            const chan = core.channels.getChannel(id);
-
+        const safe = wanted_channels.every(chanId => {
+            const chan = core.channels.getChannel(chanId);
             if (!chan)
                 return true;
 
+            if (core.adCenter.isSafeToOverride(chanId))
+                return true;
+
             return window.confirm(l('ads.post.warn', chan.name));
-        })) {
+        });
+
+        if (!safe) {
             e.preventDefault();
             return;
         }
 
         core.adCenter.schedule(
-            tags,
-            channelIds,
+            wanted_tags,
+            wanted_channels,
             this.adOrder,
             this.timeoutMinutes
         );

@@ -1186,8 +1186,6 @@ export default class ConversationView extends Vue {
         &.match {
             border-left: 12px solid var(--scoreStandoutMatchBorderColor);
             background-color: var(--scoreStandoutMatchBgColor);
-            // border-left: 12px solid #027b02;
-            // background-color: rgba(1, 115, 1, 0.45);
         }
 
         &.weak-match {
