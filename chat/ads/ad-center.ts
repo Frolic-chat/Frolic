@@ -98,7 +98,6 @@ export class AdCenter {
 
     isSafeToOverride(channelId: string): boolean {
         const conv = this.getConversation(channelId);
-
         if (!conv)
             return true;
 
@@ -107,10 +106,10 @@ export class AdCenter {
 
     protected scheduleForChannel(channelId: string, ads: Ad[], order: 'random' | 'ad-center', timeoutMinutes: number): void {
         const conv = this.getConversation(channelId);
-
         if (!conv)
             return;
 
+        // This is supposed to update vue.
         conv.settings = {
             ...conv.settings,
 

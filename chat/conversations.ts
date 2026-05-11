@@ -17,11 +17,11 @@ import EventBus from './preview/event-bus';
 import throat from 'throat';
 
 import NewLogger from '../helpers/log';
-const log = NewLogger('conversation', () => core?.state.generalSettings.argv.includes('--debug-conversation'));
-const logS = NewLogger('settings', () => core?.state.generalSettings.argv.includes('--debug-settings'));
-const logA = NewLogger('activity', () => core?.state.generalSettings.argv.includes('--debug-activity'));
-const logRTB = NewLogger('rtb', () => core?.state.generalSettings.argv.includes('--debug-rtb'));
-const logNotes = NewLogger('notes', () => core?.state.generalSettings.argv.includes('--debug-notes'));
+const log = NewLogger('conversation');
+const logS = NewLogger('settings');
+const logA = NewLogger('activity');
+const logRTB = NewLogger('rtb');
+const logNotes = NewLogger('notes');
 const logDev = NewLogger('devtools');
 
 const TWENTY_MINUTES_IN_MS = 20 * 60 * 1000;
@@ -72,8 +72,8 @@ abstract class Conversation implements Interfaces.Conversation {
         else {
             this._settings = Vue.observable(state.settings[key] || new ConversationSettings());
 
-            core.watch(() => this._settings, (newValue, _oldValue) => {
-                logS.warn(`watch _settings will save conversation ${this.name}.`);
+            core.watch(() => this._settings, (newValue, oldValue) => {
+                logS.warn(`watch _settings will save conversation ${this.name}.`, () => ({ newValue, oldValue }));
                 void state.setSettings(this.key, newValue);
             }, { deep: true });
         }
@@ -256,7 +256,7 @@ class PrivateConversation extends Conversation implements Interfaces.PrivateConv
     notes = new ConversationNoteManager();
 
     constructor(readonly character: Character) {
-        super(character.name.toLowerCase(), state.pinned.private.indexOf(character.name) !== -1);
+        super(character.name.toLowerCase(), state.pinned.private.includes(character.name));
 
         this.logPromise = core.logs.getBacklog(this).then(messages => {
             this.allMessages.unshift(...messages);
@@ -432,7 +432,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
     private logLoaded = false;
 
     constructor(readonly channel: Channel) {
-        super(`#${channel.id.replace(/[^\w- ]/gi, '')}`, state.pinned.channels.indexOf(channel.id) !== -1);
+        super(`#${channel.id.replace(/[^\w- ]/gi, '')}`, state.pinned.channels.includes(channel.id));
 
         this.logPromise = core.logs.getBacklog(this).then(messages => {
             this.both.unshift(...messages);
@@ -444,17 +444,20 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
             this.logLoaded = true;
         });
 
-        core.watch<Channel.Mode | undefined>(function(): Channel.Mode | undefined {
-            const c = this.channels.getChannel(channel.id);
-            return c !== undefined ? c.mode : undefined;
-        }, (value: Channel.Mode | undefined) => {
-            if (value === undefined)
-                return;
+        core.watch(
+            function() {
+                const c = this.channels.getChannel(channel.id);
+                return c ? c.mode : undefined;
+            },
+            (value: Channel.Mode | undefined) => {
+                if (!value)
+                    return;
 
-            this.mode = value;
-            if (value !== 'both')
-                this.isSendingAds = value === 'ads';
-        });
+                this.mode = value;
+                if (value !== 'both')
+                    this.isSendingAds = value === 'ads';
+            }
+        );
 
         // Legacy code
         /* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */
@@ -651,14 +654,14 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
 
                 log.debug(
                     'conversation.sendAd',
-                    {
+                    () => ({
                         character:   core.characters.ownCharacter.name,
                         channel:     this.channel.name,
                         throatDelta: throatTime - initTime,
                         delayDelta:  delayTime - throatTime,
                         totalWait:   delayTime - initTime,
                         text,
-                    }
+                    })
                 );
 
                 await this.addMessage(

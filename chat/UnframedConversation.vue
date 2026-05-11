@@ -1,172 +1,171 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="unframed-chat">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center">
-        <span v-if="isPrivate(conversation)"><!-- left side: userview -->
-            <img v-if="settings.showAvatars" style="height:60px" :src="characterImage"/>
-            <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
-        </span>
-        <span v-else-if="isChannel(conversation)"><!-- left side: channel name -->
-            <h5>{{ conversation.name }}</h5>
-        </span>
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center">
+    <span v-if="isPrivate(conversation)"><!-- left side: userview -->
+      <img v-if="settings.showAvatars" style="height:60px" :src="characterImage">
+      <user :character="conversation.character" :match="true" :reusable="true" immediate="true"></user>
+    </span>
+    <span v-else-if="isChannel(conversation)"><!-- left side: channel name -->
+      <h5>{{ conversation.name }}</h5>
+    </span>
 
-        <span><!-- right side -->
-            <a href="#" @click.prevent="showManage()" v-show="isChannelMod" class="btn btn-outline-secondary">
-                <span class="fa fa-edit"></span>
-                <span class="btn-text">{{l('manageChannel.open')}}</span>
-            </a>
-            <a href="#" @click.prevent="showLogs()" class="btn btn-outline-secondary">
-                <span class="fa fa-file-alt"></span>
-                <span class="btn-text">{{ l('logs.title') }}</span>
-            </a>
-            <a href="#" @click.prevent="reportDialog.report()" class="btn btn-outline-secondary">
-                <span class="fa fa-exclamation-triangle"></span>
-                <span class="btn-text">{{ l('chat.report') }}</span>
-            </a>
-            <template v-if="isChannel(conversation)">
-                <dropdown :keep-open="false" :title="l('channel.mode.title')" :icon-class="{fas: true, 'fa-comments': conversation.mode === 'chat', 'fa-ad': conversation.mode === 'ads', 'fa-asterisk': conversation.mode === 'both'}" wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle" v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')">
-                    <button v-for="mode in modes" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)" v-show="conversation.channel.mode == 'both'">
-                        {{l('channel.mode.' + mode)}}
-                    </button>
-                    <div class="dropdown-divider" v-show="conversation.channel.mode == 'both'"></div>
-                    <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
-                        {{l('channel.ads.incompatible')}}
-                    </button>
-                    <template v-show="conversation.settings.adSettings.ads.length">
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item" @click="showAdSettings()">
-                            {{l('channel.ads.edit')}}
-                        </button>
-                    </template>
-                </dropdown>
-            </template>
-        </span>
-    </div>
-
-    <!-- Message filter/search bar -->
-    <div class="search input-group" v-show="showSearch">
-        <div class="input-group-prepend">
-            <div class="input-group-text">
-                <span class="fas fa-search"></span>
-            </div>
-        </div>
-        <input v-model="searchInput" @keydown.esc="hideSearch()" @keypress="lastSearchInput = Date.now()"
-            :placeholder="l('chat.search')" ref="searchField" class="form-control"/>
-        <a class="btn btn-sm btn-light" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);line-height:0;z-index:10" @click="hideSearch">
-            <i class="fas fa-times"></i>
-        </a>
-    </div>
-    <!-- Ad posting display - Legacy? -->
-    <div class="auto-ads" v-show="isAutopostingAds()">
-        <h4>{{l('admgr.activeHeader')}}</h4>
-        <div class="update">{{adAutoPostUpdate}}</div>
-
-        <div v-show="adAutoPostNextAd" class="next">
-            <h5>
-                {{l('admgr.comingNext')}} <a @click="skipAd()">
-                    <i class='adAction fas fa-arrow-right'></i>
-                </a>
-            </h5>
-            <div>
-                {{(adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '')}}{{l('general.ellipses')}}
-            </div>
-        </div>
-
-        <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()" v-if="!adsRequireSetup">
-            {{l('admgr.renew')}}
-        </a>
-        <a class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()" v-if="adsRequireSetup">
-            {{l('admgr.setup')}}
-        </a>
-    </div>
-
-    <!-- Message box -->
-    <div class="border-top messages d-flex flex-column" :class="getMessageWrapperClasses()" ref="messages" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView" tabindex="-1" style="overflow:auto; margin-top:2px">
-        <template v-for="message in messages">
-            <message-view :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :key="message.id" @expand="messageViewExpanded" :classes="message == conversation.lastRead ? 'last-read' : ''">
-            </message-view>
-            <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
-                <a :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid"
-                    v-if="message.sfc.logid" target="_blank">
-                    {{l('events.report.viewLog')}}
-                </a>
-                <span v-else>{{l('events.report.noLog')}}</span>
-                <span v-show="!message.sfc.confirmed">
-                    | <a href="#" @click.prevent="message.sfc.action === 'report' && acceptReport(message.sfc)">
-                        {{l('events.report.confirm')}}
-                    </a>
-                </span>
-            </span>
-        </template>
-    </div>
-
-    <!-- Input box -->
-    <bbcode-editor v-model="conversation.enteredText" @keydown="onKeyDown" :extras="extraButtons" @input="keepScroll"
-        :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')"
-        :hasToolbar="settings.bbCodeBar" ref="mainInput" style="position:relative;margin-top:5px"
-        :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined"
-        :characterName="ownName"
-        :type="'big'"
+    <span><!-- right side -->
+      <a v-show="isChannelMod" href="#" class="btn btn-outline-secondary" @click.prevent="showManage()">
+        <span class="fa fa-edit"></span>
+        <span class="btn-text">{{ l('manageChannel.open') }}</span>
+      </a>
+      <a href="#" class="btn btn-outline-secondary" @click.prevent="showLogs()">
+        <span class="fa fa-file-alt"></span>
+        <span class="btn-text">{{ l('logs.title') }}</span>
+      </a>
+      <a href="#" class="btn btn-outline-secondary" @click.prevent="reportDialog.report()">
+        <span class="fa fa-exclamation-triangle"></span>
+        <span class="btn-text">{{ l('chat.report') }}</span>
+      </a>
+      <template v-if="isChannel(conversation)">
+        <dropdown v-show="(conversation.channel.mode == 'both' || conversation.channel.mode == 'ads')" :keep-open="false" :title="l('channel.mode.title')"
+            :icon-class="{
+              fas: true,
+              'fa-comments': conversation.mode === 'chat',
+              'fa-ad': conversation.mode === 'ads',
+              'fa-asterisk': conversation.mode === 'both'
+            }"
+            wrap-class="btn-group views" link-class="btn btn-outline-secondary dropdown-toggle"
         >
-        <template v-slot:default>
-            <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
-                <user :character="conversation.character" :match="false" :bookmark="false"></user>
-                &nbsp;{{l('chat.typing.' + conversation.typingStatus, '').trim()}}
-            </span>
-            <div v-show="conversation.infoText" class="chat-info-text">
-                <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
-                <span style="flex:1;margin-left:5px">
-                    {{conversation.infoText}}
-                </span>
-            </div>
-            <div v-show="conversation.errorText" class="chat-info-text">
-                <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
-                <span class="redText" style="flex:1;margin-left:5px">
-                    {{conversation.errorText}}
-                </span>
-            </div>
-        </template>
-        <template v-slot:toolbar-end>
-            <div class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }" v-if="isChannel(conversation) || isPrivate(conversation)">
-                {{ messageLength }} / {{ conversation.maxMessageLength }}
-            </div>
-            <ul class="nav nav-pills send-ads-switcher" v-if="isChannel(conversation)" style="position:relative;z-index:10;margin-left:5px">
-                <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'chat'))">
-                    <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                        class="nav-link" @click.prevent="setSendingAds(false)">
-                        {{l('channel.mode.chat')}}
-                    </a>
-                </li>
-                <li class="nav-item" v-show="((conversation.channel.mode === 'both') || (conversation.channel.mode === 'ads'))">
-                    <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}"
-                        class="nav-link" @click.prevent="setSendingAds(true)">
-                        {{adsMode}}
-                    </a>
-                </li>
-            </ul>
-            <div class="btn btn-sm btn-primary" v-show="!settings.enterSend" @click="sendButton" style="margin-left:5px">
-                {{l('chat.send')}}
-            </div>
-        </template>
-    </bbcode-editor>
+          <button v-for="mode in modes" v-show="conversation.channel.mode == 'both'" :key="mode" class="dropdown-item" :class="{ selected: conversation.mode == mode }" type="button" @click="setMode(mode)">
+            {{ l('channel.mode.' + mode) }}
+          </button>
+          <div v-show="conversation.channel.mode == 'both'" class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item" :class="{ selected: showNonMatchingAds }" @click="toggleNonMatchingAds()">
+            {{ l('channel.ads.incompatible') }}
+          </button>
+          <template v-if="conversation.settings.adSettings.ads.length">
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item" @click="showAdSettings()">
+              {{ l('channel.ads.edit') }}
+            </button>
+          </template>
+        </dropdown>
+      </template>
+    </span>
+  </div>
 
-    <!-- Modals -->
-    <command-help ref="helpDialog"></command-help>
-    <manage-channel ref="manageDialog" v-if="isChannel(conversation)" :channel="conversation.channel"></manage-channel>
+  <!-- Message filter/search bar -->
+  <div v-show="showSearch" class="search input-group">
+    <div class="input-group-prepend">
+      <div class="input-group-text">
+        <span class="fas fa-search"></span>
+      </div>
+    </div>
+    <input ref="searchField" v-model="searchInput" :placeholder="l('chat.search')" class="form-control" @keydown.esc="hideSearch()" @keypress="lastSearchInput = Date.now()">
+    <a class="btn btn-sm btn-light" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);line-height:0;z-index:10" @click="hideSearch">
+      <i class="fas fa-times"></i>
+    </a>
+  </div>
+  <!-- Ad posting display - Legacy? -->
+  <div v-show="isAutopostingAds()" class="auto-ads">
+    <h4>{{ l('admgr.activeHeader') }}</h4>
+    <div class="update">{{ adAutoPostUpdate }}</div>
+
+    <div v-show="adAutoPostNextAd" class="next">
+      <h5>
+        {{ l('admgr.comingNext') }} <a @click="skipAd()">
+          <i class="adAction fas fa-arrow-right"></i>
+        </a>
+      </h5>
+      <div>
+        {{ (adAutoPostNextAd ? adAutoPostNextAd.substring(0, 100) : '') }}{{ l('general.ellipses') }}
+      </div>
+    </div>
+
+    <a v-if="!adsRequireSetup" class="btn btn-sm btn-outline-primary renew-autoposts" @click="renewAutoPosting()">
+      {{ l('admgr.renew') }}
+    </a>
+    <a v-if="adsRequireSetup" class="btn btn-sm btn-outline-primary renew-autoposts" @click="showAdSettings()">
+      {{ l('admgr.setup') }}
+    </a>
+  </div>
+
+  <!-- Message box -->
+  <div ref="messages" class="border-top messages d-flex flex-column" :class="getMessageWrapperClasses()" style="overflow:auto; margin-top:2px" tabindex="-1" @scroll="onMessagesScroll" @keydown.esc="scrollMessageView">
+    <template v-for="message in messages">
+      <message-view :key="message.id" :message="message" :channel="isChannel(conversation) ? conversation.channel : undefined" :classes="message == conversation.lastRead ? 'last-read' : ''" @expand="messageViewExpanded">
+      </message-view>
+      <span v-if="hasSFC(message) && message.sfc.action === 'report'" :key="'r' + message.id">
+        <a v-if="message.sfc.logid"
+            :href="'https://www.f-list.net/fchat/getLog.php?log=' + message.sfc.logid" target="_blank">
+          {{ l('events.report.viewLog') }}
+        </a>
+        <span v-else>{{ l('events.report.noLog') }}</span>
+        <span v-show="!message.sfc.confirmed">
+          | <a href="#" @click.prevent="message.sfc.action === 'report' && acceptReport(message.sfc)">
+            {{ l('events.report.confirm') }}
+          </a>
+        </span>
+      </span>
+    </template>
+  </div>
+
+  <!-- Input box -->
+  <bbcode-editor ref="mainInput" v-model="conversation.enteredText" :classes="'form-control chat-text-box ' + waitingForSecondEnterClass + (isChannel(conversation) && conversation.isSendingAds ? ' ads-text-box' : '')" :extras="extraButtons" :maxlength="isChannel(conversation) || isPrivate(conversation) ? conversation.maxMessageLength : undefined" :hasToolbar="settings.bbCodeBar" :characterName="ownName" style="position:relative;margin-top:5px" type="big" @keydown="onKeyDown" @input="keepScroll">
+    <template v-slot:default>
+      <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
+        <user :character="conversation.character" :match="false" :bookmark="false"></user>
+                &nbsp;{{ l('chat.typing.' + conversation.typingStatus, '').trim() }}
+      </span>
+      <div v-show="conversation.infoText" class="chat-info-text">
+        <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.infoText = ''"></span>
+        <span style="flex:1;margin-left:5px">
+          {{ conversation.infoText }}
+        </span>
+      </div>
+      <div v-show="conversation.errorText" class="chat-info-text">
+        <span class="fa fa-times" style="cursor:pointer" @click.stop="conversation.errorText = ''"></span>
+        <span class="redText" style="flex:1;margin-left:5px">
+          {{ conversation.errorText }}
+        </span>
+      </div>
+    </template>
+    <template v-slot:toolbar-end>
+      <div v-if="isChannel(conversation) || isPrivate(conversation)" class="message-length" :class="{ pm: isPrivate(conversation), channel: isChannel(conversation) }">
+        {{ messageLength }} / {{ conversation.maxMessageLength }}
+      </div>
+      <ul v-if="isChannel(conversation)" class="nav nav-pills send-ads-switcher" style="position:relative;z-index:10;margin-left:5px">
+        <li v-show="(conversation.channel.mode === 'both' || conversation.channel.mode === 'chat')" class="nav-item">
+          <a href="#" :class="{active: !conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}" class="nav-link" @click.prevent="setSendingAds(false)">
+            {{ l('channel.mode.chat') }}
+          </a>
+        </li>
+        <li v-show="(conversation.channel.mode === 'both' || conversation.channel.mode === 'ads')" class="nav-item">
+          <a href="#" :class="{active: conversation.isSendingAds, disabled: (conversation.channel.mode != 'both') || (conversation.adManager.isActive())}" class="nav-link" @click.prevent="setSendingAds(true)">
+            {{ adsMode }}
+          </a>
+        </li>
+      </ul>
+      <div v-show="!settings.enterSend" class="btn btn-sm btn-primary" style="margin-left:5px" @click="sendButton">
+        {{ l('chat.send') }}
+      </div>
+    </template>
+  </bbcode-editor>
+
+  <!-- Modals -->
+  <command-help ref="helpDialog"></command-help>
+  <manage-channel v-if="isChannel(conversation)" ref="manageDialog" :channel="conversation.channel"></manage-channel>
 </div>
 </template>
 
 <script lang="ts">
-import {Component, Hook, Prop, Watch} from '@frolic/vue-ts';
+import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
 import Vue from 'vue';
-import {EditorButton, EditorSelection} from '../bbcode/editor';
-import {BBCodeView} from '../bbcode/view';
-import Modal, {isShowing as anyDialogsShown} from '../components/Modal.vue';
-import {Keys} from '../keys';
+import type { EditorButton, EditorSelection } from '../bbcode/editor';
+import { BBCodeView } from '../bbcode/view';
+import Modal, { isShowing as anyDialogsShown } from '../components/Modal.vue';
+import { Keys } from '../keys';
 import CharacterAdView from './character/CharacterAdView.vue';
 
-import {Editor} from './bbcode';
+import { Editor } from './bbcode';
 import Tabs from '../components/tabs';
 
 import CommandHelp from './CommandHelp.vue';
@@ -174,13 +173,14 @@ import { errorToString, getByteLength, getKey } from './common';
 import ConversationSettings from './ConversationSettings.vue';
 import ConversationAdSettings from './ads/ConversationAdSettings.vue';
 import core from './core';
-import {Channel, channelModes, Character, Conversation, Settings} from './interfaces';
+import type { Character, Settings } from './interfaces';
+import { Channel, channelModes, Conversation } from './interfaces';
 import l from './localize';
 import Logs from './Logs.vue';
 import ManageChannel from './ManageChannel.vue';
 import MessageView from './message_view';
-import ReportDialog from './ReportDialog.vue';
-import {isCommand} from './slash_commands';
+import type ReportDialog from './ReportDialog.vue';
+import { isCommand } from './slash_commands';
 import UserView from './UserView.vue';
 import CharacterChannelList from './character/CharacterChannelList.vue';
 import Dropdown from '../components/Dropdown.vue';
@@ -211,13 +211,13 @@ import { MemoManager } from './character/memo';
         // TODO: Combine into recon
         'ad-view':      CharacterAdView,
         'channel-list': CharacterChannelList,
-    }
+    },
 })
 export default class ConversationView extends Vue {
     @Prop({ required: true })
     readonly conversation!: Conversation;
 
-    @Prop({required: true})
+    @Prop({ required: true })
     readonly reportDialog!: ReportDialog;
 
     modes = channelModes;
@@ -272,7 +272,9 @@ export default class ConversationView extends Vue {
          */
     waitingForSecondEnter = false;
     waitingForSecondEnterClass:    'second-enter-send-allowed' | '' = '';
-    waitingForSecondEnterTimeout?: ReturnType<typeof setTimeout>;
+    //waitingForSecondEnterTimeout?: ReturnType<typeof window.setTimeout>;
+    // cute.
+    waitingForSecondEnterTimeout?: number;
 
     userMemo:     string | null = null;
     editorMemo:   string = '';
@@ -280,8 +282,8 @@ export default class ConversationView extends Vue {
 
     ownName?: string;
 
-    get messageLength() { return getByteLength(this.conversation.enteredText) }
-    get memoLength()    { return getByteLength(this.editorMemo)               }
+    get messageLength() { return getByteLength(this.conversation.enteredText); }
+    get memoLength()    { return getByteLength(this.editorMemo);               }
 
     @Hook('beforeMount')
     async onBeforeMount(): Promise<void> {
@@ -302,7 +304,7 @@ export default class ConversationView extends Vue {
             title:   'Help\n\nClick this button for a quick overview of slash commands.',
             tag:     '?',
             icon:    'fa-question',
-            handler: () => (<CommandHelp> this.$refs['helpDialog']).show()
+            handler: () => (<CommandHelp> this.$refs['helpDialog']).show(),
         }];
         window.addEventListener('resize', this.resizeHandler = () => this.keepScroll());
         window.addEventListener('keypress', this.keypressHandler = () => {
@@ -325,10 +327,14 @@ export default class ConversationView extends Vue {
             const setAdCountdown = () => {
                 const diff = ((<Conversation.ChannelConversation> this.conversation).nextAd - Date.now()) / 1000;
                 if (diff <= 0) {
-                    if (this.adCountdown !== 0) window.clearInterval(this.adCountdown);
+                    if (this.adCountdown !== 0)
+                        window.clearInterval(this.adCountdown);
                     this.adCountdown = 0;
                     this.adsMode = l('channel.mode.ads');
-                } else this.adsMode = l('channel.mode.ads.countdown', Math.floor(diff / 60), Math.floor(diff % 60));
+                }
+                else {
+                    this.adsMode = l('channel.mode.ads.countdown', Math.floor(diff / 60), Math.floor(diff % 60));
+                }
             };
             if (Date.now() < value && this.adCountdown === 0)
                 this.adCountdown = window.setInterval(setAdCountdown, 1000);
@@ -353,9 +359,9 @@ export default class ConversationView extends Vue {
         window.removeEventListener('resize', this.resizeHandler);
         window.removeEventListener('keydown', this.keydownHandler);
         window.removeEventListener('keypress', this.keypressHandler);
-        clearInterval(this.searchTimer);
-        clearInterval(this.autoPostingUpdater);
-        clearInterval(this.adCountdown);
+        window.clearInterval(this.searchTimer);
+        window.clearInterval(this.autoPostingUpdater);
+        window.clearInterval(this.adCountdown);
 
         if (this.configUpdateHook)
             EventBus.$off('configuration-update', this.configUpdateHook);
@@ -374,7 +380,8 @@ export default class ConversationView extends Vue {
     }
 
     get messages(): ReadonlyArray<Conversation.Message | Conversation.SFCMessage> {
-        if (this.search === '') return this.conversation.messages;
+        if (!this.search)
+            return this.conversation.messages;
         const filter = new RegExp(this.search.replace(/[^\w]/gi, '\\$&'), 'i');
         return this.conversation.messages
             .filter(x => filter.test(x.text) || filter.test('sender' in x ? x.sender.name : ''));
@@ -392,7 +399,7 @@ export default class ConversationView extends Vue {
         if (!anyDialogsShown)
             this.textBox.focus();
 
-        this.$nextTick(() => setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
+        this.$nextTick(() => window.setTimeout(() => this.messageView.scrollTop = this.messageView.scrollHeight));
         this.scrolledDown = true;
 
         this.refreshAutoPostingTimer();
@@ -420,7 +427,7 @@ export default class ConversationView extends Vue {
     keepScroll(): void {
         if (this.scrolledDown) {
             this.ignoreScroll = true;
-            this.$nextTick(() => setTimeout(() => {
+            this.$nextTick(() => window.setTimeout(() => {
                 this.ignoreScroll = true;
                 this.messageView.scrollTop = this.messageView.scrollHeight;
             }, 0));
@@ -429,7 +436,7 @@ export default class ConversationView extends Vue {
 
     scrollMessageView(e?: KeyboardEvent) {
         this.ignoreScroll = true;
-        this.$nextTick(() => setTimeout(() => {
+        this.$nextTick(() => window.setTimeout(() => {
             this.ignoreScroll = true;
             this.messageView.scrollTop = this.messageView.scrollHeight;
             this.scrolledDown = true;
@@ -461,7 +468,10 @@ export default class ConversationView extends Vue {
                 }
             }
             this.scrolledUp = true;
-        } else this.scrolledUp = false;
+        }
+        else {
+            this.scrolledUp = false;
+        }
         this.scrolledDown = this.messageView.scrollTop + this.messageView.offsetHeight >= this.messageView.scrollHeight - 15;
     }
 
@@ -480,23 +490,27 @@ export default class ConversationView extends Vue {
 
     async onKeyDown(e: KeyboardEvent): Promise<void> {
         if (getKey(e) === Keys.Tab) {
-            if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+            if (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey)
+                return;
             e.preventDefault();
-            if (this.conversation.enteredText.length === 0 || this.isConsoleTab) return;
+            if (!this.conversation.enteredText.length || this.isConsoleTab)
+                return;
             if (this.tabOptions === undefined) {
                 const selection = this.textBox.getSelection();
                 if (selection.text.length === 0) {
                     const match = /\b[\w]+$/.exec(this.textBox.text.substring(0, selection.end));
-                    if (match === null) return;
+                    if (match === null)
+                        return;
                     selection.start = match.index < 0 ? 0 : match.index;
                     selection.text = this.textBox.text.substring(selection.start, selection.end);
-                    if (selection.text.length === 0) return;
+                    if (!selection.text.length)
+                        return;
                 }
                 const search = new RegExp(`^${selection.text.replace(/[^\w]/gi, '\\$&')}`, 'i');
                 const c = (<Conversation.PrivateConversation> this.conversation);
-                let options: ReadonlyArray<{character: Character}>;
+                let options: ReadonlyArray<{ character: Character }>;
                 options = Conversation.isChannel(this.conversation) ? this.conversation.channel.sortedMembers :
-                    [{character: c.character}, {character: core.characters.ownCharacter}];
+                    [{ character: c.character }, { character: core.characters.ownCharacter }];
                 this.tabOptions = options.filter((x) => search.test(x.character.name)).map((x) => x.character.name);
                 this.tabOptionsIndex = 0;
                 this.tabOptionSelection = selection;
@@ -520,7 +534,8 @@ export default class ConversationView extends Vue {
             }
         }
         else {
-            if (this.tabOptions) this.tabOptions = undefined;
+            if (this.tabOptions)
+                this.tabOptions = undefined;
 
             if (getKey(e) === Keys.ArrowUp && !this.conversation.enteredText.trim()
                     && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
@@ -558,14 +573,14 @@ export default class ConversationView extends Vue {
                     this.waitingForSecondEnterClass = '';
 
                     if (this.waitingForSecondEnterTimeout) {
-                        clearTimeout(this.waitingForSecondEnterTimeout);
+                        window.clearTimeout(this.waitingForSecondEnterTimeout);
                         this.waitingForSecondEnterTimeout = undefined;
                     }
                 }
                 else {
                     this.waitingForSecondEnter = true;
                     this.waitingForSecondEnterClass = 'second-enter-send-allowed';
-                    this.waitingForSecondEnterTimeout = setTimeout(() => {
+                    this.waitingForSecondEnterTimeout = window.setTimeout(() => {
                         this.waitingForSecondEnter = false;
                         this.waitingForSecondEnterClass = '';
                         this.waitingForSecondEnterTimeout = undefined;
@@ -577,7 +592,8 @@ export default class ConversationView extends Vue {
 
     setMode(mode: Channel.Mode): void {
         const conv = (<Conversation.ChannelConversation> this.conversation);
-        if (conv.channel.mode === 'both') conv.mode = mode;
+        if (conv.channel.mode === 'both')
+            conv.mode = mode;
     }
 
 
@@ -591,20 +607,19 @@ export default class ConversationView extends Vue {
         this.scrolledDown = false;
     }
 
-    getMessageWrapperClasses(): any {
+    getMessageWrapperClasses(): Record<string, boolean> {
         const filter = core.state.settings.risingFilter;
-        const classes:any = {};
+        const classes: Record<string, boolean> = {};
 
         if (this.isPrivate(this.conversation)) {
             classes['filter-channel-messages'] = filter.hidePrivateMessages;
             return classes;
         }
 
-        if (!this.isChannel(this.conversation)) {
+        if (!this.isChannel(this.conversation))
             return {};
-        }
 
-        const conv = <Conversation.ChannelConversation> this.conversation;
+        const conv = this.conversation;
 
         classes['messages-' + conv.mode] = true;
         classes['hide-non-matching'] = !this.showNonMatchingAds;
@@ -615,8 +630,8 @@ export default class ConversationView extends Vue {
         return classes;
     }
 
-    acceptReport(sfc: {callid: number}): void {
-        core.connection.send('SFC', {action: 'confirm', callid: sfc.callid});
+    acceptReport(sfc: { callid: number }): void {
+        core.connection.send('SFC', { action: 'confirm', callid: sfc.callid });
     }
 
     setSendingAds(is: boolean): void {
@@ -702,7 +717,8 @@ export default class ConversationView extends Vue {
             ) + l('admgr.expiresIn', expDiffMins, expDiffSecs);
 
             this.adsRequireSetup = false;
-        } else {
+        }
+        else {
             this.adAutoPostNextAd = null;
 
             this.adAutoPostUpdate = l('admgr.noAds');
@@ -731,7 +747,7 @@ export default class ConversationView extends Vue {
     }
 
     updateMemo(): void {
-        this.memoManager?.set(this.editorMemo || null).catch((e: object) => alert(errorToString(e)))
+        this.memoManager?.set(this.editorMemo || null).catch((e: unknown) => window.alert(errorToString(e)));
         this.userMemo = this.editorMemo ?? null;
     }
 
@@ -753,8 +769,9 @@ export default class ConversationView extends Vue {
 
                 this.userMemo = (await this.memoManager.get()).memo;
                 this.editorMemo = this.userMemo ?? '';
-            } catch(e) {
-                alert(errorToString(e));
+            }
+            catch (e) {
+                window.alert(errorToString(e));
             }
         }
     }
