@@ -182,17 +182,14 @@
 
           <span v-else-if="isChannel(conversation)">
             <template v-if="watchedCharacters.length">
-              <b v-if="watchedCharacters.length" aria-label="Click to copy room invite code to clipboard" data-balloon-pos="up"># </b>
+              <span class="fa-solid fa-eye" data-balloon-pos="up">&nbsp;</span>
               <span v-for="char, i in watchedCharacters" :key="i">
                 <template v-if="char.status !== 'offline'">
-                  <user :key="char.name" :character="char" :channel="conversation.channel" :immediate="true" :showStatus="false"></user>
+                  <user :key="char.name" :character="char" :channel="conversation.channel" :immediate="true" :showStatus="false" :filterIcon="false"></user>
                   <span v-if="i !== conversation.settings.highlightUsernames.length - 1">, </span>
                 </template>
               </span>
             </template>
-            <span v-else>
-              {{ conversation.key }}
-            </span>
           </span>
         </span>
         <div class="send-ads-switcher text-center btn-group btn-group-sm">

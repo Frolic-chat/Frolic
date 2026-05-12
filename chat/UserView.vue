@@ -108,6 +108,12 @@ export default class UserView extends Vue {
     readonly match = false;
 
     /**
+     * Display the filter icon next to bad matches.
+     */
+    @Prop({ default: true })
+    readonly filterIcon = true;
+
+    /**
      * Display user info in the image-preview popup on mouseover.
      */
     @Prop({ default: true })
@@ -212,11 +218,10 @@ export default class UserView extends Vue {
     smartFilterIcon: string | undefined;
     getSmartFilterIcon(): UserView['smartFilterIcon'] {
         try {
-            if (core.state.settings.risingFilter.showFilterIcon && this.cache?.match.isFiltered && !(this.character.isFriend || this.character.isBookmarked)) {
+            if (this.filterIcon && core.state.settings.risingFilter.showFilterIcon && this.cache?.match.isFiltered && !(this.character.isFriend || this.character.isBookmarked))
                 return 'user-filter fas fa-filter';
-            }
         }
-        catch {}
+        catch { /** This shouldn't even need to exist, but legacy jank makes core reliability bad... */ }
 
         return;
     }
