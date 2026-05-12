@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import {isToday} from 'date-fns';
-import {Keys} from '../keys';
-import { Character, Conversation, Settings as ISettings, Relation } from './interfaces';
+import { isToday } from 'date-fns';
+import { Conversation, Relation } from './interfaces';
 
+import type { SmartFilterSettings } from '../learn/filter/types';
+import type { Keys } from '../keys';
+import type { Character, Settings as ISettings } from './interfaces';
 
-import { SmartFilterSettings } from '../learn/filter/types';
-
-const e = new TextEncoder()
+const e = new TextEncoder();
 export function getByteLength(s: string): number {
     return e.encode(s).length;
 }
@@ -28,95 +28,95 @@ export function sanitizeFilenameForUnixlike(fn: string): string {
     return fn.replaceAll(/[/\0]/g, '_');
 }
 
-export function profileLink(this: any | never, character: string): string {
+export function profileLink(this: unknown, character: string): string {
     return `https://www.f-list.net/c/${character}`;
 }
 
 export class Settings implements ISettings {
-    playSound: boolean = true;
-    notifyVolume: number = 100;
-    clickOpensMessage: boolean = false;
-    disallowedTags: string[] = [];
-    notifications: boolean = true;
-    notifyFriendSignIn: Relation.Chooser = Relation.Chooser.NoOne;
+    playSound:             boolean = true;
+    notifyVolume:          number = 100;
+    clickOpensMessage:     boolean = false;
+    disallowedTags:        string[] = [];
+    notifications:         boolean = true;
+    notifyFriendSignIn:    Relation.Chooser = Relation.Chooser.NoOne;
     notifyOnFriendMessage: Relation.Chooser = Relation.Chooser.NoOne;
-    highlight: boolean = true;
-    highlightWords: string[] = [];
-    highlightUsers: boolean = false;
-    highlightUsernames: string[] = [];
-    showBroadcastsInPMs: boolean = false;
-    showAvatars: boolean = true;
-    animatedEicons: boolean = true;
-    idleTimer: number = 0;
-    messageSeparators: boolean = false;
-    eventMessages: boolean = true;
-    joinMessages: boolean = false;
-    alwaysNotify: boolean = false;
-    logMessages: boolean = true; // All messages
-    logChannels: boolean = true;
-    logAds: boolean = false;
-    expensiveMemberList: boolean = false;
-    fontSize: number = 14;
-    showNeedsReply: boolean = false;
-    enterSend: boolean = true;
-    secondEnterSend: boolean = false;
-    colorBookmarks: boolean = false;
-    bbCodeBar: boolean = true;
+    highlight:             boolean = true;
+    highlightWords:        string[] = [];
+    highlightUsers:        boolean = false;
+    highlightUsernames:    string[] = [];
+    showBroadcastsInPMs:   boolean = false;
+    showAvatars:           boolean = true;
+    animatedEicons:        boolean = true;
+    idleTimer:             number = 0;
+    messageSeparators:     boolean = false;
+    eventMessages:         boolean = true;
+    joinMessages:          boolean = false;
+    alwaysNotify:          boolean = false;
+    logMessages:           boolean = true; // All messages
+    logChannels:           boolean = true;
+    logAds:                boolean = false;
+    expensiveMemberList:   boolean = false;
+    fontSize:              number = 14;
+    showNeedsReply:        boolean = false;
+    enterSend:             boolean = true;
+    secondEnterSend:       boolean = false;
+    colorBookmarks:        boolean = false;
+    bbCodeBar:             boolean = true;
 
-    risingAdScore: boolean = true;
-    risingLinkPreview: boolean = true;
-    linkPreviewVolume: number = 0;
+    risingAdScore:          boolean = true;
+    risingLinkPreview:      boolean = true;
+    linkPreviewVolume:      number = 0;
     risingAutoCompareKinks: boolean = true;
 
     risingAutoExpandCustomKinks: boolean = true;
-    risingCharacterPreview: boolean = true;
-    risingComparisonInUserMenu: boolean = true;
-    risingComparisonInSearch: boolean = true;
+    risingCharacterPreview:      boolean = true;
+    risingComparisonInUserMenu:  boolean = true;
+    risingComparisonInSearch:    boolean = true;
 
-    risingShowUnreadOfflineCount: boolean = true;
-    risingColorblindMode: boolean = false;
-    risingShowPortraitNearInput: boolean = true;
-    risingShowPortraitInMessage: boolean = true;
+    risingShowUnreadOfflineCount:   boolean = true;
+    risingColorblindMode:           boolean = false;
+    risingShowPortraitNearInput:    boolean = true;
+    risingShowPortraitInMessage:    boolean = true;
     risingShowHighQualityPortraits: boolean = true;
 
     risingFilter: SmartFilterSettings = {
-        hideAds: false,
-        hideSearchResults: false,
-        hideChannelMembers: false,
-        hidePublicChannelMessages: false,
+        hideAds:                    false,
+        hideSearchResults:          false,
+        hideChannelMembers:         false,
+        hidePublicChannelMessages:  false,
         hidePrivateChannelMessages: false,
-        hidePrivateMessages: false,
-        showFilterIcon: true,
-        penalizeMatches: true,
-        rewardNonMatches: false,
-        autoReply: false,
-        minAge: null,
-        maxAge: null,
-        smartFilters: {
-            ageplay: false,
-            anthro: false,
-            female: false,
-            feral: false,
-            human: false,
-            hyper: false,
-            incest: false,
-            intersex: false,
-            male: false,
-            microMacro: false,
-            obesity: false,
-            pokemon: false,
-            pregnancy: false,
-            rape: false,
-            scat: false,
-            std: false,
-            taur: false,
-            gore: false,
-            vore: false,
-            unclean: false,
+        hidePrivateMessages:        false,
+        showFilterIcon:             true,
+        penalizeMatches:            true,
+        rewardNonMatches:           false,
+        autoReply:                  false,
+        minAge:                     null,
+        maxAge:                     null,
+        smartFilters:               {
+            ageplay:     false,
+            anthro:      false,
+            female:      false,
+            feral:       false,
+            human:       false,
+            hyper:       false,
+            incest:      false,
+            intersex:    false,
+            male:        false,
+            microMacro:  false,
+            obesity:     false,
+            pokemon:     false,
+            pregnancy:   false,
+            rape:        false,
+            scat:        false,
+            std:         false,
+            taur:        false,
+            gore:        false,
+            vore:        false,
+            unclean:     false,
             watersports: false,
-            zoophilia: false
+            zoophilia:   false,
         },
-        exceptionNames: []
+        exceptionNames: [],
     };
 
     risingCharacterTheme: string | null = null;
@@ -134,24 +134,26 @@ export class ConversationSettings implements Conversation.Settings {
     notify = Conversation.Setting.Default;
     notifyOnFriendMessage = Relation.Chooser.Default;
     highlight = Conversation.Setting.Default;
-    highlightWords: string[] = [];
+    highlightWords:     string[] = [];
     highlightUsernames: string[] = [];
     joinMessages = Conversation.Setting.Default;
     defaultHighlights = true;
-    adSettings: Conversation.AdSettings = { ads: [], randomOrder: false, lastAdTimestamp: 0 };
+    adSettings = new AdSettings();
 }
 
 function pad(num: number): string | number {
     return num < 10 ? `0${num}` : num;
 }
 
-export function formatTime(this: any | never, date: Date, noDate: boolean = false): string {
-    if(!noDate && isToday(date)) return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+export function formatTime(this: unknown, date: Date, noDate: boolean = false): string {
+    if (!noDate && isToday(date))
+        return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    else
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 export function messageToString(
-    this: any | never,
+    this: unknown,
     msg: Conversation.Message,
     timeFormatter:      (date: Date)  => string = formatTime,
     characterTransform: (str: string) => string = x => x,
@@ -168,7 +170,7 @@ export function messageToString(
         body           = textTransform(msg.text.trim());
     }
     else { // Events frequently have a character.
-        const split = msg.text.match(/\[user\]([^\[]*)\[\/user\](.*)/);
+        const split = msg.text.match(/\[user\]([^[]*)\[\/user\](.*)/);
         if (split?.[1]) {
             character_name = characterTransform(split[1]);
             body           = textTransform(split[2]?.trim() ?? '');
@@ -185,8 +187,8 @@ export function getKey(e: KeyboardEvent): Keys {
     return e.keyCode;
 }
 
-export function errorToString(e: any): string {
-    return e instanceof Error ? e.message : e !== undefined ? e.toString() : '';
+export function errorToString(e: unknown): string {
+    return e instanceof Error ? e.message : e !== undefined ? e && e.toString() || '' : '';
 }
 
 let messageId = 0;
@@ -198,9 +200,14 @@ export class Message implements Conversation.ChatMessage {
     score = 0;
     filterMatch = false;
 
-    constructor(readonly type: Conversation.Message.Type, readonly sender: Character, readonly text: string,
-                readonly time: Date = new Date()) {
-        if(Conversation.Message.Type[type] === undefined) throw new Error('Unknown type');
+    constructor(
+        readonly type: Conversation.Message.Type,
+        readonly sender: Character,
+        readonly text: string,
+        readonly time: Date = new Date()
+    ) {
+        if (Conversation.Message.Type[type] === undefined)
+            throw new Error('Unknown type');
     }
 }
 

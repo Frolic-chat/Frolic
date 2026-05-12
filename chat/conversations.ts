@@ -627,7 +627,7 @@ class ChannelConversation extends Conversation implements Interfaces.ChannelConv
 
 
     hasAutomatedAds(): boolean {
-        return ((this.mode === 'both') || (this.mode === 'ads'))
+        return (this.mode === 'both' || this.mode === 'ads')
             && super.hasAutomatedAds();
     }
 

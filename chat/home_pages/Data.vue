@@ -1,74 +1,73 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <page>
-    <template v-slot:prescroll>
-        <div class="page-header d-flex">
-            <div class="mr-auto align-self-center"><slot name="title"></slot></div>
-            <div class="ml-auto align-self-center flex-shrink-0"><slot name="title-end"></slot></div>
+  <template v-slot:prescroll>
+    <div class="page-header d-flex">
+      <div class="mr-auto align-self-center"><slot name="title"></slot></div>
+      <div class="ml-auto align-self-center flex-shrink-0"><slot name="title-end"></slot></div>
+    </div>
+  </template>
+
+  <template v-slot:default>
+    <slot name="before-body"></slot>
+
+    <div class="d-flex flex-column flex-nowrap" style="gap: 1em;">
+      <!-- Link/unlink channel? -->
+
+      <template v-if="conversation && !isHome">
+        <div class="row">
+          <div class="col-auto">Conversation key:</div>
+          <div class="col">{{ conversation.key }}</div>
         </div>
-    </template>
-
-    <template v-slot:default>
-        <slot name="before-body"></slot>
-
-        <div class="d-flex flex-column flex-nowrap" style="gap: 1em;">
-
-            <!-- Link/unlink channel? -->
-
-            <template v-if="conversation && !isHome">
-                <div class="row">
-                    <div class="col-auto">Conversation key:</div>
-                    <div class="col">{{ conversation.key }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-auto">Logging:</div>
-                    <div class="col">{{ isLogging }}</div>
-                </div>
-                <div v-if="conversation.infoText" class="row">
-                    <div class="col-auto">Info text:</div>
-                    <div class="col">{{ conversation.infoText }}</div>
-                </div>
-                <div v-if="conversation.errorText" class="row">
-                    <div class="col-auto">Error text:</div>
-                    <div class="col">{{ conversation.errorText }}</div>
-                </div>
-                <div v-if="conversation.reportMessages" class="row">
-                    <div class="col-auto">Messages counted:</div>
-                    <div class="col">{{ conversation.reportMessages.length }}</div>
-                </div>
-                <template v-if="isChannel">
-                    <div class="row">
-                        <div class="col-auto">Level:</div>
-                        <div class="col">Are you op?</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-auto">Chat modes:</div>
-                        <div class="col">Ads/Chat/Both?</div>
-                    </div>
-                </template>
-                <div class="row form-group">
-                    <div class="col-auto">Custom styling:</div>
-                    <textarea class="form-control" style="min-height: 3em;" placeholder="Placeholder: Inactive + Ineffective"></textarea>
-                </div>
-            </template>
-
-            <!-- License -->
-            <div v-if="isHome" id="frolic-licenses" class="card modal-content d-flex flex-column">
-                <licenses bodyClass="d-flex flex-column" ref="licenses"></licenses>
-            </div>
-
-            <!-- Developer assistance -->
-            <dev-match-details v-if="isPrivate" :conversation="conversation"></dev-match-details>
-            <dev-logging v-else-if="isHome"></dev-logging>
+        <div class="row">
+          <div class="col-auto">Logging:</div>
+          <div class="col">{{ isLogging }}</div>
         </div>
-
-        <slot name="after-body"></slot>
-    </template>
-
-    <template v-slot:postscroll>
-        <div class="d-flex flex-wrap-reverse justify-content-between align-items-end small border-top">
+        <div v-if="conversation.infoText" class="row">
+          <div class="col-auto">Info text:</div>
+          <div class="col">{{ conversation.infoText }}</div>
         </div>
-    </template>
+        <div v-if="conversation.errorText" class="row">
+          <div class="col-auto">Error text:</div>
+          <div class="col">{{ conversation.errorText }}</div>
+        </div>
+        <div v-if="conversation.reportMessages" class="row">
+          <div class="col-auto">Messages counted:</div>
+          <div class="col">{{ conversation.reportMessages.length }}</div>
+        </div>
+        <template v-if="isChannel">
+          <div class="row">
+            <div class="col-auto">Level:</div>
+            <div class="col">Are you op?</div>
+          </div>
+          <div class="row">
+            <div class="col-auto">Chat modes:</div>
+            <div class="col">Ads/Chat/Both?</div>
+          </div>
+        </template>
+        <div class="row form-group">
+          <div class="col-auto">Custom styling:</div>
+          <textarea class="form-control" style="min-height: 3em;" placeholder="Placeholder: Inactive + Ineffective"></textarea>
+        </div>
+      </template>
+
+      <!-- License -->
+      <div v-if="isHome" id="frolic-licenses" class="card modal-content d-flex flex-column">
+        <licenses ref="licenses" bodyClass="d-flex flex-column"></licenses>
+      </div>
+
+      <!-- Developer assistance -->
+      <dev-match-details v-if="isPrivate" :conversation="conversation"></dev-match-details>
+      <dev-logging v-else-if="isHome"></dev-logging>
+    </div>
+
+    <slot name="after-body"></slot>
+  </template>
+
+  <template v-slot:postscroll>
+    <div class="d-flex flex-wrap-reverse justify-content-between align-items-end small border-top">
+    </div>
+  </template>
 </page>
 </template>
 
@@ -92,7 +91,7 @@ import { Conversation } from '../interfaces';
         page: HomePageLayout,
 
         // Home pages:
-        licenses: Licenses,
+        licenses:      Licenses,
         'dev-logging': DeveloperLogging,
 
         // Private Conversation:
@@ -112,21 +111,22 @@ export default class Data extends Vue {
     convoIsActivity = Conversation.isActivity;
     convoIsConsole  = Conversation.isConsole;
 
-    get isPrivate() { return this.conversation && this.convoIsPrivate(this.conversation) }
-    get isChannel() { return this.conversation && this.convoIsChannel(this.conversation) }
+    /* eslint-disable @stylistic/brace-style */
+    get isPrivate() { return this.conversation && this.convoIsPrivate(this.conversation); }
+    get isChannel() { return this.conversation && this.convoIsChannel(this.conversation); }
     get isHome() {
         return this.conversation && (this.convoIsActivity(this.conversation) || this.convoIsConsole(this.conversation));
-    }
+    } /* eslint-enable @stylistic/brace-style */
 
-    get isLogging() {
-        if (this.isPrivate)      return core.state.settings.logMessages;
+    get isLogging() { /* eslint-disable @stylistic/nonblock-statement-body-position */
+        if      (this.isPrivate) return core.state.settings.logMessages;
         else if (this.isChannel) return core.state.settings.logChannels;
         else                     return false;
-    }
+    } /* eslint-enable @stylistic/nonblock-statement-body-position */
 
 
     @Prop({ default: false })
-    readonly navigationRequest!: { tab: string, conversation?: any, section: any };
+    readonly navigationRequest!: { tab: string, conversation?: unknown, section: unknown };
 
     @Watch('navigationRequest')
     onNavigationRequest() {

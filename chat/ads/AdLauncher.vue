@@ -169,7 +169,9 @@ export default class AdLauncherDialog extends CustomDialog {
             if (core.adCenter.isSafeToOverride(chanId))
                 return true;
 
-            return window.confirm(l('ads.post.warn', chan.name));
+            const user_confirmed = window.confirm(l('ads.post.warn', chan.name));
+
+            return user_confirmed;
         });
 
         if (!safe) {
