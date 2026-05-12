@@ -9,9 +9,7 @@ import { Conversation } from '../interfaces';
 import Timer = NodeJS.Timeout;
 import ChannelConversation = Conversation.ChannelConversation;
 
-
 const adManagerThroat = Throat(1);
-
 
 export interface RecoverableAd {
     channel:     string;
@@ -20,7 +18,6 @@ export interface RecoverableAd {
     firstPost:   Date | undefined,
     expireDue:   Date | undefined;
 }
-
 
 export class AdManager {
     static readonly POSTING_PERIOD = 3 * 60 * 60 * 1000;
@@ -231,7 +228,6 @@ export class AdManager {
         );
     }
 
-
     protected forceTimeout(waitTime: number): void {
         if (this.interval)
             clearTimeout(this.interval);
@@ -243,7 +239,6 @@ export class AdManager {
             waitTime
         );
     }
-
 
     stop(): void {
         if (this.interval)
@@ -268,10 +263,8 @@ export class AdManager {
         this.expireDue = new Date(Date.now() + 3 * 60 * 60 * 1000);
     }
 
-
     protected static recoverableCharacter = '';
     protected static recoverableAds: RecoverableAd[] = [];
-
 
     static onConnectionClosed(): void {
         AdManager.recoverableCharacter = core?.characters?.ownCharacter.name ?? '';
@@ -294,7 +287,6 @@ export class AdManager {
 
         activeAdChannels.forEach(c => c.adManager.stop());
     }
-
 
     static onNewChannelAvailable(channel: ChannelConversation): void {
         if (AdManager.recoverableCharacter !== core.characters.ownCharacter.name) {
