@@ -325,4 +325,15 @@ export class AdManager {
 
         AdManager.recoverableAds = AdManager.recoverableAds.filter(r => r.channel !== ra.channel);
     }
+
+    debugInfo() {
+        return {
+            adIndex:     this.adIndex,
+            active:      this.active,
+            nextPostDue: this.nextPostDue?.toLocaleString(),
+            expireDue:   this.expireDue?.toLocaleString(),
+            firstPost:   this.firstPost?.toLocaleString(),
+            adMap:       this.adMap.slice(),
+        };
+    }
 }

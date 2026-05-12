@@ -37,12 +37,32 @@
         </div>
         <template v-if="isChannel">
           <div class="row">
-            <div class="col-auto">Level:</div>
-            <div class="col">Are you op?</div>
+            <div class="col-auto">Channel op level:</div>
+            <div class="col">{{ channelOp }}</div>
           </div>
           <div class="row">
-            <div class="col-auto">Chat modes:</div>
-            <div class="col">Ads/Chat/Both?</div>
+            <div class="col-auto">Channel message mode:</div>
+            <div class="col">{{ channelMode }}</div>
+          </div>
+          <div class="row">
+            <div class="col-auto">Next Ad:</div>
+            <div class="col">{{ channelNextAd }}</div>
+          </div>
+          <div class="row">
+            <div class="col">Ad Settings</div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <pre class="preformatted-shrink-wrap">{{ channelAdSettings }}</pre>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">Ad Manager</div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <pre class="preformatted-shrink-wrap">{{ channelAdManager }}</pre>
+            </div>
           </div>
         </template>
         <div class="row form-group">
@@ -124,6 +144,21 @@ export default class Data extends Vue {
         else                     return false;
     } /* eslint-enable @stylistic/nonblock-statement-body-position */
 
+    get channelOp() {
+        return this.conversation && this.convoIsChannel(this.conversation) && this.conversation.channel.opList.includes(core.characters.ownCharacter.name) ? 'Channel Op' : 'Normal User';
+    }
+    get channelMode() {
+        return this.conversation && this.convoIsChannel(this.conversation) && this.conversation.channel.mode;
+    }
+    get channelNextAd() {
+        return this.conversation && this.convoIsChannel(this.conversation) && new Date(this.conversation.nextAd).toLocaleString();
+    }
+    get channelAdManager() {
+        return this.conversation && this.convoIsChannel(this.conversation) && JSON.stringify(this.conversation.adManager.debugInfo(), null, 4);
+    }
+    get channelAdSettings() {
+        return this.conversation && this.convoIsChannel(this.conversation) && JSON.stringify(this.conversation.settings.adSettings, null, 4);
+    }
 
     @Prop({ default: false })
     readonly navigationRequest!: { tab: string, conversation?: unknown, section: unknown };
@@ -142,5 +177,14 @@ export default class Data extends Vue {
 <style>
 .page-header {
     height: 3em;
+}
+
+.preformatted-shrink-wrap {
+    color:inherit; /* Claaaaassic bootstrap! HaHaHa! */
+
+    display:inline-block;
+
+    white-space: pre-wrap;
+    user-select:text;
 }
 </style>
