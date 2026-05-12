@@ -156,8 +156,19 @@ export class AdManager {
         return this.conversation.settings.adSettings.randomOrder;
     }
 
+    /**
+     * This is infrequently returning undefined, thus, we add the warning and correction.
+     * @returns
+     */
     getAds(): string[] {
-        return this.conversation.settings.adSettings.ads;
+        if (this.conversation.settings.adSettings.ads === undefined) {
+            log.warn('AdManager.getads.undefined', () => ({
+                adSettings: this.conversation.settings.adSettings,
+                adManager:  this.conversation.adManager,
+            }));
+            return [];
+        }
+        return this.conversation.settings.adSettings.ads; // This is somehow undefined sometimes.
     }
 
     getNextAd(): string | undefined {
