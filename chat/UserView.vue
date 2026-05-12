@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Linebreaks inside this template will break BBCode views
      v-bind character and channel are used in UserMenu handleEvent when crawling up the DOM -->
-<template><span v-show="showing" :class="[ userClass, classes ]" v-bind:bbcodeTag.prop="'user'" v-bind:character.prop="character" v-bind:channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
+<template><span v-show="showing" :class="[ userClass, classes ]" :bbcodeTag.prop="'user'" :character.prop="character" :channel.prop="channel" @mouseover.prevent="show()" @mouseenter.prevent="show()" @mouseleave.prevent="dismiss()" @click.middle.prevent.stop="toggleStickyness()" @click.right.passive="dismiss(true)" @click.left.passive="dismiss(true)"><img v-if="avatar" :src="avatarUrl" class="user-avatar" /><span v-if="showStatus" :class="statusClass"></span><span v-if="rankIcon" :class="rankIcon"></span><span v-if="smartFilterIcon" :class="smartFilterIcon"></span>{{ character.name }}<span v-if="match" :class="matchInfo.class">{{ matchInfo.title }}</span></span></template>
 
 <script lang="ts">
 import { Component, Hook, Prop, Watch } from '@frolic/vue-ts';
@@ -16,7 +16,7 @@ import { kinkMatchWeights, Scoring } from '../learn/matcher-types';
 import type { CharacterCacheRecord } from '../learn/profile-cache';
 
 export function getStatusIcon(status: Character.Status): string {
-    switch(status) {
+    switch (status) {
     case 'online':
         return 'far fa-user';
     case 'looking':
@@ -53,6 +53,7 @@ function getMatchScoreTitle(score: number | string | null): string {
     return '';
 }
 
+/* eslint-disable @stylistic/brace-style, @stylistic/nonblock-statement-body-position */
 @Component({ components: {} })
 export default class UserView extends Vue {
     /**
@@ -147,8 +148,8 @@ export default class UserView extends Vue {
      * If the user isn't in the cache when the UserView is shown,
      * this watcher is how their score data will be intercepted and displayed.
      */
-    async settingsWatcher(): Promise<void> {
-        await this.updateSettings();
+    settingsWatcher = (): void => {
+        this.updateSettings();
         this.updateBoth();
     };
 
@@ -158,10 +159,10 @@ export default class UserView extends Vue {
     privateWatcher: (() => void) | null = null;
 
     characterUrl = '';
-    getCharacterUrl(): UserView['characterUrl'] { return `flist-character://${this.character.name}` }
+    getCharacterUrl(): UserView['characterUrl'] { return `flist-character://${this.character.name}`; }
 
     avatarUrl = '';
-    getAvatarUrl(): UserView['avatarUrl'] { return core.characters.getImage(this.character.name) }
+    getAvatarUrl(): UserView['avatarUrl'] { return core.characters.getImage(this.character.name); }
 
     /** Utility */
 
@@ -180,7 +181,7 @@ export default class UserView extends Vue {
             if (this.channel && core.state.settings.risingFilter.hideChannelMembers)
                 return true;
         }
-        catch {}
+        catch {/* Core jank: Can view userview in logs prior to late core init at login */}
 
         return false;
     }
@@ -192,7 +193,7 @@ export default class UserView extends Vue {
             if (this.match && core.state.settings.risingAdScore)
                 return true;
         }
-        catch {}
+        catch {/* Core jank: Can view userview in logs prior to late core init at login */}
 
         return false;
     }
@@ -209,7 +210,7 @@ export default class UserView extends Vue {
 
     showing = false;
     getShowing(): UserView['showing'] {
-        if (this.hiding && this.hide && this.cache?.match.isFiltered && !isImportantToChannel(this.character, this.channel!))
+        if (this.hiding && this.hide && this.cache?.match.isFiltered && this.channel && !isImportantToChannel(this.character, this.channel))
             return false;
         else
             return true;
@@ -221,7 +222,7 @@ export default class UserView extends Vue {
             if (this.filterIcon && core.state.settings.risingFilter.showFilterIcon && this.cache?.match.isFiltered && !(this.character.isFriend || this.character.isBookmarked))
                 return 'user-filter fas fa-filter';
         }
-        catch { /** This shouldn't even need to exist, but legacy jank makes core reliability bad... */ }
+        catch {/* Core jank: Can view userview in logs prior to late core init at login */}
 
         return;
     }
@@ -231,9 +232,8 @@ export default class UserView extends Vue {
         let bookmark: string = '';
 
         // We may not even need to `try` by checking `isFriend|isBookmarked` first.
-        if (this.bookmark && (this.character.isFriend || this.character.isBookmarked) && core.state.settings.colorBookmarks) {
+        if (this.bookmark && (this.character.isFriend || this.character.isBookmarked) && core.state.settings.colorBookmarks)
             bookmark = 'user-bookmark';
-        }
 
         const gender = this.character.gender.toLowerCase(); // for classes; skip custom
 
@@ -246,9 +246,9 @@ export default class UserView extends Vue {
     // @Watch('character.overrides.gender')
     // updateOverrideGender(): void { this.getUserClass() }
     @Watch('character.isFriend')
-    updateFriend(): void         { this.getUserClass() }
+    updateFriend(): void   { this.getUserClass(); }
     @Watch('character.isBookmarked')
-    updateBookmark(): void       { this.getUserClass() }
+    updateBookmark(): void { this.getUserClass(); }
 
     rankIcon: string | undefined = '';
     getRankIcon(): UserView['rankIcon'] {
@@ -269,17 +269,17 @@ export default class UserView extends Vue {
     }
 
     @Watch('character.isChatOp')
-    updateChatOp():        void { this.rankIcon = this.getRankIcon() }
+    updateChatOp():        void { this.rankIcon = this.getRankIcon(); }
     @Watch('channel.owner')
-    updateChannelOwner():  void { this.rankIcon = this.getRankIcon() }
+    updateChannelOwner():  void { this.rankIcon = this.getRankIcon(); }
     @Watch('channel.opList')
-    updateChannelOpList(): void { this.rankIcon = this.getRankIcon() }
+    updateChannelOpList(): void { this.rankIcon = this.getRankIcon(); }
 
     get statusClass() {
         if (this.showStatus || this.character.status === 'crown')
             return 'user-status fa-fw ' + getStatusIcon(this.character.status);
         else
-            return;
+            return '';
     }
 
     matchInfo: { class?: string, title?: string } = {};
@@ -287,6 +287,8 @@ export default class UserView extends Vue {
         if (!this.matching || !this.cache)
             return {};
 
+        // Legacy
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
         const perfect_match = this.cache.match.searchScore >= kinkMatchWeights.unicornThreshold && this.cache.match.matchScore === Scoring.MATCH;
 
         return {
@@ -296,7 +298,7 @@ export default class UserView extends Vue {
             title: perfect_match
                 ? 'Unicorn'
                 : getMatchScoreTitle(this.cache.match.matchScore),
-        }
+        };
     }
 
     /**
@@ -324,7 +326,7 @@ export default class UserView extends Vue {
     /**
      * Properties to update when the user settings change
      */
-    async updateSettings(): Promise<void> {
+    updateSettings(): void {
         //await Promise.resolve(); // no-op await if necessary
         this.hiding = this.getHiding();
         this.matching = this.getMatching();
@@ -362,15 +364,15 @@ export default class UserView extends Vue {
         }
     }
 
-    async chunkProcessor(): Promise<void> {
+    chunkProcessor(): void {
         if (this.needsCache()) this.cache = core.cache.profileCache.getSync(this.character.name);
         this.registerEvents();
-        setTimeout(async () => {
+        window.setTimeout(() => {
             // Character updates need `hiding` and `matching` so settings updates run first.
             this.updateSettings();
-            setTimeout(async () => {
+            window.setTimeout(async () => {
                 await this.updateCharacter();
-                setTimeout(() => {
+                window.setTimeout(() => {
                     this.updateBoth();
                 });
             });
@@ -387,7 +389,7 @@ export default class UserView extends Vue {
             this.privateWatcher = this.$watch('character.name', async () => {
                 // Essentially a re-creation
                 this.cacheHit();
-                await this.updateSettings();
+                this.updateSettings();
                 await this.updateCharacter();
                 this.updateBoth();
             });
