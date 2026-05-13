@@ -50,14 +50,15 @@ import core from '../core';
 import EventBus from './event-bus';
 import { domain } from '../../bbcode/core';
 import { ImageDomMutator } from './image-dom-mutator';
-
-import type { RenderStyle } from './helper';
 import {
     ExternalImagePreviewHelper,
     LocalImagePreviewHelper,
     PreviewManager,
     CharacterPreviewHelper,
 } from './helper';
+
+import type { ImagePreviewEvent, ImageToggleEvent, SettingsEvent } from './event-bus';
+import type { RenderStyle } from './helper';
 
 import type { Point } from 'electron';
 import * as remote from '@electron/remote';
@@ -67,7 +68,7 @@ import CharacterPreview from './CharacterPreview.vue';
 
 const screen = remote.screen;
 
-const FLIST_PROFILE_MATCH = /https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+%_.!~*'()]+)\/?/;
+const FLIST_PROFILE_URI_MATCH = /https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+%_.!~*'()]+)\/?/;
 
 @Component({
     components: {
@@ -116,6 +117,154 @@ export default class ImagePreview extends Vue {
 
     previewStyles: Record<string, RenderStyle> = {};
 
+    onImagePreviewShow = (e: ImagePreviewEvent) => {
+        this.debugLog('ImagePreview.onImagePreviewShow', Date.now());
+
+        const url = this.negotiateUrl(e.url);
+        const isInternalPreview = CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER.test(url);
+
+        if ((!core.state.settings.risingCharacterPreview && isInternalPreview) || (!core.state.settings.risingLinkPreview && !isInternalPreview))
+            return;
+
+        this.show(url);
+    };
+
+    onImagePreviewDismiss = (e: ImagePreviewEvent) => {
+        this.debugLog('ImagePreview.onImagePreviewDismiss', Date.now());
+        this.dismiss(this.negotiateUrl(e.url), e.force);
+    };
+
+    /**
+     * Toggles the ImagePreview sticky if it's visible, but also hides with `force`.
+     */
+    onImagePreviewToggleSticky = (e: ImageToggleEvent) => {
+        if (!core.state.settings.risingLinkPreview)
+            return;
+
+        if (!this.visible)
+            return;
+
+        if (e.force)
+            this.hide();
+
+        if (e.url) {
+            const eventUrl = this.jsMutator.mutateUrl(this.negotiateUrl(e.url));
+
+            if (this.url === eventUrl)
+                this.sticky = !this.sticky;
+        }
+        else if (e.force) {
+            this.sticky = !this.sticky;
+        }
+    };
+
+    onConfigurationUpdate = (s: SettingsEvent) => this.getWebview().send('volume-from-main', s.settings.linkPreviewVolume);
+
+    onUpdateTargetUrl = (e: Electron.UpdateTargetUrlEvent) => {
+        const url = this.getWebview().getURL();
+        const js = this.jsMutator.getMutatorJsForSite(url, 'update-target-url');
+
+        void this.executeJavaScript(js, 'update-target-url', e);
+    };
+
+    onDomReady = (e: Event) => {
+        this.debugLog('ImagePreview.onDomReady', Date.now(), e);
+
+        const url = this.getWebview().getURL();
+        const js = this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
+
+        void this.executeJavaScript(js, 'dom-ready', e);
+
+        this.setState('loaded');
+    };
+
+    onLoad = (e: Event) => {
+        this.debugLog('ImagePreview.onLoad', Date.now(), e);
+
+        const url = this.getWebview().getURL();
+        const js = this.jsMutator.getMutatorJsForSite(url, e.type);
+
+        window.console.warn('Event: ', e.type, 'for site: ', url);
+
+        void this.executeJavaScript(js, e.type, e);
+
+        this.setState('loaded');
+    };
+
+    onDidFailLoad = (e: Electron.DidFailLoadEvent) => {
+        this.debugLog('ImagePreview.onDidFailLoad', Date.now(), e);
+
+        if (e.errorCode !== -3 && e.errorCode !== -2) {
+            // -3 is a weird error code, not sure why it occurs
+            this.setState('error');
+        }
+
+        if (e.errorCode < 0) {
+            const url = this.getWebview().getURL();
+
+            if (url.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
+                const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
+                        || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
+
+                void this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
+                return;
+            }
+
+            return;
+        }
+
+        const js = this.jsMutator.getErrorMutator(e.errorCode, e.errorDescription);
+
+        void this.executeJavaScript(js, 'did-fail-load', e);
+    };
+
+    onDidFrameNavigate = (e: Electron.DidFrameNavigateEvent) => {
+        if (e.httpResponseCode >= 400) {
+            this.debugLog('ImagePreview.onDidFrameNavigate', Date.now(), e);
+
+            const js = this.jsMutator.getErrorMutator(e.httpResponseCode, e.httpStatusText);
+
+            void this.executeJavaScript(js, 'did-navigate', e);
+        }
+    };
+
+    onIpcMessage = (e: Electron.IpcMessageEvent) => {
+        this.debugLog('ImagePreview.onIpcMessage', Date.now(), e);
+
+        if (e.channel === 'webview.img' && (typeof e.args[0] === 'string' || typeof e.args[0] === 'number')) {
+            const w = e.args[0];
+            const h = typeof e.args[1] === 'string' || typeof e.args[1] === 'number' ? e.args[1] : e.args[0];
+            this.updatePreviewSize(Number(w), Number(h));
+        }
+        else if (e.channel === 'webview.dom-loaded') {
+            const webview = this.getWebview();
+            void webview.send('volume-from-main', core.state.settings.linkPreviewVolume);
+            webview.setAudioMuted(false);
+        }
+    };
+
+    onEvent = (e: Event) => {
+        this.debugLog('ImagePreview.onEvent', {
+            type:  e.type,
+            time:  Date.now(),
+            event: e,
+        });
+    };
+
+    ticker?: number;
+    onTick = () => {
+        if ((this.visible && !this.exitInterval && !this.shouldDismiss) || this.interval)
+            this.initialCursorPosition = screen.getCursorScreenPoint();
+
+        if (this.visible && this.shouldDismiss && this.hasMouseMovedSince() && !this.exitInterval && !this.interval) {
+            this.debugLog('ImagePreview: call hide from interval');
+
+            this.hide();
+        }
+
+        this.shouldShowSpinner = this.testSpinner();
+        this.shouldShowError = this.testError();
+    };
 
     @Hook('mounted')
     onMounted(): void {
@@ -123,170 +272,50 @@ export default class ImagePreview extends Vue {
 
         void this.jsMutator.init();
 
-        EventBus.$on('imagepreview-dismiss', e => {
-            // console.log('Event dismiss', eventData.url);
-            this.dismiss(this.negotiateUrl(e.url), e.force);
+        const webview = this.getWebview();
+
+        EventBus.$on('imagepreview-dismiss',       this.onImagePreviewDismiss);
+        EventBus.$on('imagepreview-show',          this.onImagePreviewShow);
+        EventBus.$on('imagepreview-toggle-sticky', this.onImagePreviewToggleSticky);
+        EventBus.$on('core-connected',             this.onConfigurationUpdate);
+        EventBus.$on('configuration-update',       this.onConfigurationUpdate);
+
+        webview.addEventListener('update-target-url',  this.onUpdateTargetUrl);
+        webview.addEventListener('dom-ready',          this.onDomReady);
+        webview.addEventListener('load',               this.onLoad);
+        webview.addEventListener('did-fail-load',      this.onDidFailLoad);
+        webview.addEventListener('did-frame-navigate', this.onDidFrameNavigate);
+        webview.addEventListener('ipc-message',        this.onIpcMessage);
+
+        [ 'did-start-loading', 'did-finish-load', 'load-commit', 'will-navigate', 'did-navigate', 'did-navigate-in-page' ].forEach(en => {
+            webview.addEventListener(en, this.onEvent);
         });
 
-        EventBus.$on('imagepreview-show', e => {
-            // console.log('Event show', eventData.url);
+        this.ticker = window.setInterval(this.onTick, 50);
+    }
 
-            const url = this.negotiateUrl(e.url);
-            const isInternalPreview = CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER.test(url);
-
-            if ((!core.state.settings.risingCharacterPreview && isInternalPreview) || (!core.state.settings.risingLinkPreview && !isInternalPreview))
-                return;
-
-            this.show(url);
-        });
-
-        /**
-         * Toggles the ImagePreview sticky if it's visible, but also hides with `force`.
-         */
-        EventBus.$on('imagepreview-toggle-sticky', e => {
-            if (!core.state.settings.risingLinkPreview)
-                return;
-
-            if (!this.visible)
-                return;
-
-            if (e.force)
-                this.hide();
-
-            if (e.url) {
-                const eventUrl = this.jsMutator.mutateUrl(this.negotiateUrl(e.url));
-
-                if (this.url === eventUrl)
-                    this.sticky = !this.sticky;
-            }
-            else if (e.force) {
-                this.sticky = !this.sticky;
-            }
-        });
+    @Hook('beforeDestroy')
+    beforeDestroy() {
+        EventBus.$off('imagepreview-dismiss', this.onImagePreviewDismiss);
+        EventBus.$off('imagepreview-show', this.onImagePreviewShow);
+        EventBus.$off('imagepreview-toggle-sticky', this.onImagePreviewToggleSticky);
+        EventBus.$off('core-connected',       this.onConfigurationUpdate);
+        EventBus.$off('configuration-update', this.onConfigurationUpdate);
 
         const webview = this.getWebview();
 
-        EventBus.$on('core-connected',       s => webview.send('volume-from-main', s.settings.linkPreviewVolume));
-        EventBus.$on('configuration-update', s => webview.send('volume-from-main', s.settings.linkPreviewVolume));
+        webview.removeEventListener('update-target-url', this.onUpdateTargetUrl);
+        webview.removeEventListener('dom-ready', this.onDomReady);
+        webview.removeEventListener('load', this.onLoad);
+        webview.removeEventListener('did-fail-load', this.onDidFailLoad);
+        webview.removeEventListener('did-frame-navigate', this.onDidFrameNavigate);
+        webview.removeEventListener('ipc-message', this.onIpcMessage);
 
-        // clear preview cache, particularly cookies
-        // setInterval(
-        //     () => remote.webContents.fromId(webview.getWebContentsId()).session.clearStorageData({storages: ['cookies', 'indexdb']}),
-        //     5000
-        // );
-
-        webview.addEventListener('update-target-url', e => {
-            const url = webview.getURL();
-            const js = this.jsMutator.getMutatorJsForSite(url, 'update-target-url');
-
-            void this.executeJavaScript(js, 'update-target-url', e);
-        }
-        );
-
-
-        webview.addEventListener('dom-ready', e => {
-            const url = webview.getURL();
-            const js = this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
-
-            void this.executeJavaScript(js, 'dom-ready', e);
-
-            this.setState('loaded');
+        [ 'did-start-loading', 'did-finish-load', 'load-commit', 'will-navigate', 'did-navigate', 'did-navigate-in-page' ].forEach(en => {
+            webview.removeEventListener(en, this.onEvent);
         });
 
-        webview.addEventListener('load', e => {
-            const url = webview.getURL();
-            const js = this.jsMutator.getMutatorJsForSite(url, e.type);
-
-            window.console.warn('Event: ', e.type, 'for site: ', url);
-
-            void this.executeJavaScript(js, e.type, e);
-
-            this.setState('loaded');
-        });
-
-
-        webview.addEventListener('did-fail-load', e => {
-            if (e.errorCode !== -3 && e.errorCode !== -2) {
-                // -3 is a weird error code, not sure why it occurs
-                this.setState('error');
-            }
-
-
-            if (e.errorCode < 0) {
-                const url = webview.getURL();
-
-                if (url.match(/^https?:\/\/(www\.)?pornhub\.com/)) {
-                    const qjs = this.jsMutator.getMutatorJsForSite(url, 'update-target-url')
-                            || this.jsMutator.getMutatorJsForSite(url, 'dom-ready');
-
-                    void this.executeJavaScript(qjs, 'did-fail-load-but-still-loading', e);
-                    return;
-                }
-
-                return;
-            }
-
-            const js = this.jsMutator.getErrorMutator(e.errorCode, e.errorDescription);
-
-            void this.executeJavaScript(js, 'did-fail-load', e);
-        });
-
-        webview.addEventListener('did-frame-navigate', e => {
-            if (e.httpResponseCode >= 400) {
-                const js = this.jsMutator.getErrorMutator(e.httpResponseCode, e.httpStatusText);
-
-                void this.executeJavaScript(js, 'did-navigate', e);
-            }
-        });
-
-
-        webview.addEventListener('ipc-message', e => {
-            this.debugLog('ImagePreview ipc-message', e);
-
-            if (e.channel === 'webview.img' && (typeof e.args[0] === 'string' || typeof e.args[0] === 'number')) {
-                const w = e.args[0];
-                const h = typeof e.args[1] === 'string' || typeof e.args[1] === 'number' ? e.args[1] : e.args[0];
-                this.updatePreviewSize(Number(w), Number(h));
-            }
-            else if (e.channel === 'webview.dom-loaded') {
-                void webview.send('volume-from-main', core.state.settings.linkPreviewVolume);
-                webview.setAudioMuted(false);
-            }
-        });
-
-
-        // const webContentsId = webview.getWebContentsId();
-        //
-        // remote.webContents.fromId(webContentsId).session.on(
-        //     'will-download',
-        //     (e: Event) => {
-        //         e.preventDefault();
-        //     }
-        // );
-
-        [ 'did-start-loading', 'did-finish-load', 'load-commit', 'dom-ready', 'will-navigate', 'did-navigate', 'did-navigate-in-page', 'update-target-url', 'ipc-message' ].forEach(en => {
-            webview.addEventListener(en, event => {
-                this.debugLog(`ImagePreview ${en} ${Date.now()}`, event);
-            });
-        });
-
-
-        window.setInterval(
-            () => {
-                if ((this.visible && !this.exitInterval && !this.shouldDismiss) || this.interval)
-                    this.initialCursorPosition = screen.getCursorScreenPoint();
-
-                if (this.visible && this.shouldDismiss && this.hasMouseMovedSince() && !this.exitInterval && !this.interval) {
-                    this.debugLog('ImagePreview: call hide from interval');
-
-                    this.hide();
-                }
-
-                this.shouldShowSpinner = this.testSpinner();
-                this.shouldShowError = this.testError();
-            },
-            50
-        );
+        window.clearInterval(this.ticker);
     }
 
 
@@ -296,7 +325,7 @@ export default class ImagePreview extends Vue {
 
 
     negotiateUrl(url: string): string {
-        const match = url.match(FLIST_PROFILE_MATCH);
+        const match = url.match(FLIST_PROFILE_URI_MATCH);
 
         if (!match?.[2])
             return url;
@@ -468,9 +497,13 @@ export default class ImagePreview extends Vue {
         this.exitInterval = null;
     }
 
-    isVisible(): boolean { return this.visible }
+    isVisible(): boolean {
+        return this.visible;
+    }
 
-    getUrl(): string | null { return this.url }
+    getUrl(): string | null {
+        return this.url;
+    }
 
     /* isExternalUrl(): boolean {
             // 'f-list.net' is tested here on purpose, because keeps the character URLs from being previewed
@@ -537,7 +570,9 @@ export default class ImagePreview extends Vue {
     }
 
 
-    toggleJsMode(): void { this.runJs = !this.runJs }
+    toggleJsMode(): void {
+        this.runJs = !this.runJs;
+    }
 
 
     reloadUrl(): void {
