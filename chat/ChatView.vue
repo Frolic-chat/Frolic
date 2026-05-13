@@ -143,7 +143,7 @@
   <report-dialog ref="reportDialog"></report-dialog>
   <context-menu ref="contextMenu" :reportDialog="$refs['reportDialog']"></context-menu>
   <recent-conversations ref="recentDialog"></recent-conversations>
-  <dev-tools ref="devTools"></dev-tools>
+  <dev-tools v-if="devTools" ref="devTools"></dev-tools>
   <image-preview ref="imagePreview"></image-preview>
   <add-pm-partner ref="addPmPartnerDialog" :switch="addPmPartnerSwitch"></add-pm-partner>
   <eicon-selector ref="eiconSelector"></eicon-selector>
@@ -213,7 +213,6 @@ const unreadClasses = {
 })
 export default class ChatView extends Vue {
     l = l;
-    // Working?
     devTools = false;
     sidebarExpanded = false;
     characterImage = (c: string) => core.characters.getImage(c);
@@ -529,7 +528,6 @@ export default class ChatView extends Vue {
     }
 
     showDevTools(): void {
-        // Working
         logDev.debug('ChatView.showDevTools.NODE_ENV', process.env.NODE_ENV); // development
         if (this.devTools)
             (this.$refs.devTools as Modal).show();
