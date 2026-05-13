@@ -176,7 +176,7 @@ import UserList from './UserList.vue';
 import ContextMenu from './ContextMenu.vue';
 import ImagePreview from './preview/ContentPreview.vue';
 import PrivateConversation = Conversation.PrivateConversation;
-import { Dialog } from '../helpers/dialog';
+import * as Dialog from '../helpers/dialog';
 import AdCenterDialog from './ads/AdCenter.vue';
 import AdLauncherDialog from './ads/AdLauncher.vue';
 import EventBus from './preview/event-bus';
@@ -484,8 +484,8 @@ export default class ChatView extends Vue {
         return cls;
     }
 
-    logOut(): void {
-        if (Dialog.confirmDialog(l('chat.confirmLeave')))
+    async logOut(): Promise<void> {
+        if (await Dialog.confirmDialog(l('chat.confirmLeave')))
             core.connection.close();
     }
 

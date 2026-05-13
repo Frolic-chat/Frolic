@@ -30,7 +30,7 @@
     import CustomDialog from '../components/custom_dialog';
     import core from './core';
     import { BBCodeView } from '../bbcode/view';
-    import { Dialog } from '../helpers/dialog';
+    import * as Dialog from '../helpers/dialog';
     import l from './localize';
 
     @Component({
@@ -78,7 +78,7 @@
 
 
         async removeStatusHistoryEntry(index: number): Promise<void> {
-          if(Dialog.confirmDialog('Are you sure you want to remove this status message?')) {
+          if(await Dialog.confirmDialog('Are you sure you want to remove this status message?')) {
               this.history.splice(index, 1);
 
               await core.settingsStore.set('statusHistory', this.history);

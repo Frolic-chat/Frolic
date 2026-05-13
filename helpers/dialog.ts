@@ -1,17 +1,20 @@
-import * as remote from '@electron/remote';
+import * as Electron from 'electron';
 import l from '../chat/localize';
 
-export class Dialog {
-    static confirmDialog(message: string, { yes, no }: { yes?: string, no?: string } = {}): boolean {
-        const result = remote.dialog.showMessageBoxSync({
+export async function confirmDialog(message: string, { yes, no }: { yes?: string, no?: string } = {}): Promise<boolean> {
+    const result = await Electron.ipcRenderer.invoke(
+        'dialog',
+        'showMessageBox', {
             message,
             title:     l('title'),
             type:      'question',
             buttons:   [ yes ?? l('confirmYes'), no ?? l('confirmNo') ],
             defaultId: 1,
             cancelId:  1,
-        });
+        } as Electron.MessageBoxOptions
+    ) as number;
 
-        return result === 0;
-    }
-}
+    console.log(result);
+
+    return result === 0;
+};

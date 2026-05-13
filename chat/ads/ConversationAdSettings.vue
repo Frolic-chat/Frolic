@@ -39,7 +39,7 @@ import { Conversation } from '../interfaces';
 import l from '../localize';
 import { Editor } from '../bbcode';
 import core from '../core';
-import { Dialog } from '../../helpers/dialog';
+import * as Dialog from '../../helpers/dialog';
 import type AdCenterDialog from './AdCenter.vue';
 
 @Component({
@@ -78,9 +78,9 @@ export default class ConversationAdSettings extends CustomDialog {
         this.ads.push('');
     }
 
-    removeAd(index: number): void {
+    async removeAd(index: number): Promise<void> {
         // if (confirm('Are you sure you wish to remove this ad?')) {
-        if (Dialog.confirmDialog('Are you sure you wish to remove this ad?'))
+        if (await Dialog.confirmDialog('Are you sure you wish to remove this ad?'))
             this.ads.splice(index, 1);
     }
 

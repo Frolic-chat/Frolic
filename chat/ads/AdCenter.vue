@@ -30,7 +30,7 @@ import { Conversation } from '../interfaces';
 import l from '../localize';
 import { Editor } from '../bbcode';
 import core from '../core';
-import { Dialog } from '../../helpers/dialog';
+import * as Dialog from '../../helpers/dialog';
 import InputTag from 'vue-input-tag';
 import type { Ad } from './ad-center';
 import type EIconSelector from '../../bbcode/EIconSelector.vue';
@@ -73,8 +73,8 @@ export default class AdCenterDialog extends CustomDialog {
         log.debug('AdCenterDialog.addAd', this.ads[this.ads.length - 1]);
     }
 
-    removeAd(index: number): void {
-        if (Dialog.confirmDialog(l('adEditor.removeConfirm'))) {
+    async removeAd(index: number): Promise<void> {
+        if (await Dialog.confirmDialog(l('adEditor.removeConfirm'))) {
             log.debug('AdCenterDialog.removeAd', this.ads[index]);
             this.ads.splice(index, 1);
         }

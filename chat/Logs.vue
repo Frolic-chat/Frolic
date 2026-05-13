@@ -87,7 +87,7 @@
     import l from './localize';
     import MessageView from './message_view';
     import Zip from './zip';
-    import { Dialog } from '../helpers/dialog';
+    import * as Dialog from '../helpers/dialog';
 
     import NewLogger from '../helpers/log';
     const log = NewLogger('logs');
@@ -278,7 +278,7 @@
 
             const date = formatDate(new Date(this.selectedDate));
 
-            const html = Dialog.confirmDialog(l('logs.html'), {
+            const html = await Dialog.confirmDialog(l('logs.html'), {
                 yes: l('logs.exportHtml'),
                 no:  l('logs.exportPlaintext'),
             });
@@ -308,7 +308,7 @@
                 : sanitizeFilename(`${char} and ${c.name}`);
 
             const zip = new Zip();
-            const html = Dialog.confirmDialog(l('logs.html'), {
+            const html = await Dialog.confirmDialog(l('logs.html'), {
                 yes: l('logs.exportHtml'),
                 no:  l('logs.exportPlaintext'),
             });
@@ -326,7 +326,7 @@
         }
 
         async downloadCharacter(): Promise<void> {
-            if (!this.selectedCharacter || !Dialog.confirmDialog(l('logs.confirmExport', this.selectedCharacter)))
+            if (!this.selectedCharacter || !(await Dialog.confirmDialog(l('logs.confirmExport', this.selectedCharacter))))
                 return;
 
             this.waitingOnZipping = true;
@@ -335,7 +335,7 @@
             const char = this.selectedCharacter;
 
             const zip = new Zip();
-            const html = Dialog.confirmDialog(l('logs.html'), {
+            const html = await Dialog.confirmDialog(l('logs.html'), {
                 yes: l('logs.exportHtml'),
                 no:  l('logs.exportPlaintext'),
             });

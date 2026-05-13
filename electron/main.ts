@@ -1019,6 +1019,21 @@ function onReady(): void {
         // settings.set('customDictionary', settings.raw.customDictionary.splice(i, 1));
     });
 
+    Electron.ipcMain.handle('dialog', async (_e, ...args: [ 'showErrorBox', string, string ] | [ 'showMessageBoxSync', Electron.MessageBoxSyncOptions ] | [ 'showMessageBox', Electron.MessageBoxOptions ]) => {
+        log.silly('onReady.ipcMain.dialog', args);
+        if (args[0] === 'showErrorBox') {
+            log.debug('Showing error box.');
+            Electron.dialog.showErrorBox(args[1], args[2]);
+        }
+        else if (args[0] === 'showMessageBoxSync') {
+            log.debug('Showing blocking message box.');
+            return Electron.dialog.showMessageBoxSync(args[1]);
+        }
+        else if (args[0] === 'showMessageBox') {
+            log.debug('Showing nonblocking message box.');
+            return (await Electron.dialog.showMessageBox(args[1])).response;
+        }
+    });
 
     const adCoordinator = new AdCoordinatorHost();
     Electron.ipcMain.on('request-send-ad', (e, adId: string) => adCoordinator.processAdRequest(e, adId));

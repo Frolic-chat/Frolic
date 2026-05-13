@@ -1,6 +1,6 @@
-import * as remote from '@electron/remote';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as Electron from 'electron';
 import { Message as MessageImpl } from '../../chat/common';
 import core from '../../chat/core';
 import type { Character, Logs as Logging, Settings } from '../../chat/interfaces';
@@ -14,8 +14,8 @@ function writeFile(p: fs.PathLike | number, data: string | NodeJS.ArrayBufferVie
     try {
         fs.writeFileSync(p, data, options);
     }
-    catch(e) {
-        remote.dialog.showErrorBox(l('fs.error'), (<Error>e).message);
+    catch (e) {
+        Electron.ipcRenderer.send('dialog', 'showErrorBox', l('fs.error'), (e as Error).message);
     }
 }
 
