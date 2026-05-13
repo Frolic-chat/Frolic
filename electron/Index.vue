@@ -1,5 +1,5 @@
 <template>
-<div id="page" style="position:relative; padding:5px 10px 10px" :class="getThemeClass()" @mouseover="onMouseOver" @auxclick.prevent @click.middle="unpinUrlPreview">
+<div id="page" style="position:relative; padding:5px 10px 10px" :class="getThemeClass()" @mouseover="onMouseOver" @mousemove="trackMouseForContentDetection" @auxclick.prevent @click.middle="unpinUrlPreview">
   <div v-html="styling"></div>
   <div v-if="!characters" style="display:flex; align-items:center; justify-content:center; height: 100%;">
     <div class="card bg-light" style="width: 400px;">
@@ -635,6 +635,10 @@ export default class Index extends Vue {
         }
 
         return !!t;
+    }
+
+    trackMouseForContentDetection(e: MouseEvent) {
+        core.runtime.contentDetection.setMouseCoords(e.clientX, e.clientY);
     }
 }
 </script>

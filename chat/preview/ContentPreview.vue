@@ -59,14 +59,9 @@ import {
 
 import type { ImagePreviewEvent, ImageToggleEvent, SettingsEvent } from './event-bus';
 import type { RenderStyle } from './helper';
-
-import type { Point } from 'electron';
-import * as remote from '@electron/remote';
 import type * as Electron from 'electron';
 
 import CharacterPreview from './CharacterPreview.vue';
-
-const screen = remote.screen;
 
 const FLIST_PROFILE_URI_MATCH = /https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+%_.!~*'()]+)\/?/;
 
@@ -111,11 +106,15 @@ export default class ImagePreview extends Vue {
     private exitInterval: number | null = null;
     private exitUrl:      string | null = null;
 
-    private initialCursorPosition: Point | null = null;
+    private initialCursorPosition: { x: number, y: number } | null = null;
     private shouldDismiss = false;
     private visibleSince = 0;
 
     previewStyles: Record<string, RenderStyle> = {};
+
+    getCursorScreenPoint() {
+        return core.runtime.contentDetection.getMouseCoords();
+    }
 
     onImagePreviewShow = (e: ImagePreviewEvent) => {
         this.debugLog('ImagePreview.onImagePreviewShow', Date.now());
@@ -123,7 +122,9 @@ export default class ImagePreview extends Vue {
         const url = this.negotiateUrl(e.url);
         const isInternalPreview = CharacterPreviewHelper.FLIST_CHARACTER_PROTOCOL_TESTER.test(url);
 
-        if ((!core.state.settings.risingCharacterPreview && isInternalPreview) || (!core.state.settings.risingLinkPreview && !isInternalPreview))
+        if (isInternalPreview && !core.state.settings.risingCharacterPreview)
+            return;
+        else if (!isInternalPreview && !core.state.settings.risingLinkPreview)
             return;
 
         this.show(url);
@@ -254,7 +255,7 @@ export default class ImagePreview extends Vue {
     ticker?: number;
     onTick = () => {
         if ((this.visible && !this.exitInterval && !this.shouldDismiss) || this.interval)
-            this.initialCursorPosition = screen.getCursorScreenPoint();
+            this.initialCursorPosition = this.getCursorScreenPoint();
 
         if (this.visible && this.shouldDismiss && this.hasMouseMovedSince() && !this.exitInterval && !this.interval) {
             this.debugLog('ImagePreview: call hide from interval');
@@ -455,7 +456,7 @@ export default class ImagePreview extends Vue {
                 this.visibleSince = Date.now();
                 this.shouldDismiss = false;
 
-                this.initialCursorPosition = screen.getCursorScreenPoint();
+                this.initialCursorPosition = this.getCursorScreenPoint();
 
                 this.reRenderStyles();
 
@@ -473,7 +474,7 @@ export default class ImagePreview extends Vue {
             return true;
 
         try {
-            const p = screen.getCursorScreenPoint();
+            const p = this.getCursorScreenPoint();
 
             return (p.x !== this.initialCursorPosition.x || p.y !== this.initialCursorPosition.y);
         }

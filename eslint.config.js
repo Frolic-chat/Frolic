@@ -94,7 +94,9 @@ export default [
             ],
             '@stylistic/brace-style': [
                 'error',
-                'stroustrup',
+                'stroustrup', {
+                    "allowSingleLine": true
+                },
             ],
             '@stylistic/indent': [
                 'warn',
