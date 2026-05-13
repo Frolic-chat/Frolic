@@ -11,9 +11,421 @@ f12f9220bc3350f64884f1c61b2aee0cfb31f144
 a0379b966883cc357b7fd9052274c044d8ee6f64
 a5101d8e9905984818b0c700c349434159a2d081
 c81c0a744e33ed26b8e6e6fc339080a6ba9bcd8e
-89467e10ac7d4c529a23304c64b72b7a614a853c
 b7c4c35ae5cfb2db66dd757f8528ebe2c3548aea
-688837bfb0fcf27261d8a85f9baeecba6f8b3b21
-cfccb98f4d3b9ed35c2826a27cd9b33960536c56
-04ce8f6051de889fceb21e4452138bf4c08dec32
+
+## generated with:
+## git log --grep="lint\|format" --regexp-ignore-case --pretty=format:"## %s%n%H%n"
+
+## Formatting in icon and urltag views and contentpreview
+b5760744ddade86ecab03dc74c979bba2846c5a9
+
+## Formatting Index.vue
+9c80f41eab018e0026772a2d76fc0441ddf6072c
+
+## Formatting in content preview prior to bug fix
+bd1d7d5e9b267aeb935738866d9bbb37137b1c75
+
+## Formatting: UserView
+7b457a6c2bfe605afc56f50792b1c1ec674f5208
+
+## Linting ad-manager
+12de030e1da467df70b8d68723a265dece4694ee
+
+## Formatting around ads
+b8fefc44d25642be85a013245619fdafdd85b183
+
+## Linting/Formatting surrounding ad center
+75449c6ccb09636b07a9bc62d14bbadaf315979d
+
+## Lint: ordering of safety checks in ad launcher
+026dc3755d168db629ecee18c5ade7b028184bdb
+
+## Log linting and always re-evaluate condition
+ec98fc538670bf48c68e9db597d595d4eefd9baa
+
+## Linting
+98290ac2eb3a24104d30044743b4d67ca8951faf
+
+## ad-center logic tidy linting
+24272408ad1ac684917f7ba66591098ff8132bc6
+
+## ad formatting
+b2463c9d42607dba9bb1150d03d363f28d5e18d8
+
+## Formatting
+ed3fd04b1c5e5be67f300660865aff0657338a2a
+
+## Formatting character page and kinks for update
+eb87d326c05295d274cddd0b1c26788243a7d208
+
+## Linting/Formatting surrounding helper utilities
+adbe66253915625c8d3cdae67ce35cdcbd6dd4ea
+
+## Linting
+c0e9abdd858cd6ed779d6f486b2d327f10f1be1d
+
+## Friend dialog formatting for bug fix
+78056cdee75c4a0ec1772256cbcd6e0416c8c791
+
+## Linting
+02aac513c25dd9b0f76febca66ef75b7aadc50ab
+
+## Formatting HQP for update
+7166a7c77c7e08c820621b4d8cb733e757edc351
+
+## Formatting tabs
+3d513a5a72b7f597f90faf5e115aa8c751de57ae
+
+## Format Modal for ad-center work
+ffedbc766ab8d2fd31d66b41dc58ea3c90ed4a88
+
+## Matcher and ad-coordinator formatting/linting
+17e9466b942cc5c02f47b77818cfbf97f63aba61
+
+## Linting conversation for future throat work
+9812cc808ffcd6a417f842611127666aae7a7430
+
+## BBCode Parser linting
+93580c9f5bb2e5e6554a6f62f5d07a2c2c9e04cd
+
+## Formatting home
+ee66910f0669c6d81e5179f64325a349b867f7b9
+
+## Formatting surrounding
+ea5b21a1c10f50487af96d690179afc4b3b1c311
+
+## Formatting surrounding adcenter changes
+ac7ef055b4ce7dced174eaee58de6733474bdaec
+
+## Dialog linting/formatting
+1448e94c5b4726821a7758a648ce181e020fbdb8
+
+## adCenter linting + logging
+9d7318ac207206ce8ef583a02655d00fc68b9a96
+
+## AdCenter formatting
+2a47d4d3f22d0fd301f35b64ef27b9ee979821da
+
+## Format ads views
+ee35326decddd9df3dd48a8542ee7ab3e1a66e67
+
+## Format ad settings and minor linting
+378f752292b63796a185538521459152f77dd3a2
+
+## BBCode linting/formatting/cleanup
+d2fcbfe533b72abb3b40cfac8c62292fb3a8381b
+
+## Minor linting/formatting fixes
+015154fba63cb758bc7c840eb133246ed80802a4
+
+## eslint rule update
+1ab0415f1db4161b517feba22da0dfaefd08e6c1
+
+## Formatting eicon store
+e9743523851d996d3aa111401a2e2fa663aee4e1
+
+## Formatting interfaces
+4b8a09d33f363ebde3fbfc346163c5af4bcba69d
+
+## Formatting filesystem
+ae23bdc45d88f373b2d38306975c987f78eb3ec2
+
+## Formatting on characters
+b45243059464201527884d5e3236d87250f9fbb5
+
+## Format settings
+753fe45aab187d72805953be0da3c30268ae6f68
+
+## Linting/formatting universal home
+dd49617edb14d17cae1d8b93302202bd9f941390
+
+## UniversalHome Linting/Formatting
+b6b0a6eb29cc9494f34535e8af4ad51479295014
+
+## Update eslint rules
+28423f6f50c502b8131af0ac09c498048d2b4923
+
+## Misc formatting
+5c62f0b4b45abec8c05db229a29b494be528efe9
+
+## misc formatting + type fixes
+0511334747d8f40f21c9ae8c2e9d4c70943976a9
+
+## Formatting
+96645c4f0feaf6338c931d3dfa6744a92b6ce070
+
+## Formatting
+7526cb109cdaed9c224f800d433659c019211316
+
+## Formatting WordDef
+435519393d7d3b143d8a5a61208cd8f9150712fb
+
+## Update git ignore for recent linting
+de59684c49b20318f9bca412da6e234920a2934d
+
+## Linting/Formatting General
 87b359011a89019c2ec0e73cc5a0d8e0c520dec0
+
+## Linting/Formatting General
+04ce8f6051de889fceb21e4452138bf4c08dec32
+
+## Linting/Formatting General
+cfccb98f4d3b9ed35c2826a27cd9b33960536c56
+
+## Linting/Formatting General
+688837bfb0fcf27261d8a85f9baeecba6f8b3b21
+
+## bbcode formatting/linting
+89467e10ac7d4c529a23304c64b72b7a614a853c
+
+## Eslint rules update
+c80a52db09a036453bdca8f60f48d03aab3343f0
+
+## Formatting/linting cleanup surrounding bbcode editor
+584e16c2c09d629bc01808da4835f9b3e054a08d
+
+## Update eslint rules for vue files
+8c72bc9614e9d31c4cd2ee1a4d955e29b33ca5e0
+
+## bbcod editor formatting/linting for future work
+66400d05b95d4d703371deee2d7a3ac3c4e59ab7
+
+## Experimental format test
+4c9407ddff14dae343d2ae890c3997a99a6d424e
+
+## Fix eslint config for release
+13d229b15fde00b42716fc9026ecf278d3c2ff8c
+
+## Misc typing fixes, comments, formatting
+044362967dbe27c1536a69efaca8a9018320480e
+
+## eslint config initial
+1db606ff37645039372f9484dad580d0ef0383ce
+
+## Add typescript support to eslint
+946e6d855b9e5f3fd343f7627f391582233a7667
+
+## Configure webpack to use eslint
+b73088b7c49477789f037ce735cbdf2c19bc4328
+
+## Add eslint + webpack plugin + vue plugin
+7789d532e3d53d1cf844345419a73f445dc08eb3
+
+## Upgrade tsconfig to accept 'got' import, which is only ESM
+95e57f2cab8e14410e0d9ef703293bc8fa7a134a
+
+## Remove tslint comments
+f1b1f1857a92dfd8cec4af7ed942b503f95e9af5
+
+## Drop tslint
+d4af1f56213e650042888adfdd79c1b5582087a4
+
+## Linting: Remove unused types
+37a3dedd33558e2921760a13a9396b77880ffa51
+
+## Formatting
+d69be5bf0a0ccd72a16939345c2a79c2435167b5
+
+## Cache formatting & Logging improvements
+f8d5b57dbddff48c8ca69b1d7fb3504028d05b8d
+
+## Formatting cache manager for better debugging
+ada4d114b913638f738b4ed636e4ac3ad9b8ac9e
+
+## Formatting and comments
+34a578720dd5b1f80ff49370a3fc3e9d6475079a
+
+## Bugfix: proper formatting of user-views in unread note display
+0ab4773014c8c2465f573fd14225caeab6a0d8cd
+
+## Formatting
+d8f840e02374ad987c62dcf5eb70207e301f59ec
+
+## Index.vue formatting
+c95a4bd41793edd2a3f6f62ef83a9b9e9dd609da
+
+## Formatting in main
+71dbbfd8050e889bbd0f46db89e704fbc7851194
+
+## Index.vue formatting
+23cebf4a899e7a18f147e00920e864e7f4a0046b
+
+## Formatting
+0dabcc9b62005895757c4e203b56003196a677c0
+
+## Formatting
+1324165d230ae36863ca76d911e774daf086c843
+
+## Formatting
+ceea07d8b52344058ba812fc5afbcc8f677ecf0a
+
+## Formatting
+ed2fbec10cd6af3231128766252578c73cfec025
+
+## Formatting
+c8cca2148a55404fb77f86a5faa2304bc7bcb00f
+
+## Tabs formatting
+910408a53e1737c4142d4f7805d3d8e65fec98f5
+
+## Formatting: Character sheet
+2793d66db6e1333cb96555d781667a3001bdecd5
+
+## Tabs: Formatting
+3e51bf8fe13bddd3bacc63a8568dc6e0d6e74ff9
+
+## formatting
+2f1baeb0a5d4dc919413922a554613b03241d016
+
+## Formatting
+e48c6f90659da3bc6581b5c1517b5b634297b660
+
+## Formatting and comments
+a783261d0005a4d8c051847619bf9a5d1198ff56
+
+## Comments + Formatting
+dbeb05171184be51cc42ba4f0478d7773c0349b9
+
+## Reformat electron directory for tidiness
+3b698179553552891b3c8749b99abeb6e4de8e41
+
+## Formatting
+160e70526f5409d83c721919debb900da2bafd4a
+
+## Formatting
+19cef16c0b53cb0614a8bc377bfe524517b4ee48
+
+## Formatting
+5a6dbc4d907eac3223afd9557062bd704b657987
+
+## Formatting
+1b4ad51c238f87fb81e90bab39e077453af453f7
+
+## Build tooling update (pack-all to module format)
+81f97ac3cf6f0148be5e4ffc9429441053f9dcc5
+
+## Misc. character preview touchups; needs reformatting/thorough examination
+fb1cc08f0926921cec206849b4d0cd4ca1b25512
+
+## Linting
+e4eb8746b8aaae16d853d0fa596d36728b47583d
+
+## Formatting: Documentation, remove unhelpful debugging, lodash stripping
+5befeb9602801c6378f0b8a7edae7f0fbdc2aadf
+
+## Event bus formatting
+3f121114dadd6206f89b33e3f7f77a4cb0458375
+
+## Formatting and comments
+4727f6fa8d0659b6742bfc212df7c511d6aa3aa9
+
+## CharacterSearch.vue: Formatting, Remove unhelpful debugging, reduce log noise
+146352d3ae016298c5ea46863e31bd525addf262
+
+## Formatting
+877c64cdecd02eeccdf6a7931262c5c004fbd4b1
+
+## main.ts Formatting: electron -> Electron namespace; type safety
+f8e575f2d29dff7c59ba8d4f9bdc15ea94c22155
+
+## Formatting: Type safety, comments, logging
+46fe46fdecf9e1b91581f51de80dd6dfa428e3db
+
+## Formatting/lodash/cleanup/old comments
+9f3410591e41396d00cfce05ea289e681e0e5a70
+
+## Formatting: Make EventBus easier to search
+77b919d1a57239a8ee1bddcb847f31c268cb3000
+
+## Formatting: Bulk Lodash removal
+1fa73bbe6b9fd31f575e0e4aa6b4574c0fc30e75
+
+## Formatting: Tweaks & Comments
+528da3661ee0e52ff145a957917346624fdce7cf
+
+## Logs.vue: Formatting
+14c5ffd2aa232da791ca0d7d46c88163227d91d5
+
+## Formatting
+888ad8353a4c715b2c6450d80fa2d382ef7f10a7
+
+## Formatting: Lodash removal
+7e9cc38ae742cd70507e5b7600f4f261a07973bc
+
+## Formatting AdLauncher
+323c1b660b4cf81ecb78a16c3c7a2506b34110f0
+
+## Formatting/lintings
+6039b1014e7a1585e59488d5a489539bca20b133
+
+## Linting
+abb2389952b28b485faafa27e231001292f40899
+
+## Formatting
+109df994c775d9e6667770198955c9d044fcc334
+
+## Feat: Eicon Selector overhaul
+7aa69bf594ecc0aee5fa528e2e25f0eed60bc2c0
+
+## Format: store.ts
+410261e6d70ae336d500b11cc7dc530773b6d121
+
+## Blame: Ignore formatting commits
+b553c72a255b19a79c49be8df6cb8c8c0e9f5c57
+
+## Format: conversations.ts onMessage "MSG"
+a54bc2dbaf89b92edaa30668bc5161770cd65f90
+
+## Format utils.ts
+025b38af8ae5ea26c7a41bcc025e205d4cbcae0e
+
+## Lint constants
+03d361b3eee917c7e39d09bae1922769e23af98a
+
+## Formatting
+c59c5fbc4aa54ec010253d56cd94da49a0144534
+
+## Formatting: types for editor warnings
+0ba71df1447fbf1c5f1617b76a4fdffd3ce7c308
+
+## Linting & Formatting
+375c399b24602c6831d8b7eb479d983faa240ccd
+
+## Formatting
+4a874687d0df059ba38d97f7dcab84bdd839c9fe
+
+## Formatting
+7ccd033c67f3fe0c228740cb4fc46ebb9753b96f
+
+## Update: Formatting; please ignore
+11d13c8c0e5985f22af16ee34c7624f64a26a9a6
+
+## Feat: Left sidebar modernization
+5623ed645073e2bf2f02f91ff0c2d6edefbf0891
+
+## Update: Linting; Log more;
+03a219cb72d19a3b5f9852a4f46adc361788a6fa
+
+## Blame will ignore formatting
+8030dcab6a7e9abfb42cdb62e2a24a846b3eb681
+
+## Lint: Editor warnings Lint: Refactor to unnest double-if Lint: 2 -> 4 spaces Lint: Remove non-SSL links
+fbe16c8b28558e871d31fb15ff82307091b8edf9
+
+## Formatting update for conversation.addMessage
+786015141c6c9c8e4d0da16fb2a04bdea7836bc9
+
+## Cleanup & Linting Matcher cleanup Remove pointless async Let scoreholder var hold score (typescript :)) Remove unused audio files Remove 'experimental' tag from font size Lint own build file
+9c653981055192b8917ff7156e63ca73d6c81adb
+
+## TS Linter misbehaving
+925819c48fa0f06c09226a412f2960a25e7b74bc
+
+## Merge pull request #307 from CodingWithAnxiety/master
+e5243efef44ca94fd483382b39397d3b7108fe8a
+
+## Formatting error
+c27ee8be413be1c03744d9e7351ecaaea92eaa7c
+
+## Fixed date formatting
+f862d53243327b904ff84885fd43d66da94aacae
