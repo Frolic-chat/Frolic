@@ -2,16 +2,18 @@
 <template>
 <!-- hiding elements instead of using 'v-if' is used here as an optimization -->
 <div class="image-preview-wrapper w-xl-50 w-lg-60 w-md-70 w-sm-80 w-xs-100" :class="{interactive: sticky, visible: visible}">
-  <div class="image-preview-toolbar" v-show="sticky || debug">
-    <a @click="toggleDevMode()" :class="{toggled: debug}" :title="l('preview.debug')"><i class="fa fa-terminal"></i></a>
-    <a @click="toggleJsMode()" :class="{toggled: runJs}" :title="l('preview.expand')"><i class="fa fa-magic"></i></a>
-    <a @click="reloadUrl()" :title="l('preview.reload')"><i class="fa fa-redo-alt"></i></a>
-    <a @click="reset()" :title="l('preview.reset')"><i class="fa fa-recycle"></i></a>
-    <a @click="toggleStickyMode()" :class="{toggled: sticky}" :title="l('preview.sticky')"><i class="fa fa-thumbtack"></i></a>
+  <div v-show="sticky || debug" class="image-preview-toolbar">
+    <a :class="{toggled: debug}" :title="l('preview.debug')" @click="toggleDevMode()"><i class="fa fa-terminal"></i></a>
+    <a :class="{toggled: runJs}" :title="l('preview.expand')" @click="toggleJsMode()"><i class="fa fa-magic"></i></a>
+    <a :title="l('preview.reload')" @click="reloadUrl()"><i class="fa fa-redo-alt"></i></a>
+    <a :title="l('preview.reset')" @click="reset()"><i class="fa fa-recycle"></i></a>
+    <a :class="{toggled: sticky}" :title="l('preview.sticky')" @click="toggleStickyMode()"><i class="fa fa-thumbtack"></i></a>
   </div>
 
   <!-- note: preload requires a webpack config CopyPlugin configuration, which means make sure the preload="" script points to the compiled location. :) -->
   <webview
+      id="image-preview-ext"
+      ref="imagePreviewExt"
       preload="./assets/preview/browser.pre.js"
       src="about:blank"
       webpreferences="autoplayPolicy=no-user-gesture-required,contextIsolation,sandbox,disableDialogs,disableHtmlFullScreenWindowResize,webSecurity,enableWebSQL=no,nodeIntegration=no,nativeWindowOpen=no,nodeIntegrationInWorker=no,nodeIntegrationInSubFrames=no,webviewTag=no"
@@ -19,12 +21,9 @@
       allowpopups="false"
       nodeIntegration="false"
       partition="persist:adblocked"
-
-      id="image-preview-ext"
-      ref="imagePreviewExt"
       class="image-preview-external"
-      :style="previewStyles.ExternalImagePreviewHelper">
-  </webview>
+      :style="previewStyles.ExternalImagePreviewHelper"
+  ></webview>
 
   <div
       class="image-preview-local"
@@ -33,12 +32,12 @@
   </div>
 
   <character-preview
-      :style="previewStyles.CharacterPreviewHelper"
       ref="characterPreview"
+      :style="previewStyles.CharacterPreviewHelper"
   ></character-preview>
 
-  <i id="preview-spinner" class="fas fa-circle-notch fa-spin" v-show="shouldShowSpinner"></i>
-  <i id="preview-error" class="fas fa-times" v-show="shouldShowError"></i>
+  <i v-show="shouldShowSpinner" id="preview-spinner" class="fas fa-circle-notch fa-spin"></i>
+  <i v-show="shouldShowError" id="preview-error" class="fas fa-times"></i>
 </div>
 </template>
 
@@ -64,6 +63,7 @@ import type * as Electron from 'electron';
 import CharacterPreview from './CharacterPreview.vue';
 
 const FLIST_PROFILE_URI_MATCH = /https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+%_.!~*'()]+)\/?/;
+const MIN_ALLOWED_VISIBILITY_MS = 100;
 
 @Component({
     components: {
@@ -71,7 +71,6 @@ const FLIST_PROFILE_URI_MATCH = /https?:\/\/(www\.)?f-list\.net\/c\/([a-zA-Z0-9+
     },
 })
 export default class ImagePreview extends Vue {
-    private readonly MinTimePreviewVisible = 100;
 
     visible = false;
 
@@ -386,7 +385,7 @@ export default class ImagePreview extends Vue {
         // console.log('DISMISS');
 
         const due = this.visible
-            ? this.MinTimePreviewVisible - Math.min(this.MinTimePreviewVisible, (Date.now() - this.visibleSince))
+            ? MIN_ALLOWED_VISIBILITY_MS - Math.min(MIN_ALLOWED_VISIBILITY_MS, (Date.now() - this.visibleSince))
             : 0;
 
         this.cancelTimer();

@@ -1,19 +1,19 @@
 <template>
 <a
-  :href="`${Utils.siteDomain}c/${character}`"
-  target="_blank"
-  @mouseover.prevent="show()"
-  @mouseenter.prevent="show()"
-  @mouseleave.prevent="dismiss()"
-  @click.middle.prevent.stop="toggleStickyness()"
-  @click.right.passive="dismiss(true)"
-  @click.left.passive="dismiss(true)"
-  v-bind:character.prop="characterData"
-  ><img :src="getAvatarUrl()" class="character-avatar icon" :title="character" :alt="character" v-once></a>
+    :href="`${flistDomain}c/${character}`"
+    target="_blank"
+    :character.prop="characterData"
+    @mouseover.prevent="show()"
+    @mouseenter.prevent="show()"
+    @mouseleave.prevent="dismiss()"
+    @click.middle.prevent.stop="toggleStickyness()"
+    @click.right.passive="dismiss(true)"
+    @click.left.passive="dismiss(true)"
+><img v-once :src="getAvatarUrl()" class="character-avatar icon" :title="character" :alt="character"></a>
 </template>
 
 <script lang="ts">
-import {Component, Hook, Prop} from '@frolic/vue-ts';
+import { Component, Hook, Prop } from '@frolic/vue-ts';
 import Vue from 'vue';
 import EventBus from '../chat/preview/event-bus';
 import * as Utils from '../site/utils';
@@ -21,9 +21,9 @@ import core from '../chat/core';
 
 @Component
 export default class IconView extends Vue {
-    Utils = Utils;
+    flistDomain = Utils.siteDomain;
 
-    @Prop({required: true})
+    @Prop({ required: true })
     readonly character!: string;
 
     get characterData() {
@@ -32,7 +32,7 @@ export default class IconView extends Vue {
 
     @Hook('mounted')
     mounted(): void {
-      // do nothing
+        // do nothing
     }
 
 
@@ -48,11 +48,11 @@ export default class IconView extends Vue {
 
 
     getCharacterUrl(): string {
-      return `flist-character://${this.character}`;
+        return `flist-character://${this.character}`;
     }
 
     getAvatarUrl(): string {
-      return core.characters.getImage(this.character);
+        return core.characters.getImage(this.character);
     }
 
 
@@ -61,7 +61,7 @@ export default class IconView extends Vue {
         //   return;
         // }
 
-        EventBus.$emit('imagepreview-dismiss', {url: this.getCharacterUrl(), force});
+        EventBus.$emit('imagepreview-dismiss', { url: this.getCharacterUrl(), force });
     }
 
 
@@ -70,7 +70,7 @@ export default class IconView extends Vue {
         //   return;
         // }
 
-        EventBus.$emit('imagepreview-show', {url: this.getCharacterUrl()});
+        EventBus.$emit('imagepreview-show', { url: this.getCharacterUrl() });
     }
 
 
@@ -79,7 +79,7 @@ export default class IconView extends Vue {
         //   return;
         // }
 
-        EventBus.$emit('imagepreview-toggle-sticky', {url: this.getCharacterUrl()});
+        EventBus.$emit('imagepreview-toggle-sticky', { url: this.getCharacterUrl() });
     }
 }
 </script>
