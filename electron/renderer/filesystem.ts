@@ -212,6 +212,7 @@ function loadIndex(name: string): Index {
 export class Logs implements Logging {
     canZip = true;
     private index:            Index = {};
+    // The relationship between loaded char and index needs to be solidified in typing and usage.
     private loadedIndex?:     Index;
     private loadedCharacter?: string;
 
@@ -263,8 +264,9 @@ export class Logs implements Logging {
     }
 
     private getIndex(name: string): Index {
-        if (this.loadedCharacter === name)
-            return this.loadedIndex!;
+        if (this.loadedCharacter === name && this.loadedIndex)
+            return this.loadedIndex;
+
         this.loadedCharacter = name;
         return this.loadedIndex = name === core.connection.character ? this.index : loadIndex(name);
     }
@@ -331,7 +333,7 @@ export class Logs implements Logging {
         const index = this.getIndex(character);
         const conversations: { key: string, name: string }[] = [];
         for (const key in index)
-            conversations.push({ key, name: index[key]!.name });
+            conversations.push({ key, name: index[key]?.name ?? '' });
         return conversations;
     }
 
