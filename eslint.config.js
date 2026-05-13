@@ -67,11 +67,7 @@ export default [
                     alignAttributesVertically: false,
                 }
             ],
-            // "vue/multiline-html-element-content-newline": ["error", {
-            //     "ignoreWhenEmpty": true,
-            //     "ignores": [ "pre", "textarea" ],
-            //     "allowEmptyLines": false
-            // }],
+            "vue/no-v-html": 'off',
             'vue/max-attributes-per-line': 'off',
             'vue/html-self-closing': 'off',
             'vue/max-len': 'off',
