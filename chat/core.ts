@@ -98,7 +98,13 @@ const data = {
         registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement) {
             this.primaryInput = e;
         },
-        userToggles: {},
+        userToggles:      {},
+        contentDetection: {
+            setMouseCoords(x: number, y: number) { this.x = x; this.y = y; },
+            getMouseCoords() { return { x: this.x, y: this.y }; },
+            x: 0,
+            y: 0,
+        },
     },
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {

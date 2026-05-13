@@ -375,5 +375,12 @@ export interface Runtime {
         licenses?:        boolean,
         devMatchDetails?: boolean,
         devLogging?:      boolean,
-    }
+    };
+    // This could be a class to make x and y readonly if it's ever that concerning.
+    contentDetection: {
+        setMouseCoords(x: number, y: number): void,
+        getMouseCoords(): { x: number, y: number },
+        x: number,
+        y: number,
+    };
 }
