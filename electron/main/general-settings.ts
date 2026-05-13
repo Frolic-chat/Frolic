@@ -3,8 +3,9 @@
  * Exclusively exports an init() factory function that gives you a GeneralSettingsExport.
  */
 import * as Electron from 'electron';
-import * as fs from 'fs';
-import { GeneralSettings, GeneralSettingsUpdate } from "../common";
+import * as Fs from 'fs';
+import type { GeneralSettingsUpdate } from '../common';
+import { GeneralSettings } from '../common';
 import { debounce } from '../../helpers/utils';
 
 import NewLogger from './custom-logger';
@@ -19,13 +20,12 @@ const debounceFileWrite = debounce(writeSettingsToFile, { wait: 1000, maxWait: 1
 let setLogLevel: ((level: GeneralSettings['risingSystemLogLevel']) => void) | undefined;
 
 type GeneralSettingsExport = {
-    raw: Readonly<GeneralSettings>,
+    raw:                  Readonly<GeneralSettings>,
     shouldImportSettings: boolean,
-    set: <T extends keyof GeneralSettings>
-        (name: T, value: GeneralSettings[T]) => void,
-    upgradeAppVersion: (targetVersion: string) => boolean,
-    merge: (settings: GeneralSettings) => void;
-}
+    set:                  <T extends keyof GeneralSettings> (name: T, value: GeneralSettings[T]) => void,
+    upgradeAppVersion:    (targetVersion: string) => boolean,
+    merge:                (settings: GeneralSettings) => void;
+};
 
 // Set readonly as we get closer to completion.
 export function init(settingsPath: string, logLevelSetter?: (level: GeneralSettings['risingSystemLogLevel']) => void): GeneralSettingsExport {
@@ -35,12 +35,12 @@ export function init(settingsPath: string, logLevelSetter?: (level: GeneralSetti
     if (settingsPath)
         settingsFile = settingsPath;
 
-    if (!fs.existsSync(settingsPath)) {
+    if (!Fs.existsSync(settingsPath)) {
         shouldImportSettings = true;
     }
     else {
         try {
-            const json = fs.readFileSync(settingsPath, 'utf8');
+            const json = Fs.readFileSync(settingsPath, 'utf8');
             Object.assign(settings, JSON.parse(json) as GeneralSettings);
 
             settings.argv = process.argv.filter(a => a.startsWith('--'));
@@ -65,7 +65,7 @@ export function init(settingsPath: string, logLevelSetter?: (level: GeneralSetti
  * Call with no arguments to register pre-programmed events; provide your own events to register those.
  * @param extraCalls Optional: Tuples of event-name and Function
  */
-function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...args: any[]) => void] ]) {
+function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...args: unknown[]) => void] ]) {
     if (extraCalls) {
         for (const [ channel, handler ] of extraCalls)
             Electron.ipcMain.on(channel, handler);
@@ -82,11 +82,11 @@ function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...a
         }
         else {
             logSettings.warn('Outdated settings reached main.', {
-                from:    d.character,
+                from:      d.character,
                 'from-wc': e.sender.id,
-                to:      'electron-main',
-                current: timestamp,
-                new:     d.timestamp,
+                to:        'electron-main',
+                current:   timestamp,
+                new:       d.timestamp,
             });
         }
     });
@@ -143,7 +143,7 @@ function writeSettingsToFile() {
     if (settingsFile) {
         const json = JSON.stringify(settings, null, 4);
         try {
-            fs.writeFileSync(settingsFile, json);
+            Fs.writeFileSync(settingsFile, json);
         }
         catch (e) {
             console.error(e);
