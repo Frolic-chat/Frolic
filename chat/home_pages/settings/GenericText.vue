@@ -1,9 +1,9 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group">
-    <label class="form-label" :for="`${prefix}-${setting}`">{{ title }}</label>
-    <input type="text" class="form-control" :id="`${prefix}-${setting}`" @change="set" :value="stringifiedSetting" :disabled="disabled" :placeholder="ph" :aria-describedby="`${prefix}-${setting}Help`"/>
-    <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <label class="form-label" :for="`${prefix}-${setting}`">{{ title }}</label>
+  <input :id="`${prefix}-${setting}`" type="text" class="form-control" :value="stringifiedSetting" :disabled="disabled" :aria-describedby="`${prefix}-${setting}Help`" :placeholder="ph" @change="set">
+  <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">{{ help }}</small>
 </div>
 </template>
 
@@ -22,13 +22,19 @@ export default class GenericText extends Vue {
      * Being a generic, we cannot narrow down the given object any further than recognizing the key may be valid.
      */
     @Prop({ required: true })
-    readonly obj!: { [key: string]: any };
+    readonly obj!: { [key: string]: unknown };
 
     /**
      * Custom prefix; typically the object you're toggling members of.
      */
     @Prop({ default: '' })
     readonly prefix!: string;
+
+    /**
+     * In case you want to replace `settings.` with something else in the localization strings.
+     */
+    @Prop({ default: 'settings' })
+    readonly localizationPrefix!: string;
 
     /**
      * Primary title of the element; also used for all localization.
@@ -59,9 +65,15 @@ export default class GenericText extends Vue {
 
     fallback = '';
 
-    get title() { return l(`settings.${this.prefix}.${this.setting}`,      ...(this.localArgs.title ?? [])) }
-    get help()  { return l(`settings.${this.prefix}.${this.setting}.help`, ...(this.localArgs.help  ?? [])) }
-    get ph()    { return l(`settings.${this.prefix}.${this.setting}.ph`,   ...(this.localArgs.ph    ?? [])) }
+    get title() {
+        return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}`, ...(this.localArgs.title ?? []));
+    }
+    get help()  {
+        return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.help`, ...(this.localArgs.help ?? []));
+    }
+    get ph()    {
+        return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.ph`, ...(this.localArgs.ph ?? []));
+    }
 
     /**
      * Parses the input from the text box. Use this to specify it matches the necessary criteria for your setting.
@@ -71,7 +83,7 @@ export default class GenericText extends Vue {
     /**
      * The transformer is run on validated input; use this to turn the input string into whatever output data you need.
      */
-    @Prop({ default: undefined }) transformer?: ((s: string) => any);
+    @Prop({ default: undefined }) transformer?: ((s: string) => unknown);
 
     set(e: Event) {
         const input = e.target as HTMLInputElement;

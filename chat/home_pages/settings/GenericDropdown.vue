@@ -1,18 +1,18 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group">
-    <label class="form-label" :for="`${prefix}-${setting}`">{{ title }}</label>
-    <select class="form-control" :id="`${prefix}-${setting}`" v-model="obj[setting]" :disabled="disabled" :aria-describedby="`${prefix}-${setting}Help`">
-        <slot>
-            <option v-if="blank || !options"></option>
-            <template v-if="options">
-                <option v-for="entry in options" :key="`${prefix}-${setting}${entry[1]}`" :value="entry[0]">
-                    {{ entry[1] }}
-                </option>
-            </template>
-        </slot>
-    </select>
-    <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <label class="form-label" :for="`${prefix}-${setting}`">{{ title }}</label>
+  <select :id="`${prefix}-${setting}`" v-model="obj[setting]" class="form-control" :disabled="disabled" :aria-describedby="`${prefix}-${setting}Help`">
+    <slot>
+      <option v-if="blank || !options"></option>
+      <template v-if="options">
+        <option v-for="entry in options" :key="`${prefix}-${setting}${entry[1]}`" :value="entry[0]">
+          {{ entry[1] }}
+        </option>
+      </template>
+    </slot>
+  </select>
+  <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">{{ help }}</small>
 </div>
 </template>
 
@@ -28,13 +28,19 @@ export default class Dropdown extends Vue {
      * Being a generic, we cannot narrow down the given object any further than recognizing the key may be valid.
      */
     @Prop({ required: true })
-    readonly obj!: { [key: string]: any };
+    readonly obj!: { [key: string]: unknown };
 
     /**
      * Custom prefix; typically the object you're toggling members of.
      */
     @Prop({ default: '' })
     readonly prefix!: string;
+
+    /**
+     * In case you want to replace `settings.` with something else in the localization strings.
+     */
+    @Prop({ default: 'settings' })
+    readonly localizationPrefix!: string;
 
     /**
      * Primary title of the element; also used for all localization.
@@ -48,8 +54,12 @@ export default class Dropdown extends Vue {
     @Prop({ default: () => ({ title: [], help: [] }) })
     readonly localArgs!: { title?: string[]; help?: string[] };
 
-    get title() { return l(`settings.${this.prefix}.${this.setting}`,      ...(this.localArgs.title ?? [])) }
-    get help()  { return l(`settings.${this.prefix}.${this.setting}.help`, ...(this.localArgs.help  ?? [])) }
+    get title() {
+        return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}`, ...(this.localArgs.title ?? []));
+    }
+    get help()  {
+        return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.help`, ...(this.localArgs.help ?? []));
+    }
 
     /**
      * Allow an extra blank entry.
