@@ -352,6 +352,8 @@ Are you sure?`,
     'settings.hidePrivateMessages.help': "Messages from global ops and moderators of any channel you're in will remain visible.",
     'settings.useGlobalSetting': 'Use global setting',
 
+    'settings.search.ph': 'Search for settings that contain...',
+
     'home.tab.home':            'Home',
     'home.tab.comms':           'Comms',
     'home.tab.description':     'Description',

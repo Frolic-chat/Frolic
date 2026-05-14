@@ -105,6 +105,7 @@ const data = {
             x: 0,
             y: 0,
         },
+        settingsSearchInput: '',
     },
 
     register<K extends 'characters' | 'conversations' | 'channels'>(module: K, subState: VueState[K]): void {

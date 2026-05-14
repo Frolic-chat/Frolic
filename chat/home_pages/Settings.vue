@@ -12,20 +12,27 @@
       </div>
     </div>
 
-    <div class="d-flex flex-row flex-wrap justify-content-center mb-1" style="gap: 0.5rem">
+    <!-- The mr-2 on the below elements are to account for the scrollbar on the lower element making everything appear offset. -->
+
+    <div class="d-flex flex-row flex-wrap justify-content-center mr-2 mb-2" style="gap: 0.5rem">
       <button v-for="entry, i in tabNames"
           :key="i"
-          class="btn btn-primary"
-          :class="{ active: activeCollapse === entry }"
+          class="btn btn-light settings-tab"
+          :class="{
+            active: activeCollapse === entry,
+            'active-settings-result-tab': searchHighlight[entry],
+          }"
           @click.prevent="openSection(entry)"
       >
         {{ entry }}
       </button>
     </div>
+
+    <search-widget :onSearch="onSearch" class="mr-2 mb-2"></search-widget>
   </template>
 
   <template v-slot:default>
-    <collapse :id="tab0name" :ref="tab0name" :title="tab0name" :initial="false" class="mb-4 mt-4">
+    <collapse :id="tab0name" :ref="tab0name" :title="tab0name" :initial="false" class="mb-4 mt-4 settings-container">
       <checkbox setting="clickOpensMessage"></checkbox>
       <checkbox setting="colorBookmarks"></checkbox>
 
@@ -69,7 +76,7 @@
 
       <checkbox setting="risingColorblindMode"></checkbox>
     </collapse>
-    <collapse :id="tab1name" :ref="tab1name" :title="tab1name" :initial="false" class="mb-4">
+    <collapse :id="tab1name" :ref="tab1name" :title="tab1name" :initial="false" class="mb-4 settings-container">
       <checkbox setting="risingShowPortraitInMessage"></checkbox>
       <checkbox setting="messageSeparators"></checkbox>
 
@@ -89,7 +96,7 @@
       <checkbox setting="enterSend"></checkbox>
       <checkbox setting="secondEnterSend" :disabled="!settings.enterSend"></checkbox>
     </collapse>
-    <collapse :id="tab2name" :ref="tab2name" :title="tab2name" :initial="false" class="mb-4">
+    <collapse :id="tab2name" :ref="tab2name" :title="tab2name" :initial="false" class="mb-4 settings-container">
       <checkbox setting="notifications"></checkbox>
 
       <div class="form-group"><hr></div>
@@ -112,7 +119,7 @@
       <text-input setting="highlightUsernames" :validator="tfHighlightUsernames" :transformer="tfHighlightUsernames"></text-input>
       -->
     </collapse>
-    <collapse :id="tab3name" :ref="tab3name" :title="tab3name" :initial="false" class="mb-4">
+    <collapse :id="tab3name" :ref="tab3name" :title="tab3name" :initial="false" class="mb-4 settings-container">
       <h5>{{ l('rising.header.matching') }}</h5>
 
       <checkbox setting="risingAdScore"></checkbox>
@@ -138,7 +145,7 @@
 
       <checkbox setting="risingShowUnreadOfflineCount"></checkbox>
     </collapse>
-    <collapse :id="tab4name" :ref="tab4name" :title="tab4name" :initial="false" class="mb-4">
+    <collapse :id="tab4name" :ref="tab4name" :title="tab4name" :initial="false" class="mb-4 settings-container">
       <div class="warning">
         <h5>{{ l('rising.header.dangerZone') }}</h5>
         <p>{{ l('rising.header.desc') }}</p>
@@ -185,7 +192,7 @@
           setting="exceptionNames" prefix="risingFilter"
       ></generic-text>
     </collapse>
-    <collapse :id="tab5name" :ref="tab5name" :title="tab5name" :initial="false" class="mb-4">
+    <collapse :id="tab5name" :ref="tab5name" :title="tab5name" :initial="false" class="mb-4 settings-container">
       <h5>{{ l('settings.hideAds.title') }}</h5>
       <div>{{ l('settings.hideAds.desc') }}</div>
       <template v-if="hidden.length">
@@ -198,10 +205,10 @@
         {{ l('settings.hideAds.empty') }}
       </template>
     </collapse>
-    <collapse :id="tab6name" :ref="tab6name" :title="tab6name" :initial="false" class="mb-4">
+    <collapse :id="tab6name" :ref="tab6name" :title="tab6name" :initial="false" class="mb-4 settings-container">
       <custom-browser-settings></custom-browser-settings>
     </collapse>
-    <collapse :id="tab7name" :ref="tab7name" :title="tab7name" :initial="false" class="mb-4">
+    <collapse :id="tab7name" :ref="tab7name" :title="tab7name" :initial="false" class="mb-4 settings-container">
       <div class="form-label">
         {{ l('settings.import.desc') }}
       </div>
@@ -241,6 +248,7 @@ import NumberInput from './settings/Number.vue';
 import GenericNumber from './settings/GenericNumber.vue';
 import Range from './settings/Range.vue';
 import Dropdown from './settings/Dropdown.vue';
+import Search from './settings/Search.vue';
 
 import BrowserSettings from './Settings-CustomBrowserPage.vue';
 
@@ -250,6 +258,9 @@ import { /* SmartFilterSelection, */ smartFilterTypes as smartFilterTypesImport 
 
 import core from '../core';
 import l from '../localize';
+
+import NewLogger from '../../helpers/log';
+const logMinor = NewLogger('settings-minor');
 
 @Component({
     components: {
@@ -264,6 +275,8 @@ import l from '../localize';
         'generic-num':   GenericNumber,
         range:           Range,
         dropdown:        Dropdown,
+
+        'search-widget': Search,
 
         'custom-browser-settings': BrowserSettings,
     },
@@ -315,6 +328,42 @@ export default class Settings extends Vue {
 
             this.activeCollapse = id;
         }
+    }
+
+    searchHighlight: Record<string, boolean> = {};
+    /**
+     * To perform this maneuver more directly, we'd have to make more assumptions about the return nodes and their children. More assumptions means easier breakage, so let's not!
+     */
+    onSearch(query: string, isErrorLength: boolean, results: Array<Element>): Array<Element> {
+        query = query.toLowerCase();
+
+        // Resolve prior results.
+        results.forEach(el => el.classList.remove('active-settings-search-result'));
+
+        this.searchHighlight = {};
+
+        if (!query || isErrorLength)
+            return [];
+
+        // Select new results.
+        const els: Array<Element> = [];
+
+        const markers = this.$el.querySelectorAll('.settings-search-result-marker');
+        markers.forEach(el => {
+            if (el.textContent.toLowerCase().includes(query)) {
+                // Highlight the element - passing down would be nicer.
+                el.classList.add('active-settings-search-result');
+                els.push(el);
+
+                const parent_id = el.closest('.settings-container')?.id;
+                if (parent_id) // Highlight the tab.
+                    this.searchHighlight[parent_id] = true;
+                else
+                    logMinor.warn('Settings.onSearch.parent_id.none');
+            }
+        });
+
+        return els;
     }
 
     @Hook('mounted')
@@ -490,5 +539,35 @@ export default class Settings extends Vue {
 }
 #settings .hqp-input {
     resize: none;
+}
+
+/**
+ * Fixes bootstraps negative margin on the checkbox.
+ */
+#settings .settings-search-result-marker {
+    padding: 0rem 1.5rem
+}
+
+/**
+ * Improves the highlighting effect by giving more space for the border to show.
+ */
+#settings .settings-search-result-marker.active-settings-search-result {
+    padding: 0.5rem 1.5rem
+}
+
+/**
+ * Keep this style and the one below similar for maximum end-user comprehension.
+ */
+#settings .settings-tab.active-settings-result-tab {
+    border: 1px groove var(--info);
+    box-shadow: inset 1.15rem 0 10px 2px var(--info);
+    background-color: color-mix(in oklab, var(--info) 30%, var(--light));
+    text-decoration: underline;
+}
+
+#settings .active-settings-search-result {
+    border: 1px groove var(--info);
+    box-shadow: inset 1.15rem 0 10px 2px var(--info);
+    border-radius: 8px;
 }
 </style>

@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="form-group">
+<div class="form-group settings-search-result-marker">
     <label class="form-label" :for="setting">{{ title }}</label>
     <div class="range range-primary">
         <output>{{ display }}</output>

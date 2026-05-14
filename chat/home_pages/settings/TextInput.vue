@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="form-group">
+<div class="form-group settings-search-result-marker">
     <label class="form-label" :for="setting">{{ title }}</label>
     <input type="text" class="form-control" :id="setting" @change="set" :value="stringifiedSetting" :disabled="disabled" :placeholder="ph" :aria-describedby="`${setting}Help`"/>
     <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>

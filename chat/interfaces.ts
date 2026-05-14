@@ -359,12 +359,17 @@ export interface State {
 }
 
 /**
- * Miscellaneous elements that are pointless to persist across sessions. Typically, this means information relevant to the UI/display, or cache dependent on constantly updating state. If you need to save anything, you should use `core.state` and its associated disk-writing features.
+ * Miscellaneous elements that are pointless to persist across sessions but desirable to persist across component lifecycle. Typically, this means information relevant to the UI/display, or a cache dependent on constantly updating state (regardless of UI display state).
+ *
+ * If you need to save anything to disk, you should use `core.state` and its associated disk-writing features.
  */
 export interface Runtime {
+    // These values are used for escape key handling - close modals, unfocuse input, etc.
     dialogStack:  Modal[];
     primaryInput: HTMLInputElement | HTMLTextAreaElement | null;
     registerPrimaryInputElement(e: HTMLInputElement | HTMLTextAreaElement): void;
+
+    // Widgets on the home page
     userToggles: {
         [key: string]: boolean
     } & {
@@ -376,6 +381,7 @@ export interface Runtime {
         devMatchDetails?: boolean,
         devLogging?:      boolean,
     };
+
     // This could be a class to make x and y readonly if it's ever that concerning.
     contentDetection: {
         setMouseCoords(x: number, y: number): void,
@@ -383,4 +389,7 @@ export interface Runtime {
         x: number,
         y: number,
     };
+
+    // Search field in the general settings search
+    settingsSearchInput: string,
 }

@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="form-group">
+<div class="form-group settings-search-result-marker">
     <label class="form-label" :for="setting">{{ title }}</label>
     <select class="form-control" :id="setting" v-model="settings[setting]" :disabled="disabled" :aria-describedby="`${setting}Help`">
         <slot>

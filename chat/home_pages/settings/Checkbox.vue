@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="form-group form-check">
+<div class="form-group form-check settings-search-result-marker">
     <input type="checkbox" class="form-check-input" :id="setting" :checked="settings[setting]" @change="settings[setting] = $event.target.checked" :disabled="disabled" :aria-describedby="`${setting}Help`"/>
     <label class="form-check-label" :for="setting">{{ title }}</label>
     <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>

@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div class="form-group">
+<div class="form-group settings-search-result-marker">
   <label class="form-label" :for="`${prefix}-${setting}`">{{ title }}</label>
   <!-- We cannot use v-model.lazy because we want the numeric validation. -->
   <input :id="`${prefix}-${setting}`" ref="number" type="number" class="form-control" :value="obj[setting]" :disabled="disabled" :min="min" :max="max" :placeholder="ph" :aria-describedby="`${prefix}-${setting}Help`" @blur="set" @keyup.enter="set">
