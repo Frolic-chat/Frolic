@@ -55,7 +55,7 @@ export class GeneralSettings {
 }
 
 export type LogType =
-    | 'main'        | 'core'
+    | 'main'        | 'core'        | 'window'
     | 'index'       | 'chat'        | 'home'
     | 'connection'  | 'websocket'   | 'conversation'
     | 'settings'    | 'settings-minor'
@@ -68,5 +68,6 @@ export type LogType =
     | 'logs'        | 'notes'       | 'browser' | 'dictionary'
     | 'user-menu'   | 'widgets'     | 'bbcode'
     | 'custom-gender' | 'virtual-scroller'
+    | 'adblock'
     | 'utils' // This one is bad, but no idea how to fit.
 ;

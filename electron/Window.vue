@@ -51,7 +51,7 @@
 
     import NewLogger from '../helpers/log';
     import Logger from 'electron-log/renderer';
-    const log = Logger.scope('window');
+    const log = NewLogger('window');
     const logDev = NewLogger('devtools');
 
     const browserWindow = remote.getCurrentWindow();
@@ -395,11 +395,11 @@
                 }
             });
 
-            log.debug('init.window.tab.add.load-index.start', indexUrl);
+            log.silly('init.window.tab.add.load-index.start', indexUrl);
 
             await view.webContents.loadURL(indexUrl);
 
-            log.debug('init.window.tab.add.load-index.complete', indexUrl);
+            log.verbose('init.window.tab.add.load-index.complete', indexUrl);
 
             tab.view.setBounds(getWindowBounds());
             this.lockTab = false;

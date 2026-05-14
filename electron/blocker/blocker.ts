@@ -1,11 +1,11 @@
-import Logger from 'electron-log/main';
-const log = Logger.scope('blocker');
 import { ElectronBlocker, Request } from '@ghostery/adblocker-electron';
 import path from 'path';
 import fs from 'fs';
 import * as electron from 'electron';
 
 import lockdownPermissions from '../main/lockdown-permissions';
+import NewLogger from '../main/custom-logger';
+const log = NewLogger('adblock');
 
 export class BlockerIntegration {
   protected static readonly adBlockerLists = [

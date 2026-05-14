@@ -123,7 +123,7 @@ const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 // We wouldn't want to await this even if we were using an ES that supported such a thing.
 import * as EiconManager from './main/eicon-store';
 // Broken
-console.log('main.EiconManager.init.NODE_ENV', process.env.NODE_ENV); // undefined
+log.debug('main.EiconManager.init.NODE_ENV', process.env.NODE_ENV); // undefined
 void EiconManager.init(settingsDir, 'eicons', 'favoriteEIcons', () => settings.raw.logDirectory, process.env.NODE_ENV === 'development');
 
 import InitScratchpad from './main/scratchpad';
@@ -632,7 +632,7 @@ function onReady(): void {
         ]
     };
     // Broken
-    console.log('main.onReady.viewMenu.NODE_ENV', process.env.NODE_ENV); // undefined
+    log.debug('main.onReady.viewMenu.NODE_ENV', process.env.NODE_ENV); // undefined
     if (process.env.NODE_ENV === 'development') {
         viewItem.submenu.unshift(
             {role: 'reload'},
@@ -1075,8 +1075,7 @@ function onReady(): void {
     });
 
     Electron.ipcMain.handle('browser-option-browse', async () => {
-        logBrowser.debug('settings.browser.browse');
-        console.log('settings.browser.browse', JSON.stringify(settings));
+        logBrowser.debug('settings.browser.browse', () => JSON.stringify(settings));
 
         let filters;
         if (platform === "win32") {
