@@ -16,6 +16,7 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+    "types": [],
   },
   "files": [ "chat.ts", "window.ts" ],
   "include": [ "../*.d.ts", "../**/*.vue" ]

@@ -17,9 +17,10 @@
     "experimentalDecorators": true,
     // Why do we have to include esnext lib if we're targeting esnext?
     "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+    "types": [],
   },
-  "files": [ "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts" ],
-  "include": [ "*.d.ts", "../**/*.vue" ]
+  "files": [ "./index.d.ts", "./electron/main.ts", "./electron/chat.ts", "./electron/window.ts" ],
+  "include": [ "../**/*.vue" ]
 }
 // "./**/*.d.ts"
 // "./learn/store/worker/store.worker.endpoint.ts",

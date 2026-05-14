@@ -14,9 +14,7 @@
     "esModuleInterop": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
-    "types": [
-      "node",
-    ]
+    "types": [],
   },
   "files": [ "main.ts" ]
 }

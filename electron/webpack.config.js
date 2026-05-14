@@ -304,7 +304,7 @@ const storeWorkerEndpointConfig = {
         ]
     },
     node: {
-        global: true,
+        global: 'warn',
     },
     plugins: [
         new ForkTsCheckerWebpackPlugin({
