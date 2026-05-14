@@ -32,35 +32,22 @@
   </template>
 
   <template v-slot:default>
-    <collapse :id="tab0name" :ref="tab0name" :title="tab0name" :initial="false" class="mb-4 mt-4 settings-container">
-      <checkbox setting="clickOpensMessage"></checkbox>
-      <checkbox setting="colorBookmarks"></checkbox>
-
-      <div class="form-group"><hr></div>
-
-      <checkbox setting="showNeedsReply"></checkbox>
-      <generic-check :obj="generalSettings" setting="autoPinPMs"></generic-check>
-
-      <div class="form-group"><hr></div>
-
-      <checkbox setting="showAvatars"></checkbox>
-      <checkbox setting="animatedEicons"></checkbox>
-
-      <text-input setting="disallowedTags" :validator="vdDisallowedTags" :transformer="tfDisallowedTags"></text-input>
-
-      <div class="form-group"><hr></div>
-
-      <number   setting="idleTimer" :default="idleTimerDefault" :localArgs="idleTimerArgs" :min="idleTimerMin" :max="idleTimerMax"></number>
-
-      <div class="form-group"><hr></div>
+    <collapse :id="tabDataName" :ref="tabDataName" :title="tabDataName" :initial="false" class="mb-4 mt-4 settings-container">
+      <section-title :title="l('settings.sectionHeader.logging')"></section-title>
 
       <checkbox setting="logMessages"></checkbox>
       <checkbox setting="logChannels" :disabled="!settings.logMessages"></checkbox>
       <checkbox setting="logAds"      :disabled="!settings.logMessages"></checkbox>
 
-      <div class="form-group"><hr></div>
+      <section-title :title="l('settings.sectionHeader.style')"></section-title>
 
       <number   setting="fontSize" :default="fontSizeDefault" :localArgs="fontSizeArgs" :min="fontSizeMin" :max="fontSizeMax"></number>
+
+      <generic-dropdown :obj="generalSettings" setting="theme">
+        <option v-for="theme, i in risingAvailableThemes" :key="i" :value="theme">
+          {{ theme }}
+        </option>
+      </generic-dropdown>
 
       <dropdown setting="risingCharacterTheme">
         <option value="">
@@ -69,112 +56,203 @@
         <option disabled>
           ---
         </option>
-        <option v-for="theme in risingAvailableThemes" :key="theme" :value="theme">
+        <option v-for="theme, i in risingAvailableThemes" :key="i" :value="theme">
           {{ theme }}
         </option>
       </dropdown>
 
-      <checkbox setting="risingColorblindMode"></checkbox>
+      <checkbox setting="risingColorblindMode">
+        <template v-slot:help>
+          <div v-html="l('settings.risingColorblindMode.help')"></div>
+        </template>
+      </checkbox>
+
+      <section-title :title="l('settings.sectionHeader.import')"></section-title>
+
+      <!-- Import/overwrite settings from another character -->
+      <div class="form-group settings-search-result-marker">
+        <label class="form-label" for="import">
+          {{ l('settings.import') }}
+        </label>
+        <div class="row" style="margin-inline: 0; gap: 1rem"><!-- wrapper to put button on same line -->
+          <select id="import" v-model="importCharacter" class="form-control col">
+            <option value="">
+              ---
+            </option>
+            <option v-for="character, i in availableImports" :key="i" :value="character">
+              {{ character }}
+            </option>
+          </select>
+          <button class="btn btn-secondary col-auto" :disabled="!importCharacter" @click="doImport">
+            {{ l('settings.import.button') }}
+          </button>
+        </div>
+        <small id="importHelp" class="help form-text text-muted">
+          {{ l('settings.import.help', you) }}
+        </small>
+      </div>
     </collapse>
-    <collapse :id="tab1name" :ref="tab1name" :title="tab1name" :initial="false" class="mb-4 settings-container">
-      <checkbox setting="risingShowPortraitInMessage"></checkbox>
-      <checkbox setting="messageSeparators"></checkbox>
+    <collapse :id="tabNotifName" :ref="tabNotifName" :title="tabNotifName" :initial="false" class="mb-4 settings-container">
+      <section-title :title="l('settings.sectionHeader.system')"></section-title>
 
-      <div class="form-group"><hr></div>
-
-      <checkbox setting="joinMessages"></checkbox>
-      <checkbox setting="eventMessages"></checkbox>
-      <checkbox setting="showBroadcastsInPMs"></checkbox>
-
-      <div class="form-group"><hr></div>
-
-      <checkbox setting="bbCodeBar"></checkbox>
-      <checkbox setting="risingShowPortraitNearInput"></checkbox>
-
-      <div class="form-group"><hr></div>
-
-      <checkbox setting="enterSend"></checkbox>
-      <checkbox setting="secondEnterSend" :disabled="!settings.enterSend"></checkbox>
-    </collapse>
-    <collapse :id="tab2name" :ref="tab2name" :title="tab2name" :initial="false" class="mb-4 settings-container">
       <checkbox setting="notifications"></checkbox>
 
-      <div class="form-group"><hr></div>
+      <section-title :title="l('settings.sectionHeader.audio')"></section-title>
 
       <checkbox setting="playSound"></checkbox>
       <checkbox setting="alwaysNotify" :disabled="!settings.playSound"></checkbox>
       <range    setting="notifyVolume" :localArgs="notifyVolumeArgs" :marks="notifyVolumeMarks" :disabled="!settings.playSound"></range>
 
-      <div class="form-group"><hr></div>
+      <section-title :title="l('settings.sectionHeader.events')"></section-title>
 
       <dropdown setting="notifyFriendSignIn" :options="relationshipMap"></dropdown>
       <dropdown setting="notifyOnFriendMessage" :options="relationshipMap"></dropdown>
 
-      <div class="form-group"><hr></div>
+      <section-title :title="l('settings.sectionHeader.contentMatch')"></section-title>
 
-      <!-- show global highlights here. -->
       <checkbox setting="highlight"></checkbox>
+
       <text-input setting="highlightWords" :validator="vdHighlightString" :transformer="tfHighlightString"></text-input>
+
       <!--
       <text-input setting="highlightUsernames" :validator="tfHighlightUsernames" :transformer="tfHighlightUsernames"></text-input>
       -->
     </collapse>
-    <collapse :id="tab3name" :ref="tab3name" :title="tab3name" :initial="false" class="mb-4 settings-container">
-      <h5>{{ l('rising.header.matching') }}</h5>
+    <collapse :id="tabBehaviorName" :ref="tabBehaviorName" :title="tabBehaviorName" :initial="false" class="mb-4 settings-container">
+      <section-title :title="l('settings.sectionHeader.misc')"></section-title>
+
+      <number setting="idleTimer" :default="idleTimerDefault" :localArgs="idleTimerArgs" :min="idleTimerMin" :max="idleTimerMax"></number>
+
+      <section-title :title="l('settings.sectionHeader.messaging')"></section-title>
+
+      <checkbox setting="clickOpensMessage"></checkbox>
+
+      <checkbox setting="showNeedsReply">
+        <template v-slot:title>
+          <div v-html="l('settings.showNeedsReply')"></div>
+        </template>
+      </checkbox>
+
+      <generic-check :obj="generalSettings" setting="autoPinPMs">
+        <template v-slot:title>
+          <div v-html="l('settings.autoPinPMs')"></div>
+        </template>
+      </generic-check>
+
+      <section-title :title="l('settings.sectionHeader.visual')"></section-title>
+
+      <checkbox setting="risingAutoExpandCustomKinks"></checkbox>
+      <checkbox setting="risingAutoCompareKinks"></checkbox>
+
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="colorBookmarks">
+        <template v-slot:help>
+          <div v-html="l('settings.colorBookmarks.help')"></div>
+        </template>
+      </checkbox>
+
+      <checkbox setting="showAvatars"></checkbox>
+
+      <checkbox setting="animatedEicons">
+        <template v-slot:help>
+          <div class="d-flex flex-row align-items-center">
+            <img alt="nyancat" title="nyancat" class="character-avatar icon mr-2" :src="`https://static.f-list.net/images/eicon/nyancat.${settings.animatedEicons ? 'gif' : 'png'}`">
+            {{ l('settings.animatedEicons.help') }}
+          </div>
+        </template>
+      </checkbox>
+
+      <text-input setting="disallowedTags" :validator="vdDisallowedTags" :transformer="tfDisallowedTags">
+        <template v-slot:help>
+          <div v-html="l('settings.disallowedTags.help')"></div>
+        </template>
+      </text-input>
+
+      <section-title :title="l('settings.sectionHeader.preview')"></section-title>
+
+      <checkbox setting="risingCharacterPreview"></checkbox>
+      <checkbox setting="risingLinkPreview"></checkbox>
+      <range setting="linkPreviewVolume" :localArgs="linkVolumeArgs" :marks="linkVolumeMarks" :disabled="!settings.risingLinkPreview"></range>
+    </collapse>
+    <collapse :id="tabChatName" :ref="tabChatName" :title="tabChatName" :initial="false" class="mb-4 settings-container">
+      <section-title :title="l('settings.sectionHeader.messages')"></section-title>
+
+      <checkbox setting="risingShowPortraitInMessage"></checkbox>
+      <checkbox setting="messageSeparators"></checkbox>
+
+      <div class="border border-secondary rounded mb-3 mx-4"><!-- test message area for above settings -->
+        <message-view v-for="message, i in exampleMessages" :key="i" :message="message"></message-view>
+      </div>
+
+      <checkbox setting="joinMessages"></checkbox>
+      <checkbox setting="eventMessages"></checkbox>
+      <checkbox setting="showBroadcastsInPMs"></checkbox>
+
+      <section-title :title="l('settings.sectionHeader.input')"></section-title>
+
+      <checkbox setting="bbCodeBar"></checkbox>
+      <checkbox setting="risingShowPortraitNearInput" :disabled="!settings.bbCodeBar"></checkbox>
+
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="enterSend"></checkbox>
+      <checkbox setting="secondEnterSend" :disabled="!settings.enterSend"></checkbox>
+
+      <editor v-model="testEditorInput" maxlength="255" :placeholder="l('settings.testInput.ph')" :hasToolbar="settings.bbCodeBar" :characterName="bbcodePortrait" :classes="`form-control chat-text-box ${waitingForSecondEnterClass}`" @keydown="onInputTestKeyDown">
+        <template v-slot:default>
+          <div class="bbcode-editor-controls">
+            {{ testEditorInputLength }} / 255
+          </div>
+        </template>
+        <template v-slot:toolbar-end>
+          <div v-if="!settings.enterSend" class="btn btn-sm btn-primary ml-1" @click="onInputTestSend">
+            {{ l('chat.send') }}
+          </div>
+        </template>
+      </editor>
+    </collapse>
+    <collapse :id="tabRisingName" :ref="tabRisingName" :title="tabRisingName" :initial="false" class="mb-4 settings-container">
+      <section-title :title="l('settings.sectionHeader.matching')"></section-title>
 
       <checkbox setting="risingAdScore"></checkbox>
       <checkbox setting="expensiveMemberList"></checkbox>
       <checkbox setting="risingComparisonInUserMenu"></checkbox>
       <checkbox setting="risingComparisonInSearch"></checkbox>
 
-      <div class="form-group"><hr></div>
-      <h5>{{ l('rising.header.preview') }}</h5>
+      <!-- HIDDEN ADS -->
+      <section-title :title="l('settings.sectionHeader.hideAds')"></section-title>
+      <section-text :body="l('settings.hideAds.desc')"></section-text>
 
-      <checkbox setting="risingLinkPreview"></checkbox>
-      <range setting="linkPreviewVolume" :localArgs="linkVolumeArgs" :marks="linkVolumeMarks" :disabled="!settings.risingLinkPreview"></range>
-      <checkbox setting="risingCharacterPreview"></checkbox>
-
-      <div class="form-group"><hr></div>
-      <h5>{{ l('rising.header.profile') }}</h5>
-
-      <checkbox setting="risingAutoCompareKinks"></checkbox>
-      <checkbox setting="risingAutoExpandCustomKinks"></checkbox>
-
-      <div class="form-group"><hr></div>
-      <h5>{{ l('rising.header.misc') }}</h5>
-
-      <checkbox setting="risingShowUnreadOfflineCount"></checkbox>
-    </collapse>
-    <collapse :id="tab4name" :ref="tab4name" :title="tab4name" :initial="false" class="mb-4 settings-container">
-      <div class="warning settings-search-result-marker">
-        <h5>{{ l('rising.header.dangerZone') }}</h5>
-        <p>{{ l('rising.header.desc') }}</p>
-        <p>{{ l('rising.filter.warning') }}</p>
+      <div v-if="hidden.length" class="settings-search-result-marker">
+        <div v-for="user, i in hidden" :key="user">
+          <span class="fa fa-times" style="cursor:pointer" @click.stop="hidden.splice(i, 1)"></span>
+          {{ user }}
+        </div>
+      </div>
+      <div v-else class="settings-search-result-marker">
+        {{ l('settings.hideAds.empty') }}
       </div>
 
-      <div class="form-group"><hr></div>
-      <div class="settings-search-result-marker">
-        <h5>{{ l('rising.header.visibility') }}</h5>
-        <p>{{ l('rising.header.naTo') }}</p>
-        <p><small>{{ l('rising.header.visibilityCaveat') }}</small></p>
+      <!-- CHAT FILTERS -->
+      <section-title :title="l('settings.sectionHeader.filterVisibility')"></section-title>
+      <section-text :body="l('rising.header.naTo')" :sub="l('rising.header.visibilityCaveat')"></section-text>
+
+      <div class="warning p-2 mb-2">
+        <section-title :title="l('settings.sectionHeader.dangerZone')"></section-title>
+        <section-text :body="l('rising.header.desc')" :sub="l('rising.filter.warning')"></section-text>
       </div>
 
       <generic-check
-          v-for="e in [
-            'hideAds',
-            'hideSearchResults',
-            'hideChannelMembers',
-            'hidePublicChannelMessages', 'hidePrivateChannelMessages',
-            'hidePrivateMessages',
-            'showFilterIcon',
-            'autoReply',
-            'penalizeMatches', 'rewardNonMatches',
-          ]"
+          v-for="e in smartFilterEnum"
           :key="e" :obj="settings.risingFilter" :setting="e" prefix="risingFilter"
-      ></generic-check>
+      >
+        <template v-slot:title>
+          <div v-html="l(`settings.risingFilter.${e}`)"></div>
+        </template>
+      </generic-check>
 
-      <div class="form-group"><hr></div>
-      <h5>{{ l('rising.header.match') }}</h5>
+      <section-title :title="l('settings.sectionHeader.matchParams')"></section-title>
 
       <generic-num :obj="settings.risingFilter"
           setting="minAge" prefix="risingFilter" :min="0"
@@ -188,47 +266,14 @@
           :key="k" :obj="settings.risingFilter.smartFilters" :setting="k" prefix="smartFilters"
       ></generic-check>
 
-      <div class="form-group"><hr></div>
-      <h5>{{ l('rising.header.exceptionList') }}</h5>
+      <section-title :title="l('settings.sectionHeader.exceptions')"></section-title>
 
       <generic-text :obj="settings.risingFilter"
           setting="exceptionNames" prefix="risingFilter"
       ></generic-text>
     </collapse>
-    <collapse :id="tab5name" :ref="tab5name" :title="tab5name" :initial="false" class="mb-4 settings-container">
-      <div class="settings-search-result-marker">
-        <h5>{{ l('settings.hideAds.title') }}</h5>
-        <div>{{ l('settings.hideAds.desc') }}</div>
-      </div>
-
-      <div v-if="hidden.length" class="settings-search-result-marker">
-        <div v-for="user, i in hidden" :key="user">
-          <span class="fa fa-times" style="cursor:pointer" @click.stop="hidden.splice(i, 1)"></span>
-          {{ user }}
-        </div>
-      </div>
-      <div v-else class="settings-search-result-marker">
-        {{ l('settings.hideAds.empty') }}
-      </div>
-    </collapse>
-    <collapse :id="tab6name" :ref="tab6name" :title="tab6name" :initial="false" class="mb-4 settings-container">
+    <collapse :id="tabBrowserName" :ref="tabBrowserName" :title="tabBrowserName" :initial="false" class="mb-4 settings-container">
       <custom-browser-settings></custom-browser-settings>
-    </collapse>
-    <collapse :id="tab7name" :ref="tab7name" :title="tab7name" :initial="false" class="mb-4 settings-container">
-      <div class="settings-search-result-marker">
-        <div class="form-label">
-          {{ l('settings.import.desc') }}
-        </div>
-        <div class="form-group d-flex">
-          <select id="import" v-model="importCharacter" class="form-control" style="flex:1;margin-right:10px">
-            <option value="">{{ l('settings.import.selectCharacter') }}</option>
-            <option v-for="character in availableImports" :key="character" :value="character">{{ character }}</option>
-          </select>
-          <button class="btn btn-secondary" :disabled="!importCharacter" @click="doImport">
-            {{ l('settings.import') }}
-          </button>
-        </div>
-      </div>
     </collapse>
   </template>
 </page>
@@ -243,6 +288,10 @@ import { Component, Hook } from '@frolic/vue-ts';
 
 import HomePageLayout from './HomePageLayout.vue';
 import Collapse from '../../components/collapse.vue';
+import SectionTitle from './settings/SectionTitle.vue';
+import SectionText from './settings/SectionText.vue';
+import MessageView from '../message_view';
+import { Editor } from '../bbcode';
 
 import Checkbox from './settings/Checkbox.vue';
 import GenericCheckbox from './settings/GenericCheckbox.vue';
@@ -252,14 +301,21 @@ import NumberInput from './settings/Number.vue';
 import GenericNumber from './settings/GenericNumber.vue';
 import Range from './settings/Range.vue';
 import Dropdown from './settings/Dropdown.vue';
+import GenericDropdown from './settings/GenericDropdown.vue';
 import Search from './settings/Search.vue';
 
 import BrowserSettings from './Settings-CustomBrowserPage.vue';
+import { getKey } from '../common';
+import { Keys } from '../../keys';
 
 import type { Settings as SettingsInterface } from '../interfaces';
 import { Relation } from '../interfaces';
-import { /* SmartFilterSelection, */ smartFilterTypes as smartFilterTypesImport } from '../../learn/filter/types';
+import { smartFilterTypes as smartFilterTypesImport } from '../../learn/filter/types';
+import { Message, EventMessage } from '../common';
+import { Conversation } from '../interfaces';
+import type { Character } from '../interfaces';
 
+import * as FROLIC from '../../constants/frolic';
 import core from '../core';
 import l from '../localize';
 
@@ -270,17 +326,22 @@ const logMinor = NewLogger('settings-minor');
     components: {
         page:     HomePageLayout,
         collapse: Collapse,
+        editor:   Editor,
 
-        checkbox:        Checkbox,
-        'generic-check': GenericCheckbox,
-        'text-input':    TextInput,
-        'generic-text':  GenericText,
-        number:          NumberInput,
-        'generic-num':   GenericNumber,
-        range:           Range,
-        dropdown:        Dropdown,
+        checkbox:           Checkbox,
+        'generic-check':    GenericCheckbox,
+        'text-input':       TextInput,
+        'generic-text':     GenericText,
+        number:             NumberInput,
+        'generic-num':      GenericNumber,
+        range:              Range,
+        dropdown:           Dropdown,
+        'generic-dropdown': GenericDropdown,
 
         'search-widget': Search,
+        'message-view':  MessageView,
+        'section-title': SectionTitle,
+        'section-text':  SectionText,
 
         'custom-browser-settings': BrowserSettings,
     },
@@ -290,26 +351,23 @@ export default class Settings extends Vue {
 
     generalSettings = core.state.generalSettings;
     settings = core.state.settings;
+    you = core.characters.ownCharacter.name;
 
-    tab0name = l('settings.tabs.general');
-    tab1name = l('settings.tabs.chat');
-    tab2name = l('settings.tabs.notifications');
-    tab3name = l('settings.tabs.bonus');
-    tab4name = l('settings.tabs.filters');
-    tab5name = l('settings.tabs.hideAds');
-    tab6name = l('settings.tabs.browser');
-    tab7name = l('settings.tabs.import');
+    tabDataName      = l('settings.tabs.data');
+    tabNotifName     = l('settings.tabs.notifications');
+    tabBehaviorName  = l('settings.tabs.behavior');
+    tabChatName      = l('settings.tabs.chat');
+    tabRisingName    = l('settings.tabs.bonus');
+    tabBrowserName   = l('settings.tabs.browser');
 
     get tabNames() {
         return [
-            this.tab0name,
-            this.tab1name,
-            this.tab2name,
-            this.tab3name,
-            this.tab4name,
-            this.tab5name,
-            this.tab6name,
-            this.tab7name,
+            this.tabDataName,
+            this.tabNotifName,
+            this.tabBehaviorName,
+            this.tabChatName,
+            this.tabRisingName,
+            this.tabBrowserName,
         ];
     }
 
@@ -370,13 +428,104 @@ export default class Settings extends Vue {
         return els;
     }
 
+    /**
+     * Chat visuals test
+     */
+    exampleMessages: Conversation.Message[] = [];
+
     @Hook('mounted')
     onMount() {
         // Tab 0
         this.risingAvailableThemes = this.getAvailableThemes();
+        this.availableImports      = this.getAvailableImports();
 
-        // Tab 7
-        this.availableImports = this.getAvailableImports();
+        const sampleCharacter = this.createFrolicMannequin();
+        this.exampleMessages.push(
+            new Message(Conversation.Message.Type.Message, core.characters.ownCharacter, 'I wish I knew some cool triangle facts.', new Date()),
+            new EventMessage(l('events.login', `[user]${sampleCharacter.name}[/user]`)),
+            new Message(Conversation.Message.Type.Message, sampleCharacter, 'In [i]three-dimensional Euclidean space[/i], four connected points [sub]not all on the same plane[/sub] form a [b]tetrahedron[/b] - a shape with four triangular sides! [eicon]kittygiggle[/eicon]', new Date()),
+            new Message(Conversation.Message.Type.Message, sampleCharacter, 'In non-Eucliden geometries, three line segments can still form a triangle - for example, a [url=https://mathworld.wolfram.com/SphericalTriangle.html]spherical triangle[/url] or a [url=https://www.math.uci.edu/~ndonalds/math161/hyper.pdf]hyperbolic triangle![/url]', new Date()),
+            new Message(Conversation.Message.Type.Action, sampleCharacter, ' wanted to make a triangle joke... but it was too obtuse! [eicon]nyehe[/eicon]', new Date()),
+            new EventMessage(l('events.logout', `[user]${sampleCharacter.name}[/user]`))
+        );
+    }
+
+    /**
+     * Simulate an online character for the chat sample display.
+     */
+    createFrolicMannequin(): Character {
+        const temp = core.characters.get('Frolic', false);
+        return {
+            name:         FROLIC.frolicCharacterName,
+            gender:       core.characters.ownCharacter.gender === 'Female' ? 'Transgender' : 'Female',
+            status:       'looking',
+            statusText:   '',
+            isFriend:     temp.isFriend,
+            isBookmarked: temp.isBookmarked,
+            isChatOp:     temp.isChatOp,
+            isIgnored:    temp.isIgnored,
+            overrides:    { avatarUrl: null, gender: null, status: null },
+        };
+    }
+
+    /**
+     * Input test
+     */
+    get bbcodePortrait() { return this.settings.risingShowPortraitNearInput ? this.you : undefined; }
+
+    testEditorInput = '';
+    get testEditorInputLength() { return this.testEditorInput.length; }
+
+    waitingForSecondEnter = false;
+    waitingForSecondEnterClass:    'second-enter-send-allowed' | '' = '';
+    waitingForSecondEnterTimeout?: number;
+    onInputTestSend() {
+        if (!this.testEditorInput.trim())
+            return;
+
+        this.testEditorInput = '';
+    }
+    onInputTestKeyDown(e: KeyboardEvent) {
+        // This snippet is from the normal conversation page enter handler. See that page for deeper comments.
+        if (getKey(e) === Keys.Enter) {
+            // - Shift+Enter when "enter to send" & solo Enter otherwise
+            if (e.shiftKey === this.settings.enterSend)
+                return;
+
+            e.preventDefault();
+
+            // Stops double-enter visual feedback and potential chat spam.
+            if (!this.testEditorInput.trim())
+                return;
+
+            if (!this.settings.enterSend || !this.settings.secondEnterSend) {
+                this.testEditorInput = '';
+                return;
+            }
+
+            // Only double-enter situations remain
+            if (this.waitingForSecondEnter) {
+                this.waitingForSecondEnter = false;
+                this.waitingForSecondEnterClass = '';
+
+                if (this.waitingForSecondEnterTimeout) {
+                    window.clearTimeout(this.waitingForSecondEnterTimeout);
+                    this.waitingForSecondEnterTimeout = undefined;
+                }
+
+                this.testEditorInput = '';
+                return;
+            }
+            else {
+                this.waitingForSecondEnter = true;
+                this.waitingForSecondEnterClass = 'second-enter-send-allowed';
+                this.waitingForSecondEnterTimeout = window.setTimeout(() => {
+                    this.waitingForSecondEnter = false;
+                    this.waitingForSecondEnterClass = '';
+                    this.waitingForSecondEnterTimeout = undefined;
+                }, 3000);
+            }
+        }
     }
 
     /**
@@ -424,22 +573,18 @@ export default class Settings extends Vue {
         return [ ...new Set(a) ];
     }
 
-    /**
-     * Tab 1
-     */
     notifyVolumeMarks = [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
     notifyVolumeArgs = { help: [  '0',  '100' ] };
 
+    /**
+     * Eliminates the 'Default' option because
+     */
     get relationshipMap() {
         return Object.values(Relation.Chooser)
-            // ts sucks at this type-narrowing, but it works.
-            .filter(v => typeof v === 'number')
-            .map(v => [ v, l(Relation.Label[v as Relation.Chooser]) ]);
+            .filter(v => typeof v === 'number' && v !== Relation.Chooser.Default)
+            .map(v => [ v, l(Relation.Label[v]) ]);
     }
 
-    /**
-     * Tab 2
-     */
     linkVolumeMarks   = [ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 ];
     linkVolumeArgs   = { help: [  '0',  '100' ] };
 
@@ -458,6 +603,19 @@ export default class Settings extends Vue {
      */
     smartFilterTypes = smartFilterTypesImport;
 
+    smartFilterEnum = [
+        'hideAds',
+        'hideSearchResults',
+        'hideChannelMembers',
+        'hidePublicChannelMessages',
+        'hidePrivateChannelMessages',
+        'hidePrivateMessages',
+        'showFilterIcon',
+        'autoReply',
+        'penalizeMatches',
+        'rewardNonMatches',
+    ] as const;
+
     /**
      * Tab 4
      */
@@ -475,6 +633,9 @@ export default class Settings extends Vue {
     getAvailableImports = () => core.settingsStore.getAvailableCharacters().filter(c => c !== core.connection.character);
 
     async doImport(): Promise<void> {
+        if (!this.importCharacter)
+            return;
+
         if (!window.confirm(l('settings.import.confirm', this.importCharacter, core.connection.character)))
             return;
 
@@ -521,12 +682,10 @@ export default class Settings extends Vue {
 
 #settings .warning {
     border: 1px solid var(--warning);
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 3px;
+    border-radius: 4px;
 
     div {
-    margin-top: 10px;
+        margin-top: 10px;
     }
 }
 
@@ -549,14 +708,14 @@ export default class Settings extends Vue {
  * Fixes bootstraps negative margin on the checkbox.
  */
 #settings .settings-search-result-marker {
-    padding: 0rem 1.5rem
+    padding-left: 1.5rem;
 }
 
 /**
  * Improves the highlighting effect by giving more space for the border to show.
  */
 #settings .settings-search-result-marker.active-settings-search-result {
-    padding: 0.5rem 1.5rem
+    padding-block: 0.5rem;
 }
 
 /**

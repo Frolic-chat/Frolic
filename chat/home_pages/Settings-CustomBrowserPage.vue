@@ -1,16 +1,15 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-<div><!-- v-show="tab === 'x'" -->
-  <div class="settings-search-result-marker">
-    <h5>{{ l('settings.browser.title') }}</h5>
-    <div>{{ l('settings.notice.appWide') }}</div>
-  </div>
+<div class="browser-settings">
+  <section-title :title="l('settings.browser.title')"></section-title>
+  <section-text :sub="l('settings.notice.appWide')"></section-text>
 
-  <div class="warning settings-search-result-marker">
-    <h5>{{ l('settings.browser.warning.title') }}</h5>
-    <div>{{ l('settings.browser.warning.msg') }}</div>
-    <div v-if="isMac">
-      <hr>
+  <div class="warning p-2 mb-2">
+    <section-title :title="l('settings.browser.warning.title')"></section-title>
+    <section-text :body="l('settings.browser.warning.msg')"></section-text>
+
+    <div v-if="isMac" class="settings-search-result-marker">
+      <div class="form-group"><hr></div>
       <p>{{ l('settings.browser.warning.mac1') }}</p>
       <p>{{ l('settings.browser.warning.mac2') }}</p>
       <p>{{ l('settings.browser.warning.mac3') }}</p>
@@ -26,7 +25,7 @@
         <input id="browserPath" type="text" class="form-control" :value="settings.browserPath" :placeholder="l('settings.browser.default')" @change="setBrowserPath">
       </div>
       <div class="col-auto">
-        <button class="btn btn-primary" @click.prevent.stop="browseForPath()">{{ l('settings.browser.browse') }}</button>
+        <button class="btn btn-primary form-control" @click.prevent.stop="browseForPath()">{{ l('settings.browser.browse') }}</button>
       </div>
     </div>
   </div>
@@ -42,7 +41,7 @@
         <input id="browserArgs" type="text" class="form-control" :value="settings.browserArgs" @change="setBrowserArgs">
       </div>
     </div>
-    <div class="row settings-search-result-marker">
+    <div class="row">
       <div class="col">
         <small class="form-text text-muted">{{ l('settings.browser.argumentsHelp') }}</small>
         <small v-if="settings.browserPath" class="form-text text-muted" style="user-select: text;">{{ l('settings.browser.current') }}{{ example }}</small>
@@ -54,14 +53,14 @@
 
   <div class="form-group settings-search-result-marker">
     <div class="row">
-      <label class="control-label" for="incognitoArg">{{ l('settings.browser.incognito.title') }}</label>
+      <label class="control-label col" for="incognitoArg">{{ l('settings.browser.incognito.title') }}</label>
     </div>
     <div class="row">
       <div class="col">
         <input id="incognitoArg" type="text" class="form-control" :value="settings.browserIncognitoArg" @change="setIncogArgs">
       </div>
       <div class="col-auto">
-        <button class="btn btn-primary" @click.prevent.stop="autoFillIncognitoArg()">{{ l('settings.browser.incognito.auto') }}</button>
+        <button class="btn btn-primary form-control" @click.prevent.stop="autoFillIncognitoArg()">{{ l('settings.browser.incognito.auto') }}</button>
       </div>
     </div>
     <div class="row">
@@ -71,10 +70,11 @@
       </div>
     </div>
   </div>
+
   <div class="form-group settings-search-result-marker">
     <div class="row">
       <div class="col-auto">
-        <button class="btn btn-danger" @click.prevent.stop="resetToDefault()">{{ l('settings.browser.reset') }}</button>
+        <button class="btn btn-danger form-control" @click.prevent.stop="resetToDefault()">{{ l('settings.browser.reset') }}</button>
       </div>
     </div>
     <div class="row">
@@ -91,6 +91,9 @@ import Vue from 'vue';
 import { Component, Hook, Watch } from '@frolic/vue-ts';
 import * as Electron from 'electron';
 
+import SectionTitle from './settings/SectionTitle.vue';
+import SectionText from './settings/SectionText.vue';
+
 import core from '../core';
 import l from '../localize';
 import { IncognitoArgFromBrowserPath } from '../../constants/general';
@@ -98,7 +101,12 @@ import { IncognitoArgFromBrowserPath } from '../../constants/general';
 import NewLogger from '../../helpers/log';
 const log = NewLogger('browser');
 
-@Component({})
+@Component({
+    components: {
+        'section-title': SectionTitle,
+        'section-text':  SectionText,
+    },
+})
 export default class BrowserSettings extends Vue {
     l = l;
 
@@ -206,6 +214,3 @@ export default class BrowserSettings extends Vue {
     }
 }
 </script>
-
-<style lang="scss">
-</style>
