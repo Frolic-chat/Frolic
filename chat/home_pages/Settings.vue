@@ -1,7 +1,8 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- eslint-disable vue/no-multi-spaces -->
 <template>
 <page ref="homePageLayout">
-  <template #prescroll>
+  <template v-slot:prescroll>
     <div class="page-header d-flex align-items-center">
       <div class="mr-auto">
         <h5>{{ l('settings') }}</h5>
@@ -12,99 +13,48 @@
     </div>
 
     <div class="d-flex flex-row flex-wrap justify-content-center mb-1" style="gap: 0.5rem">
-      <button :key="entry"
-        v-for="entry in [
-          l('settings.tabs.general'),
-          l('settings.tabs.notifications'),
-          l('settings.tabs.bonus'),
-          l('settings.tabs.filters'),
-          l('settings.tabs.hideAds'),
-          l('settings.tabs.browser'),
-          l('settings.tabs.import'),
-        ]"
-        class="btn btn-primary"
-        :class="{ active: activeCollapse === entry }"
-        @click.prevent="openSection(entry)"
+      <button v-for="entry, i in tabNames"
+          :key="i"
+          class="btn btn-primary"
+          :class="{ active: activeCollapse === entry }"
+          @click.prevent="openSection(entry)"
       >
         {{ entry }}
       </button>
     </div>
   </template>
 
-  <template #default>
-    <collapse :ref="tab0name" :id="tab0name" :title="tab0name" :initial="false" class="mb-4 mt-4">
-      <text-input setting="disallowedTags" :validator="vdDisallowedTags" :transformer="tfDisallowedTags"></text-input>
+  <template v-slot:default>
+    <collapse :id="tab0name" :ref="tab0name" :title="tab0name" :initial="false" class="mb-4 mt-4">
       <checkbox setting="clickOpensMessage"></checkbox>
+      <checkbox setting="colorBookmarks"></checkbox>
 
-      <checkbox setting="enterSend"></checkbox>
-      <checkbox setting="secondEnterSend" :disabled="!settings.enterSend"></checkbox>
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="showNeedsReply"></checkbox>
+      <generic-check :obj="generalSettings" setting="autoPinPMs"></generic-check>
+
+      <div class="form-group"><hr></div>
 
       <checkbox setting="showAvatars"></checkbox>
-      <checkbox setting="colorBookmarks"></checkbox>
       <checkbox setting="animatedEicons"></checkbox>
+
+      <text-input setting="disallowedTags" :validator="vdDisallowedTags" :transformer="tfDisallowedTags"></text-input>
+
+      <div class="form-group"><hr></div>
 
       <number   setting="idleTimer" :default="idleTimerDefault" :localArgs="idleTimerArgs" :min="idleTimerMin" :max="idleTimerMax"></number>
 
-      <checkbox setting="messageSeparators"></checkbox>
-      <checkbox setting="bbCodeBar"></checkbox>
+      <div class="form-group"><hr></div>
 
       <checkbox setting="logMessages"></checkbox>
       <checkbox setting="logChannels" :disabled="!settings.logMessages"></checkbox>
       <checkbox setting="logAds"      :disabled="!settings.logMessages"></checkbox>
 
+      <div class="form-group"><hr></div>
+
       <number   setting="fontSize" :default="fontSizeDefault" :localArgs="fontSizeArgs" :min="fontSizeMin" :max="fontSizeMax"></number>
-    </collapse>
-    <collapse :ref="tab1name" :id="tab1name" :title="tab1name" :initial="false" class="mb-4">
-      <checkbox setting="playSound"></checkbox>
-      <checkbox setting="alwaysNotify" :disabled="!settings.playSound"></checkbox>
-      <range    setting="notifyVolume" :localArgs="notifyVolumeArgs" :marks="notifyVolumeMarks" :disabled="!settings.playSound"></range>
-      <checkbox setting="notifications"></checkbox>
 
-      <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
-      <div class="form-group"><hr></div>
-
-      <dropdown setting="notifyFriendSignIn" :options="relationshipMap"></dropdown>
-      <dropdown setting="notifyOnFriendMessage" :options="relationshipMap"></dropdown>
-      <!-- show global highlights here. -->
-      <checkbox setting="highlight"></checkbox>
-      <text-input setting="highlightWords" :validator="vdHighlightString" :transformer="tfHighlightString"></text-input>
-      <!--
-            <text-input setting="highlightUsernames" :validator="tfHighlightUsernames" :transformer="tfHighlightUsernames"></text-input>
-            -->
-
-      <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
-      <div class="form-group"><hr></div>
-
-      <checkbox setting="showBroadcastsInPMs"></checkbox>
-      <checkbox setting="showNeedsReply"></checkbox>
-      <checkbox setting="joinMessages"></checkbox>
-      <checkbox setting="eventMessages"></checkbox>
-    </collapse>
-    <collapse :ref="tab2name" :id="tab2name" :title="tab2name" :initial="false" class="mb-4">
-      <h5>{{ l('rising.header.matching') }}</h5>
-
-      <checkbox setting="risingAdScore"></checkbox>
-      <checkbox setting="expensiveMemberList"></checkbox>
-      <checkbox setting="risingComparisonInUserMenu"></checkbox>
-      <checkbox setting="risingComparisonInSearch"></checkbox>
-
-      <h5>{{ l('rising.header.preview') }}</h5>
-
-      <checkbox setting="risingLinkPreview"></checkbox>
-      <range setting="linkPreviewVolume" :localArgs="linkVolumeArgs" :marks="linkVolumeMarks" :disabled="!settings.risingLinkPreview"></range>
-      <checkbox setting="risingCharacterPreview"></checkbox>
-
-      <h5>{{ l('rising.header.profile') }}</h5>
-
-      <checkbox setting="risingAutoCompareKinks"></checkbox>
-      <checkbox setting="risingAutoExpandCustomKinks"></checkbox>
-
-      <h5>{{ l('rising.header.misc') }}</h5>
-
-      <checkbox setting="risingShowUnreadOfflineCount"></checkbox>
-      <checkbox setting="risingColorblindMode"></checkbox>
-      <checkbox setting="risingShowPortraitNearInput"></checkbox>
-      <checkbox setting="risingShowPortraitInMessage"></checkbox>
       <dropdown setting="risingCharacterTheme">
         <option value="">
           {{ l('rising.theme.default') }}
@@ -116,14 +66,86 @@
           {{ theme }}
         </option>
       </dropdown>
+
+      <checkbox setting="risingColorblindMode"></checkbox>
     </collapse>
-    <collapse :ref="tab3name" :id="tab3name" :title="tab3name" :initial="false" class="mb-4">
+    <collapse :id="tab1name" :ref="tab1name" :title="tab1name" :initial="false" class="mb-4">
+      <checkbox setting="risingShowPortraitInMessage"></checkbox>
+      <checkbox setting="messageSeparators"></checkbox>
+
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="joinMessages"></checkbox>
+      <checkbox setting="eventMessages"></checkbox>
+      <checkbox setting="showBroadcastsInPMs"></checkbox>
+
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="bbCodeBar"></checkbox>
+      <checkbox setting="risingShowPortraitNearInput"></checkbox>
+
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="enterSend"></checkbox>
+      <checkbox setting="secondEnterSend" :disabled="!settings.enterSend"></checkbox>
+    </collapse>
+    <collapse :id="tab2name" :ref="tab2name" :title="tab2name" :initial="false" class="mb-4">
+      <checkbox setting="notifications"></checkbox>
+
+      <div class="form-group"><hr></div>
+
+      <checkbox setting="playSound"></checkbox>
+      <checkbox setting="alwaysNotify" :disabled="!settings.playSound"></checkbox>
+      <range    setting="notifyVolume" :localArgs="notifyVolumeArgs" :marks="notifyVolumeMarks" :disabled="!settings.playSound"></range>
+
+      <div class="form-group"><hr></div>
+
+      <dropdown setting="notifyFriendSignIn" :options="relationshipMap"></dropdown>
+      <dropdown setting="notifyOnFriendMessage" :options="relationshipMap"></dropdown>
+
+      <div class="form-group"><hr></div>
+
+      <!-- show global highlights here. -->
+      <checkbox setting="highlight"></checkbox>
+      <text-input setting="highlightWords" :validator="vdHighlightString" :transformer="tfHighlightString"></text-input>
+      <!--
+      <text-input setting="highlightUsernames" :validator="tfHighlightUsernames" :transformer="tfHighlightUsernames"></text-input>
+      -->
+    </collapse>
+    <collapse :id="tab3name" :ref="tab3name" :title="tab3name" :initial="false" class="mb-4">
+      <h5>{{ l('rising.header.matching') }}</h5>
+
+      <checkbox setting="risingAdScore"></checkbox>
+      <checkbox setting="expensiveMemberList"></checkbox>
+      <checkbox setting="risingComparisonInUserMenu"></checkbox>
+      <checkbox setting="risingComparisonInSearch"></checkbox>
+
+      <div class="form-group"><hr></div>
+      <h5>{{ l('rising.header.preview') }}</h5>
+
+      <checkbox setting="risingLinkPreview"></checkbox>
+      <range setting="linkPreviewVolume" :localArgs="linkVolumeArgs" :marks="linkVolumeMarks" :disabled="!settings.risingLinkPreview"></range>
+      <checkbox setting="risingCharacterPreview"></checkbox>
+
+      <div class="form-group"><hr></div>
+      <h5>{{ l('rising.header.profile') }}</h5>
+
+      <checkbox setting="risingAutoCompareKinks"></checkbox>
+      <checkbox setting="risingAutoExpandCustomKinks"></checkbox>
+
+      <div class="form-group"><hr></div>
+      <h5>{{ l('rising.header.misc') }}</h5>
+
+      <checkbox setting="risingShowUnreadOfflineCount"></checkbox>
+    </collapse>
+    <collapse :id="tab4name" :ref="tab4name" :title="tab4name" :initial="false" class="mb-4">
       <div class="warning">
         <h5>{{ l('rising.header.dangerZone') }}</h5>
         <p>{{ l('rising.header.desc') }}</p>
         <p>{{ l('rising.filter.warning') }}</p>
       </div>
 
+      <div class="form-group"><hr></div>
       <div>
         <h5>{{ l('rising.header.visibility') }}</h5>
         <p>{{ l('rising.header.naTo') }}</p>
@@ -131,37 +153,39 @@
       </div>
 
       <generic-check
-        v-for="e in [
-          'hideAds',
-          'hideSearchResults',
-          'hideChannelMembers',
-          'hidePublicChannelMessages', 'hidePrivateChannelMessages',
-          'hidePrivateMessages',
-          'showFilterIcon',
-          'autoReply',
-          'penalizeMatches', 'rewardNonMatches',
-        ]"
-        :key="e" :obj="settings.risingFilter" :setting="e" prefix="risingFilter"
+          v-for="e in [
+            'hideAds',
+            'hideSearchResults',
+            'hideChannelMembers',
+            'hidePublicChannelMessages', 'hidePrivateChannelMessages',
+            'hidePrivateMessages',
+            'showFilterIcon',
+            'autoReply',
+            'penalizeMatches', 'rewardNonMatches',
+          ]"
+          :key="e" :obj="settings.risingFilter" :setting="e" prefix="risingFilter"
       ></generic-check>
 
+      <div class="form-group"><hr></div>
       <h5>{{ l('rising.header.match') }}</h5>
 
       <generic-num :obj="settings.risingFilter"
-        setting="minAge" prefix="risingFilter" :min="0"
+          setting="minAge" prefix="risingFilter" :min="0"
       ></generic-num>
       <generic-num :obj="settings.risingFilter"
-        setting="maxAge" prefix="risingFilter" :min="0"
+          setting="maxAge" prefix="risingFilter" :min="0"
       ></generic-num>
 
       <generic-check v-for="(_, k) in smartFilterTypes" :key="k" :obj="settings.risingFilter.smartFilters" :setting="k" prefix="smartFilters"></generic-check>
 
+      <div class="form-group"><hr></div>
       <h5>{{ l('rising.header.exceptionList') }}</h5>
 
       <generic-text :obj="settings.risingFilter"
-        setting="exceptionNames" prefix="risingFilter"
+          setting="exceptionNames" prefix="risingFilter"
       ></generic-text>
     </collapse>
-    <collapse :ref="tab4name" :id="tab4name" :title="tab4name" :initial="false" class="mb-4">
+    <collapse :id="tab5name" :ref="tab5name" :title="tab5name" :initial="false" class="mb-4">
       <h5>{{ l('settings.hideAds.title') }}</h5>
       <div>{{ l('settings.hideAds.desc') }}</div>
       <template v-if="hidden.length">
@@ -174,10 +198,10 @@
         {{ l('settings.hideAds.empty') }}
       </template>
     </collapse>
-    <collapse :ref="tab5name" :id="tab5name" :title="tab5name" :initial="false" class="mb-4">
+    <collapse :id="tab6name" :ref="tab6name" :title="tab6name" :initial="false" class="mb-4">
       <custom-browser-settings></custom-browser-settings>
     </collapse>
-    <collapse :ref="tab6name" :id="tab6name" :title="tab6name" :initial="false" class="mb-4">
+    <collapse :id="tab7name" :ref="tab7name" :title="tab7name" :initial="false" class="mb-4">
       <div class="form-label">
         {{ l('settings.import.desc') }}
       </div>
@@ -251,12 +275,13 @@ export default class Settings extends Vue {
     settings = core.state.settings;
 
     tab0name = l('settings.tabs.general');
-    tab1name = l('settings.tabs.notifications');
-    tab2name = l('settings.tabs.bonus');
-    tab3name = l('settings.tabs.filters');
-    tab4name = l('settings.tabs.hideAds');
-    tab5name = l('settings.tabs.browser');
-    tab6name = l('settings.tabs.import');
+    tab1name = l('settings.tabs.chat');
+    tab2name = l('settings.tabs.notifications');
+    tab3name = l('settings.tabs.bonus');
+    tab4name = l('settings.tabs.filters');
+    tab5name = l('settings.tabs.hideAds');
+    tab6name = l('settings.tabs.browser');
+    tab7name = l('settings.tabs.import');
 
     get tabNames() {
         return [
@@ -267,6 +292,7 @@ export default class Settings extends Vue {
             this.tab4name,
             this.tab5name,
             this.tab6name,
+            this.tab7name,
         ];
     }
 
@@ -292,12 +318,12 @@ export default class Settings extends Vue {
     }
 
     @Hook('mounted')
-    async onMount() {
-        // Tab 2
+    onMount() {
+        // Tab 0
         this.risingAvailableThemes = this.getAvailableThemes();
 
         // Tab 7
-        this.availableImports = await this.getAvailableImports();
+        this.availableImports = this.getAvailableImports();
     }
 
     /**
@@ -393,10 +419,10 @@ export default class Settings extends Vue {
 
     availableImports: ReadonlyArray<string> = [];
 
-    getAvailableImports = async () => (await core.settingsStore.getAvailableCharacters()).filter(c => c !== core.connection.character);
+    getAvailableImports = () => core.settingsStore.getAvailableCharacters().filter(c => c !== core.connection.character);
 
     async doImport(): Promise<void> {
-        if (!confirm(l('settings.import.confirm', this.importCharacter, core.connection.character)))
+        if (!window.confirm(l('settings.import.confirm', this.importCharacter, core.connection.character)))
             return;
 
         const import_key = async (key: keyof SettingsInterface.Keys) => {
