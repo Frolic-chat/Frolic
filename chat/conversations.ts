@@ -1534,7 +1534,12 @@ export default function(this: unknown): Interfaces.State {
         // It only ever had a hook in cache-manager.
         // EventBus.$emit('private-message', { message });
 
+        const conv_is_active = state.privateMap[data.character.toLowerCase()];
         const conv = state.getPrivate(char);
+
+        if (!conv_is_active && core.state.generalSettings.autoPinPMs)
+            conv.isPinned = true;
+
         await conv.addMessage(message);
     });
     connection.onMessage('MSG', async(data, time) => {

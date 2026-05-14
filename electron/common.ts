@@ -41,6 +41,7 @@ export class GeneralSettings {
     browserIncognitoArg:              string = '';
     defaultToHome:                    boolean = true;
     profileCacheEntries:              number = 1000;
+    autoPinPMs:                       boolean = false;
     widgets = {
         inbox:       true,  // Display of notes from site
         scratchpad:  true,  // Text box for player notes
@@ -50,7 +51,7 @@ export class GeneralSettings {
         activity:    true,  // Small console with recent friend/bookmark activity
         match:       true,  // High quality match
     };
-    argv:       string[] = [];
+    argv: string[] = [];
 }
 
 export type LogType =
