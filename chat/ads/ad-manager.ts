@@ -143,8 +143,13 @@ export class AdManager {
         const ads = this.getAds();
         const idx = Array.from(ads, (_, i) => i);
 
-        if (this.shouldUseRandomOrder())
+        log.debug('AdManager.generateAdMap.shouldRandomize', this.shouldUseRandomOrder(), () => idx);
+
+        if (this.shouldUseRandomOrder()) {
             Utils.fisherYatesShuffle(idx);
+
+            log.debug('AdManager.generateAdMap.randomOrder', () => idx);
+        }
 
         return idx;
     }

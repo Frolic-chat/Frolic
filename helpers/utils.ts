@@ -41,7 +41,7 @@ export function findExeFileFromName(exe: string): string {
  * @param arr An array to be randomized; will be modified in-place
  */
 export function fisherYatesShuffle(arr: unknown[], amount: number = 0): void {
-    const end = amount >= 0 && amount <= arr.length
+    const end = amount > 0 && amount <= arr.length
         ? Math.floor(arr.length - amount)
         : 0;
 
