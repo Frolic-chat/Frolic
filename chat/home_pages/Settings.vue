@@ -146,14 +146,14 @@
       <checkbox setting="risingShowUnreadOfflineCount"></checkbox>
     </collapse>
     <collapse :id="tab4name" :ref="tab4name" :title="tab4name" :initial="false" class="mb-4 settings-container">
-      <div class="warning">
+      <div class="warning settings-search-result-marker">
         <h5>{{ l('rising.header.dangerZone') }}</h5>
         <p>{{ l('rising.header.desc') }}</p>
         <p>{{ l('rising.filter.warning') }}</p>
       </div>
 
       <div class="form-group"><hr></div>
-      <div>
+      <div class="settings-search-result-marker">
         <h5>{{ l('rising.header.visibility') }}</h5>
         <p>{{ l('rising.header.naTo') }}</p>
         <p><small>{{ l('rising.header.visibilityCaveat') }}</small></p>
@@ -183,7 +183,10 @@
           setting="maxAge" prefix="risingFilter" :min="0"
       ></generic-num>
 
-      <generic-check v-for="(_, k) in smartFilterTypes" :key="k" :obj="settings.risingFilter.smartFilters" :setting="k" prefix="smartFilters"></generic-check>
+      <generic-check
+          v-for="_, k in smartFilterTypes"
+          :key="k" :obj="settings.risingFilter.smartFilters" :setting="k" prefix="smartFilters"
+      ></generic-check>
 
       <div class="form-group"><hr></div>
       <h5>{{ l('rising.header.exceptionList') }}</h5>
@@ -193,37 +196,38 @@
       ></generic-text>
     </collapse>
     <collapse :id="tab5name" :ref="tab5name" :title="tab5name" :initial="false" class="mb-4 settings-container">
-      <h5>{{ l('settings.hideAds.title') }}</h5>
-      <div>{{ l('settings.hideAds.desc') }}</div>
-      <template v-if="hidden.length">
-        <div v-for="(user, i) in hidden" :key="user">
+      <div class="settings-search-result-marker">
+        <h5>{{ l('settings.hideAds.title') }}</h5>
+        <div>{{ l('settings.hideAds.desc') }}</div>
+      </div>
+
+      <div v-if="hidden.length" class="settings-search-result-marker">
+        <div v-for="user, i in hidden" :key="user">
           <span class="fa fa-times" style="cursor:pointer" @click.stop="hidden.splice(i, 1)"></span>
           {{ user }}
         </div>
-      </template>
-      <template v-else>
+      </div>
+      <div v-else class="settings-search-result-marker">
         {{ l('settings.hideAds.empty') }}
-      </template>
+      </div>
     </collapse>
     <collapse :id="tab6name" :ref="tab6name" :title="tab6name" :initial="false" class="mb-4 settings-container">
       <custom-browser-settings></custom-browser-settings>
     </collapse>
     <collapse :id="tab7name" :ref="tab7name" :title="tab7name" :initial="false" class="mb-4 settings-container">
-      <div class="form-label">
-        {{ l('settings.import.desc') }}
-      </div>
-      <div class="form-group d-flex">
-        <select id="import" v-model="importCharacter" class="form-control" style="flex:1;margin-right:10px">
-          <option value="">
-            {{ l('settings.import.selectCharacter') }}
-          </option>
-          <option v-for="character in availableImports" :key="character" :value="character">
-            {{ character }}
-          </option>
-        </select>
-        <button class="btn btn-secondary" :disabled="!importCharacter" @click="doImport">
-          {{ l('settings.import') }}
-        </button>
+      <div class="settings-search-result-marker">
+        <div class="form-label">
+          {{ l('settings.import.desc') }}
+        </div>
+        <div class="form-group d-flex">
+          <select id="import" v-model="importCharacter" class="form-control" style="flex:1;margin-right:10px">
+            <option value="">{{ l('settings.import.selectCharacter') }}</option>
+            <option v-for="character in availableImports" :key="character" :value="character">{{ character }}</option>
+          </select>
+          <button class="btn btn-secondary" :disabled="!importCharacter" @click="doImport">
+            {{ l('settings.import') }}
+          </button>
+        </div>
       </div>
     </collapse>
   </template>

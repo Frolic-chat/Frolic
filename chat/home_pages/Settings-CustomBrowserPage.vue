@@ -1,10 +1,12 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div><!-- v-show="tab === 'x'" -->
-  <h5>{{ l('settings.browser.title') }}</h5>
-  <div class="app-wide-setting-notice">{{ l('settings.notice.appWide') }}</div>
+  <div class="settings-search-result-marker">
+    <h5>{{ l('settings.browser.title') }}</h5>
+    <div>{{ l('settings.notice.appWide') }}</div>
+  </div>
 
-  <div class="warning">
+  <div class="warning settings-search-result-marker">
     <h5>{{ l('settings.browser.warning.title') }}</h5>
     <div>{{ l('settings.browser.warning.msg') }}</div>
     <div v-if="isMac">
@@ -15,7 +17,7 @@
     </div>
   </div>
 
-  <div class="form-group">
+  <div class="form-group settings-search-result-marker">
     <div class="row">
       <label class="control-label col" for="browserPath">{{ l('settings.browser.path') }}</label>
     </div>
@@ -29,9 +31,9 @@
     </div>
   </div>
 
-  <div class="form-group row"><hr class="col"></div>
+  <div class="form-group"><hr></div>
 
-  <div class="form-group">
+  <div class="form-group settings-search-result-marker">
     <div class="row">
       <label class="control-label col" for="browserArgs">{{ l('settings.browser.arguments') }}</label>
     </div>
@@ -40,7 +42,7 @@
         <input id="browserArgs" type="text" class="form-control" :value="settings.browserArgs" @change="setBrowserArgs">
       </div>
     </div>
-    <div class="row">
+    <div class="row settings-search-result-marker">
       <div class="col">
         <small class="form-text text-muted">{{ l('settings.browser.argumentsHelp') }}</small>
         <small v-if="settings.browserPath" class="form-text text-muted" style="user-select: text;">{{ l('settings.browser.current') }}{{ example }}</small>
@@ -48,9 +50,9 @@
     </div>
   </div>
 
-  <div class="form-group row"><hr class="col"></div>
+  <div class="form-group"><hr></div>
 
-  <div class="form-group">
+  <div class="form-group settings-search-result-marker">
     <div class="row">
       <label class="control-label" for="incognitoArg">{{ l('settings.browser.incognito.title') }}</label>
     </div>
@@ -69,7 +71,7 @@
       </div>
     </div>
   </div>
-  <div class="form-group">
+  <div class="form-group settings-search-result-marker">
     <div class="row">
       <div class="col-auto">
         <button class="btn btn-danger" @click.prevent.stop="resetToDefault()">{{ l('settings.browser.reset') }}</button>

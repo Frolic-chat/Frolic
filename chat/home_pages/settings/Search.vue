@@ -23,6 +23,7 @@ export default class Search<T> extends Vue {
     readonly onSearch!: (query: string, tooShort: boolean, results: Array<T>) => Array<T>;
 
     readonly ph = l('settings.search.ph');
+    readonly minSearchLength = 3;
 
     private runtime = core.runtime; // Preserve the input even if the user moves away from the page.
     get search() { return this.runtime.settingsSearchInput; }
@@ -30,20 +31,22 @@ export default class Search<T> extends Vue {
 
     private results: Array<T> = [];
 
-    readonly searchUpdateDebounce = Utils.debounce(() => this.results = this.onSearch(this.search, this.queryIsErrorLength, this.results), { wait: 433 });
+    private runSearch = () => this.results = this.onSearch(this.search, this.queryIsErrorLength, this.results);
+    readonly searchUpdateDebounce = Utils.debounce(() => this.runSearch(), { wait: 433 });
 
     get queryIsErrorLength() {
         const l = this.search.length;
-        return l > 0 && l < 3;
+        return l > 0 && l < this.minSearchLength;
     }
 
     @Hook('mounted')
     mounted() {
-        this.results = this.onSearch(this.search, this.queryIsErrorLength, this.results);
+        this.runSearch();
     }
 
     clearSearch(): void {
         this.search = '';
+        this.runSearch();
     }
 }
 </script>
