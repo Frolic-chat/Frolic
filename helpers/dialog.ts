@@ -2,8 +2,7 @@ import * as Electron from 'electron';
 import l from '../chat/localize';
 
 export async function confirmDialog(message: string, { yes, no }: { yes?: string, no?: string } = {}): Promise<boolean> {
-    const result = await Electron.ipcRenderer.invoke(
-        'dialog',
+    const result = await Electron.ipcRenderer.invoke('dialog',
         'showMessageBox', {
             message,
             title:     l('title'),

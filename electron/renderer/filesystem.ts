@@ -15,7 +15,7 @@ function writeFile(p: fs.PathLike | number, data: string | NodeJS.ArrayBufferVie
         fs.writeFileSync(p, data, options);
     }
     catch (e) {
-        Electron.ipcRenderer.send('dialog', 'showErrorBox', l('fs.error'), (e as Error).message);
+        void Electron.ipcRenderer.invoke('dialog', 'showErrorBox', l('fs.error'), (e as Error).message);
     }
 }
 
