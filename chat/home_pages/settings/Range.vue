@@ -1,17 +1,17 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group settings-search-result-marker">
-    <label class="form-label" :for="setting">{{ title }}</label>
-    <div class="range range-primary">
-        <output>{{ display }}</output>
-        <input type="range" class="form-control-range" :id="setting" :value="display" @change="set" @input="display = $event.target.value" :disabled="disabled" :min="min" :max="max" :aria-describedby="`${setting}Help`" :list="`${setting}Marker`"/>
-    </div>
-    <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
-    <template v-if="nits.length">
-        <datalist :id="`${setting}Marker`">
-            <option v-for="nit in nits" :key="`${setting}${nit}`" :value="nit"></option>
-        </datalist>
-    </template>
+  <label class="form-label" :for="setting">{{ title }}</label>
+  <div class="range range-primary">
+    <output>{{ display }}</output>
+    <input :id="setting" type="range" class="form-control-range" :value="display" :disabled="disabled" :min="min" :max="max" :aria-describedby="`${setting}Help`" :list="`${setting}Marker`" @change="set" @input="display = $event.target.value">
+  </div>
+  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <template v-if="nits.length">
+    <datalist :id="`${setting}Marker`">
+      <option v-for="nit in nits" :key="`${setting}${nit}`" :value="nit"></option>
+    </datalist>
+  </template>
 </div>
 </template>
 
@@ -19,9 +19,10 @@
 import Vue from 'vue';
 import { Component, Prop } from '@frolic/vue-ts';
 
-import { Settings } from '../../interfaces';
+import type { Settings } from '../../interfaces';
 import core from '../../core';
 import l from '../../localize';
+import * as Utils from '../../../helpers/utils';
 
 import NewLogger from '../../../helpers/log';
 const log = NewLogger('settings-minor', () => process.env.NODE_ENV === 'development');
@@ -54,15 +55,15 @@ export default class Range extends Vue {
     /**
      * The first mark and the last mark will become `min` and `max` respectively.
      */
-    @Prop({ default: () => [0, 100] }) readonly marks!: number[];
-    get min() { return this.marks[0]                     }
-    get max() { return this.marks[this.marks.length - 1] }
+    @Prop({ default: () => [ 0, 100 ] }) readonly marks!: number[];
+    get min() { return this.marks[0];                     }
+    get max() { return this.marks[this.marks.length - 1]; }
     // Nits do not display currently.
-    get nits() { return this.marks.slice(1, -1) }
-    get fallback() { return this.min }
+    get nits() { return this.marks.slice(1, -1); }
+    get fallback() { return this.min; }
 
-    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [ this.settings[this.setting] ])) }
-    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help ?? []))  }
+    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [ this.settings[this.setting] ])); }
+    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help ?? []));  }
 
     // If there's no min or max then we're in range.
     inRange(x: number) {
@@ -70,15 +71,8 @@ export default class Range extends Vue {
             && (this.max ? x <= this.max : true);
     }
 
-    getValid(input: any): number {
-        if (input === null || input === undefined || input === '')
-            return this.fallback;
-
-        const n = parseInt(input, 10);
-
-        // log.warn({ n, nan: Number.isNaN(n), finite: Number.isFinite(n), range: this.inRange(n) });
-
-        return !Number.isNaN(n) && Number.isFinite(n) && this.inRange(n) ? n : this.fallback;
+    getValid(input: unknown): number {
+        return Utils.getAsNumber(input) ?? this.fallback;
     }
 
     set() {

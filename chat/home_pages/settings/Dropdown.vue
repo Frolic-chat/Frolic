@@ -1,18 +1,18 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group settings-search-result-marker">
-    <label class="form-label" :for="setting">{{ title }}</label>
-    <select class="form-control" :id="setting" v-model="settings[setting]" :disabled="disabled" :aria-describedby="`${setting}Help`">
-        <slot>
-            <option v-if="blank || !options"></option>
-            <template v-if="options">
-                <option v-for="entry in options" :key="`${setting}${entry[1]}`" :value="entry[0]">
-                    {{ entry[1] }}
-                </option>
-            </template>
-        </slot>
-    </select>
-    <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <label class="form-label" :for="setting">{{ title }}</label>
+  <select :id="setting" v-model="settings[setting]" class="form-control" :disabled="disabled" :aria-describedby="`${setting}Help`">
+    <slot>
+      <option v-if="blank || !options"></option>
+      <template v-if="options">
+        <option v-for="entry in options" :key="`${setting}${entry[1]}`" :value="entry[0]">
+          {{ entry[1] }}
+        </option>
+      </template>
+    </slot>
+  </select>
+  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
 </div>
 </template>
 
@@ -20,7 +20,7 @@
 import Vue from 'vue';
 import { Component, Prop } from '@frolic/vue-ts';
 
-import { Relation, Settings } from '../../interfaces';
+import type { Relation, Settings } from '../../interfaces';
 import core from '../../core';
 import l from '../../localize';
 
@@ -72,8 +72,8 @@ export default class Dropdown extends Vue {
     @Prop({ default: false })
     readonly disabled!: boolean;
 
-    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [])) }
-    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help  ?? [])) }
+    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [])); }
+    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help  ?? [])); }
 
     settings = core.state.settings;
 }

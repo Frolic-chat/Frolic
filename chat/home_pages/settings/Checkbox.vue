@@ -1,9 +1,9 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group form-check settings-search-result-marker">
-    <input type="checkbox" class="form-check-input" :id="setting" :checked="settings[setting]" @change="settings[setting] = $event.target.checked" :disabled="disabled" :aria-describedby="`${setting}Help`"/>
-    <label class="form-check-label" :for="setting">{{ title }}</label>
-    <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <input :id="setting" type="checkbox" class="form-check-input" :checked="settings[setting]" :disabled="disabled" :aria-describedby="`${setting}Help`" @change="settings[setting] = $event.target.checked">
+  <label class="form-check-label" :for="setting">{{ title }}</label>
+  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
 </div>
 </template>
 
@@ -11,7 +11,7 @@
 import Vue from 'vue';
 import { Component, Prop } from '@frolic/vue-ts';
 
-import { Settings } from '../../interfaces';
+import type { Settings } from '../../interfaces';
 import core from '../../core';
 import l from '../../localize';
 
@@ -35,8 +35,8 @@ export default class Checkbox extends Vue {
     @Prop({ default: false })
     readonly disabled!: boolean;
 
-    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [])) }
-    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help  ?? [])) }
+    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [])); }
+    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help  ?? [])); }
 
     settings = core.state.settings;
 }

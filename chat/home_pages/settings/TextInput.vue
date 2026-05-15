@@ -1,9 +1,9 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group settings-search-result-marker">
-    <label class="form-label" :for="setting">{{ title }}</label>
-    <input type="text" class="form-control" :id="setting" @change="set" :value="stringifiedSetting" :disabled="disabled" :placeholder="ph" :aria-describedby="`${setting}Help`"/>
-    <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <label class="form-label" :for="setting">{{ title }}</label>
+  <input :id="setting" type="text" class="form-control" :value="stringifiedSetting" :disabled="disabled" :placeholder="ph" :aria-describedby="`${setting}Help`" @change="set">
+  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
 </div>
 </template>
 
@@ -11,7 +11,7 @@
 import Vue from 'vue';
 import { Component, Prop } from '@frolic/vue-ts';
 
-import { Settings } from '../../interfaces';
+import type { Settings } from '../../interfaces';
 import core from '../../core';
 import l from '../../localize';
 
@@ -52,9 +52,9 @@ export default class TextInput extends Vue {
 
     fallback = '';
 
-    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [])) }
-    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help  ?? [])) }
-    get ph()    { return l(`settings.${this.setting}.ph`,   ...(this.localArgs.ph    ?? [])) }
+    get title() { return l(`settings.${this.setting}`,      ...(this.localArgs.title ?? [])); }
+    get help()  { return l(`settings.${this.setting}.help`, ...(this.localArgs.help  ?? [])); }
+    get ph()    { return l(`settings.${this.setting}.ph`,   ...(this.localArgs.ph    ?? [])); }
 
     /**
      * Parses the input from the text box. Use this to specify it matches the necessary criteria for your setting.
