@@ -373,8 +373,15 @@ export class SettingsStore implements Settings.Store {
         return (fs.readdirSync(baseDir)).filter((x) => fs.statSync(path.join(baseDir, x)).isDirectory());
     }
 
+    // Legacy jank
+    /**
+     * Due to multiple reports that seems to be conversationSettings not saving properly, I'm removing the force-async from this.
+     * I thought I could tell the original author's intent in making this async - don't block - so I added a promise to force it to be so. But the usage doesn't line up: frequently it's not awaited, although it is already called from async context much of the time.
+     *  I'm undoing the change due to issues that are potentially caused by the extra await here. I doubt it's really a problem; but I'm too paranoid not to revert it.
+     */
+    // eslint-disable-next-line @typescript-eslint/require-await
     async set<K extends keyof Settings.Keys>(key: K, value: Settings.Keys[K]): Promise<void> {
-        await Promise.resolve();
+        // await Promise.resolve();
         writeFile(path.join(getSettingsDir(), key), JSON.stringify(value, null, 4));
     }
 }
