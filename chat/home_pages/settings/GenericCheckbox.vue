@@ -2,8 +2,12 @@
 <template>
 <div class="form-group form-check settings-search-result-marker">
   <input :id="`${prefix}-${setting}`" v-model="obj[setting]" type="checkbox" class="form-check-input" :disabled="disabled" :aria-describedby="`${prefix}-${setting}Help`">
-  <label class="form-check-label" :for="`${prefix}-${setting}`">{{ title }}</label>
-  <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <label class="form-check-label" :for="`${prefix}-${setting}`">
+    <slot name="title">{{ title }}</slot>
+  </label>
+  <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">
+    <slot name="help">{{ help }}</slot>
+  </small>
 </div>
 </template>
 

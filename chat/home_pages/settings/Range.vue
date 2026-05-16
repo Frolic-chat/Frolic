@@ -1,12 +1,16 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group settings-search-result-marker">
-  <label class="form-label" :for="setting">{{ title }}</label>
+  <label class="form-label" :for="setting">
+    <slot name="title">{{ title }}</slot>
+  </label>
   <div class="range range-primary">
     <output>{{ display }}</output>
     <input :id="setting" type="range" class="form-control-range" :value="display" :disabled="disabled" :min="min" :max="max" :aria-describedby="`${setting}Help`" :list="`${setting}Marker`" @change="set" @input="display = $event.target.value">
   </div>
-  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">
+    <slot name="help">{{ help }}</slot>
+  </small>
   <template v-if="nits.length">
     <datalist :id="`${setting}Marker`">
       <option v-for="nit in nits" :key="`${setting}${nit}`" :value="nit"></option>

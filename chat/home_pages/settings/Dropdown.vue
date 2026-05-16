@@ -1,7 +1,9 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group settings-search-result-marker">
-  <label class="form-label" :for="setting">{{ title }}</label>
+  <label class="form-label" :for="setting">
+    <slot name="title">{{ title }}</slot>
+  </label>
   <select :id="setting" v-model="settings[setting]" class="form-control" :disabled="disabled" :aria-describedby="`${setting}Help`">
     <slot>
       <option v-if="blank || !options"></option>
@@ -12,7 +14,9 @@
       </template>
     </slot>
   </select>
-  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <small v-if="help" :id="`${setting}Help`" class="help form-text text-muted">
+    <slot name="help">{{ help }}</slot>
+  </small>
 </div>
 </template>
 

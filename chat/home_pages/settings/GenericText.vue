@@ -1,9 +1,13 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <div class="form-group settings-search-result-marker">
-  <label class="form-label" :for="`${prefix}-${setting}`">{{ title }}</label>
+  <label class="form-label" :for="`${prefix}-${setting}`">
+    <slot name="title">{{ title }}</slot>
+  </label>
   <input :id="`${prefix}-${setting}`" type="text" class="form-control" :value="stringifiedSetting" :disabled="disabled" :aria-describedby="`${prefix}-${setting}Help`" :placeholder="ph" @change="set">
-  <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">{{ help }}</small>
+  <small v-if="help" :id="`${prefix}-${setting}Help`" class="help form-text text-muted">
+    <slot name="help">{{ help }}</slot>
+  </small>
 </div>
 </template>
 
