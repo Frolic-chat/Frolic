@@ -110,16 +110,12 @@ export class AdCenter {
             return;
 
         // This is supposed to update vue.
-        conv.settings = {
-            ...conv.settings,
-
-            adSettings: {
-                ...conv.settings.adSettings,
-                ads: ads
-                    .filter(ad => !ad.disabled && ad.content.trim())
-                    .map(ad => ad.content.trim()),
-                randomOrder: order === 'random',
-            },
+        conv.settings.adSettings = {
+            ...conv.settings.adSettings,
+            ads: ads
+                .filter(ad => !ad.disabled && ad.content.trim())
+                .map(ad => ad.content.trim()),
+            randomOrder: order === 'random',
         };
 
         conv.adManager.stop();
