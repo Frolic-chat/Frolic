@@ -275,7 +275,7 @@
 }
 
 .message-block {
-  padding: 1px 0;
+  padding-block: 1px;
   &:not(:last-child) {
     border-bottom: solid 1px $card-border-color;
   }
