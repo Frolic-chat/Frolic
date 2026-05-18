@@ -181,9 +181,9 @@
           </span>
 
           <span v-else-if="isChannel(conversation)">
-            <template v-if="watchedCharacters.length">
+            <template v-if="onlineWatchedCharacters.length">
               <span class="fa-solid fa-eye" data-balloon-pos="up">&nbsp;</span>
-              <span v-for="char, i in watchedCharacters" :key="i">
+              <span v-for="char, i in onlineWatchedCharacters" :key="i">
                 <template v-if="char.status !== 'offline'">
                   <user :key="char.name" :character="char" :channel="conversation.channel" :immediate="true" :showStatus="false" :filterIcon="false"></user>
                   <span v-if="i !== conversation.settings.highlightUsernames.length - 1">, </span>
@@ -878,6 +878,10 @@ export default class ConversationView extends Vue {
 
     get watchedCharacters(): Character[] {
         return this.conversation.settings.highlightUsernames.map(n => core.characters.get(n));
+    }
+
+    get onlineWatchedCharacters(): Character[] {
+        return this.watchedCharacters.filter(c => c.status !== 'offline');
     }
 
     get settings(): Settings {
