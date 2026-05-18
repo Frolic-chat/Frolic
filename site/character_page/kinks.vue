@@ -8,8 +8,8 @@
     </div>
 
     <div v-if="shared.authenticated" class="quick-compare-block form-inline">
-      <character-select v-model="characterToCompare"></character-select>
-      <button class="btn btn-outline-secondary" :disabled="loading || !characterToCompare" @click="compareKinks()">
+      <character-select v-model="characterToCompare" class="form-control"></character-select>
+      <button class="btn btn-secondary" :disabled="loading || !characterToCompare" @click="compareKinks()">
         {{ compareButtonText }}
       </button>
     </div>
