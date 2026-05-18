@@ -55,10 +55,10 @@ export default class GenericCheckbox extends Vue {
     @Prop({ default: false })
     readonly disabled!: boolean;
 
-    get title() {
+    get title() { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}`, ...(this.localArgs.title ?? []));
     }
-    get help()  {
+    get help()  { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.help`, ...(this.localArgs.help ?? []));
     }
 }

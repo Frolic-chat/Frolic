@@ -326,10 +326,10 @@ function openURLExternally(url: string, incognito: boolean = false): void {
 
     // All arg containers could be multiple args, so can't check in this manner.
     if (safe_url.length > 1 || safe_url.some(e => typeof e !== 'string')) {
-        Electron.dialog.showMessageBox({
-            title: 'Frolic! - Browser Failure',
+        void Electron.dialog.showMessageBox({
+            title:   'Frolic! - Browser Failure',
             message: l('chat.badBrowserArguments'),
-            type: 'error',
+            type:    'error',
             buttons: [],
         });
 

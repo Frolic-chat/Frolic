@@ -54,13 +54,13 @@ export default class GenericNumber extends Vue {
     @Prop({ default: () => ({ title: [], help: [], ph: [] }) })
     readonly localArgs!: { title?: string[]; help?: string[], ph?: string[] };
 
-    get title() {
+    get title() { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}`, ...(this.localArgs.title ?? []));
     }
-    get help()  {
+    get help()  { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.help`, ...(this.localArgs.help ?? []));
     }
-    get ph()    {
+    get ph()    { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.ph`, ...(this.localArgs.ph ?? []));
     }
 

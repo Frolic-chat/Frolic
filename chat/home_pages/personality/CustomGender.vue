@@ -111,7 +111,7 @@ export default class GenderCreator extends Vue {
 
         return '';
     }
-    get identityErrorMsg() { return l(this.identityError) };
+    get identityErrorMsg() { return this.identityError ? l(this.identityError) : ''; };
 
     kinkLead    = l('settings.cg.kink.lead')
     kinkDesc    = l('settings.cg.kink.desc');
@@ -124,7 +124,7 @@ export default class GenderCreator extends Vue {
         else
             return '';
     }
-    get kinkErrorMsg() { return l(this.kinkError) }
+    get kinkErrorMsg() { return this.kinkError ? l(this.kinkError) : ''; }
 
     outputLead = l('settings.cg.output.lead');
     outputDesc = l('settings.cg.output.desc');

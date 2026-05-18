@@ -69,13 +69,13 @@ export default class GenericText extends Vue {
 
     fallback = '';
 
-    get title() {
+    get title() { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}`, ...(this.localArgs.title ?? []));
     }
-    get help()  {
+    get help()  { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.help`, ...(this.localArgs.help ?? []));
     }
-    get ph()    {
+    get ph()    { // @ts-expect-error Type tightened l()
         return l(`${this.localizationPrefix ? this.localizationPrefix + '.' : ''}${this.prefix ? this.prefix + '.' : ''}${this.setting}.ph`, ...(this.localArgs.ph ?? []));
     }
 

@@ -85,7 +85,7 @@ export default class HQPCreator extends Vue {
     outputPh = l('settings.hqp.output.ph');
 
     /* eslint-disable @stylistic/brace-style */
-    get hqpErrorMsg() { return l(this.hqpError); }
+    get hqpErrorMsg() { return this.hqpError ? l(this.hqpError) : ''; }
     get hqpEnabled()  { return core.state.settings.risingShowHighQualityPortraits; }
     get youHaveHqp()  { return !!core.characters.ownCharacter.overrides.avatarUrl; }
     /* eslint-enable @stylistic/brace-style */

@@ -1939,7 +1939,7 @@ export default function(this: unknown): Interfaces.State {
             return;
 
         const l_msg: string[] = [];
-        let key: string;
+        let key: 'events.status.ownMessage' | 'events.status.own' | 'events.status.message' | 'events.status';
 
         if (isSelf) {
             key = data.statusmsg ? 'events.status.ownMessage' : 'events.status.own';

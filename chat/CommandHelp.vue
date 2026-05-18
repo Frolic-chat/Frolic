@@ -80,9 +80,11 @@ export default class CommandHelp extends CustomDialog {
                 for (let i = 0; i < command.params.length; ++i) {
                     const param = command.params[i];
                     const paramKey = param.type === ParamType.Character ? 'param_character' : `${key}.param${i}`;
+                    // @ts-expect-error Legacy code
                     const name = l(`commands.${paramKey}`);
                     const data = {
                         name: param.optional !== undefined ? l('commands.help.paramOptional', name) : name,
+                        // @ts-expect-error Legacy code
                         help: l(`commands.${paramKey}.help`),
                     };
                     params.push(data);
@@ -101,11 +103,15 @@ export default class CommandHelp extends CustomDialog {
                     context += `${l('commands.help.contextConsole')}\n`;
             }
             this.commands.push({
+                // @ts-expect-error Legacy code
                 name:       `/${key} - ${l(`commands.${key}`)}`,
+                // @ts-expect-error Legacy code
                 help:       l(`commands.${key}.help`),
                 context,
-                permission: command.permission !== undefined ?
-                    l(`commands.help.permission${Permission[command.permission]}`) : undefined,
+                permission: command.permission !== undefined
+                    // @ts-expect-error Legacy code
+                    ? l(`commands.help.permission${Permission[command.permission]}`)
+                    : undefined,
                 params,
                 syntax,
             });
