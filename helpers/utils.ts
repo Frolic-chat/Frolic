@@ -244,6 +244,10 @@ export function deepEqual(obj1: unknown, obj2: unknown): boolean {
     return true;
 }
 
+export function isKeyOfObject<T extends object>(key: string | number | symbol, obj: T): key is keyof T {
+    return key in obj;
+}
+
 export type ObjectKeys<T> = {
     [K in keyof T]: NonNullable<T[K]> extends object ? K : never
 }[keyof T];
@@ -251,7 +255,6 @@ export type ObjectKeys<T> = {
 // type ObjectKeys<T> = keyof {
 //     [K in keyof T as NonNullable<T[K]> extends object ? K : never]: T[K]
 // }
-
 
 /**
  * Overengineered version of `Object.keys(obj).filter(
