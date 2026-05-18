@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
-<!-- eslint-disable vue/no-multi-spaces -->
+<!-- eslint-disable vue/no-multi-spaces vue/multiline-html-element-content-newline -->
 <template>
 <page ref="homePageLayout">
   <template v-slot:prescroll>
@@ -591,6 +591,7 @@ export default class Settings extends Vue {
     risingAvailableThemes: ReadonlyArray<string> = [];
 
     getAvailableThemes = () => {
+        // eslint-disable-next-line no-undef
         return FS.readdirSync(Path.join(__dirname, 'themes'))
             .filter(file => file.slice(-4) === '.css')
             .map(file => file.slice(0, -4));

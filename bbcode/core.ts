@@ -1,10 +1,10 @@
-import {BBCodeCustomTag, BBCodeParser, BBCodeSimpleTag, BBCodeTextTag} from './parser';
+import { BBCodeCustomTag, BBCodeParser, BBCodeSimpleTag, BBCodeTextTag } from './parser';
 
 const url_format = '((?:https?|ftps?|irc)://[^\\s/$.?#"\']+\\.[^\\s"]+)';
 export const findUrlRegex = new RegExp(`(\\[url[=\\]]\\s*)?${url_format}`, 'gi');
 export const urlRegex = new RegExp(`^${url_format}$`);
 
-export type BBCodeElement = HTMLElement & {cleanup?(): void};
+export type BBCodeElement = HTMLElement & { cleanup?(): void };
 
 export function domain(url: string): string | undefined {
     const pieces = urlRegex.exec(url);
@@ -23,7 +23,7 @@ function fixURL(url: string): string {
     return url.replace(/ /g, '%20');
 }
 
-export function analyzeUrlTag(parser: BBCodeParser, param: string, content: string): {success: boolean, url?: string, domain?: string, textContent: string} {
+export function analyzeUrlTag(parser: BBCodeParser, param: string, content: string): { success: boolean, url?: string, domain?: string, textContent: string } {
     let url: string | undefined, text: string = content;
     let success = true;
 

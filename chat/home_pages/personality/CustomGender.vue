@@ -1,62 +1,62 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
 <collapse>
-<template v-slot:header>
+  <template v-slot:header>
     {{ title }}
-</template>
-<template v-slot:button>
+  </template>
+  <template v-slot:button>
     <span v-if="youHaveGender">
-        <span class="text-success fa-solid fa-circle-check"></span>
+      <span class="text-success fa-solid fa-circle-check"></span>
     </span>
     <span v-else>
-        <span class="fa-solid fa-face-grin-stars"></span>
-        <span class="ml-2 d-none d-sm-inline">Create</span>
+      <span class="fa-solid fa-face-grin-stars"></span>
+      <span class="ml-2 d-none d-sm-inline">Create</span>
     </span>
-</template>
-<template v-slot:default>
+  </template>
+  <template v-slot:default>
     <p>{{ intro }}</p>
 
     <!-- Beta-feature warning -->
     <div class="border-inline-warning rounded-lg p-3 my-4" style="margin-top: 10px">
-        <h5>{{ alert }}</h5>
-        <div>{{ alert_desc }}</div>
+      <h5>{{ alert }}</h5>
+      <div>{{ alertDesc }}</div>
     </div>
 
     <!-- Identity -->
     <div class="form-group">
-        <p class="lead">{{ identityLead }}</p>
-        <p class="form-text">{{ identityDesc }}</p>
-        <input type="text" class="form-control" v-model="identityPhrase" rows="1" :placeholder="identityPh" maxlength="20" />
-        <div v-if="identityError" class="form-text border-left-warning rounded-lg pl-2">
-            {{ identityErrorMsg }}
-        </div>
+      <p class="lead">{{ identityLead }}</p>
+      <p class="form-text">{{ identityDesc }}</p>
+      <input v-model="identityPhrase" type="text" class="form-control" rows="1" :placeholder="identityPh" maxlength="20" />
+      <div v-if="identityError" class="form-text border-left-warning rounded-lg pl-2">
+        {{ identityErrorMsg }}
+      </div>
     </div>
 
     <template v-if="!identityError">
-    <!-- Kink list  -->
-        <div class="form-group">
-            <p class="lead">{{ kinkLead }}</p>
-            <p class="form-text">{{ kinkDesc }}</p>
-            <p class="text-small form-text">{{ kinkExample }}</p>
-            <tags class="mt-4" v-model="selectedKinks" :availableTags="availableKinks"></tags>
-            <p v-if="kinkError" class="form-text border-left-warning rounded-lg pl-2">
-                {{ kinkErrorMsg }}
-            </p>
-        </div>
+      <!-- Kink list  -->
+      <div class="form-group">
+        <p class="lead">{{ kinkLead }}</p>
+        <p class="form-text">{{ kinkDesc }}</p>
+        <p class="text-small form-text">{{ kinkExample }}</p>
+        <tags v-model="selectedKinks" class="mt-4" :availableTags="availableKinks"></tags>
+        <p v-if="kinkError" class="form-text border-left-warning rounded-lg pl-2">
+          {{ kinkErrorMsg }}
+        </p>
+      </div>
 
-        <!-- Final -->
-        <div class="form-group">
-            <p class="lead">{{ outputLead }}</p>
-            <p class="form-text">{{ outputDesc }}</p>
-            <input type="text" class="form-control" @click="selectAllIfValid" :value="theFinalGender" rows="1" :placeholder="outputPh" readonly="true" />
-            <!--
+      <!-- Final -->
+      <div class="form-group">
+        <p class="lead">{{ outputLead }}</p>
+        <p class="form-text">{{ outputDesc }}</p>
+        <input type="text" class="form-control" :value="theFinalGender" rows="1" :placeholder="outputPh" readonly="true" @click="selectAllIfValid">
+        <!--
             <p v-if="outputerror">
                 {{ formatErrorMsg }}
             </p>
             -->
-        </div>
+      </div>
     </template>
-</template>
+  </template>
 </collapse>
 </template>
 
@@ -71,26 +71,26 @@ import core from '../../core';
 import l from '../../localize';
 import { CustomGender } from '../../../learn/matcher-types';
 
-type cgInputErrorString = 'settings.cg.errorLength'
+type CGInputErrorString = 'settings.cg.errorLength'
                         | 'settings.cg.errorEmpty'
                         | 'settings.cg.errorCharacters'
                         | '';
-type cgKinksErrorString = 'settings.cg.errorEmptyKinks'
+type CGKinksErrorString = 'settings.cg.errorEmptyKinks'
                         | '';
 
 @Component({
     components: {
         collapse: Collapse,
         tags:     TagPicker,
-    }
+    },
 })
 export default class GenderCreator extends Vue {
     title = l('settings.cg.title');
-    get youHaveGender() { return core.characters.ownCharacter.overrides.gender }
+    get youHaveGender() { return core.characters.ownCharacter.overrides.gender; }
     intro = l('settings.cg.intro');
 
-    alert      = l('settings.cg.alert');
-    alert_desc = l('settings.cg.experimental');
+    alert     = l('settings.cg.alert');
+    alertDesc = l('settings.cg.experimental');
 
     identityLead = l('settings.cg.identity.lead');
     identityDesc = l('settings.cg.identity.desc');
@@ -99,7 +99,7 @@ export default class GenderCreator extends Vue {
     // No gender string, malformed output, etc.
     // is malformed output even possible? remove unused parts.
     // sanitize detection in getstufffromdescription().
-    get identityError(): cgInputErrorString {
+    get identityError(): CGInputErrorString {
         if (!this.identityPhrase)
             return 'settings.cg.errorEmpty';
 
@@ -113,12 +113,12 @@ export default class GenderCreator extends Vue {
     }
     get identityErrorMsg() { return this.identityError ? l(this.identityError) : ''; };
 
-    kinkLead    = l('settings.cg.kink.lead')
+    kinkLead    = l('settings.cg.kink.lead');
     kinkDesc    = l('settings.cg.kink.desc');
     kinkExample = l('settings.cg.kink.example');
     selectedKinks: CustomGender.KinkWords[] = [];
     availableKinks = Object.keys(CustomGender.KinkMap);
-    get kinkError(): cgKinksErrorString {
+    get kinkError(): CGKinksErrorString {
         if (!this.selectedKinks.length)
             return 'settings.cg.errorEmptyKinks';
         else
@@ -160,7 +160,7 @@ export default class GenderCreator extends Vue {
 
         const rm: Record<number, string> = {};
         Object.entries(CustomGender.KinkMap)
-            .forEach(([k, v]) => {
+            .forEach(([ k, v ]) => {
                 rm[v] = k;
             });
 
