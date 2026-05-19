@@ -16,14 +16,41 @@ b7c4c35ae5cfb2db66dd757f8528ebe2c3548aea
 ## generated with:
 ## git log --grep="lint\|format" --regexp-ignore-case --pretty=format:"## %s%n%H%n"
 
+## Linting
+7dfd03df9958cec750c773d40dbe04668072f73b
+
+## slash_commands formatting including better type narrowing
+2eaa3bb012ccbe42d9f4621eeb4f59d1d3b2bb3c
+
+## Formatting CommandHelp
+8ad7693c669bf80714c35772b57f7ac59534f237
+
+## Formatting on character select
+19f47736b540e9d60e4d35ee03afcaa5d4c4be55
+
+## Linting in settings widgets
+d7c4fbc0c04e14fbb5461e1abb4abd01fccdc5ee
+
+## Formatting on Custom browser page
+cc90f1291db704fffbc06e98f35921fcea30d673
+
+## Collapse linting prior to usage
+a68d25f1ebc7033ed57c961dda376321d2b825b1
+
+## Linting errors in Log handler infilesystem
+dceff27b664d1b82251fe246e99c921c83cce667
+
+## Formatting around general settings
+03e3a928933f497519ca49bf1257226b3b9eb1cc
+
 ## Formatting in icon and urltag views and contentpreview
-b5760744ddade86ecab03dc74c979bba2846c5a9
+11bdf3fd17aff6bdc8b1c874f29eaee62a44c21e
 
 ## Formatting Index.vue
-9c80f41eab018e0026772a2d76fc0441ddf6072c
+a19f08ecde8ba3bacf183da243313f0ff03475bc
 
 ## Formatting in content preview prior to bug fix
-bd1d7d5e9b267aeb935738866d9bbb37137b1c75
+bea1eef1434a0a6c68cabaf4c3afc58d4e6eddbf
 
 ## Formatting: UserView
 7b457a6c2bfe605afc56f50792b1c1ec674f5208
