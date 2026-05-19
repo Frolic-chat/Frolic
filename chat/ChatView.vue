@@ -291,12 +291,12 @@ export default class ChatView extends Vue {
             animation:         50,
             fallbackTolerance: 5,
             onEnd:             e => {
-                if (!e.oldIndex || e.oldIndex === e.newIndex)
+                if (e.oldIndex === undefined || e.newIndex === undefined || e.oldIndex === e.newIndex)
                     return;
 
                 const old_convo = core.conversations.privateConversations[e.oldIndex];
                 if (old_convo)
-                    void old_convo.sort(e.newIndex!);
+                    void old_convo.sort(e.newIndex);
             },
         });
 
@@ -304,12 +304,12 @@ export default class ChatView extends Vue {
             animation:         50,
             fallbackTolerance: 5,
             onEnd:             e => {
-                if (!e.oldIndex || e.oldIndex === e.newIndex)
+                if (e.oldIndex === undefined || e.newIndex === undefined || e.oldIndex === e.newIndex)
                     return;
 
-                const old_convo = core.conversations.privateConversations[e.oldIndex];
+                const old_convo = core.conversations.channelConversations[e.oldIndex];
                 if (old_convo)
-                    void old_convo.sort(e.newIndex!);
+                    void old_convo.sort(e.newIndex);
             },
         });
 
