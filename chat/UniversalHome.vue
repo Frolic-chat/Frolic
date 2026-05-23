@@ -579,7 +579,7 @@ export default class HomeScreen extends Vue {
                 this.tab = '1';
             }
         }
-        if (this.tab === '1') {
+        else if (this.tab === '1') {
             if (n === this.secondaryConversation) {
                 n.clearUnread();
             }
