@@ -531,24 +531,29 @@ export default class ConversationView extends Vue {
     keepScroll(): void {
         if (this.scrolledDown) {
             this.ignoreScroll = true;
-            this.$nextTick(() => window.setTimeout(() => {
+
+            this.$nextTick(() => {
+                log.silly('ConversationView.keepScroll.nextTick', this.conversation.name, this.ignoreScroll);
                 this.ignoreScroll = true;
                 this.messageBlock.scrollTop = this.messageBlock.scrollHeight;
-            }));
+            });
         }
     }
 
     scrollMessageView(e?: KeyboardEvent) {
         this.ignoreScroll = true;
 
-        this.$nextTick(() => window.setTimeout(() => {
+        this.$nextTick(() => {
+            log.silly('ConversationView.scrollMessageView.nextTick', this.conversation.name, this.ignoreScroll);
             this.ignoreScroll = true;
             this.messageBlock.scrollTop = this.messageBlock.scrollHeight;
             this.scrolledDown = true;
-        }));
+        });
 
-        if (e && !anyDialogsShown)
+        if (e && !anyDialogsShown) {
+            log.silly('ConversationView.scrollMessageView.keyEvent', this.conversation.name);
             this.textBox.focus();
+        }
     }
 
     /**
