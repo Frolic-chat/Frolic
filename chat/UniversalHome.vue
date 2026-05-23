@@ -473,8 +473,11 @@ export default class HomeScreen extends Vue {
             if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey)
                 return;
 
-            this.scrollConversation();
-            this.focusInput();
+            const target = this.tab === '0' ? this.primaryConversation : this.tab === '1' ? this.secondaryConversation : undefined;
+            if (target) {
+                this.scrollConversation(target);
+                this.focusInput(target);
+            }
         }
 
         if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
@@ -555,7 +558,7 @@ export default class HomeScreen extends Vue {
     /**
      * detect selectedConversation changes; always use new_convo.show() as that calls old_convo.onHide() automatically.
      *
-     * Tab doesn't change on selecting a conversation. This is deliberate; clear messages only if proper tab is selected.
+     * Tab doesn't change on selecting a conversation. This is deliberate; check that tab + convo are correct and clear messages only if so.
      */
     @Watch('conversation')
     onConversationChanged(n: Conversation, _o: Conversation) {
@@ -572,8 +575,13 @@ export default class HomeScreen extends Vue {
 
         if (this.tab === '0') {
             if (n === this.primaryConversation) {
-                n.clearUnread();
-                this.$nextTick(() => this.focusInput());
+                log.silly('HomeScreen.onConversationChanged.tab0', n.name);
+                this.$nextTick(() => {
+                    log.silly('HomeScreen.onConversationChanged.tab0.nextTick', n.name);
+                    this.focusInput(n);
+                    this.scrollConversation(n);
+                    n.clearUnread();
+                });
             }
             else if (n === this.secondaryConversation) {
                 this.tab = '1';
@@ -581,7 +589,13 @@ export default class HomeScreen extends Vue {
         }
         else if (this.tab === '1') {
             if (n === this.secondaryConversation) {
-                n.clearUnread();
+                log.silly('HomeScreen.onConversationChanged.tab1', n.name);
+                this.$nextTick(() => {
+                    log.silly('HomeScreen.onConversationChanged.tab1.nextTick', n.name);
+                    this.focusInput(n);
+                    this.scrollConversation(n);
+                    n.clearUnread();
+                });
             }
             else { // So we're on tab 1 but no conversation on that tab...
                 this.tab = '0';
@@ -608,8 +622,8 @@ export default class HomeScreen extends Vue {
         if (this.tab === '0') {
             this.$nextTick(() => {
                 if (this.primaryConversation !== this.activityTab) {
-                    this.primaryView.textBox.focus();
-                    this.scrollConversation();
+                    this.focusInput(this.conversation);
+                    this.scrollConversation(this.conversation);
                 }
             });
 
@@ -619,13 +633,13 @@ export default class HomeScreen extends Vue {
                 this.primaryConversation.show();
         }
         else if (this.tab === '1') {
-            this.$nextTick(() => {
-                this.secondaryView?.textBox.focus();
-                this.scrollConversation();
-            });
-
             if (this.conversation === this.secondaryConversation) {
-                this.conversation.clearUnread();
+                this.$nextTick(() => {
+                    log.silly('HomeScreen.onTabChanged.tab1.nextTick', this.tab);
+                    this.focusInput(this.conversation);
+                    this.scrollConversation(this.conversation);
+                    this.conversation.clearUnread();
+                });
             }
             else {
                 if (this.secondaryConversation) {
@@ -679,18 +693,20 @@ export default class HomeScreen extends Vue {
         });
     }
 
-    scrollConversation() {
-        if (this.tab === '0')
+    scrollConversation(convo: Conversation.Conversation) {
+        log.silly('HomeScreen.scrollConversation', convo.name);
+        if (this.primaryView.conversation === convo)
             this.primaryView.scrollMessageView();
-        if (this.tab === '1')
-            this.secondaryView?.scrollMessageView();
+        else if (this.secondaryView?.conversation === convo)
+            this.secondaryView.scrollMessageView();
     }
 
-    focusInput() {
-        if (this.tab === '0' && this.primaryConversation !== this.activityTab)
+    focusInput(convo: Conversation.Conversation) {
+        log.silly('HomeScreen.focusInput', convo.name);
+        if (this.primaryView.conversation === convo)
             this.primaryView.textBox.focus();
-        else if (this.tab === '1')
-            this.secondaryView?.textBox.focus();
+        else if (this.secondaryView?.conversation === convo)
+            this.secondaryView.textBox.focus();
     }
 }
 </script>
