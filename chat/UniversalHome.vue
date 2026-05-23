@@ -363,10 +363,8 @@ export default class HomeScreen extends Vue {
         }
     }
 
-    /* eslint-disable @stylistic/brace-style */
     get primaryConversation()   { return this.isHome ? this.activityTab : this.conversation; }
     get secondaryConversation() { return this.isHome ? this.consoleTab  : this.linkedChannel; }
-    /* eslint-enable @stylistic/brace-style */
 
     get primaryDescription() {
         return Conversation.isChannel(this.primaryConversation)
