@@ -459,6 +459,7 @@ export default class ConversationView extends Vue {
         window.removeEventListener('resize', this.resizeHandler);
         window.removeEventListener('keydown', this.keydownHandler);
         window.removeEventListener('keypress', this.keypressHandler);
+        this.messageBlock.removeEventListener('scroll', this.scrollHandler);
         window.clearInterval(this.searchTimer);
         window.clearInterval(this.autoPostingUpdater);
         window.clearInterval(this.adCountdown);
