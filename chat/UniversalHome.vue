@@ -317,13 +317,11 @@ export default class HomeScreen extends Vue {
     commandHelp!: CommandHelp;
     logs!:        Logs;
 
-    /* eslint-disable @stylistic/brace-style */
     logsTitle = l('logs.title');
     showLogs() { this.logs.show(); }
 
     reportTitle = l('chat.report');
     report() { this.reportDialog.report(); }
-    /* eslint-enable @stylistic/brace-style */
 
     openWidgetOptions() {
         (this.$refs['widgetOptionsModal'] as WidgetOptions).show();
@@ -382,7 +380,7 @@ export default class HomeScreen extends Vue {
             : undefined;
     }
 
-    /* eslint-disable @stylistic/nonblock-statement-body-position, @stylistic/brace-style */
+    /* eslint-disable @stylistic/nonblock-statement-body-position */
     get tab0Name() {
         if (this.isHome)    return l('home.tab.home');
         if (this.isPrivate) return this.conversation.name;
@@ -411,7 +409,7 @@ export default class HomeScreen extends Vue {
     }
 
     get tab4Name() { return l('home.tab.data'); }
-    /* eslint-enable @stylistic/nonblock-statement-body-position, @stylistic/brace-style */
+    /* eslint-enable @stylistic/nonblock-statement-body-position */
 
     get tabTooltips() {
         return [

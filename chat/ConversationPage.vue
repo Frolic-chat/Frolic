@@ -756,8 +756,8 @@ export default class ConversationView extends Vue {
         }
     }
 
-    showChannelAds() { (this.$refs['channelAdSettingsDialog'] as ConversationAdSettings).show() }
-    showManage()     { (this.$refs['manageDialog'] as ManageChannel).show() }
+    showChannelAds() { (this.$refs['channelAdSettingsDialog'] as ConversationAdSettings).show(); }
+    showManage()     { (this.$refs['manageDialog'] as ManageChannel).show(); }
     // showAds(): void        { (<CharacterAdView>this.$refs['adViewer']).show() }
     //showChannels(): void   { (<CharacterChannelList>this.$refs['channelList']).show() }
 
