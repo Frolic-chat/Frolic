@@ -91,10 +91,11 @@
   </convo>
 
   <!-- console/secondary conversation -->
-  <convo v-if="secondaryConversation" v-show="tab === '1'"
+  <!-- Adopt conversation 1 because otherwise there's a problem where this view exists without an attached conversation, which causes problems. But letting this convo fade from existence causes more problems (scrolling issues). -->
+  <convo v-show="secondaryConversation && tab === '1'"
       ref="secondaryView"
       id="linked-conversation"
-      :conversation="secondaryConversation"
+      :conversation="secondaryConversation || primaryConversation"
       class="page" role="tabpanel"
       :navigationRequest="navRequestData.tab === '1' && navRequestData"
       :commandHelp="commandHelp" :eiconSelector="eiconSelector"
@@ -115,7 +116,7 @@
     </template>
   </convo>
 
-  <page v-else v-show="tab === '1'"
+  <!-- <page v-else v-show="tab === '1'"
       id="linked-conversation"
       role="tabpanel" class="page"
       :navigationRequest="navRequestData.tab === '1' && navRequestData"
@@ -130,7 +131,7 @@
         </div>
       </div>
     </template>
-  </page>
+  </page> -->
 
   <keep-alive>
     <!-- Personality -->
