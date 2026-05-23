@@ -341,9 +341,9 @@ export default class HomeScreen extends Vue {
      */
     tab = '0';
     /**
-     * Pure numerical rep of current tab; keep `tab` and `tabNum` in sync.
+     * Pure numerical rep of current tab.
      */
-    tabNum = 0;
+    get tabNum() { return Number(this.tab); };
 
     /* eslint-disable @stylistic/brace-style */
     get isHome()    { return this.conversation === this.activityTab
@@ -421,14 +421,11 @@ export default class HomeScreen extends Vue {
         ];
     };
 
-    primaryView!:  ConversationView;
-    secondaryView: ConversationView | undefined;
+    get primaryView()   { return this.$refs['secondaryView'] as ConversationView;             };
+    get secondaryView() { return this.$refs['secondaryView'] as ConversationView | undefined; };
 
     @Hook('mounted')
     mounted() {
-        this.primaryView   = this.$refs['primaryView']   as ConversationView;
-        this.secondaryView = this.$refs['secondaryView'] as ConversationView | undefined;
-
         this.logs        = this.$refs['logsDialog'] as Logs;
         this.commandHelp = this.$refs['commandHelpDialog'] as CommandHelp;
         // eiconSelector is passed in as prop.
@@ -564,8 +561,6 @@ export default class HomeScreen extends Vue {
      */
     @Watch('conversation')
     onConversationChanged(n: Conversation, _o: Conversation) {
-        this.secondaryView = this.$refs['secondaryView'] as ConversationView | undefined;
-
         log.debug('Watch(conversation):', this.conversation.name, {
             isPrimary:   this.conversation === this.primaryConversation,
             isSecondary: this.conversation === this.secondaryConversation,
@@ -609,8 +604,6 @@ export default class HomeScreen extends Vue {
             secondary:    this.secondaryConversation !== undefined,
             conversation: this.conversation.name,
         });
-
-        this.tabNum = Number(this.tab);
 
         this.moveTabs();
 
