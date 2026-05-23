@@ -177,7 +177,7 @@
         <span class="channel-key text-left text-truncate">
           <span v-if="isPrivate(conversation) && conversation.typingStatus !== 'clear'" class="chat-info-text">
             <user :character="conversation.character" :match="false" :reusable="true" :bookmark="false"></user>
-                        &nbsp;{{ l('chat.typing.' + conversation.typingStatus, '').trim() }}
+                        &nbsp;{{ l(`chat.typing.${conversation.typingStatus}`, '').trim() }}
           </span>
 
           <span v-else-if="isChannel(conversation)">
