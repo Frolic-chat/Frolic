@@ -51,6 +51,11 @@ export function init(settingsPath: string, logLevelSetter?: (level: GeneralSetti
     }
 
     registerIPC();
+    // Grabbing Electron here feels dirty but we don't seem to be able to register this otherwise.
+    Electron.app.on('before-quit', _e => {
+        debounceFileWrite.cancel();
+        writeSettingsToFile();
+    });
 
     return {
         raw: settings,
