@@ -22,13 +22,13 @@ const DEFAULT_PLAT = [ process.platform ];
 const DEFAULT_ARCH = [ process.arch     ];
 
 const platforms = process.argv.length > 2
-               && process.argv.filter(plat => electronPlat.includes(plat)).length
-    ? process.argv.filter(plat => electronPlat.includes(plat))
+               && process.argv.filter(arg => electronPlat.includes(arg)).length
+    ? process.argv.filter(arg => electronPlat.includes(arg))
     : DEFAULT_PLAT;
 
 const architectures = process.argv.length > 2
-                   && process.argv.filter(arch => electronArch.includes(arch)).length
-    ? process.argv.filter(arch => electronArch.includes(arch))
+                   && process.argv.filter(arg => electronArch.includes(arg)).length
+    ? process.argv.filter(arg => electronArch.includes(arg))
     : DEFAULT_ARCH;
 
 if (!platforms.length || !architectures.length)

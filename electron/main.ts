@@ -63,7 +63,7 @@ const logSettings = NewLogger('settings', () => l_s);
 const logBrowser = NewLogger('browser', () => l_b);
 
 import Logger from 'electron-log';
-import { LevelOption as LogLevelOption, levels as logLevels } from 'electron-log';
+import { type LevelOption as LogLevelOption, levels as logLevels } from 'electron-log';
 
 import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
@@ -85,8 +85,9 @@ import versionUpgradeRoutines from './main/version-upgrade';
 //region: 2nd Instance
 const isSquirrelStart = require('electron-squirrel-startup');
 console.log('main.singleInstance.NODE_ENV', process.env.NODE_ENV); // undefined
-if (isSquirrelStart || process.env.NODE_ENV !== 'development' && !app.requestSingleInstanceLock())
+if (isSquirrelStart || process.env.NODE_ENV !== 'development' && !app.requestSingleInstanceLock()) {
     app.quit();
+}
 else {
     app.on('second-instance', () => PrimaryWindow?.show());
     app.on('ready', onReady);
@@ -99,7 +100,7 @@ const icon = {
     mainBadge: InitIcon(platform, 'badge',      path.join(__dirname, 'system')),
     tray:      InitIcon(platform, 'tray',       path.join(__dirname, 'system')),
     trayBadge: InitIcon(platform, 'tray-badge', path.join(__dirname, 'system')),
-}
+};
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -108,7 +109,8 @@ const characters: string[] = [];
 let tabCount = 0;
 
 import * as LicenseHandler from './main/license-handler';
-LicenseHandler.init(app.getAppPath());
+LicenseHandler.init(app.getAppPath())
+    .catch((e: unknown) => log.error('Error loading license handler.', e));
 
 const baseDir = app.getPath('userData');
 fs.mkdirSync(baseDir, { recursive: true });
@@ -124,7 +126,8 @@ const settings = GeneralSettingsManager.init(settings_path, setLogLevel);
 import * as EiconManager from './main/eicon-store';
 // Broken
 log.debug('main.EiconManager.init.NODE_ENV', process.env.NODE_ENV); // undefined
-void EiconManager.init(settingsDir, 'eicons', 'favoriteEIcons', () => settings.raw.logDirectory, process.env.NODE_ENV === 'development');
+EiconManager.init(settingsDir, 'eicons', 'favoriteEIcons', () => settings.raw.logDirectory, process.env.NODE_ENV === 'development')
+    .catch((e: unknown) => log.error('Error loading eicon manager.', e));
 
 import InitScratchpad from './main/scratchpad';
 const scratchpad_path = path.join(settingsDir, 'scratchpad');
@@ -144,11 +147,11 @@ function fixImgurCORS() {
             urls: [
                 'https://api.imgur.com/*',
                 'https://i.imgur.com/*',
-            ]
+            ],
         },
         (details, callback) => {
             details.requestHeaders['Origin'] = '';
-            callback({requestHeaders: details.requestHeaders});
+            callback({ requestHeaders: details.requestHeaders });
         }
     );
 }
@@ -203,19 +206,20 @@ async function addSpellcheckerItems(menu: Electron.Menu): Promise<void> {
 
     const sortedLangs = langs
         .map(lang => ({
-            lang, name: (lang in knownLanguageNames)
-                ? `${(knownLanguageNames as {[key: string]: string})[lang]} (${lang})`
-                : lang
+            lang,
+            name: (lang in knownLanguageNames)
+                ? `${(knownLanguageNames as { [key: string]: string })[lang]} (${lang})`
+                : lang,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
 
     for (const lang of sortedLangs) {
         menu.append(new Electron.MenuItem(
             {
-                type: 'checkbox',
-                label: lang.name,
+                type:    'checkbox',
+                label:   lang.name,
                 checked: (selected.indexOf(lang.lang) >= 0),
-                click: async() => toggleDictionary(lang.lang)
+                click:   () => void toggleDictionary(lang.lang),
             }
         ));
     }
@@ -236,15 +240,15 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     if (!settings.raw.browserPath) {
         if (!incognito) {
             // Zero config: Open in system default browser
-            Electron.shell.openExternal(url);
+            void Electron.shell.openExternal(url);
             return;
         }
         else {
             // TODO: Robust error handler.
-            Electron.dialog.showMessageBox({
-                title: 'Frolic! - Browser Failure',
+            void Electron.dialog.showMessageBox({
+                title:   'Frolic! - Browser Failure',
                 message: l('chat.noBrowser'),
-                type: 'warning',
+                type:    'warning',
                 buttons: [],
             });
 
@@ -271,10 +275,10 @@ function openURLExternally(url: string, incognito: boolean = false): void {
     }
     catch {
         // TODO: Robust error handler.
-        Electron.dialog.showMessageBox({
-            title: 'Frolic! - Browser Failure',
+        void Electron.dialog.showMessageBox({
+            title:   'Frolic! - Browser Failure',
             message: l('chat.brokenBrowser'),
-            type: 'warning',
+            type:    'warning',
             buttons: [],
         });
 
@@ -290,10 +294,10 @@ function openURLExternally(url: string, incognito: boolean = false): void {
         }
         else {
             // TODO: Robust error handler.
-            Electron.dialog.showMessageBox({
-                title: 'Frolic! - Browser Failure',
+            void Electron.dialog.showMessageBox({
+                title:   'Frolic! - Browser Failure',
                 message: l('chat.noBrowser'),
-                type: 'warning',
+                type:    'warning',
                 buttons: [],
             });
 
@@ -365,7 +369,8 @@ function setUpWebContents(webContents: Electron.WebContents): void {
 
     };
 
-    webContents.setVisualZoomLevelLimits(1, 5);
+    webContents.setVisualZoomLevelLimits(1, 5)
+        .catch((e: unknown) => log.error('Failed to adjust zoom level.', e));;
 
     webContents.on('will-navigate', (e, url: string) => {
         e.preventDefault();
@@ -383,7 +388,7 @@ let tray: Electron.Tray | undefined;
 
 function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
     const tabItems: Electron.MenuItemConstructorOptions[] = Array.from(tabMap)
-        .map(([tabId, webContents]) => ({
+        .map(([ tabId, webContents ]) => ({
             label: tabId,
             click: () => {
                 if (PrimaryWindow?.isMinimized())
@@ -397,8 +402,8 @@ function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
                 PrimaryWindow?.webContents.send('show-tab', webContents.id);
 
                 webContents.focus();
-            }
-         }));
+            },
+        }));
 
     return [
         {
@@ -413,7 +418,7 @@ function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
                 }
                 else {
                     if (PrimaryWindow?.isMinimized())
-                        PrimaryWindow.restore()
+                        PrimaryWindow.restore();
                     else if (PrimaryWindow && !PrimaryWindow.isVisible())
                         PrimaryWindow.show();
                     else
@@ -432,30 +437,31 @@ function createTrayMenu(): Electron.MenuItemConstructorOptions[] {
                 PrimaryWindow?.webContents.send('quit');
                 Electron.app.quit();
             },
-        }
+        },
     ];
 }
 
 const windowStatePath = path.join(settingsDir, 'window.json');
 
 function createWindow(): Electron.BrowserWindow | undefined {
-    if (tabCount >= 3) return;
+    if (tabCount >= 3)
+        return;
 
     const lastState = windowState.getSavedWindowState(windowStatePath);
 
-    const windowProperties: Electron.BrowserWindowConstructorOptions & {maximized: boolean} = {
+    const windowProperties: Electron.BrowserWindowConstructorOptions & { maximized: boolean } = {
         ...lastState,
-        center: lastState.x === undefined,
-        show: false,
-        icon: icon.main,
+        center:         lastState.x === undefined,
+        show:           false,
+        icon:           icon.main,
         webPreferences: {
-            webviewTag: true,
-            nodeIntegration: true,
+            webviewTag:              true,
+            nodeIntegration:         true,
             nodeIntegrationInWorker: true,
-            spellcheck: true,
-            contextIsolation: false,
-            partition: 'persist:fchat',
-        }
+            spellcheck:              true,
+            contextIsolation:        false,
+            partition:               'persist:fchat',
+        },
     };
 
     if (platform === 'darwin') {
@@ -471,8 +477,8 @@ function createWindow(): Electron.BrowserWindow | undefined {
     remoteMain.enable(window.webContents);
 
     window.webContents.on('will-attach-webview', () => {
-            Electron.webContents.getAllWebContents()
-                .forEach(item => remoteMain.enable(item));
+        Electron.webContents.getAllWebContents()
+            .forEach(item => remoteMain.enable(item));
     });
 
     updateSupportedLanguages(Electron.session.defaultSession.availableSpellCheckerLanguages);
@@ -482,7 +488,8 @@ function createWindow(): Electron.BrowserWindow | undefined {
     window.webContents.session.setSpellCheckerLanguages(safeLanguages);
 
     // Set up ad blocker
-    BlockerIntegration.factory(baseDir);
+    BlockerIntegration.factory(baseDir)
+        .catch((e: unknown) => log.error('Error loading adblocker:\n', e));
 
     // Tweaks:
     fixImgurCORS();
@@ -492,10 +499,10 @@ function createWindow(): Electron.BrowserWindow | undefined {
         path.join(__dirname, 'window.html'),
         {
             query: {
-                settings: JSON.stringify(settings.raw),
-                import: settings.shouldImportSettings ? 'true' : '',
+                settings:                JSON.stringify(settings.raw),
+                import:                  settings.shouldImportSettings ? 'true' : '',
                 upgradeRoutineShouldRun: JSON.stringify(upgradeRoutineShouldRun),
-            }
+            },
         }
     );
 
@@ -503,10 +510,11 @@ function createWindow(): Electron.BrowserWindow | undefined {
 
     // Save window state when it is being closed.
     window.on('close', () => windowState.setSavedWindowState(window, windowStatePath));
-    window.on('minimize', () => {})
+    window.on('minimize', () => {});
     window.once('ready-to-show', () => {
         window.show();
-        if (lastState.maximized) window.maximize();
+        if (lastState.maximized)
+            window.maximize();
     });
 
     if (!tray) {
@@ -526,7 +534,7 @@ function createWindow(): Electron.BrowserWindow | undefined {
             }
             else {
                 if (window.isMinimized())
-                    window.restore()
+                    window.restore();
                 else if (!window.isVisible())
                     window.show();
                 else
@@ -568,7 +576,7 @@ function onReady(): void {
     app.on('open-file', createWindow);
 
     app.on('web-contents-created', (_e, wc) => {
-        wc.setWindowOpenHandler(() => ({ action: "deny" }));
+        wc.setWindowOpenHandler(() => ({ action: 'deny' }));
     });
 
     const currVersion = settings.raw.version;
@@ -588,14 +596,14 @@ function onReady(): void {
     }
 
     const viewItem = {
-        label: `&${ l('action.view') }`,
+        label:   `&${ l('action.view') }`,
         submenu: <Electron.MenuItemConstructorOptions[]>[
             // {role: 'resetZoom'},
             {
                 label: l('action.resetZoom'),
                 click: () => Electron.webContents.getAllWebContents()
                     .forEach(w => w.setZoomLevel(0)),
-                accelerator: 'CmdOrCtrl+0'
+                accelerator: 'CmdOrCtrl+0',
             },
             {
                 // role: 'zoomIn',
@@ -610,7 +618,7 @@ function onReady(): void {
                             .forEach(w => w.setZoomLevel(zoomLevel));
                     }
                 },
-                accelerator: 'CmdOrCtrl+='
+                accelerator: 'CmdOrCtrl+=',
             },
             {
                 // role: 'zoomOut',
@@ -625,30 +633,31 @@ function onReady(): void {
                             .forEach(w => w.setZoomLevel(zoomLevel));
                     }
                 },
-                accelerator: 'CmdOrCtrl+-'
+                accelerator: 'CmdOrCtrl+-',
             },
-            {type: 'separator'},
-            {role: 'togglefullscreen'}
-        ]
+            { type: 'separator' },
+            { role: 'togglefullscreen' },
+        ],
     };
     // Broken
     log.debug('main.onReady.viewMenu.NODE_ENV', process.env.NODE_ENV); // undefined
     if (process.env.NODE_ENV === 'development') {
         viewItem.submenu.unshift(
-            {role: 'reload'},
-            {role: 'forceReload'},
-            {role: 'toggleDevTools'},
-            {type: 'separator'}
+            { role: 'reload' },
+            { role: 'forceReload' },
+            { role: 'toggleDevTools' },
+            { type: 'separator' }
         );
     }
     const spellcheckerMenu = new Electron.Menu();
 
-    addSpellcheckerItems(spellcheckerMenu);
+    addSpellcheckerItems(spellcheckerMenu)
+        .catch((e: unknown) => log.error('Error creating spellchecker menu.', e));;
 
     //region Themes
     const themes = fs.readdirSync(path.join(__dirname, 'themes'))
-            .filter(x => x.slice(-4) === '.css')
-            .map(x => x.slice(0, -4));
+        .filter(x => x.slice(-4) === '.css')
+        .map(x => x.slice(0, -4));
 
     //region Updater
     const updateCheckTimer = setInterval(
@@ -660,7 +669,8 @@ function onReady(): void {
 
                 const menu = Electron.Menu.getApplicationMenu();
                 const item = menu?.getMenuItemById(updateReadyMenuItem.id);
-                if (item) item.visible = true;
+                if (item)
+                    item.visible = true;
 
                 PrimaryWindow?.webContents.send('update-available', true);
             }
@@ -677,7 +687,8 @@ function onReady(): void {
 
                 const menu = Electron.Menu.getApplicationMenu()!;
                 const item = menu.getMenuItemById(updateReadyMenuItem.id);
-                if (item) item.visible = true;
+                if (item)
+                    item.visible = true;
 
                 PrimaryWindow?.webContents.send('update-available', true);
             }
@@ -688,10 +699,10 @@ function onReady(): void {
     UpdateCheck.registerReleaseInfoIpc();
 
     const updateReadyMenuItem = {
-        label: l('action.updateAvailable'),
-        id: 'update',
+        label:   l('action.updateAvailable'),
+        id:      'update',
         visible: false,
-        click: () => openURLExternally(FROLIC.GitHubReleasesUrl),
+        click:   () => openURLExternally(FROLIC.GitHubReleasesUrl),
     };
 
 
@@ -710,25 +721,25 @@ function onReady(): void {
                 if (!upgradeRoutineShouldRun && tabCount < 3 && w instanceof Electron.BrowserWindow)
                     w.webContents.send('open-tab');
             },
-            accelerator: 'CmdOrCtrl+t'
+            accelerator: 'CmdOrCtrl+t',
         },
         { type: 'separator' },
         {
-            label: `&${l('title')}`,
+            label:   `&${l('title')}`,
             submenu: [
                 {
-                    label: "hidden switch-tab accelerator",
+                    label:       'hidden switch-tab accelerator',
                     accelerator: 'Ctrl+Tab',
-                    click: (_m, w) => {
+                    click:       (_m, w) => {
                         if (w instanceof Electron.BrowserWindow)
                             w.webContents.send('switch-tab');
                     },
                     visible: false,
                 },
                 {
-                    label: "hidden previous-tab accelerator",
+                    label:       'hidden previous-tab accelerator',
                     accelerator: 'Ctrl+Shift+Tab',
-                    click: (_m, w) => {
+                    click:       (_m, w) => {
                         if (w instanceof Electron.BrowserWindow)
                             w.webContents.send('previous-tab');
                     },
@@ -742,7 +753,7 @@ function onReady(): void {
 
                         const dir = Electron.dialog.showOpenDialogSync({
                             defaultPath: settings.raw.logDirectory,
-                            properties: [ 'openDirectory' ],
+                            properties:  [ 'openDirectory' ],
                         });
 
                         if (dir?.[0]) {
@@ -750,9 +761,9 @@ function onReady(): void {
                                 return Electron.dialog.showErrorBox(l('settings.logDir'), l('settings.logDir.inAppDir'));
 
                             const button = Electron.dialog.showMessageBoxSync(window, {
-                                message: l('settings.logDir.confirm', dir[0], settings.raw.logDirectory),
-                                buttons: [l('confirmYes'), l('confirmNo')],
-                                cancelId: 1
+                                message:  l('settings.logDir.confirm', dir[0], settings.raw.logDirectory),
+                                buttons:  [ l('confirmYes'), l('confirmNo') ],
+                                cancelId: 1,
                             });
                             if (button === 0) {
                                 PrimaryWindow?.webContents.send('quit');
@@ -762,38 +773,38 @@ function onReady(): void {
                                 app.quit();
                             }
                         }
-                    }
+                    },
                 },
                 {
-                    label: l('settings.closeToTray'),
-                    type: 'checkbox',
+                    label:   l('settings.closeToTray'),
+                    type:    'checkbox',
                     checked: settings.raw.closeToTray,
-                    click: m => settings.set('closeToTray', m.checked),
+                    click:   m => settings.set('closeToTray', m.checked),
                 },
                 {
-                    label: l('settings.profileViewer'),
-                    type: 'checkbox',
+                    label:   l('settings.profileViewer'),
+                    type:    'checkbox',
                     checked: settings.raw.profileViewer,
-                    click: m => settings.set('profileViewer', m.checked),
+                    click:   m => settings.set('profileViewer', m.checked),
                 },
                 {
-                    label: l('settings.spellcheck'),
+                    label:   l('settings.spellcheck'),
                     submenu: spellcheckerMenu,
                 },
                 {
-                    label: l('settings.theme'),
+                    label:   l('settings.theme'),
                     submenu: themes.map(theme => ({
                         checked: settings.raw.theme === theme,
-                        click: () => settings.set('theme', theme),
-                        label: theme,
-                        type: <'radio'>'radio'
-                    }))
+                        click:   () => settings.set('theme', theme),
+                        label:   theme,
+                        type:    <'radio'>'radio',
+                    })),
                 },
                 {
-                    label: l('settings.hwAcceleration'),
-                    type: 'checkbox',
+                    label:   l('settings.hwAcceleration'),
+                    type:    'checkbox',
                     checked: settings.raw.hwAcceleration,
-                    click: m => settings.set('hwAcceleration', m.checked),
+                    click:   m => settings.set('hwAcceleration', m.checked),
                 },
                 // {
                 //     label: l('settings.beta'), type: 'checkbox', checked: settings.beta,
@@ -813,20 +824,20 @@ function onReady(): void {
                 },
                 { type: 'separator' },
                 {
-                    label: l('action.logLevel'),
+                    label:   l('action.logLevel'),
                     submenu: logLevels.map(level => ({
                         checked: settings.raw.risingSystemLogLevel === level,
-                        label: `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
-                        click: () => settings.set('risingSystemLogLevel', level as LogLevelOption),
-                        type: 'radio',
+                        label:   `${level.substring(0, 1).toUpperCase()}${level.substring(1)}`,
+                        click:   () => settings.set('risingSystemLogLevel', level as LogLevelOption),
+                        type:    'radio',
                     })),
                 },
                 {
                     visible: platform === 'win32',
-                    label: l('action.toggleHighContrast'),
-                    type: 'checkbox',
+                    label:   l('action.toggleHighContrast'),
+                    type:    'checkbox',
                     checked: settings.raw.risingDisableWindowsHighContrast,
-                    click: m => settings.set('risingDisableWindowsHighContrast', m.checked),
+                    click:   m => settings.set('risingDisableWindowsHighContrast', m.checked),
                 },
                 {
                     label: l('action.profile'),
@@ -834,51 +845,51 @@ function onReady(): void {
                         if (w instanceof Electron.BrowserWindow)
                             w.webContents.send('reopen-profile');
                     },
-                    accelerator: 'CmdOrCtrl+p'
+                    accelerator: 'CmdOrCtrl+p',
                 },
-            ]
+            ],
         },
         {
-            label: `&${l('action.edit')}`,
+            label:   `&${l('action.edit')}`,
             submenu: [
-                {role: 'undo'},
-                {role: 'redo'},
-                {type: 'separator'},
-                {role: 'cut'},
-                {role: 'copy'},
-                {role: 'paste'},
-                {role: 'selectAll'},
+                { role: 'undo' },
+                { role: 'redo' },
+                { type: 'separator' },
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                { role: 'selectAll' },
             ],
         },
         viewItem,
         {
-            label: `&${l('help')}`,
+            label:   `&${l('help')}`,
             submenu: [
                 licenseMenuItem,
                 {
                     label: l('help.rules'),
-                    click: () => openURLExternally('https://wiki.f-list.net/Rules')
+                    click: () => openURLExternally('https://wiki.f-list.net/Rules'),
                 },
                 {
                     label: l('help.faq'),
-                    click: () => openURLExternally('https://wiki.f-list.net/Frequently_Asked_Questions')
+                    click: () => openURLExternally('https://wiki.f-list.net/Frequently_Asked_Questions'),
                 },
                 {
                     label: l('help.report'),
-                    click: () => openURLExternally('https://wiki.f-list.net/How_to_Report_a_User#In_chat')
+                    click: () => openURLExternally('https://wiki.f-list.net/How_to_Report_a_User#In_chat'),
                 },
                 {
                     label: l('version', app.getVersion()),
-                    click: showPatchNotes
-                }
-            ]
+                    click: showPatchNotes,
+                },
+            ],
         },
-        {type: 'separator'},
-        {role: 'minimize'},
+        { type: 'separator' },
+        { role: 'minimize' },
         {
             accelerator: platform === 'darwin' ? 'Cmd+Q' : undefined,
-            label: l('action.quit'),
-            click: (_m, window) => {
+            label:       l('action.quit'),
+            click:       (_m, window) => {
                 if (characters.length === 0)
                     return app.quit();
 
@@ -886,16 +897,16 @@ function onReady(): void {
                     return;
 
                 const button = Electron.dialog.showMessageBoxSync(window, {
-                    message: l('chat.confirmLeave'),
-                    buttons: [l('confirmYes'), l('confirmNo')],
-                    cancelId: 1
+                    message:  l('chat.confirmLeave'),
+                    buttons:  [ l('confirmYes'), l('confirmNo') ],
+                    cancelId: 1,
                 });
                 if (button === 0) {
                     PrimaryWindow?.webContents.send('quit');
                     app.quit();
                 }
-            }
-        }
+            },
+        },
     ]));
 
 
@@ -914,7 +925,7 @@ function onReady(): void {
     //#endregion
 
     Electron.ipcMain.handle('app-getPath', async (_e, appPath: string) => {
-        await null;
+        await Promise.resolve();
         // Ideally argument is `Parameters<typeof app.getPath>[0]`
         try { // ex: 'userData'
             //if ([ "home", "appData", "userData", "sessionData", "temp", "exe", "module", "desktop", "documents", "downloads", "music", "pictures", "videos", "recent", "logs", "crashDumps" ].includes(path))
@@ -990,8 +1001,8 @@ function onReady(): void {
 
     // Tray handlers
     Electron.ipcMain.on('connect', (e, character: string) => {
-            tabMap.set(character, e.sender);
-            tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
+        tabMap.set(character, e.sender);
+        tray?.setContextMenu(Electron.Menu.buildFromTemplate(createTrayMenu()));
     });
 
     Electron.ipcMain.on('disconnect', (_e, character: string) => {
@@ -1078,20 +1089,20 @@ function onReady(): void {
         logBrowser.debug('settings.browser.browse', () => JSON.stringify(settings));
 
         let filters;
-        if (platform === "win32") {
-            filters = [{ name: 'Executables', extensions: ['exe'] }];
+        if (platform === 'win32') {
+            filters = [{ name: 'Executables', extensions: [ 'exe' ] }];
         }
-        else if (platform === "darwin") {
-            filters = [{ name: 'Executables', extensions: ['app'] }];
+        else if (platform === 'darwin') {
+            filters = [{ name: 'Executables', extensions: [ 'app' ] }];
         }
         else { // unix and whatever else
-            filters = [{ name: 'Executables', extensions: ['*'] }];
+            filters = [{ name: 'Executables', extensions: [ '*' ] }];
         }
 
         const dir = Electron.dialog.showOpenDialogSync({
             defaultPath: settings.raw.browserPath,
-            properties: ['openFile'],
-            filters: filters,
+            properties:  [ 'openFile' ],
+            filters:     filters,
         });
 
         return dir?.[0] ?? '';

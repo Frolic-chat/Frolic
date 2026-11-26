@@ -46,7 +46,7 @@ export function init(settingsPath: string, logLevelSetter?: (level: GeneralSetti
             settings.argv = process.argv.filter(a => a.startsWith('--'));
         }
         catch (e) {
-            logSettings.error(`Error loading settings: ${e}`);
+            logSettings.error('Error loading settings:', e);
         }
     }
 

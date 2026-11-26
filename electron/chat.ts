@@ -54,15 +54,15 @@ require('@electron/remote/main').enable(webContents);
 import { exec } from 'child_process';
 import * as path from 'path';
 import * as qs from 'querystring';
-import {getKey} from '../chat/common';
+import { getKey } from '../chat/common';
 import EventBus from '../chat/preview/event-bus';
-import { default as core, init as initCore} from '../chat/core';
+import { default as core, init as initCore } from '../chat/core';
 import l from '../chat/localize';
 import Socket from '../chat/WebSocket';
 import Connection from '../fchat/connection';
-import {Keys} from '../keys';
-import {GeneralSettings /*, nativeRequire*/ } from './common';
-import {Logs, SettingsStore} from './renderer/filesystem';
+import { Keys } from '../keys';
+import { type GeneralSettings /*, nativeRequire*/ } from './common';
+import { Logs, SettingsStore } from './renderer/filesystem';
 import Notifications from './notifications';
 import * as SlimcatImporter from './renderer/importer';
 
@@ -78,21 +78,21 @@ const log = NewLogger('chat', () => core.state.generalSettings.argv.includes('--
 const logC = NewLogger('core', () => core.state.generalSettings.argv.includes('--debug-core'));
 const logDev = NewLogger('devtools');
 
-import { LevelOption as LogLevelOption } from 'electron-log';
+import { type LevelOption as LogLevelOption } from 'electron-log';
 
 import { WordPosSearch } from '../learn/dictionary/word-pos-search';
 
 log.debug('init.chat');
 
 document.addEventListener('keydown', (e: KeyboardEvent) => {
-    if(e.ctrlKey && e.shiftKey && getKey(e) === Keys.KeyI)
+    if (e.ctrlKey && e.shiftKey && getKey(e) === Keys.KeyI)
         remote.getCurrentWebContents().toggleDevTools();
 });
 
 //Axios.defaults.params = {__fchat: `desktop/3.0.14`};
 
 logDev.debug('chat.devtools-opened.NODE_ENV', process.env.NODE_ENV); // development
-if(process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production') {
     remote.getCurrentWebContents().on('devtools-opened', () => {
         console.log(`%c${l('consoleWarning.head')}`, 'background: red; color: yellow; font-size: 30pt');
         console.log(`%c${l('consoleWarning.body')}`, 'font-size: 16pt; color:red');
@@ -107,121 +107,128 @@ const wordPosSearch = new WordPosSearch();
 
 webContents.on('context-menu', (_, props) => {
     const hasText = props.selectionText.trim().length > 0;
-    const can = (type: string) => (<Electron.EditFlags & {[key: string]: boolean}>props.editFlags)[`can${type}`] && hasText;
+    const can = (type: string) => (<Electron.EditFlags & { [key: string]: boolean }>props.editFlags)[`can${type}`] && hasText;
 
     const menuTemplate: Electron.MenuItemConstructorOptions[] = [];
-    if(hasText || props.isEditable)
+    if (hasText || props.isEditable) {
         menuTemplate.push({
-            id: 'copy',
-            label: l('action.copy'),
-            role: can('Copy') ? 'copy' : undefined,
+            id:          'copy',
+            label:       l('action.copy'),
+            role:        can('Copy') ? 'copy' : undefined,
             accelerator: 'CmdOrCtrl+C',
-            enabled: can('Copy')
+            enabled:     can('Copy'),
         });
-    if(props.isEditable)
+    }
+    if (props.isEditable) {
         menuTemplate.push({
-            id: 'cut',
-            label: l('action.cut'),
-            role: can('Cut') ? 'cut' : undefined,
+            id:          'cut',
+            label:       l('action.cut'),
+            role:        can('Cut') ? 'cut' : undefined,
             accelerator: 'CmdOrCtrl+X',
-            enabled: can('Cut')
+            enabled:     can('Cut'),
         }, {
-            id: 'paste',
-            label: l('action.paste'),
-            role: props.editFlags.canPaste ? 'paste' : undefined,
+            id:          'paste',
+            label:       l('action.paste'),
+            role:        props.editFlags.canPaste ? 'paste' : undefined,
             accelerator: 'CmdOrCtrl+V',
-            enabled: props.editFlags.canPaste
+            enabled:     props.editFlags.canPaste,
         });
+    }
     else if (props.linkURL.length > 0
     &&       props.linkURL.substring(0, props.pageURL.length) !== props.pageURL
     &&       props.mediaType !== 'plugin' && props.mediaType !== 'canvas') {
         menuTemplate.push({
-            id: 'open',
+            id:    'open',
             label: l('action.browserOpen'),
             click: () => openWebBrowser(props.linkURL),
         }, {
-            id: 'incognito',
+            id:    'incognito',
             label: l('action.incognito'),
             click: () => openWebBrowser(props.linkURL, true),
         });
         menuTemplate.push({
-            id: 'copyLink',
+            id:    'copyLink',
             label: l('action.copyLink'),
             click(): void {
-                if(process.platform === 'darwin')
-                    electron.clipboard.writeBookmark(props.linkText, props.linkURL);
-                else
-                    electron.clipboard.writeText(props.linkURL);
-            }
+                electron.clipboard.writeText(props.linkURL);
+            },
         });
         menuTemplate.push({
-            id: 'toggleStickyness',
+            id:    'toggleStickyness',
             label: l('action.toggleStickyPreview'),
             click(): void {
                 EventBus.$emit('imagepreview-toggle-sticky', { url: props.linkURL });
-            }
+            },
         });
-    } else if(hasText)
+    }
+    else if (hasText) {
         menuTemplate.push({
-            label: l('action.copyWithoutBBCode'),
-            enabled: can('Copy'),
+            label:       l('action.copyWithoutBBCode'),
+            enabled:     can('Copy'),
             accelerator: 'CmdOrCtrl+Shift+C',
-            click: () => electron.clipboard.writeText(props.selectionText),
+            click:       () => electron.clipboard.writeText(props.selectionText),
         });
-    if(props.misspelledWord !== '') {
+    }
+    if (props.misspelledWord !== '') {
         const corrections = props.dictionarySuggestions; //spellchecker.getCorrectionsForMisspelling(props.misspelledWord);
         menuTemplate.unshift({
             label: l('spellchecker.add'),
-            click: () => electron.ipcRenderer.send('dictionary-add', props.misspelledWord)
-        }, {type: 'separator'});
-        if(corrections.length > 0)
+            click: () => electron.ipcRenderer.send('dictionary-add', props.misspelledWord),
+        }, { type: 'separator' });
+        if (corrections.length > 0) {
             menuTemplate.unshift(...corrections.map((correction: string) => ({
                 label: correction,
-                click: () => webContents.replaceMisspelling(correction)
+                click: () => webContents.replaceMisspelling(correction),
             })));
-        else menuTemplate.unshift({enabled: false, label: l('spellchecker.noCorrections')});
-    } else if(settings.customDictionary.indexOf(props.selectionText) !== -1)
+        }
+        else {
+            menuTemplate.unshift({ enabled: false, label: l('spellchecker.noCorrections') });
+        }
+    }
+    else if (settings.customDictionary.indexOf(props.selectionText) !== -1) {
         menuTemplate.unshift({
             label: l('spellchecker.remove'),
-            click: () => electron.ipcRenderer.send('dictionary-remove', props.selectionText)
-        }, {type: 'separator'});
+            click: () => electron.ipcRenderer.send('dictionary-remove', props.selectionText),
+        }, { type: 'separator' });
+    }
 
 
     const lookupWord = props.selectionText || wordPosSearch.getLastClickedWord();
 
     if (lookupWord) {
         menuTemplate.unshift(
-          { type: 'separator' },
-          {
-            label: `Look up '${lookupWord}'`,
-            click: async() => {
-                EventBus.$emit('word-definition', { lookupWord, x: props.x, y: props.y });
+            { type: 'separator' },
+            {
+                label: `Look up '${lookupWord}'`,
+                click: async() => {
+                    EventBus.$emit('word-definition', { lookupWord, x: props.x, y: props.y });
+                },
             }
-          }
         );
     }
 
-    if(menuTemplate.length > 0) remote.Menu.buildFromTemplate(menuTemplate).popup({});
+    if (menuTemplate.length > 0)
+        remote.Menu.buildFromTemplate(menuTemplate).popup({});
 
     log.debug('context.text', {
-        linkText: props.linkText,
-        link: props.linkURL,
+        linkText:       props.linkText,
+        link:           props.linkURL,
         misspelledWord: props.misspelledWord,
-        selectionText: props.selectionText,
-        titleText: props.titleText
+        selectionText:  props.selectionText,
+        titleText:      props.titleText,
     });
 });
 
 let dictDir = path.join(remote.app.getPath('userData'), 'spellchecker');
 
-if(process.platform === 'win32') //get the path in DOS (8-character) format as special characters cause problems otherwise
+if (process.platform === 'win32') //get the path in DOS (8-character) format as special characters cause problems otherwise
     exec(`for /d %I in ("${dictDir}") do @echo %~sI`, (_, stdout) => dictDir = stdout.trim());
 
 // electron.webFrame.setSpellCheckProvider(
 // '', {spellCheck: (words, callback) => callback(words.filter((x) => spellchecker.isMisspelled(x)))});
 
 function onSettings(s: GeneralSettings): void {
-    const logLevel: LogLevelOption = 'warn'
+    const logLevel: LogLevelOption = 'warn';
     Logger.transports.console.level = s.risingSystemLogLevel || logLevel;
 
     // spellchecker.setDictionary(s.spellcheckLang, dictDir);
@@ -230,18 +237,19 @@ function onSettings(s: GeneralSettings): void {
 
 EventBus.$on('settings-from-main', onSettings);
 
-const params = <{[key: string]: string | undefined}>qs.parse(window.location.search.substring(1));
-let settings = JSON.parse(params['settings']!) as GeneralSettings;
+const params = <{ [key: string]: string | undefined }>qs.parse(window.location.search.substring(1));
+const settings = JSON.parse(params['settings']!) as GeneralSettings;
 
 // console.log('SETTINGS', settings);
 
 if (params['import'] !== undefined) {
     try {
-        if(SlimcatImporter.canImportGeneral() && confirm(l('importer.importGeneral'))) {
+        if (SlimcatImporter.canImportGeneral() && confirm(l('importer.importGeneral'))) {
             SlimcatImporter.importGeneral(settings);
             electron.ipcRenderer.send('save-login', settings.account, settings.host);
         }
-    } catch {
+    }
+    catch {
         alert(l('importer.error'));
     }
 }
@@ -250,7 +258,7 @@ onSettings(settings);
 
 log.debug('init.chat.core');
 
-const connection = new Connection(`F-Chat 3.0 (Web)`, '3.0.16', Socket);
+const connection = new Connection('F-Chat 3.0 (Web)', '3.0.16', Socket);
 initCore(connection, settings, Logs, SettingsStore, Notifications);
 
 window.addEventListener('keydown', handleEscape, { capture: true }); // run before bubbling listeners
@@ -258,7 +266,7 @@ window.addEventListener('keydown', handleEscape, { capture: true }); // run befo
 function isInput(e: any): e is HTMLInputElement | HTMLTextAreaElement {
     return e && (e instanceof HTMLTextAreaElement
              || (e instanceof HTMLInputElement && ['text', 'search', 'email', 'tel', 'url'].includes(e.type))
-    )
+    );
 }
 
 /**
@@ -307,12 +315,12 @@ function handleEscape(e: KeyboardEvent) {
 
 log.debug('init.chat.vue');
 new Index({
-    el: '#app',
+    el:   '#app',
     data: {
         // Useless to pass settings through, they're initiated into the core right above!
         settings,
-        upgradeRoutineShouldRun: JSON.parse(params['upgradeRoutineShouldRun']!)
-    }
+        upgradeRoutineShouldRun: JSON.parse(params['upgradeRoutineShouldRun']!),
+    },
 });
 
 log.debug('init.chat.vue.done');
