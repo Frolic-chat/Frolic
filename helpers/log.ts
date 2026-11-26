@@ -5,7 +5,7 @@ import type { LogType } from '../electron/common';
 import core from '../chat/core';
 
 function lazyval(...args: unknown[]): unknown[] {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return args.map(arg => typeof arg === 'function' ? arg() : arg);
 }
 

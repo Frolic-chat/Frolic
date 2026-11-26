@@ -161,7 +161,7 @@ export async function init(directory: string, storeFilename: string, favoritesFi
  * Call with no arguments to register pre-programmed events; provide your own events to register those.
  * @param extraCalls Optional: Tuples of event-name and Function
  */
-function registerIPC(extraCalls?: [ [string, (event: Electron.IpcMainEvent, ...args: unknown[]) => void] ]) {
+function registerIPC(extraCalls?: [string, (event: Electron.IpcMainEvent, ...args: unknown[]) => void][]) {
     if (extraCalls) {
         logEicon.debug('store.registerIPC.extras', { count: extraCalls.length });
 
