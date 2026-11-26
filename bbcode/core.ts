@@ -132,21 +132,16 @@ export class CoreBBCodeParser extends BBCodeParser {
         this.addTag(new BBCodeCustomTag('spoiler', (parser, parent) => {
             const link = parser.createElement('a');
             const content = parser.createElement('span');
+
             link.href = '#';
             link.setAttribute('onclick', 'this.nextSibling.hidden=false;this.remove();return false');
-            link.onclick = e => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                content.hidden = false;
-                link.remove();
-
-                return false;
-            };
             link.appendChild(document.createTextNode('[click to show spoiler]'));
+
             content.hidden = true;
+
             parent.appendChild(link);
             parent.appendChild(content);
+
             return content;
         }));
     }
