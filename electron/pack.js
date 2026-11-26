@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as ChildProcess from 'child_process';
 import axios from 'axios';
 
-import packager from '@electron/packager';
+import { packager } from '@electron/packager';
 import setLanguages from 'electron-packager-languages';
 import { createWindowsInstaller } from 'electron-winstaller';
 
@@ -101,9 +101,10 @@ const appPaths = await packager({
     prune: true,
     platform: platforms,
     arch: architectures,
-    afterCopy: [ setLanguages([ 'en', 'en_US', 'en-US' ]) ],
+    afterCopy: [ afterCopy ],
 });
 
+// Are we only here to build?
 if (process.env.SKIP_INSTALLER)
     process.exit();
 
@@ -122,6 +123,23 @@ const buildScripts = {
 };
 platforms.forEach(plat => buildScripts[plat]?.(appPaths));
 
+/** Wrapper script for electron-packager-languages which expects legacy independent args, but electron-packager now uses an options object.
+ * HookFunctionArgs are:
+ * buildPath: string,
+ * electronVersion: string,
+ * platform: OfficialPlatform,
+ * arch: OfficialArch,
+ */
+function afterCopy(hookFunctionArgs) {
+    console.log("afterCopy: ", hookFunctionArgs);
+    const packagerLanguageFunc = setLanguages([ 'en', 'en_US', 'en-US' ]);
+    return (hookFunctionArgs) => packagerLanguageFunc(
+        hookFunctionArgs.buildPath,
+        hookFunctionArgs.electronVersion,
+        hookFunctionArgs.platform,
+        hookFunctionArgs.arch
+    );
+};
 
 // region Build Scripts
 /**
